@@ -193,7 +193,9 @@ select is(
         'private.registration_attempts',
         'private.prediction_reminder_cron_config',
         'private.sport_waitlist_engine_activation',
-        'private.client_incident_log'
+        'private.client_incident_log',
+        'private.email_confirmations',
+        'private.email_attempts'
       )
       and not exists (
         select 1 from pg_policy p
@@ -231,6 +233,10 @@ select is(
         'club_for_invite_code(text)',
         'promote_club_founder(uuid,uuid)',
         'discard_empty_club(uuid)',
+        'consume_email_rate_limit(text,text)',
+        'request_contact_email(uuid,text,text)',
+        'confirm_contact_email(text)',
+        'profile_for_recovery_email(text)',
         'handle_new_auth_user()',
         -- Aide posée par l'amorce des tests, absente d'une vraie base.
         'private.ci_direct_player_identity_default()'

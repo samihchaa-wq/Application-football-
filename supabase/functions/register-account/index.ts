@@ -4,6 +4,16 @@
 // - créer un club : le demandeur en devient le premier administrateur.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2.95.0";
+import {
+  confirmationLink,
+  confirmationMail,
+  isValidEmail,
+  normalizeEmail,
+  randomToken,
+  readMailConfig,
+  sendMail,
+  sha256Hex,
+} from "./account_email.ts";
 import { validatePassword } from "./password_policy.ts";
 
 const USERNAME_DOMAIN = Deno.env.get("USERNAME_DOMAIN")?.trim() ||
@@ -90,16 +100,6 @@ function requestOrigin(req: Request): string {
   ).slice(0, 128);
 }
 
-async function sha256Hex(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(value),
-  );
-  return Array.from(new Uint8Array(digest))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-}
-
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -128,6 +128,9 @@ Deno.serve(async (req: Request) => {
     .replace(/[\s-]/g, "");
   const clubName = String(body.clubName ?? "").trim().replace(/\s+/g, " ");
   const clubShortName = String(body.clubShortName ?? "").trim();
+  // Facultative : sert à confirmer l'identité et à retrouver le compte par
+  // e-mail en cas de mot de passe perdu.
+  const contactEmail = normalizeEmail(body.email);
 
   // Les requêtes manifestement invalides ne consomment pas le quota partagé.
   if (
@@ -153,6 +156,9 @@ Deno.serve(async (req: Request) => {
       /[\u0000-\u001f\u007f]/.test(clubName + clubShortName))
   ) {
     return jsonResponse({ error: "Nom du club invalide." }, 400);
+  }
+  if (contactEmail && !isValidEmail(contactEmail)) {
+    return jsonResponse({ error: "Adresse e-mail invalide." }, 400);
   }
   const passwordError = validatePassword(password);
   if (passwordError) {
@@ -288,10 +294,41 @@ Deno.serve(async (req: Request) => {
       if (founderError) throw founderError;
     }
 
+    // Le compte est créé : l'envoi du lien de confirmation est un plus. S'il
+    // échoue, l'inscription reste réussie et l'adresse pourra être confirmée
+    // plus tard depuis le profil.
+    let emailConfirmationSent = false;
+    const publicAppUrl = Deno.env.get("PUBLIC_APP_URL")?.trim();
+    const mail = readMailConfig();
+    if (contactEmail && mail && publicAppUrl) {
+      try {
+        const token = randomToken();
+        const { data: shouldSend, error: emailError } = await admin.rpc(
+          "request_contact_email",
+          {
+            p_profile_id: newUserId,
+            p_email: contactEmail,
+            p_token_hash: await sha256Hex(token),
+          },
+        );
+        if (emailError) throw emailError;
+        if (shouldSend === true) {
+          const message = confirmationMail(
+            confirmationLink(publicAppUrl, token),
+          );
+          await sendMail(mail, contactEmail, message.subject, message.text);
+          emailConfirmationSent = true;
+        }
+      } catch (emailFailure) {
+        console.error("register-account confirmation mail failure", emailFailure);
+      }
+    }
+
     return jsonResponse({
       username,
       clubName: club.name,
       status: mode === "create" ? "active" : "pending",
+      emailConfirmationSent,
     });
   } catch (error) {
     console.error("register-account failure", error);
