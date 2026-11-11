@@ -490,8 +490,8 @@ class MonthlyMatchCard extends ConsumerWidget {
     final phase = match.phase();
     final address = match.address?.trim();
     final opponent = match.opponentName ?? 'Adversaire';
-    final homeName = match.isHome ? 'AS Grinta' : opponent;
-    final awayName = match.isHome ? opponent : 'AS Grinta';
+    final homeName = match.isHome ? ClubIdentity.name : opponent;
+    final awayName = match.isHome ? opponent : ClubIdentity.name;
     final surface = match.isCancelled
         ? CalendarCardPalette.cancelledSurface
         : CalendarCardPalette.matchSurface(match.matchType);

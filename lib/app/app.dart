@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:as_grinta/app/router/app_router.dart';
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/l10n/french_localizations.dart';
 import 'package:as_grinta/core/network/connectivity_service.dart';
 import 'package:as_grinta/core/push/push_client.dart';
@@ -10,6 +11,7 @@ import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/widgets/grinta_accessibility_scope.dart';
 import 'package:as_grinta/core/widgets/grinta_status_banner.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:as_grinta/features/club/presentation/club_identity_sync.dart';
 import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
 import 'package:as_grinta/features/notifications/data/notification_inbox_repository.dart';
 import 'package:as_grinta/features/notifications/presentation/push_device_banner.dart';
@@ -120,6 +122,8 @@ class _AsGrintaAppState extends ConsumerState<AsGrintaApp>
   Widget build(BuildContext context) {
     // Maintient l'abonnement global tant que l'application est montée.
     ref.watch(sharedDataSyncListenerProvider);
+    // Tient à jour le nom du club affiché dans toute l'application.
+    ref.watch(clubIdentitySyncProvider);
 
     ref.listen<bool>(
       authControllerProvider.select((state) => state.isAuthenticated),
@@ -139,7 +143,7 @@ class _AsGrintaAppState extends ConsumerState<AsGrintaApp>
     final baseTheme = AppTheme.dark;
 
     return MaterialApp.router(
-      title: 'ASG',
+      title: ClubIdentity.appName,
       debugShowCheckedModeBanner: false,
       locale: const Locale('fr', 'FR'),
       supportedLocales: const [Locale('fr', 'FR')],
@@ -218,7 +222,17 @@ class _AsGrintaAppState extends ConsumerState<AsGrintaApp>
                       ),
                     ),
                   if (isAuthenticated) const PushDeviceBanner(),
-                  Expanded(child: child ?? const SizedBox.shrink()),
+                  Expanded(
+                    // Quand le nom du club arrive ou change, les écrans déjà
+                    // affichés sont redessinés avec le bon nom.
+                    child: ValueListenableBuilder<int>(
+                      valueListenable: ClubIdentity.revision,
+                      builder: (context, revision, _) => KeyedSubtree(
+                        key: ValueKey('club-identity-$revision'),
+                        child: child ?? const SizedBox.shrink(),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/theme/calendar_card_palette.dart';
 import 'package:as_grinta/core/widgets/calendar_scoreline.dart';
 import 'package:as_grinta/core/widgets/match_address_sheet.dart';
@@ -16,8 +17,8 @@ class HistoricalMatchCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isHome = match.isHome;
-    final homeName = isHome ? 'AS Grinta' : match.opponentName;
-    final awayName = isHome ? match.opponentName : 'AS Grinta';
+    final homeName = isHome ? ClubIdentity.name : match.opponentName;
+    final awayName = isHome ? match.opponentName : ClubIdentity.name;
     final homeScore = isHome ? match.grintaScore : match.opponentScore;
     final awayScore = isHome ? match.opponentScore : match.grintaScore;
     final cleanAddress = match.address?.trim();

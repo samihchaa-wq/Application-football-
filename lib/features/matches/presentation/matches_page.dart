@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/utils/match_window.dart';
 import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
@@ -425,7 +426,7 @@ String adminMatchTitle(MatchModel match) {
   String block(String value) =>
       value.trim().replaceAll(RegExp(r'\s+'), '\u00A0');
   final opponent = block(match.opponentName ?? 'Adversaire');
-  final grinta = block('AS Grinta');
+  final grinta = block(ClubIdentity.name);
   if (!match.isFinished) {
     return match.isHome ? '$grinta – $opponent' : '$opponent – $grinta';
   }

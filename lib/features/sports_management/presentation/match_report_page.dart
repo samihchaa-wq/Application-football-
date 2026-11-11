@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/logging/app_logger.dart';
 import 'package:as_grinta/core/network/confirmed_write.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
@@ -319,7 +320,7 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
   String _goalLabel(MatchGoalAction goal) {
     final minute = goal.minute == null ? 'Minute inconnue' : "${goal.minute}'";
     if (!goal.isAsGrinta) {
-      return '$minute · ${goal.isOwnGoal ? 'CSC AS Grinta' : _opponentName}';
+      return '$minute · ${goal.isOwnGoal ? 'CSC ${ClubIdentity.name}' : _opponentName}';
     }
     if (goal.isOwnGoal) return '$minute · CSC adverse';
     return '$minute · ${goal.scorerName ?? 'Buteur non attribué'}';
@@ -395,7 +396,7 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'AS Grinta $_scoreAsGrinta – $_scoreAdverse $_opponentName · '
+                    '${ClubIdentity.name} $_scoreAsGrinta – $_scoreAdverse $_opponentName · '
                     '${lineup.entriesFor(MatchCompositionZone.field).length} '
                     'titulaires · '
                     '${lineup.entriesFor(MatchCompositionZone.bench).length} '
@@ -744,7 +745,7 @@ class _ReportScoreHeader extends StatelessWidget {
         child: Column(
           children: [
             _ScoreLine(
-              name: 'AS Grinta',
+              name: ClubIdentity.name,
               score: scoreAsGrinta,
               enabled: enabled,
               onChanged: onAsGrintaChanged,

@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/utils/app_errors.dart';
 import 'package:as_grinta/core/utils/app_formats.dart';
 import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
@@ -361,8 +362,8 @@ class _VoteHeader extends StatelessWidget {
             const Text('👑', style: TextStyle(fontSize: 42)),
             const SizedBox(height: 8),
             MatchFixture(
-              homeName: vote.isHome ? 'AS Grinta' : vote.opponentName,
-              awayName: vote.isHome ? vote.opponentName : 'AS Grinta',
+              homeName: vote.isHome ? ClubIdentity.name : vote.opponentName,
+              awayName: vote.isHome ? vote.opponentName : ClubIdentity.name,
               grintaIsHome: vote.isHome,
               homeScore: vote.isHome ? vote.scoreAsGrinta : vote.scoreAdverse,
               awayScore: vote.isHome ? vote.scoreAdverse : vote.scoreAsGrinta,

@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/widgets/match_detail_header_card.dart';
 import 'package:as_grinta/features/matches/data/match_info_repository.dart';
 import 'package:flutter/material.dart';
@@ -27,8 +28,8 @@ class UpcomingMatchFixtureData {
   bool get isCancelled => status == 'annule';
   bool get isInternal => matchType == 'entre_nous';
   bool get grintaIsHome => location == 'domicile';
-  String get homeName => grintaIsHome ? 'AS Grinta' : opponentName;
-  String get awayName => grintaIsHome ? opponentName : 'AS Grinta';
+  String get homeName => grintaIsHome ? ClubIdentity.name : opponentName;
+  String get awayName => grintaIsHome ? opponentName : ClubIdentity.name;
 }
 
 final upcomingMatchFixtureProvider =

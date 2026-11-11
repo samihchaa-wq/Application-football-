@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/config/app_config.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
@@ -126,7 +127,7 @@ class MorePage extends ConsumerWidget {
           const SizedBox(height: 8),
           Center(
             child: Text(
-              'AS Grinta • version ${AppConfig.version}',
+              '${ClubIdentity.name} • version ${AppConfig.version}',
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),

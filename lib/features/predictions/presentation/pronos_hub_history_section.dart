@@ -192,8 +192,8 @@ class _CalendarMatchCard extends ConsumerWidget {
     final opponent = match.opponentName ?? 'Adversaire';
     final grintaScore = match.grintaScore ?? 0;
     final opponentScore = match.opponentScore ?? 0;
-    final homeName = match.isHome ? 'AS Grinta' : opponent;
-    final awayName = match.isHome ? opponent : 'AS Grinta';
+    final homeName = match.isHome ? ClubIdentity.name : opponent;
+    final awayName = match.isHome ? opponent : ClubIdentity.name;
     final homeScore = match.isHome ? grintaScore : opponentScore;
     final awayScore = match.isHome ? opponentScore : grintaScore;
 

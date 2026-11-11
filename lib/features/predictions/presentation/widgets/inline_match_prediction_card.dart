@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/theme/app_spacing.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/utils/app_errors.dart';
@@ -83,7 +84,7 @@ class _InlineMatchPredictionCardState
 
         final grintaPicker = Expanded(
           child: _ScorePicker(
-            label: 'AS Grinta',
+            label: ClubIdentity.name,
             value: grinta,
             enabled: canEdit,
             onMinus: () => setState(() {

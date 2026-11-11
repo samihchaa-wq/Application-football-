@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'dart:async';
 
 import 'package:as_grinta/core/providers/supabase_provider.dart';
@@ -54,8 +55,8 @@ CompositionPresentationData buildCompositionPresentationData({
   final opponent = fixture?.opponentName ?? fallbackOpponent ?? 'Adversaire';
   final grintaIsHome = fixture?.grintaIsHome ?? true;
   return CompositionPresentationData(
-    homeName: grintaIsHome ? 'AS Grinta' : opponent,
-    awayName: grintaIsHome ? opponent : 'AS Grinta',
+    homeName: grintaIsHome ? ClubIdentity.name : opponent,
+    awayName: grintaIsHome ? opponent : ClubIdentity.name,
     grintaIsHome: grintaIsHome,
     field: alignFieldToFormation(formationCode, field),
     bench: bench,

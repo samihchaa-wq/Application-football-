@@ -41,10 +41,9 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/as_grinta_logo.webp
+    - assets/images/club_crest.webp
     - assets/images/icons/
     - assets/images/jerseys/
-    - assets/audio/wrapped.mp3
     - assets/composition/
 
   # La condensée de stade du bilan de saison : elle porte les chiffres et les

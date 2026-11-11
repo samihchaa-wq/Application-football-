@@ -145,7 +145,7 @@ class _BootstrapAppState extends State<_BootstrapApp> {
         return _BootstrapShell(
           home: snapshot.hasError
               ? IncidentErrorView(
-                  title: 'Impossible de démarrer AS Grinta',
+                  title: 'Impossible de démarrer l’application',
                   message: 'La configuration ou le service est momentanément '
                       'indisponible. Réessaie dans un instant.',
                   incidentReference:

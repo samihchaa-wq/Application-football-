@@ -1,4 +1,4 @@
-// Service worker AS La Grinta : navigation fraîche, programme gardé par
+// Service worker de l'application : navigation fraîche, programme gardé par
 // version, fichiers statiques locaux, mise à jour contrôlée et réception des
 // notifications Web Push.
 const workerUrl = new URL(self.location.href);
@@ -9,7 +9,7 @@ const APP_SHELL = [
   'index.html',
   'build_version.js',
   'app_shell.js',
-  'asg_logo.webp',
+  'club_crest.webp',
   'flutter_bootstrap.js',
   'manifest.json',
   'favicon.png',
@@ -257,7 +257,7 @@ self.addEventListener('push', (event) => {
   }
   event.waitUntil(
     Promise.all([
-      self.registration.showNotification(data.title || 'AS La Grinta', {
+      self.registration.showNotification(data.title || 'Club', {
         body: data.body || '',
         icon: 'icons/Icon-192.png',
         // Android dessine le badge de la barre d'état avec sa seule

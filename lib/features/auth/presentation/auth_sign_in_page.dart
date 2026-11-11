@@ -67,7 +67,7 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
     final error = authState.error;
 
     return GrintaAuthSurface(
-      subtitle: 'L’application de gestion sportive de l’AS Grinta.',
+      subtitle: 'L’application de gestion sportive de ton club.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

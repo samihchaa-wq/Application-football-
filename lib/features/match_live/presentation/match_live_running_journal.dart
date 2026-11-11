@@ -196,8 +196,8 @@ class _JournalEventRow extends StatelessWidget {
           Icons.sports_soccer_rounded,
           theme.colorScheme.onSurface,
           event.isOpponentOwnGoal
-              ? 'But AS Grinta · CSC adverse'
-              : 'But AS Grinta · ${event.scorerName ?? 'Buteur à désigner'}'
+              ? 'But ${ClubIdentity.name} · CSC adverse'
+              : 'But ${ClubIdentity.name} · ${event.scorerName ?? 'Buteur à désigner'}'
                   '${event.assistName == null ? '' : ' · passe ${event.assistName}'}',
         ),
       MatchLiveEventType.goalThem => (

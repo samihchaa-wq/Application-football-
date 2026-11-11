@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
@@ -49,9 +50,9 @@ class GrintaAuthSurface extends StatelessWidget {
                           children: [
                             Semantics(
                               header: true,
-                              label: 'AS Grinta',
+                              label: ClubIdentity.name,
                               child: Image.asset(
-                                'assets/images/as_grinta_logo.webp',
+                                'assets/images/club_crest.webp',
                                 height: 138,
                                 fit: BoxFit.contain,
                                 filterQuality: FilterQuality.high,

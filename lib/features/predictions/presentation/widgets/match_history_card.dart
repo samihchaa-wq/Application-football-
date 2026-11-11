@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/theme/calendar_card_palette.dart';
 import 'package:as_grinta/core/widgets/calendar_scoreline.dart';
 import 'package:as_grinta/features/matches/domain/match_model.dart';
@@ -18,8 +19,8 @@ class MatchHistoryCard extends ConsumerWidget {
     final actions = adminActions;
     final isFinishedInternal = match.isInternal && match.isFinished;
     final opponent = match.opponentName ?? 'Adversaire';
-    final homeName = match.isHome ? 'AS Grinta' : opponent;
-    final awayName = match.isHome ? opponent : 'AS Grinta';
+    final homeName = match.isHome ? ClubIdentity.name : opponent;
+    final awayName = match.isHome ? opponent : ClubIdentity.name;
     final homeScore = match.isHome ? match.grintaScore : match.opponentScore;
     final awayScore = match.isHome ? match.opponentScore : match.grintaScore;
     final address = match.address?.trim();
