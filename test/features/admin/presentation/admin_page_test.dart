@@ -56,7 +56,7 @@ void main() {
     expect(find.text('Samih'), findsOneWidget);
     expect(find.text('Maxime'), findsNothing);
 
-    await tester.tap(find.text('En attente'));
+    await tester.tap(find.textContaining('En attente'));
     await tester.pumpAndSettle();
 
     expect(find.text('Maxime'), findsOneWidget);
@@ -64,11 +64,28 @@ void main() {
     expect(find.text('Valider ce compte'), findsOneWidget);
   });
 
+  testWidgets('une seule entrée « Membres » réunit comptes et effectif',
+      (tester) async {
+    repository.profiles = [
+      _profile('p-1', 'Karim', status: 'active'),
+      _profile('p-2', 'Maxime', status: 'pending'),
+    ];
+
+    await pumpAdmin(tester);
+
+    expect(find.text('Membres'), findsOneWidget);
+    expect(find.text('Utilisateurs'), findsNothing);
+    expect(find.text('Comptes'), findsOneWidget);
+    expect(find.text('Effectif'), findsOneWidget);
+    // Le nombre de comptes à valider est visible sans changer d'onglet.
+    expect(find.text('En attente (1)'), findsOneWidget);
+  });
+
   testWidgets('annonce l’absence de compte en attente', (tester) async {
     repository.profiles = [_profile('p-1', 'Karim', status: 'active')];
 
     await pumpAdmin(tester);
-    await tester.tap(find.text('En attente'));
+    await tester.tap(find.textContaining('En attente'));
     await tester.pumpAndSettle();
 
     expect(find.text('Aucun compte en attente.'), findsOneWidget);
@@ -105,7 +122,7 @@ void main() {
     repository.profiles = [_profile('p-2', 'Maxime', status: 'pending')];
 
     await pumpAdmin(tester);
-    await tester.tap(find.text('En attente'));
+    await tester.tap(find.textContaining('En attente'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Refuser et supprimer'));
