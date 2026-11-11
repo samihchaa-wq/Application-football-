@@ -90,6 +90,43 @@ class ClubModules {
   bool isEnabled(ClubModule module) => _enabled[module.key] ?? true;
 }
 
+/// Une règle du club réglable par l'administrateur (délai, heure…).
+class ClubRule {
+  const ClubRule({
+    required this.key,
+    required this.label,
+    required this.description,
+    required this.unit,
+    required this.group,
+    required this.defaultValue,
+    required this.min,
+    required this.max,
+    required this.value,
+  });
+
+  factory ClubRule.fromJson(Map<String, dynamic> json) => ClubRule(
+        key: json['key'] as String,
+        label: json['label'] as String? ?? '',
+        description: json['description'] as String? ?? '',
+        unit: json['unit'] as String? ?? '',
+        group: json['group'] as String? ?? '',
+        defaultValue: (json['default'] as num).toInt(),
+        min: (json['min'] as num).toInt(),
+        max: (json['max'] as num).toInt(),
+        value: (json['value'] as num).toInt(),
+      );
+
+  final String key;
+  final String label;
+  final String description;
+  final String unit;
+  final String group;
+  final int defaultValue;
+  final int min;
+  final int max;
+  final int value;
+}
+
 /// Résultat d'une inscription.
 class ClubRegistration {
   const ClubRegistration({
@@ -162,6 +199,32 @@ class ClubRepository {
         params: {'p_key': module.key, 'p_enabled': enabled},
       ),
     );
+  }
+
+  /// Les règles du club avec leur valeur actuelle.
+  Future<List<ClubRule>> fetchRules() async {
+    final result = await _client.rpc('get_club_rules');
+    if (result is! List) return const [];
+    return [
+      for (final row in result)
+        if (row is Map) ClubRule.fromJson(Map<String, dynamic>.from(row)),
+    ];
+  }
+
+  /// Change une règle ; [value] à null rétablit la valeur par défaut.
+  /// Réservé aux administrateurs.
+  Future<List<ClubRule>> setRule(String key, int? value) async {
+    final result = await _client.rpc(
+      'admin_set_club_rule',
+      params: {'p_key': key, 'p_value': value},
+    );
+    if (result is List) {
+      return [
+        for (final row in result)
+          if (row is Map) ClubRule.fromJson(Map<String, dynamic>.from(row)),
+      ];
+    }
+    return fetchRules();
   }
 
   /// Crée un compte dans un club existant, à partir de son code d'invitation.

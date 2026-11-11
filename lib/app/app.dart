@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:as_grinta/app/router/app_router.dart';
 import 'package:as_grinta/core/club/club_identity.dart';
+import 'package:as_grinta/core/club/club_rules.dart';
 import 'package:as_grinta/core/l10n/french_localizations.dart';
 import 'package:as_grinta/core/network/connectivity_service.dart';
 import 'package:as_grinta/core/push/push_client.dart';
@@ -12,6 +13,7 @@ import 'package:as_grinta/core/widgets/grinta_accessibility_scope.dart';
 import 'package:as_grinta/core/widgets/grinta_status_banner.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
 import 'package:as_grinta/features/club/presentation/club_identity_sync.dart';
+import 'package:as_grinta/features/club/presentation/club_rules_sync.dart';
 import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
 import 'package:as_grinta/features/notifications/data/notification_inbox_repository.dart';
 import 'package:as_grinta/features/notifications/presentation/push_device_banner.dart';
@@ -124,6 +126,8 @@ class _AsGrintaAppState extends ConsumerState<AsGrintaApp>
     ref.watch(sharedDataSyncListenerProvider);
     // Tient à jour le nom du club affiché dans toute l'application.
     ref.watch(clubIdentitySyncProvider);
+    // Idem pour les règles horaires du club.
+    ref.watch(clubRulesSyncProvider);
 
     ref.listen<bool>(
       authControllerProvider.select((state) => state.isAuthenticated),
@@ -225,10 +229,16 @@ class _AsGrintaAppState extends ConsumerState<AsGrintaApp>
                   Expanded(
                     // Quand le nom du club arrive ou change, les écrans déjà
                     // affichés sont redessinés avec le bon nom.
-                    child: ValueListenableBuilder<int>(
-                      valueListenable: ClubIdentity.revision,
-                      builder: (context, revision, _) => KeyedSubtree(
-                        key: ValueKey('club-identity-$revision'),
+                    child: ListenableBuilder(
+                      listenable: Listenable.merge([
+                        ClubIdentity.revision,
+                        ClubRules.revision,
+                      ]),
+                      builder: (context, _) => KeyedSubtree(
+                        key: ValueKey(
+                          'club-identity-${ClubIdentity.revision.value}-'
+                          '${ClubRules.revision.value}',
+                        ),
                         child: child ?? const SizedBox.shrink(),
                       ),
                     ),

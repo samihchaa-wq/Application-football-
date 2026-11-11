@@ -1,17 +1,24 @@
+import 'package:as_grinta/core/club/club_rules.dart';
+
 /// Règles temporelles communes aux écrans liés à un match.
 ///
 /// L'API Supabase reste la source de vérité. Côté interface, les règles qui
 /// dépendent d'une heure civile utilisent explicitement Europe/Paris afin que
 /// le résultat ne change jamais avec le fuseau réglé sur le téléphone.
-const int kMatchOpensDaysBefore = 6;
-const int kMatchOpensLocalHour = 12;
+///
+/// Les trois premières valeurs sont des règles du club (réglables par son
+/// administrateur, 6 jours / 12 h / 15 min par défaut) : voir [ClubRules].
+int get kMatchOpensDaysBefore => ClubRules.featuresOpenDays;
+int get kMatchOpensLocalHour => ClubRules.featuresOpenHour;
 
-/// Le module Live devient accessible quinze minutes avant le coup d'envoi.
-const Duration kMatchLiveOpensBeforeKickoff = Duration(minutes: 15);
+/// Le module Live devient accessible quelques minutes avant le coup d'envoi.
+Duration get kMatchLiveOpensBeforeKickoff =>
+    ClubRules.predictionCloseBeforeKickoff;
 
 /// Les pronostics ferment au même instant que l'ouverture du Live. Cette
 /// frontière unique évite le chevauchement historique Live + prono.
-const Duration kMatchPredictionClosesBeforeKickoff = Duration(minutes: 15);
+Duration get kMatchPredictionClosesBeforeKickoff =>
+    ClubRules.predictionCloseBeforeKickoff;
 
 /// Marge civile ajoutée à la durée sportive planifiée lorsqu'aucune session
 /// Live ne nous donne explicitement « fin du match ». Pour un match de 90 min,
