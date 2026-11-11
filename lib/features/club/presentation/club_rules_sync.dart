@@ -37,3 +37,15 @@ final clubRulesSyncProvider = Provider<void>((ref) {
 void applyClubRules(List<ClubRule> rules) {
   ClubRules.set({for (final rule in rules) rule.key: rule.value});
 }
+
+/// Applique le réglage « mode live » du club aux horaires et aux écrans.
+final clubLiveModeSyncProvider = Provider<void>((ref) {
+  final enabled = ref.watch(clubModuleEnabledProvider(ClubModule.liveMode));
+  var disposed = false;
+  ref.onDispose(() => disposed = true);
+  unawaited(
+    Future<void>.microtask(() {
+      if (!disposed) ClubRules.setLiveEnabled(enabled);
+    }),
+  );
+});

@@ -41,7 +41,7 @@ set local role authenticated;
 
 select is(
   (select count(*) from jsonb_each(public.get_club_modules()) where value = 'true'::jsonb),
-  6::bigint,
+  7::bigint,
   'un nouveau club démarre avec toutes les fonctionnalités activées'
 );
 select is(

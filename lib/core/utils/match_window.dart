@@ -100,7 +100,10 @@ bool isMatchTooFarAway(
 }
 
 /// `true` tant que le module Live doit rester masqué et inaccessible.
+///
+/// Un club qui a désactivé le mode live ne l'ouvre jamais.
 bool isMatchLiveTooEarly(DateTime? kickoffAt, {DateTime? now}) {
+  if (!ClubRules.liveEnabled) return true;
   if (kickoffAt == null) return false;
   final reference = (now ?? DateTime.now()).toUtc();
   return reference.isBefore(matchLiveOpensAt(kickoffAt));
