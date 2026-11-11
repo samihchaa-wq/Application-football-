@@ -49,6 +49,13 @@ begin
 end;
 $$;
 
+-- Les noms n'acceptent que des lettres : 123 devient « bcd ».
+create function loadtest.letters(p_n integer) returns text
+language sql immutable
+as $$
+  select translate(p_n::text, '0123456789', 'abcdefghij');
+$$;
+
 grant usage on schema loadtest to authenticated;
 grant select on all tables in schema loadtest to authenticated;
 grant execute on all functions in schema loadtest to authenticated;
@@ -78,12 +85,12 @@ declare
   k integer;
 begin
   for c in 1..v_clubs loop
-    v_club := (public.create_club(format('Club de charge %s', c), format('CH%s', c))).id;
+    v_club := (public.create_club('Club de charge ' || loadtest.letters(c), 'CH' || loadtest.letters(c))).id;
     perform set_config('app.club_id', v_club::text, true);
 
     v_season := gen_random_uuid();
     insert into public.seasons (id, name, status) values (v_season, '2026-2027', 'open');
-    insert into public.opponents (name) values (format('Adversaire %s', c))
+    insert into public.opponents (name) values ('Adversaire ' || loadtest.letters(c))
       returning id into v_opponent;
 
     v_admin := null;
@@ -93,7 +100,7 @@ begin
       values (
         v_user,
         format('charge-%s-%s@example.invalid', c, m),
-        jsonb_build_object('first_name', format('Joueur%s', m), 'last_name', format('C%s', c)),
+        jsonb_build_object('first_name', 'Joueur' || loadtest.letters(m), 'last_name', 'Club' || loadtest.letters(c)),
         jsonb_build_object('club_id', v_club)
       );
       update public.profiles
@@ -103,14 +110,14 @@ begin
         v_admin := v_user;
       end if;
 
-      insert into public.players (display_name) values (format('Joueur%s C%s', m, c))
+      insert into public.players (display_name) values ('Joueur' || loadtest.letters(m) || ' Club' || loadtest.letters(c))
         returning id into v_player;
       insert into public.season_players (
         season_id, first_name, last_name, is_goalkeeper, is_active, is_coach,
         profile_id, player_id
       )
       values (
-        v_season, format('Joueur%s', m), format('C%s', c), m = 2, true, m = 1,
+        v_season, 'Joueur' || loadtest.letters(m), 'Club' || loadtest.letters(c), m = 2, true, m = 1,
         v_user, v_player
       );
     end loop;
