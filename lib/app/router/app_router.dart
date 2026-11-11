@@ -340,7 +340,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/auth/register',
-        builder: (_, __) => const AuthRegisterPage(),
+        builder: (_, state) => AuthRegisterPage(
+          initialInviteCode: state.uri.queryParameters['code'],
+        ),
       ),
       GoRoute(
         path: '/auth/new-password',

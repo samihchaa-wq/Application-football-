@@ -4,6 +4,7 @@ import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
 import 'package:as_grinta/features/admin/data/admin_repository.dart';
 import 'package:as_grinta/features/admin/presentation/admin_profile_policy.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/players/data/roster_repository.dart';
 import 'package:as_grinta/features/players/presentation/players_registry_page.dart';
 import 'package:flutter/material.dart';
@@ -15,10 +16,6 @@ part 'admin_season_section.dart';
 part 'admin_profiles_section_v2.dart';
 part 'admin_profile_actions.dart';
 part 'admin_profile_dialogs.dart';
-
-/// Lien public d'auto-inscription à partager dans la conversation du club.
-const _registerLink =
-    'https://samihchaa-wq.github.io/AS-Grinta/#/auth/register';
 
 enum _AdminSection { users, roster, season }
 
@@ -146,14 +143,29 @@ class _UsersAdminSection extends ConsumerWidget {
             width: double.infinity,
             child: FilledButton.tonalIcon(
               onPressed: () async {
-                await Clipboard.setData(
-                  const ClipboardData(text: _registerLink),
-                );
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
+                // Le lien porte le code d'invitation du club : un joueur qui
+                // l'ouvre arrive sur l'inscription, code déjà rempli.
+                final messenger = ScaffoldMessenger.of(context);
+                try {
+                  final club =
+                      await ref.read(clubRepositoryProvider).fetchMyClub();
+                  await Clipboard.setData(
+                    ClipboardData(text: club.inviteLink),
+                  );
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Lien d’inscription copié — partage-le sur WhatsApp. '
+                        'Code du club : ${club.inviteCode}',
+                      ),
+                    ),
+                  );
+                } catch (_) {
+                  messenger.showSnackBar(
                     const SnackBar(
                       content: Text(
-                        'Lien d’inscription copié — partage-le sur WhatsApp.',
+                        'Le lien d’inscription n’a pas pu être préparé. '
+                        'Réessaie.',
                       ),
                     ),
                   );

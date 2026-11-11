@@ -88,8 +88,20 @@ def main() -> int:
         '.eq("role", "admin")',
         '"The last active admin cannot be deleted"',
         "deleteProfileWithRetry(admin, userId)",
+        # Cloisonnement entre clubs : la clé de service contourne les règles
+        # d'accès, la fonction doit donc filtrer elle-même sur le club.
+        '.select("role,status,club_id")',
+        '"x-club-id": clubId',
     ):
         require(marker in manage, f"manage-user: garde absente: {marker}")
+    require(
+        manage.count('.eq("club_id", clubId)') >= 3,
+        "manage-user doit borner chaque lecture de compte au club de l’administrateur",
+    )
+    require(
+        "AS-Grinta" not in manage,
+        "manage-user ne doit pas renvoyer vers l’adresse d’un club en particulier",
+    )
     require(
         'String(callerProfile?.role) !== "moderateur"' not in manage,
         "manage-user ne doit plus référencer le rôle moderateur retiré",
@@ -127,6 +139,12 @@ def main() -> int:
         "validatePassword(password)",
         "SUPABASE_SERVICE_ROLE_KEY",
         "admin.auth.admin.deleteUser",
+        # Le club vient d'un code d'invitation valide ou d'une création, et il
+        # est posé dans une zone que le compte ne peut pas modifier.
+        '"club_for_invite_code"',
+        "app_metadata: { club_id: club.id }",
+        '"promote_club_founder"',
+        '"discard_empty_club"',
     ):
         require(marker in register, f"register-account: garde absente: {marker}")
     require(
@@ -216,6 +234,10 @@ def main() -> int:
     require(
         'if (String(row.status ?? "") === "annule") return "";' in calendar,
         "calendar-feed doit omettre les matchs annules",
+    )
+    require(
+        '.eq("club_id", subscription.club_id)' in calendar,
+        "calendar-feed doit borner les matchs au club de l’abonné",
     )
     require(
         "CANCELLED" not in calendar,

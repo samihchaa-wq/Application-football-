@@ -14,15 +14,17 @@ select 'a', (public.create_club('Club Alpha Tests', 'ALPHA', '#112233', '#FFFFFF
 insert into test_clubs
 select 'b', (public.create_club('Club Bravo Tests', 'BRAVO', '#332211', '#000000', 'Europe/Paris', null)).id;
 
-insert into auth.users (id, email, raw_user_meta_data)
+insert into auth.users (id, email, raw_user_meta_data, raw_app_meta_data)
 select
   '1c000000-0000-0000-0000-00000000000a', 'admin-alpha@example.invalid',
-  jsonb_build_object('first_name', 'Admin', 'last_name', 'Alpha', 'club_id', id)
+  jsonb_build_object('first_name', 'Admin', 'last_name', 'Alpha'),
+  jsonb_build_object('club_id', id)
 from test_clubs where label = 'a';
-insert into auth.users (id, email, raw_user_meta_data)
+insert into auth.users (id, email, raw_user_meta_data, raw_app_meta_data)
 select
   '1c000000-0000-0000-0000-00000000000b', 'admin-bravo@example.invalid',
-  jsonb_build_object('first_name', 'Admin', 'last_name', 'Bravo', 'club_id', id)
+  jsonb_build_object('first_name', 'Admin', 'last_name', 'Bravo'),
+  jsonb_build_object('club_id', id)
 from test_clubs where label = 'b';
 
 select is(
@@ -226,6 +228,9 @@ select is(
         'private.provision_club(uuid)',
         'private.run_for_each_club(text)',
         'create_club(text,text,text,text,text,uuid)',
+        'club_for_invite_code(text)',
+        'promote_club_founder(uuid,uuid)',
+        'discard_empty_club(uuid)',
         'handle_new_auth_user()',
         -- Aide posée par l'amorce des tests, absente d'une vraie base.
         'private.ci_direct_player_identity_default()'

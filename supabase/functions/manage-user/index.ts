@@ -8,7 +8,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2.95.0";
 
-const PUBLIC_APP_URL = "https://samihchaa-wq.github.io/AS-Grinta/";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,7 +31,10 @@ function isUserNotFound(error: {
     error.message?.toLowerCase().includes("user not found") === true;
 }
 
-function scannerSafeRecoveryLink(actionLink: string): string {
+function scannerSafeRecoveryLink(
+  actionLink: string,
+  publicAppUrl: string,
+): string {
   const actionUrl = new URL(actionLink);
   // Dans l'action_link Supabase, `token` est déjà le token hash attendu par
   // POST /verify. Ne jamais exposer l'action_link lui-même : les robots
@@ -50,7 +52,7 @@ function scannerSafeRecoveryLink(actionLink: string): string {
   // Le token reste dans le fragment. Un fragment URL n'est jamais envoyé dans
   // la requête HTTP vers GitHub Pages : un scanner peut précharger l'app sans
   // pouvoir consommer le token Supabase.
-  return `${PUBLIC_APP_URL}#/auth/new-password?${appRoute.toString()}`;
+  return `${publicAppUrl}#/auth/new-password?${appRoute.toString()}`;
 }
 
 async function deleteProfileWithRetry(
@@ -98,7 +100,9 @@ Deno.serve(async (req: Request) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-    if (!supabaseUrl || !serviceRoleKey || !anonKey) {
+    // Adresse publique de l'application, pour les liens de réinitialisation.
+    const publicAppUrl = Deno.env.get("PUBLIC_APP_URL")?.trim();
+    if (!supabaseUrl || !serviceRoleKey || !anonKey || !publicAppUrl) {
       throw new Error("Missing server configuration");
     }
 
@@ -112,12 +116,12 @@ Deno.serve(async (req: Request) => {
       return jsonResponse({ error: "Invalid authenticated user" }, 401);
     }
 
-    const admin = createClient(supabaseUrl, serviceRoleKey, {
+    const lookup = createClient(supabaseUrl, serviceRoleKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
-    const { data: callerProfile, error: profileError } = await admin
+    const { data: callerProfile, error: profileError } = await lookup
       .from("profiles")
-      .select("role,status")
+      .select("role,status,club_id")
       .eq("id", userData.user.id)
       .single();
     if (
@@ -127,6 +131,18 @@ Deno.serve(async (req: Request) => {
     ) {
       return jsonResponse({ error: "Active admin role required" }, 403);
     }
+
+    // La clé de service passe outre les règles d'accès de la base : le
+    // cloisonnement entre clubs est donc appliqué ici, explicitement. Un
+    // administrateur n'agit que sur les comptes de son propre club.
+    const clubId = String(callerProfile.club_id ?? "");
+    if (!clubId) {
+      return jsonResponse({ error: "Active admin role required" }, 403);
+    }
+    const admin = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { "x-club-id": clubId } },
+    });
 
     const body = await req.json();
     const action = String(body.action ?? "");
@@ -153,6 +169,7 @@ Deno.serve(async (req: Request) => {
         .from("profiles")
         .select("id,status")
         .eq("id", userId)
+        .eq("club_id", clubId)
         .maybeSingle();
       if (targetError || !targetProfile) {
         return jsonResponse({ error: "Target account not found" }, 404);
@@ -181,14 +198,17 @@ Deno.serve(async (req: Request) => {
           type: "recovery",
           email: targetUser.user.email,
           options: {
-            redirectTo: PUBLIC_APP_URL,
+            redirectTo: publicAppUrl,
           },
         });
       if (linkError) throw linkError;
 
       return jsonResponse({
         reset: true,
-        resetLink: scannerSafeRecoveryLink(linkData.properties.action_link),
+        resetLink: scannerSafeRecoveryLink(
+          linkData.properties.action_link,
+          publicAppUrl,
+        ),
       });
     }
 
@@ -214,6 +234,7 @@ Deno.serve(async (req: Request) => {
         .from("profiles")
         .select("role,status")
         .eq("id", userId)
+        .eq("club_id", clubId)
         .maybeSingle();
       if (targetError || !targetProfile) {
         return jsonResponse({ error: "Target account not found" }, 404);
@@ -227,7 +248,8 @@ Deno.serve(async (req: Request) => {
           .from("profiles")
           .select("id", { count: "exact", head: true })
           .eq("role", "admin")
-          .eq("status", "active");
+          .eq("status", "active")
+          .eq("club_id", clubId);
         if (countError) throw countError;
         if ((count ?? 0) <= 1) {
           return jsonResponse(

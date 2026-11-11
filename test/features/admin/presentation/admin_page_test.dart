@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/admin/data/admin_repository.dart';
 import 'package:as_grinta/features/admin/presentation/admin_page.dart';
 import 'package:as_grinta/features/auth/data/auth_repository.dart';
@@ -28,6 +29,7 @@ void main() {
             (ref) => _SignedInAdminController(_FakeAuthRepository()),
           ),
           adminRepositoryProvider.overrideWithValue(repository),
+          clubRepositoryProvider.overrideWithValue(_FakeClubRepository()),
         ],
         child: const MaterialApp(home: AdminPage()),
       ),
@@ -183,12 +185,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(copied, isNotNull);
-    expect(copied, startsWith('https://samihchaa-wq.github.io/AS-Grinta/'));
-    expect(copied, endsWith('auth/register'));
+    // Le lien mène à l'inscription, avec le code du club déjà rempli.
+    expect(copied, endsWith('#/auth/register?code=ABCDEFGH'));
+    expect(copied, isNot(contains('AS-Grinta')));
     expect(
-      find.text('Lien d’inscription copié — partage-le sur WhatsApp.'),
+      find.textContaining('Lien d’inscription copié'),
       findsOneWidget,
     );
+    expect(find.textContaining('ABCDEFGH'), findsOneWidget);
   });
 
   testWidgets('l’onglet Saison montre la saison ouverte', (tester) async {
@@ -305,6 +309,19 @@ class _FakeAuthRepository implements AuthRepository {
 
   @override
   bool get hasSession => true;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeClubRepository implements ClubRepository {
+  @override
+  Future<Club> fetchMyClub() async => const Club(
+        id: 'club-1',
+        name: 'FC Tests',
+        shortName: 'FCT',
+        inviteCode: 'ABCDEFGH',
+      );
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
