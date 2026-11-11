@@ -80,7 +80,7 @@ begin
     updated_at
   )
   values ('global', 1, 1, 1, now())
-  on conflict (key) do update
+  on conflict (club_id, key) do update
   set revision = public.shared_data_change_signals.revision + 1,
       profile_revision =
         public.shared_data_change_signals.profile_revision

@@ -43,6 +43,50 @@ ALTER FUNCTION "private"."edge_function_url"("p_function" "text") OWNER TO "post
 REVOKE ALL ON FUNCTION "private"."edge_function_url"("p_function" "text") FROM PUBLIC;
 
 
+-- Identité de l'appelant, lue dans le jeton de la requête. Équivalents de
+-- auth.uid(), auth.role() et auth.jwt(), utilisables par les fonctions
+-- serveur sans droit sur le schéma auth.
+CREATE OR REPLACE FUNCTION "private"."uid"() RETURNS "uuid"
+    LANGUAGE "sql" STABLE
+    SET "search_path" TO ''
+    AS $$
+  select coalesce(
+    nullif(current_setting('request.jwt.claim.sub', true), ''),
+    (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub')
+  )::uuid;
+$$;
+
+CREATE OR REPLACE FUNCTION "private"."role"() RETURNS "text"
+    LANGUAGE "sql" STABLE
+    SET "search_path" TO ''
+    AS $$
+  select coalesce(
+    nullif(current_setting('request.jwt.claim.role', true), ''),
+    (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'role')
+  )::text;
+$$;
+
+CREATE OR REPLACE FUNCTION "private"."jwt"() RETURNS "jsonb"
+    LANGUAGE "sql" STABLE
+    SET "search_path" TO ''
+    AS $$
+  select coalesce(
+    nullif(current_setting('request.jwt.claim', true), ''),
+    nullif(current_setting('request.jwt.claims', true), '')
+  )::jsonb;
+$$;
+
+ALTER FUNCTION "private"."uid"() OWNER TO "postgres";
+ALTER FUNCTION "private"."role"() OWNER TO "postgres";
+ALTER FUNCTION "private"."jwt"() OWNER TO "postgres";
+REVOKE ALL ON FUNCTION "private"."uid"() FROM PUBLIC;
+REVOKE ALL ON FUNCTION "private"."role"() FROM PUBLIC;
+REVOKE ALL ON FUNCTION "private"."jwt"() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION "private"."uid"() TO "authenticated", "service_role";
+GRANT EXECUTE ON FUNCTION "private"."role"() TO "authenticated", "service_role";
+GRANT EXECUTE ON FUNCTION "private"."jwt"() TO "authenticated", "service_role";
+
+
 CREATE SCHEMA IF NOT EXISTS "public";
 
 
@@ -187,7 +231,7 @@ CREATE OR REPLACE FUNCTION "private"."add_match_live_players"("p_match_id" "uuid
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_reason text := nullif(btrim(p_reason), '');
   v_state public.match_live_state;
   v_season_id uuid;
@@ -520,7 +564,7 @@ CREATE OR REPLACE FUNCTION "private"."add_or_reuse_match_guest"("p_match_id" "uu
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_first_name text := nullif(btrim(p_first_name), '');
   v_last_name text := nullif(btrim(p_last_name), '');
   v_reason text := nullif(btrim(p_reason), '');
@@ -749,7 +793,7 @@ CREATE OR REPLACE FUNCTION "private"."adjust_match_live_score"("p_match_id" "uui
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_state public.match_live_state;
   v_elapsed integer;
   v_running_since timestamptz;
@@ -875,7 +919,7 @@ CREATE OR REPLACE FUNCTION "private"."adjust_match_live_score_idempotent"("p_mat
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor_id uuid := (select auth.uid());
+  v_actor_id uuid := (select private.uid());
   v_inserted boolean;
   v_existing private.match_live_score_commands%rowtype;
 begin
@@ -998,7 +1042,7 @@ CREATE OR REPLACE FUNCTION "private"."admin_cancel_match_motm_vote"("p_match_id"
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_reason text := nullif(btrim(p_reason), '');
   v_version integer;
   v_state public.sport_vote_state;
@@ -1059,7 +1103,7 @@ CREATE OR REPLACE FUNCTION "private"."admin_close_match_motm_vote_early"("p_matc
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_reason text := nullif(btrim(p_reason), '');
   v_version integer;
   v_closes_at timestamptz;
@@ -1123,7 +1167,7 @@ CREATE OR REPLACE FUNCTION "private"."admin_restart_match_motm_vote"("p_match_id
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_reason text := nullif(btrim(p_reason), '');
   v_has_ballot boolean;
   v_version integer;
@@ -1542,7 +1586,7 @@ CREATE OR REPLACE FUNCTION "private"."attach_match_sport_report_player"("p_match
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_reason text := nullif(btrim(p_reason), '');
   v_first_name text := nullif(btrim(p_first_name), '');
   v_last_name text := nullif(btrim(p_last_name), '');
@@ -2228,11 +2272,11 @@ CREATE OR REPLACE FUNCTION "private"."can_manage_badges"() RETURNS boolean
     SET "search_path" TO ''
     AS $$
   select
-    coalesce(auth.jwt() ->> 'role' = 'service_role', false)
+    coalesce(private.jwt() ->> 'role' = 'service_role', false)
     or exists (
       select 1
       from public.profiles p
-      where p.id = auth.uid()
+      where p.id = private.uid()
         and p.status = 'active'
         and p.role = 'admin'
         and p.id = any (
@@ -2261,7 +2305,7 @@ CREATE OR REPLACE FUNCTION "private"."can_read_sport_participant"("p_participant
         from public.match_sport_participants participant
         join public.season_players player on player.id = participant.season_player_id
         where participant.id = p_participant_id
-          and player.profile_id = (select auth.uid())
+          and player.profile_id = (select private.uid())
       )
     );
 $$;
@@ -2283,7 +2327,7 @@ CREATE OR REPLACE FUNCTION "private"."can_read_sport_workflow"("p_match_id" "uui
         from public.match_sport_participants participant
         join public.season_players player on player.id = participant.season_player_id
         where participant.match_id = p_match_id
-          and player.profile_id = (select auth.uid())
+          and player.profile_id = (select private.uid())
       )
     );
 $$;
@@ -2470,7 +2514,7 @@ CREATE OR REPLACE FUNCTION "private"."cast_match_motm_vote"("p_match_id" "uuid",
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_election public.match_sport_motm_elections%rowtype;
   v_voter_participant_id uuid;
   v_candidate_profile_id uuid;
@@ -2843,7 +2887,7 @@ CREATE OR REPLACE FUNCTION "private"."configure_match_sport_workflow_v2"("p_matc
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_season_id uuid;
   v_kickoff_at timestamptz;
   v_cutoff timestamptz;
@@ -2895,7 +2939,7 @@ CREATE OR REPLACE FUNCTION "private"."confirm_start_match_live"("p_match_id" "uu
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_reason text := nullif(btrim(p_reason), '');
   v_state public.match_live_state;
   v_kickoff_at timestamptz;
@@ -3123,7 +3167,7 @@ CREATE OR REPLACE FUNCTION "private"."create_postmatch_composition"("p_match_id"
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_reason text := nullif(btrim(p_reason), '');
   v_formation text := nullif(btrim(p_formation_code), '');
   v_match_status text;
@@ -3425,7 +3469,7 @@ CREATE OR REPLACE FUNCTION "private"."delete_match_live_event"("p_match_id" "uui
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_state public.match_live_state;
   v_exported boolean;
   v_score_us integer;
@@ -3553,13 +3597,13 @@ begin
 
   select secret.decrypted_secret
   into v_token
-  from vault.decrypted_secrets secret
+  from private.vault_secrets() secret
   where secret.name = 'push_internal_token';
   if v_token is null then
     return false;
   end if;
 
-  select net.http_post(
+  select private.http_post(
     url := private.edge_function_url('send-push'),
     body := jsonb_build_object(
       'kind', 'custom',
@@ -3629,13 +3673,13 @@ begin
 
   select secret.decrypted_secret
   into v_token
-  from vault.decrypted_secrets secret
+  from private.vault_secrets() secret
   where secret.name = 'push_internal_token';
   if v_token is null then
     return false;
   end if;
 
-  select net.http_post(
+  select private.http_post(
     url := private.edge_function_url('send-push'),
     body := jsonb_build_object(
       'kind', 'custom',
@@ -3681,14 +3725,14 @@ begin
 
   select secret.decrypted_secret
   into v_token
-  from vault.decrypted_secrets secret
+  from private.vault_secrets() secret
   where secret.name = 'push_internal_token';
 
   if v_token is null then
     return false;
   end if;
 
-  select net.http_post(
+  select private.http_post(
     url := private.edge_function_url('send-push'),
     body := jsonb_build_object(
       'kind', p_kind,
@@ -3750,14 +3794,14 @@ begin
 
   select secret.decrypted_secret
   into v_token
-  from vault.decrypted_secrets secret
+  from private.vault_secrets() secret
   where secret.name = 'push_internal_token';
 
   if v_token is null then
     return false;
   end if;
 
-  select net.http_post(
+  select private.http_post(
     url := private.edge_function_url('send-push'),
     body := jsonb_build_object(
       'kind', 'custom',
@@ -3815,7 +3859,7 @@ begin
 
   select secret.decrypted_secret
   into v_token
-  from vault.decrypted_secrets secret
+  from private.vault_secrets() secret
   where secret.name = 'push_internal_token';
 
   if v_token is null then
@@ -3825,7 +3869,7 @@ begin
     return false;
   end if;
 
-  select net.http_post(
+  select private.http_post(
     url := private.edge_function_url('send-push'),
     body := jsonb_build_object(
       'kind', v_event.kind,
@@ -3902,13 +3946,13 @@ begin
 
   select secret.decrypted_secret
   into v_token
-  from vault.decrypted_secrets secret
+  from private.vault_secrets() secret
   where secret.name = 'push_internal_token';
   if v_token is null then
     return false;
   end if;
 
-  select net.http_post(
+  select private.http_post(
     url := private.edge_function_url('send-push'),
     body := jsonb_build_object(
       'kind', 'custom',
@@ -3941,7 +3985,7 @@ CREATE OR REPLACE FUNCTION "private"."end_match_live"("p_match_id" "uuid", "p_re
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_reason text := nullif(btrim(p_reason), '');
   v_state public.match_live_state;
   v_elapsed integer;
@@ -4281,7 +4325,7 @@ CREATE OR REPLACE FUNCTION "private"."ensure_sport_waitlist_base"("p_season_id" 
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := coalesce(p_actor, (select auth.uid()));
+  v_actor uuid := coalesce(p_actor, (select private.uid()));
   v_previous_season_id uuid;
   v_previous_season_name text;
   v_prev_has_inapp boolean := false;
@@ -4572,7 +4616,7 @@ CREATE OR REPLACE FUNCTION "private"."finalize_match_sport_postgame"("p_match_id
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_reason text := nullif(btrim(p_reason), '');
   v_match_status text;
   v_kickoff_at timestamptz;
@@ -6220,7 +6264,7 @@ CREATE OR REPLACE FUNCTION "private"."get_match_motm_vote"("p_match_id" "uuid") 
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_election public.match_sport_motm_elections%rowtype;
   v_voter_participant_id uuid;
   v_has_voted boolean := false;
@@ -6607,7 +6651,7 @@ CREATE OR REPLACE FUNCTION "private"."get_my_match_availability"("p_match_id" "u
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_result jsonb;
 begin
   perform private.require_sports_management_enabled();
@@ -7306,7 +7350,7 @@ begin
     raise exception 'Active administrator role required' using errcode = '42501';
   end if;
   v_season_id := private.resolve_open_sport_season(p_season_id);
-  perform private.ensure_sport_waitlist(v_season_id, (select auth.uid()));
+  perform private.ensure_sport_waitlist(v_season_id, (select private.uid()));
   perform private.finalize_due_waitlist_turns_for_season(v_season_id);
   return private.sport_waitlist_payload(v_season_id);
 end;
@@ -8246,7 +8290,7 @@ CREATE OR REPLACE FUNCTION "private"."is_active_profile"() RETURNS boolean
   select exists (
     select 1
     from public.profiles profile
-    where profile.id = (select auth.uid())
+    where profile.id = (select private.uid())
       and profile.status = 'active'
   );
 $$;
@@ -8262,7 +8306,7 @@ CREATE OR REPLACE FUNCTION "private"."is_admin"() RETURNS boolean
   select exists (
     select 1
     from public.profiles p
-    where p.id = (select auth.uid())
+    where p.id = (select private.uid())
       and p.role = 'admin'
       and p.status = 'active'
   );
@@ -8314,7 +8358,7 @@ CREATE OR REPLACE FUNCTION "private"."is_match_coach_or_admin"("p_match_id" "uui
         from public.season_players sp
         join public.matches m on m.season_id = sp.season_id
         where m.id = p_match_id
-          and sp.profile_id = (select auth.uid())
+          and sp.profile_id = (select private.uid())
           and sp.is_coach = true
           and sp.is_active = true
       )
@@ -8335,7 +8379,7 @@ CREATE OR REPLACE FUNCTION "private"."is_match_live_pilot_coach"("p_match_id" "u
       from public.season_players sp
       join public.matches m on m.season_id = sp.season_id
       where m.id = p_match_id
-        and sp.profile_id = (select auth.uid())
+        and sp.profile_id = (select private.uid())
         and sp.is_coach = true
         and sp.is_active = true
     );
@@ -8627,7 +8671,7 @@ CREATE OR REPLACE FUNCTION "private"."match_live_current_session_id"() RETURNS "
 declare
   v_session_id text;
 begin
-  v_session_id := nullif((select auth.jwt() ->> 'session_id'), '');
+  v_session_id := nullif((select private.jwt() ->> 'session_id'), '');
   if v_session_id is null then
     return null;
   end if;
@@ -9919,14 +9963,14 @@ begin
 
   select secret.decrypted_secret
   into v_token
-  from vault.decrypted_secrets secret
+  from private.vault_secrets() secret
   where secret.name = 'push_internal_token';
 
   if v_token is null then
     return new;
   end if;
 
-  select net.http_post(
+  select private.http_post(
     url := private.edge_function_url('send-push'),
     body := jsonb_build_object(
       'kind', 'custom',
@@ -9976,7 +10020,7 @@ begin
     end if;
 
     select decrypted_secret into v_token
-    from vault.decrypted_secrets
+    from private.vault_secrets()
     where name = 'push_internal_token';
 
     if v_token is null then
@@ -9988,7 +10032,7 @@ begin
       ''
     );
 
-    perform net.http_post(
+    perform private.http_post(
       url := private.edge_function_url('send-push'),
       body := jsonb_build_object(
         'kind', 'admin_pending_signup',
@@ -10195,7 +10239,7 @@ CREATE OR REPLACE FUNCTION "private"."open_match_live_workspace"("p_match_id" "u
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_match_status text;
   v_kickoff_at timestamptz;
   v_default_duration integer;
@@ -10449,7 +10493,7 @@ CREATE OR REPLACE FUNCTION "private"."override_match_availability"("p_match_id" 
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_participant_id uuid;
   v_old_status public.sport_availability_status;
   v_old_comment text;
@@ -10756,7 +10800,7 @@ begin
 
   select secret.decrypted_secret
   into v_token
-  from vault.decrypted_secrets secret
+  from private.vault_secrets() secret
   where secret.name = 'push_internal_token';
 
   if v_token is null then
@@ -10797,7 +10841,7 @@ begin
       continue;
     end if;
 
-    perform net.http_post(
+    perform private.http_post(
       url := private.edge_function_url('send-push'),
       body := jsonb_build_object(
         'kind', 'custom',
@@ -11742,7 +11786,7 @@ CREATE OR REPLACE FUNCTION "private"."publish_match_composition"("p_match_id" "u
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_reason text := nullif(btrim(p_reason), '');
   v_match_status text;
   v_squad_limit integer;
@@ -11900,7 +11944,7 @@ CREATE OR REPLACE FUNCTION "private"."publish_match_convocations"("p_match_id" "
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_summary jsonb;
   v_unresolved integer;
   v_reason text := nullif(btrim(p_reason), '');
@@ -11975,7 +12019,7 @@ CREATE OR REPLACE FUNCTION "private"."publish_match_effectif"("p_match_id" "uuid
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_reason text := nullif(btrim(p_reason), '');
   v_kickoff_at timestamptz;
   v_match_status text;
@@ -12192,7 +12236,7 @@ CREATE OR REPLACE FUNCTION "private"."publish_match_live_composition"("p_match_i
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_current_version integer;
   v_formation text;
   v_field_count integer;
@@ -12300,7 +12344,7 @@ CREATE OR REPLACE FUNCTION "private"."publish_match_live_recap"("p_match_id" "uu
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_state public.match_live_state;
   v_exported boolean;
   v_finalize_result jsonb;
@@ -13018,7 +13062,7 @@ CREATE OR REPLACE FUNCTION "private"."recalculate_sport_waitlist"("p_season_id" 
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_season_id uuid;
 begin
   perform private.require_sports_management_enabled();
@@ -13050,7 +13094,7 @@ CREATE OR REPLACE FUNCTION "private"."recompute_match_convocations_internal"("p_
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_season_id uuid;
   v_limit integer;
   v_match_type text;
@@ -13462,7 +13506,7 @@ CREATE OR REPLACE FUNCTION "private"."remove_match_guest"("p_match_id" "uuid", "
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_reason text := nullif(btrim(p_reason), '');
   v_guest_player_id uuid;
   v_match_status text;
@@ -13572,7 +13616,7 @@ CREATE OR REPLACE FUNCTION "private"."reopen_match_live"("p_match_id" "uuid", "p
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_reason text := nullif(btrim(p_reason), '');
   v_state public.match_live_state;
   v_exported boolean;
@@ -13618,7 +13662,7 @@ CREATE OR REPLACE FUNCTION "private"."reorder_sport_waitlist"("p_season_id" "uui
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_season_id uuid;
   v_expected integer;
   v_given integer;
@@ -13735,14 +13779,14 @@ begin
 
   select secret.decrypted_secret
   into v_token
-  from vault.decrypted_secrets secret
+  from private.vault_secrets() secret
   where secret.name = 'push_internal_token';
 
   if v_token is null then
     return null;
   end if;
 
-  select net.http_post(
+  select private.http_post(
     url := private.edge_function_url('send-push'),
     body := jsonb_build_object(
       'kind', 'live_match',
@@ -13776,14 +13820,14 @@ declare
 begin
   select secret.decrypted_secret
   into v_token
-  from vault.decrypted_secrets secret
+  from private.vault_secrets() secret
   where secret.name = 'push_internal_token';
 
   if v_token is null then
     return null;
   end if;
 
-  select net.http_post(
+  select private.http_post(
     url := private.edge_function_url('send-push'),
     body := case
       when p_match_id is null then jsonb_build_object('kind', 'refresh_match_weather')
@@ -13841,14 +13885,14 @@ CREATE OR REPLACE FUNCTION "private"."require_match_live_pilot"("p_match_id" "uu
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_session_id uuid := private.match_live_current_session_id();
   v_pilot_profile_id uuid;
   v_pilot_session_id uuid;
   v_heartbeat_at timestamptz;
 begin
   -- Les traitements serveur internes restent possibles avec la clé service.
-  if (select auth.role()) = 'service_role' then
+  if (select private.role()) = 'service_role' then
     return;
   end if;
 
@@ -13978,7 +14022,7 @@ begin
     player_id
   )
   values (v_normalized_name, v_name, v_player_id)
-  on conflict (normalized_name) do update
+  on conflict (club_id, normalized_name) do update
   set updated_at = now()
   returning player_id into v_player_id;
 
@@ -14099,7 +14143,7 @@ CREATE OR REPLACE FUNCTION "private"."restart_match_live_session"("p_match_id" "
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_reason text := nullif(btrim(p_reason), '');
   v_state public.match_live_state;
   v_exported boolean;
@@ -14293,7 +14337,7 @@ CREATE OR REPLACE FUNCTION "private"."save_match_composition"("p_match_id" "uuid
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_reason text := nullif(btrim(p_reason), '');
   v_formation text := nullif(btrim(p_formation_code), '');
   v_match_status text;
@@ -14532,7 +14576,7 @@ CREATE OR REPLACE FUNCTION "private"."save_match_live_lineup"("p_match_id" "uuid
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_state public.match_live_state;
   v_elapsed integer;
   v_running_since timestamptz;
@@ -14901,7 +14945,7 @@ CREATE OR REPLACE FUNCTION "private"."send_sport_availability_reminder"("p_match
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_row record;
   v_event_id bigint;
   v_created integer := 0;
@@ -15059,7 +15103,7 @@ CREATE OR REPLACE FUNCTION "private"."set_guest_archived"("p_guest_player_id" "u
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_reason text := nullif(btrim(p_reason), '');
   v_old_reusable boolean;
 begin
@@ -15119,7 +15163,7 @@ CREATE OR REPLACE FUNCTION "private"."set_match_convocation"("p_match_id" "uuid"
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_participant_id uuid;
   v_old_status public.sport_convocation_status;
   v_old_consume boolean;
@@ -15219,7 +15263,7 @@ CREATE OR REPLACE FUNCTION "private"."set_match_live_clock_state"("p_match_id" "
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_state public.match_live_state;
   v_elapsed integer;
   v_running_since timestamptz;
@@ -15301,7 +15345,7 @@ CREATE OR REPLACE FUNCTION "private"."set_match_live_event_scorer"("p_match_id" 
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_state public.match_live_state;
   v_exported boolean;
   v_type text;
@@ -15430,7 +15474,7 @@ CREATE OR REPLACE FUNCTION "private"."set_my_match_availability"("p_match_id" "u
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_participant_id uuid;
   v_is_eligible boolean;
   v_old_status public.sport_availability_status;
@@ -15603,7 +15647,7 @@ begin
     update private.app_feature_flags f
     set enabled = p_enabled,
         updated_at = now(),
-        updated_by = (select auth.uid())
+        updated_by = (select private.uid())
     where f.key = 'notifications_paused'
     returning f.updated_at into v_updated_at;
 
@@ -15612,7 +15656,7 @@ begin
     )
     values (
       'notifications_paused', v_old_enabled, p_enabled,
-      (select auth.uid()), v_justification
+      (select private.uid()), v_justification
     );
   else
     select f.updated_at into v_updated_at
@@ -15695,7 +15739,7 @@ CREATE OR REPLACE FUNCTION "private"."signal_feature_flag_change"() RETURNS "tri
 begin
   insert into public.feature_flag_change_signals(key, revision, updated_at)
   values (new.key, 1, new.updated_at)
-  on conflict (key) do update
+  on conflict (club_id, key) do update
   set revision = public.feature_flag_change_signals.revision + 1,
       updated_at = excluded.updated_at;
 
@@ -15768,7 +15812,7 @@ begin
     updated_at
   )
   values ('global', 1, 1, 1, now())
-  on conflict (key) do update
+  on conflict (club_id, key) do update
   set revision = public.shared_data_change_signals.revision + 1,
       profile_revision =
         public.shared_data_change_signals.profile_revision
@@ -15854,7 +15898,7 @@ CREATE OR REPLACE FUNCTION "private"."submit_match_sport_report"("p_match_id" "u
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_reason text := nullif(btrim(p_reason), '');
   v_is_admin boolean;
   v_formation_code text;
@@ -16424,7 +16468,7 @@ CREATE OR REPLACE FUNCTION "private"."sync_match_sport_workflow_v2"("p_match_id"
     SET "search_path" TO ''
     AS $_$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_season_id uuid;
   v_kickoff_at timestamptz;
   v_match_status text;
@@ -16977,7 +17021,7 @@ begin
     update public.match_sport_workflows
     set availability_state = 'closed',
         convocation_state = 'closed',
-        updated_by = (select auth.uid()),
+        updated_by = (select private.uid()),
         updated_at = now()
     where match_id = p_match_id;
     perform private.finalize_match_waitlist_turns_internal(p_match_id, true);
@@ -16995,7 +17039,7 @@ CREATE OR REPLACE FUNCTION "private"."update_postmatch_composition"("p_match_id"
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_reason text := nullif(btrim(p_reason), '');
   v_formation text := nullif(btrim(p_formation_code), '');
   v_match_status text;
@@ -17512,7 +17556,7 @@ begin
   ) values (
     v_match_id,
     'set_availability_schedule',
-    (select auth.uid()),
+    (select private.uid()),
     jsonb_build_object(
       'mode', v_workflow ->> 'availability_schedule_mode',
       'availability_opens_at', v_workflow ->> 'availability_opens_at',
@@ -18137,7 +18181,7 @@ CREATE OR REPLACE FUNCTION "public"."admin_require_password_change"("p_profile_i
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO ''
     AS $$
-declare actor_id uuid := (select auth.uid());
+declare actor_id uuid := (select private.uid());
 begin
   if not public.is_match_staff() then
     raise exception 'Active administrator role required' using errcode = '42501';
@@ -18206,7 +18250,7 @@ begin
   update public.match_internal_compositions
   set team1_formation = null,
       team2_formation = null,
-      updated_by = (select auth.uid()),
+      updated_by = (select private.uid()),
       updated_at = now()
   where match_id = p_match_id;
 
@@ -18284,7 +18328,7 @@ begin
   end if;
 
   insert into public.match_internal_compositions (match_id, team1_name, team2_name, updated_by)
-  values (p_match_id, v_team1_name, v_team2_name, (select auth.uid()))
+  values (p_match_id, v_team1_name, v_team2_name, (select private.uid()))
   on conflict (match_id) do update
   set team1_name = excluded.team1_name,
       team2_name = excluded.team2_name,
@@ -18385,7 +18429,7 @@ begin
     v_team2_name,
     v_team1_jersey,
     v_team2_jersey,
-    (select auth.uid())
+    (select private.uid())
   )
   on conflict (match_id) do update
   set team1_name = excluded.team1_name,
@@ -18628,7 +18672,7 @@ begin
     v_team2_jersey,
     v_team1_formation,
     v_team2_formation,
-    (select auth.uid())
+    (select private.uid())
   )
   on conflict (match_id) do update
   set team1_name = excluded.team1_name,
@@ -18873,7 +18917,7 @@ begin
   ) values (
     p_match_id, v_team1_name, v_team2_name, v_team1_jersey, v_team2_jersey,
     nullif(btrim(p_team1_formation), ''), nullif(btrim(p_team2_formation), ''),
-    (select auth.uid())
+    (select private.uid())
   )
   on conflict (match_id) do update
   set team1_name = excluded.team1_name,
@@ -19120,14 +19164,14 @@ begin
     );
 
   select secret.decrypted_secret into v_token
-  from vault.decrypted_secrets secret
+  from private.vault_secrets() secret
   where secret.name = 'push_internal_token';
 
   if v_token is null then
     raise exception 'Les notifications push ne sont pas configurées.';
   end if;
 
-  perform net.http_post(
+  perform private.http_post(
     url := private.edge_function_url('send-push'),
     body := jsonb_build_object(
       'kind', 'custom',
@@ -19192,7 +19236,7 @@ begin
 
   update public.guest_players
   set photo_url = nullif(btrim(p_photo_url), ''),
-      updated_by = (select auth.uid()),
+      updated_by = (select private.uid()),
       updated_at = now()
   where id = p_guest_player_id;
 
@@ -19410,14 +19454,14 @@ begin
   update public.sport_waitlist_entries
   set manual_waitlist_count = p_count,
       updated_at = now(),
-      updated_by = (select auth.uid())
+      updated_by = (select private.uid())
   where season_player_id = p_season_player_id;
 
   if v_old is distinct from p_count then
     insert into private.sport_admin_audit_log (
       action, actor_profile_id, reason, metadata
     ) values (
-      'set_waitlist_manual_count', (select auth.uid()), null,
+      'set_waitlist_manual_count', (select private.uid()), null,
       jsonb_build_object(
         'season_player_id', p_season_player_id,
         'old_count', v_old,
@@ -19430,7 +19474,7 @@ begin
       where e.season_player_id = p_season_player_id
     loop
       perform private.rebuild_sport_waitlist_order(
-        v_season_id, (select auth.uid())
+        v_season_id, (select private.uid())
       );
       perform private.rebalance_upcoming_waitlist_matches(v_season_id);
     end loop;
@@ -19658,7 +19702,7 @@ begin
     ) values (
       p_match_id,
       'set_availability_schedule',
-      (select auth.uid()),
+      (select private.uid()),
       jsonb_build_object(
         'mode', v_schedule ->> 'availability_schedule_mode',
         'availability_opens_at', v_schedule ->> 'availability_opens_at',
@@ -19694,7 +19738,7 @@ CREATE OR REPLACE FUNCTION "public"."admin_update_profile_fields"("p_profile_id"
     SET "search_path" TO ''
     AS $$
 declare
-  actor_id uuid := (select auth.uid());
+  actor_id uuid := (select private.uid());
   current_row public.profiles%rowtype;
   resulting_role text;
   resulting_status text;
@@ -20160,7 +20204,7 @@ CREATE OR REPLACE FUNCTION "public"."cancel_my_unavailability"("p_id" "uuid") RE
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_today date := (now() at time zone 'Europe/Paris')::date;
   v_ends_on date;
 begin
@@ -20227,7 +20271,7 @@ CREATE OR REPLACE FUNCTION "public"."claim_match_live_pilot"("p_match_id" "uuid"
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_session_id uuid := private.match_live_current_session_id();
   v_pilot_session_id uuid;
   v_heartbeat_at timestamptz;
@@ -20502,7 +20546,7 @@ CREATE OR REPLACE FUNCTION "public"."coach_adjust_match_live_score"("p_match_id"
     SET "search_path" TO ''
     AS $$
 begin
-  if (select auth.uid()) is null then
+  if (select private.uid()) is null then
     raise exception 'Authentication required' using errcode = '42501';
   end if;
   perform private.require_match_live_pilot(p_match_id);
@@ -20530,7 +20574,7 @@ CREATE OR REPLACE FUNCTION "public"."coach_change_match_live_formation"("p_match
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_formation_code text := nullif(btrim(p_formation_code), '');
 begin
   if v_actor is null then
@@ -20594,7 +20638,7 @@ CREATE OR REPLACE FUNCTION "public"."coach_end_match_live"("p_match_id" "uuid", 
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_session_id uuid := private.match_live_current_session_id();
 begin
   if not private.is_active_profile() then
@@ -20681,7 +20725,7 @@ CREATE OR REPLACE FUNCTION "public"."coach_save_match_live_lineup"("p_match_id" 
     SET "search_path" TO ''
     AS $$
 begin
-  if (select auth.uid()) is null then
+  if (select private.uid()) is null then
     raise exception 'Authentication required' using errcode = '42501';
   end if;
   perform private.require_match_live_pilot(p_match_id);
@@ -20750,7 +20794,7 @@ CREATE OR REPLACE FUNCTION "public"."complete_password_change"() RETURNS boolean
     SET "search_path" TO ''
     AS $$
 declare
-  actor_id uuid := (select auth.uid());
+  actor_id uuid := (select private.uid());
 begin
   if actor_id is null then
     raise exception 'Authentication required' using errcode = '42501';
@@ -20869,7 +20913,7 @@ begin
     planned_duration_minutes, status, match_type, address, created_by
   ) values (
     p_season_id, null, p_match_date, p_match_time, 'domicile',
-    90, 'a_venir', 'entre_nous', nullif(btrim(p_address), ''), (select auth.uid())
+    90, 'a_venir', 'entre_nous', nullif(btrim(p_address), ''), (select private.uid())
   ) returning id into new_id;
 
   perform private.configure_match_sport_workflow(new_id, 30);
@@ -20911,7 +20955,7 @@ begin
     planned_duration_minutes, status, match_type, address, created_by
   ) values (
     p_season_id, null, p_match_date, p_match_time, 'domicile',
-    90, 'a_venir', 'entre_nous', nullif(btrim(p_address), ''), (select auth.uid())
+    90, 'a_venir', 'entre_nous', nullif(btrim(p_address), ''), (select private.uid())
   ) returning id into v_match_id;
 
   v_workflow := private.configure_match_sport_workflow_v2(
@@ -20923,7 +20967,7 @@ begin
   ) values (
     v_match_id,
     'set_availability_schedule',
-    (select auth.uid()),
+    (select private.uid()),
     jsonb_build_object(
       'mode', v_workflow ->> 'availability_schedule_mode',
       'availability_opens_at', v_workflow ->> 'availability_opens_at',
@@ -21003,7 +21047,7 @@ begin
     planned_duration_minutes, status, created_by
   ) values (
     p_season_id, p_opponent_id, p_match_date, p_match_time, p_location,
-    90, 'a_venir', (select auth.uid())
+    90, 'a_venir', (select private.uid())
   ) returning id into new_id;
 
   -- trg_auto_match_odds_v4 persists the canonical server calculation.
@@ -21032,7 +21076,7 @@ ALTER FUNCTION "public"."create_match_with_odds_and_sport_limit"("p_season_id" "
 CREATE OR REPLACE FUNCTION "public"."current_profile_role"() RETURNS "text"
     LANGUAGE "sql" STABLE SECURITY DEFINER
     SET "search_path" TO ''
-    AS $$ select role from public.profiles where id=auth.uid() $$;
+    AS $$ select role from public.profiles where id=private.uid() $$;
 
 
 ALTER FUNCTION "public"."current_profile_role"() OWNER TO "postgres";
@@ -21110,7 +21154,7 @@ CREATE OR REPLACE FUNCTION "public"."delete_my_notification"("p_id" bigint) RETU
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
 begin
   if v_actor is null then
     raise exception 'Authentication required' using errcode = '42501';
@@ -21786,7 +21830,7 @@ CREATE OR REPLACE FUNCTION "public"."get_match_live_notification_subscription"("
     SET "search_path" TO ''
     AS $$
 declare
-  v_profile_id uuid := (select auth.uid());
+  v_profile_id uuid := (select private.uid());
   v_opens_at timestamptz;
   v_eligible boolean;
   v_subscribed boolean;
@@ -21833,7 +21877,7 @@ CREATE OR REPLACE FUNCTION "public"."get_match_live_state"("p_match_id" "uuid") 
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_session_id uuid := private.match_live_current_session_id();
   v_snapshot jsonb;
   v_publication jsonb;
@@ -21979,7 +22023,7 @@ CREATE OR REPLACE FUNCTION "public"."get_my_notification_history"("p_limit" inte
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_limit integer := least(greatest(coalesce(p_limit, 100), 1), 200);
 begin
   if v_actor is null then
@@ -22026,7 +22070,7 @@ CREATE OR REPLACE FUNCTION "public"."get_my_profile"() RETURNS "jsonb"
     SET "search_path" TO ''
     AS $$
 declare
-  actor_id uuid := (select auth.uid());
+  actor_id uuid := (select private.uid());
   result jsonb;
 begin
   if actor_id is null then
@@ -22102,7 +22146,7 @@ begin
   into v_result
   from public.season_wrapped wrapped
   where wrapped.season_id = v_season.season_id
-    and wrapped.profile_id = auth.uid();
+    and wrapped.profile_id = private.uid();
 
   return v_result;
 end;
@@ -22121,7 +22165,7 @@ CREATE OR REPLACE FUNCTION "public"."get_my_unavailabilities"() RETURNS "jsonb"
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_today date := (now() at time zone 'Europe/Paris')::date;
 begin
   perform private.require_sports_management_enabled();
@@ -22163,7 +22207,7 @@ CREATE OR REPLACE FUNCTION "public"."get_my_unread_notification_count"() RETURNS
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
 begin
   if v_actor is null then
     raise exception 'Authentication required' using errcode = '42501';
@@ -22208,7 +22252,7 @@ declare
   v_live jsonb;
   v_live_ok boolean;
 begin
-  if (select auth.uid()) is null then
+  if (select private.uid()) is null then
     raise exception 'Authentication required' using errcode = '42501';
   end if;
 
@@ -22265,7 +22309,7 @@ CREATE OR REPLACE FUNCTION "public"."get_or_create_calendar_subscription_token"(
     SET "search_path" TO ''
     AS $$
 declare
-  v_profile_id uuid := auth.uid();
+  v_profile_id uuid := private.uid();
   v_token uuid;
 begin
   if v_profile_id is null then
@@ -22423,7 +22467,7 @@ begin
       select 1
       from public.season_wrapped wrapped
       where wrapped.season_id = v_season.season_id
-        and wrapped.profile_id = auth.uid()
+        and wrapped.profile_id = private.uid()
     ),
     'season_id', v_season.season_id,
     'season_name', v_season.season_name
@@ -22456,7 +22500,7 @@ COMMENT ON FUNCTION "public"."get_sport_waitlist"("p_season_id" "uuid") IS 'Lect
 CREATE OR REPLACE FUNCTION "public"."guard_match_prediction_window"() RETURNS "trigger"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO ''
-    AS $$ declare v_kickoff timestamptz; v_match_status text; v_closed_at timestamptz; v_match_type text; begin if (select auth.uid()) is not null and pg_trigger_depth() <= 1 then if tg_op='UPDATE' and new.match_id is distinct from old.match_id then raise exception 'Le match d’un pronostic ne peut pas être modifié.' using errcode='22023'; end if; new.profile_id := (select auth.uid()); end if; if new.is_filled then select match.kickoff_at,match.status,match.predictions_closed_at,match.match_type into v_kickoff,v_match_status,v_closed_at,v_match_type from public.matches match where match.id=new.match_id; if not found then raise exception 'Match introuvable.' using errcode='P0002'; end if; if v_match_type='entre_nous' then raise exception 'Les matchs entre nous ne sont pas ouverts aux pronostics.' using errcode='22023'; end if; if v_kickoff is null or v_match_status<>'a_venir' or now()<private.match_predictions_open_at(new.match_id,v_kickoff) or now()>=private.match_prediction_closes_at(v_kickoff) or (v_closed_at is not null and now()>=v_closed_at) then raise exception 'Les pronostics de ce match sont fermés.' using errcode='22023'; end if; end if; return new; end; $$;
+    AS $$ declare v_kickoff timestamptz; v_match_status text; v_closed_at timestamptz; v_match_type text; begin if (select private.uid()) is not null and pg_trigger_depth() <= 1 then if tg_op='UPDATE' and new.match_id is distinct from old.match_id then raise exception 'Le match d’un pronostic ne peut pas être modifié.' using errcode='22023'; end if; new.profile_id := (select private.uid()); end if; if new.is_filled then select match.kickoff_at,match.status,match.predictions_closed_at,match.match_type into v_kickoff,v_match_status,v_closed_at,v_match_type from public.matches match where match.id=new.match_id; if not found then raise exception 'Match introuvable.' using errcode='P0002'; end if; if v_match_type='entre_nous' then raise exception 'Les matchs entre nous ne sont pas ouverts aux pronostics.' using errcode='22023'; end if; if v_kickoff is null or v_match_status<>'a_venir' or now()<private.match_predictions_open_at(new.match_id,v_kickoff) or now()>=private.match_prediction_closes_at(v_kickoff) or (v_closed_at is not null and now()>=v_closed_at) then raise exception 'Les pronostics de ce match sont fermés.' using errcode='22023'; end if; end if; return new; end; $$;
 
 
 ALTER FUNCTION "public"."guard_match_prediction_window"() OWNER TO "postgres";
@@ -22467,7 +22511,7 @@ CREATE OR REPLACE FUNCTION "public"."guard_sensitive_profile_fields"() RETURNS "
     SET "search_path" TO ''
     AS $$
 declare
-  actor_id uuid := (select auth.uid());
+  actor_id uuid := (select private.uid());
   old_protected jsonb;
   new_protected jsonb;
   editable constant text[] := array[
@@ -22542,7 +22586,7 @@ CREATE OR REPLACE FUNCTION "public"."heartbeat_match_live_pilot"("p_match_id" "u
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_session_id uuid := private.match_live_current_session_id();
 begin
   if v_actor is null or v_session_id is null or not private.is_active_profile() then
@@ -22845,7 +22889,7 @@ CREATE OR REPLACE FUNCTION "public"."internal_push_config"() RETURNS "jsonb"
     'token', max(decrypted_secret) filter (where name = 'push_internal_token'),
     'notifications_paused', private.is_feature_enabled('notifications_paused')
   )
-  from vault.decrypted_secrets
+  from private.vault_secrets()
   where name in ('push_vapid_public', 'push_vapid_private', 'push_internal_token');
 $$;
 
@@ -23175,14 +23219,14 @@ declare
   v_token text;
 begin
   select decrypted_secret into v_token
-  from vault.decrypted_secrets
+  from private.vault_secrets()
   where name = 'push_internal_token';
 
   if v_token is null then
     return;
   end if;
 
-  perform net.http_post(
+  perform private.http_post(
     url := private.edge_function_url('send-push'),
     body := jsonb_build_object('kind', p_kind, 'match_id', p_match_id),
     headers := jsonb_build_object(
@@ -23550,7 +23594,7 @@ CREATE OR REPLACE FUNCTION "public"."is_moderator"() RETURNS boolean
   select exists (
     select 1
     from public.profiles p
-    where p.id = (select auth.uid())
+    where p.id = (select private.uid())
       and p.role = 'admin'
       and p.status = 'active'
   );
@@ -23588,7 +23632,7 @@ CREATE OR REPLACE FUNCTION "public"."log_client_incident"("p_reference" "text", 
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_recent integer;
 begin
   if v_actor is null then
@@ -23634,7 +23678,7 @@ CREATE OR REPLACE FUNCTION "public"."mark_my_notifications_read"() RETURNS integ
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_count integer;
 begin
   if v_actor is null then
@@ -23834,7 +23878,7 @@ begin
     return;
   end if;
 
-  if p_profile_id is distinct from (select auth.uid())
+  if p_profile_id is distinct from (select private.uid())
      and not public.is_match_staff() then
     raise exception 'Forbidden' using errcode = '42501';
   end if;
@@ -23857,7 +23901,7 @@ begin
     return;
   end if;
 
-  if p_profile_id is distinct from (select auth.uid())
+  if p_profile_id is distinct from (select private.uid())
      and not public.is_match_staff() then
     raise exception 'Forbidden' using errcode = '42501';
   end if;
@@ -23879,7 +23923,7 @@ CREATE OR REPLACE FUNCTION "public"."profile_badge_stars"("p_profile_id" "uuid")
             return;
           end if;
 
-          if p_profile_id is distinct from (select auth.uid())
+          if p_profile_id is distinct from (select private.uid())
              and not public.is_match_staff() then
             raise exception 'Forbidden' using errcode = '42501';
           end if;
@@ -24284,7 +24328,7 @@ CREATE OR REPLACE FUNCTION "public"."register_push_subscription"("p_endpoint" "t
     SET "search_path" TO ''
     AS $$
 declare
-  actor_id uuid := (select auth.uid());
+  actor_id uuid := (select private.uid());
 begin
   if actor_id is null then
     raise exception 'Authentication required' using errcode = '42501';
@@ -24358,7 +24402,7 @@ CREATE OR REPLACE FUNCTION "public"."release_match_live_pilot"("p_match_id" "uui
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_session_id uuid := private.match_live_current_session_id();
 begin
   if v_actor is null or v_session_id is null or not private.is_active_profile() then
@@ -24388,7 +24432,7 @@ CREATE OR REPLACE FUNCTION "public"."report_my_push_device"("p_endpoint" "text",
     SET "search_path" TO ''
     AS $_$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_permission text := case
     when p_permission in ('granted', 'denied', 'default') then p_permission
     else null
@@ -24583,7 +24627,7 @@ CREATE OR REPLACE FUNCTION "public"."save_match_prediction"("p_match_id" "uuid",
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor_id uuid := (select auth.uid());
+  v_actor_id uuid := (select private.uid());
   v_match public.matches%rowtype;
 begin
   if v_actor_id is null then
@@ -24746,7 +24790,7 @@ CREATE OR REPLACE FUNCTION "public"."send_test_push"() RETURNS "jsonb"
     AS $$
 declare
   v_token text;
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_subscriptions integer;
   v_recent_attempts integer;
 begin
@@ -24800,7 +24844,7 @@ begin
   end if;
 
   select decrypted_secret into v_token
-  from vault.decrypted_secrets
+  from private.vault_secrets()
   where name = 'push_internal_token';
 
   if v_token is null then
@@ -24813,7 +24857,7 @@ begin
   insert into private.test_push_attempts (profile_id)
   values (v_actor);
 
-  perform net.http_post(
+  perform private.http_post(
     url := private.edge_function_url('send-push'),
     body := jsonb_build_object(
       'kind', 'test',
@@ -24847,7 +24891,7 @@ CREATE OR REPLACE FUNCTION "public"."send_test_push_kind"("p_kind" "text") RETUR
     AS $$
 declare
   v_token text;
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_subscriptions integer;
   v_recent_attempts integer;
   v_title text;
@@ -24966,7 +25010,7 @@ begin
   end if;
 
   select secret.decrypted_secret into v_token
-  from vault.decrypted_secrets secret
+  from private.vault_secrets() secret
   where secret.name = 'push_internal_token';
 
   if v_token is null then
@@ -24976,7 +25020,7 @@ begin
   insert into private.test_push_attempts (profile_id)
   values (v_actor);
 
-  perform net.http_post(
+  perform private.http_post(
     url := private.edge_function_url('send-push'),
     body := jsonb_build_object(
       'kind', 'custom',
@@ -25011,7 +25055,7 @@ CREATE OR REPLACE FUNCTION "public"."set_badge_featured"("p_badge_code" "text", 
     SET "search_path" TO ''
     AS $$
 declare
-  v_uid uuid := auth.uid();
+  v_uid uuid := private.uid();
   v_badge uuid;
 begin
   if v_uid is null then
@@ -25049,7 +25093,7 @@ CREATE OR REPLACE FUNCTION "public"."set_match_live_notifications"("p_match_id" 
     SET "search_path" TO ''
     AS $$
 declare
-  v_profile_id uuid := (select auth.uid());
+  v_profile_id uuid := (select private.uid());
 begin
   if v_profile_id is null or not private.is_active_profile() then
     raise exception 'Active profile required' using errcode = '42501';
@@ -25145,7 +25189,7 @@ CREATE OR REPLACE FUNCTION "public"."set_my_unavailability"("p_id" "uuid", "p_st
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_today date := (now() at time zone 'Europe/Paris')::date;
   v_reason text := nullif(btrim(p_reason), '');
   v_id uuid;
@@ -25525,11 +25569,11 @@ begin
     profile_id, badge_id, source, awarded_by, awarded_at
   )
   values (
-    p_profile_id, v_badge_id, 'manual', auth.uid(), v_occurred_at
+    p_profile_id, v_badge_id, 'manual', private.uid(), v_occurred_at
   )
   on conflict (profile_id, badge_id) do update
   set source = 'manual',
-      awarded_by = auth.uid(),
+      awarded_by = private.uid(),
       awarded_at = v_occurred_at
   returning jsonb_build_object(
     'profile_id', profile_id,
@@ -25559,7 +25603,7 @@ begin
     v_badge_id,
     p_badge_code,
     v_badge_name,
-    auth.uid(),
+    private.uid(),
     v_occurred_at,
     'manual',
     jsonb_build_object(
@@ -25610,7 +25654,7 @@ begin
     null,
     900
   )
-  on conflict (code) do update
+  on conflict (club_id, code) do update
   set name = excluded.name,
       emoji = excluded.emoji,
       description = excluded.description,
@@ -25748,7 +25792,7 @@ begin
       v_badge_id,
       p_badge_code,
       v_badge_name,
-      auth.uid(),
+      private.uid(),
       v_occurred_at,
       v_removed_source,
       jsonb_build_object('reason', 'manual_revoke'),
@@ -26213,7 +26257,7 @@ CREATE OR REPLACE FUNCTION "public"."take_over_match_live_pilot"("p_match_id" "u
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
   v_session_id uuid := private.match_live_current_session_id();
 begin
   perform private.require_sports_management_enabled();
@@ -26615,7 +26659,7 @@ begin
     ) values (
       p_match_id,
       'set_availability_schedule',
-      (select auth.uid()),
+      (select private.uid()),
       jsonb_build_object(
         'mode', v_schedule ->> 'availability_schedule_mode',
         'availability_opens_at', v_schedule ->> 'availability_opens_at',
@@ -26722,7 +26766,7 @@ CREATE OR REPLACE FUNCTION "public"."update_my_admin_availability_notification"(
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
 begin
   if v_actor is null then
     raise exception 'Authentication required' using errcode = '42501';
@@ -26758,7 +26802,7 @@ CREATE OR REPLACE FUNCTION "public"."update_my_app_preferences"("p_notify_predic
     SET "search_path" TO ''
     AS $$
 declare
-  actor_id uuid := (select auth.uid());
+  actor_id uuid := (select private.uid());
 begin
   if actor_id is null then
     raise exception 'Authentication required' using errcode = '42501';
@@ -26792,7 +26836,7 @@ CREATE OR REPLACE FUNCTION "public"."update_my_badge_notifications"("p_enabled" 
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
 begin
   if v_actor is null then
     raise exception 'Authentication required' using errcode = '42501';
@@ -26824,7 +26868,7 @@ CREATE OR REPLACE FUNCTION "public"."update_my_notification_preferences"("p_noti
     SET "search_path" TO ''
     AS $$
 declare
-  v_actor uuid := (select auth.uid());
+  v_actor uuid := (select private.uid());
 begin
   if v_actor is null then
     raise exception 'Authentication required' using errcode = '42501';
