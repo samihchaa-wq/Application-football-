@@ -1,0 +1,11 @@
+11	as-grinta-waitlist-credit-v2	* * * * *	select private.process_due_waitlist_credits();
+8	badge-unlock-notifications	* * * * *	select private.process_badge_unlock_notifications(now());
+5	finish-due-internal-matches	* * * * *	select private.finish_due_internal_matches(now());
+10	live-match-notification-dispatch	5 seconds	select private.process_due_match_live_notifications(50);
+2	match-weather-refresh	*/15 * * * *	select private.request_match_weather_refresh(null);
+4	prediction-j5-reminders	* * * * *	select public.push_prediction_j5_notifications();
+6	process-season-wrapped-jobs	*/5 * * * *	select private.process_season_wrapped_jobs();
+7	purge-client-incident-log	17 3 * * *	select private.purge_client_incident_log(now());
+9	purge-cron-job-run-details	23 3 * * *	delete from cron.job_run_details where end_time < now() - interval '7 days'
+1	sports-availability-reminders	* * * * *	select private.process_sport_availability_notifications(now());
+3	sports-motm-jobs	* * * * *	select private.process_match_motm_jobs(now());

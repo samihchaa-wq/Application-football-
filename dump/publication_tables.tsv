@@ -1,0 +1,5 @@
+supabase_realtime	public	feature_flag_change_signals
+supabase_realtime	public	match_live_events
+supabase_realtime	public	match_live_sessions
+supabase_realtime	public	match_weather
+supabase_realtime	public	shared_data_change_signals
