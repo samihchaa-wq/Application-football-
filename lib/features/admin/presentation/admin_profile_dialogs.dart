@@ -44,14 +44,15 @@ Future<_ProfileValidationChoice?> _askPlayerLink(
     context: context,
     builder: (dialogContext) => StatefulBuilder(
       builder: (context, setState) => AlertDialog(
-        title: const Text('Relier à un joueur ?'),
+        title: const Text('Valider ce membre'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Tu peux associer ce compte à sa fiche joueur maintenant ou '
-              'le faire plus tard dans Effectif.',
+              'Le membre rejoint automatiquement l’effectif de la saison. Si '
+              'tu l’avais déjà saisi dans l’effectif avant son inscription, '
+              'relie-le à sa fiche pour ne pas créer de doublon.',
             ),
             const SizedBox(height: 16),
             if (loadingError != null)
@@ -60,16 +61,18 @@ Future<_ProfileValidationChoice?> _askPlayerLink(
                 'Le compte peut quand même être validé.',
               )
             else if (seasonId == null || availablePlayers.isEmpty)
-              const Text('Aucun joueur libre à associer actuellement.')
+              const Text('Aucune fiche d’effectif sans compte à relier.')
             else
               DropdownButtonFormField<String>(
                 initialValue: selectedPlayerId,
                 isExpanded: true,
-                decoration: const InputDecoration(labelText: 'Joueur'),
+                decoration: const InputDecoration(
+                  labelText: 'Fiche déjà saisie (facultatif)',
+                ),
                 items: [
                   const DropdownMenuItem(
                     value: '',
-                    child: Text('Ne pas relier maintenant'),
+                    child: Text('Aucune : créer sa fiche automatiquement'),
                   ),
                   ...availablePlayers.map(
                     (player) => DropdownMenuItem(

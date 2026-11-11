@@ -230,7 +230,7 @@ class _ProfileCard extends ConsumerWidget {
                             }
                           },
                           success: choice.seasonPlayerId == null
-                              ? '${profile.displayName} peut maintenant se connecter.'
+                              ? '${profile.displayName} est validé et rejoint l’effectif.'
                               : '${profile.displayName} est validé et relié au joueur.',
                         );
                       },
