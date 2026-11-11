@@ -40,7 +40,12 @@ void applyClubRules(List<ClubRule> rules) {
 
 /// Applique le réglage « mode live » du club aux horaires et aux écrans.
 final clubLiveModeSyncProvider = Provider<void>((ref) {
-  final enabled = ref.watch(clubModuleEnabledProvider(ClubModule.liveMode));
+  // Hors connexion, aucune question au serveur : le live reste « activé ».
+  final authenticated = ref.watch(
+    authControllerProvider.select((state) => state.isAuthenticated),
+  );
+  final enabled = !authenticated ||
+      ref.watch(clubModuleEnabledProvider(ClubModule.liveMode));
   var disposed = false;
   ref.onDispose(() => disposed = true);
   unawaited(
