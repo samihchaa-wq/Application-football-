@@ -1,3 +1,4 @@
+import '../../../support/position_profiles_fixture.dart';
 import 'package:as_grinta/features/sports_management/domain/player_position_identity.dart';
 import 'package:as_grinta/features/sports_management/domain/player_position_profiles.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -98,7 +99,7 @@ void main() {
     test('l’archive livrée reste cohérente avec elle-même', () {
       // Chaque profil porte un nom : sans nom, le réancrage serait aveugle.
       expect(
-        kPlayerPositionProfiles.values
+        kTestPositionProfiles.values
             .every((entry) => entry.displayName.trim().isNotEmpty),
         isTrue,
       );

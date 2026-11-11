@@ -1,6 +1,6 @@
+import '../../../support/position_profiles_fixture.dart';
 import 'package:as_grinta/features/sports_management/domain/composition_simulation.dart';
 import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
-import 'package:as_grinta/features/sports_management/domain/player_position_profiles.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Identités canoniques de l'effectif, telles que le fichier de postes les
@@ -37,7 +37,7 @@ SimulationCandidate candidate(
     participantId: name,
     displayName: name,
     benchCount: benchCount,
-    profile: playerId == null ? null : kPlayerPositionProfiles[playerId],
+    profile: playerId == null ? null : kTestPositionProfiles[playerId],
     isGuest: isGuest,
     isGoalkeeper: isGoalkeeper,
     benchedLastTime: benchedLastTime,
@@ -70,7 +70,7 @@ void main() {
 
   group('Fichier des postes de référence', () {
     test('chaque poste cité existe sur la feuille de match', () {
-      for (final profile in kPlayerPositionProfiles.values) {
+      for (final profile in kTestPositionProfiles.values) {
         for (final share in profile.samples) {
           expect(
             matchSheetSlotPositions.containsKey(share.slotLabel),
@@ -83,7 +83,7 @@ void main() {
     });
 
     test('les postes sont triés du plus fréquent au moins fréquent', () {
-      for (final profile in kPlayerPositionProfiles.values) {
+      for (final profile in kTestPositionProfiles.values) {
         expect(profile.samples, isNotEmpty);
         for (var index = 1; index < profile.samples.length; index += 1) {
           expect(
@@ -96,10 +96,10 @@ void main() {
     });
 
     test('les couteaux suisses sont ceux sans poste dominant', () {
-      expect(kPlayerPositionProfiles[hakimCherfi]!.isVersatile, isTrue);
-      expect(kPlayerPositionProfiles[simonReis]!.isVersatile, isTrue);
-      expect(kPlayerPositionProfiles[milanCouzin]!.isVersatile, isFalse);
-      expect(kPlayerPositionProfiles[samihGardien]!.mainSlotLabel, 'GB');
+      expect(kTestPositionProfiles[hakimCherfi]!.isVersatile, isTrue);
+      expect(kTestPositionProfiles[simonReis]!.isVersatile, isTrue);
+      expect(kTestPositionProfiles[milanCouzin]!.isVersatile, isFalse);
+      expect(kTestPositionProfiles[samihGardien]!.mainSlotLabel, 'GB');
     });
   });
 
@@ -584,7 +584,7 @@ void main() {
   });
 
   test('vingt convoqués se répartissent sans attente perceptible', () {
-    final profiles = kPlayerPositionProfiles.entries.take(20).toList();
+    final profiles = kTestPositionProfiles.entries.take(20).toList();
     final stopwatch = Stopwatch()..start();
     final simulation = simulateComposition(
       slots: formation.slots,

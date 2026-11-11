@@ -1,6 +1,6 @@
+import '../../../support/position_profiles_fixture.dart';
 import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
 import 'package:as_grinta/features/sports_management/domain/player_position_history.dart';
-import 'package:as_grinta/features/sports_management/domain/player_position_profiles.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Romain Spigolon : MDC très marqué dans l'archive.
@@ -68,24 +68,29 @@ void main() {
 
   group('Fusion avec l’archive', () {
     test('sans historique, les profils figés sont rendus tels quels', () {
-      final merged = mergePlayerPositionProfiles(history: const []);
+      final merged = mergePlayerPositionProfiles(
+        history: const [],
+        archive: kTestPositionProfiles,
+      );
 
-      expect(merged, same(kPlayerPositionProfiles));
+      expect(merged, same(kTestPositionProfiles));
     });
 
     test('l’archive reste intacte pour les joueurs sans nouveau match', () {
       final merged = mergePlayerPositionProfiles(
+        archive: kTestPositionProfiles,
         history: repeated(recrue, 'BU', times: 3, year: 2026),
       );
 
       expect(
         merged[romainSpigolon]!.mainSlotLabel,
-        kPlayerPositionProfiles[romainSpigolon]!.mainSlotLabel,
+        kTestPositionProfiles[romainSpigolon]!.mainSlotLabel,
       );
     });
 
     test('un joueur absent de l’archive se construit un profil', () {
       final merged = mergePlayerPositionProfiles(
+        archive: kTestPositionProfiles,
         history: repeated(recrue, 'DD', times: 4, year: 2026),
       );
 
@@ -96,8 +101,9 @@ void main() {
     });
 
     test('quelques matchs ne renversent pas un poste très marqué', () {
-      final avant = kPlayerPositionProfiles[romainSpigolon]!;
+      final avant = kTestPositionProfiles[romainSpigolon]!;
       final merged = mergePlayerPositionProfiles(
+        archive: kTestPositionProfiles,
         history: repeated(romainSpigolon, 'DCD', times: 3, year: 2026),
       );
 
@@ -108,6 +114,7 @@ void main() {
     test('un changement de poste durable finit par faire basculer le profil',
         () {
       final merged = mergePlayerPositionProfiles(
+        archive: kTestPositionProfiles,
         history: [
           ...repeated(romainSpigolon, 'DCD', times: 20, year: 2026),
           ...repeated(romainSpigolon, 'DCD', times: 20, year: 2027),
@@ -117,13 +124,14 @@ void main() {
       expect(merged[romainSpigolon]!.mainSlotLabel, 'DCD');
       expect(
         merged[romainSpigolon]!.secondarySlotLabel,
-        kPlayerPositionProfiles[romainSpigolon]!.mainSlotLabel,
+        kTestPositionProfiles[romainSpigolon]!.mainSlotLabel,
       );
     });
 
     test('les matchs joués s’ajoutent au compteur de titularisations', () {
-      final avant = kPlayerPositionProfiles[romainSpigolon]!.appearances;
+      final avant = kTestPositionProfiles[romainSpigolon]!.appearances;
       final merged = mergePlayerPositionProfiles(
+        archive: kTestPositionProfiles,
         history: repeated(romainSpigolon, 'MDC', times: 5, year: 2026),
       );
 
@@ -132,6 +140,7 @@ void main() {
 
     test('les postes fusionnés restent triés et bornés', () {
       final merged = mergePlayerPositionProfiles(
+        archive: kTestPositionProfiles,
         history: [
           for (final slot in matchSheetSlotPositions.keys)
             played(romainSpigolon, slot, year: 2026),
@@ -152,9 +161,10 @@ void main() {
       // Aki Salabee n'a aucun poste dominant dans l'archive ; une série de
       // titularisations au même poste doit finir par lui en donner un.
       const aki = 'a0a105a2-5041-4555-90bd-a75140ad701c';
-      expect(kPlayerPositionProfiles[aki]!.isVersatile, isTrue);
+      expect(kTestPositionProfiles[aki]!.isVersatile, isTrue);
 
       final merged = mergePlayerPositionProfiles(
+        archive: kTestPositionProfiles,
         history: repeated(aki, 'MDC', times: 15, year: 2027),
       );
 
