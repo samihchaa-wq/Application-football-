@@ -47,6 +47,10 @@ create policy club_isolation on public.club_subscriptions
   as restrictive for all to public
   using (club_id = (select private.current_club_id()))
   with check (club_id = (select private.current_club_id()));
+create policy active_authenticated_profile_only on public.club_subscriptions
+  as restrictive for all to authenticated
+  using ((select private.is_active_profile()))
+  with check ((select private.is_active_profile()));
 create policy club_scope_access on public.club_subscriptions
   for all to club_scope using (true) with check (true);
 create policy club_subscriptions_admin_read on public.club_subscriptions

@@ -64,6 +64,7 @@ as $$
   select p_bucket in ('profile-photos', 'badge-images');
 $$;
 alter function private.is_club_bucket(text) owner to club_scope;
+revoke all on function private.is_club_bucket(text) from public;
 grant execute on function private.is_club_bucket(text) to authenticated, club_scope;
 
 -- Vrai si le fichier peut être vu ou modifié depuis le club courant, c'est-à-
