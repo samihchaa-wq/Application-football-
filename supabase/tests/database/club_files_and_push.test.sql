@@ -80,10 +80,13 @@ select set_config('request.jwt.claims',
   '{"sub":"3c000000-0000-0000-0000-00000000000a","role":"authenticated","aud":"authenticated"}', true);
 set local role authenticated;
 
+-- Les images de badge se lisent par leur adresse publique, sans règle de
+-- lecture : seule la photo de profil est visible par une requête.
 select is(
   (select count(*) from storage.objects
-   where owner_id = '3c000000-0000-0000-0000-00000000000a'),
-  2::bigint,
+   where owner_id = '3c000000-0000-0000-0000-00000000000a'
+     and bucket_id = 'profile-photos'),
+  1::bigint,
   'Alpha voit ses propres fichiers'
 );
 
