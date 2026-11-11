@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:as_grinta/core/config/app_config.dart';
 import 'package:as_grinta/core/providers/supabase_provider.dart';
 import 'package:as_grinta/core/security/password_policy.dart';
@@ -14,6 +16,7 @@ class Club {
     required this.inviteCode,
     this.primaryColor,
     this.secondaryColor,
+    this.logoPath,
   });
 
   factory Club.fromJson(Map<String, dynamic> json) => Club(
@@ -23,6 +26,7 @@ class Club {
         inviteCode: json['invite_code'] as String? ?? '',
         primaryColor: json['primary_color'] as String?,
         secondaryColor: json['secondary_color'] as String?,
+        logoPath: json['logo_path'] as String?,
       );
 
   final String id;
@@ -33,6 +37,9 @@ class Club {
   /// Couleurs du club au format « #RRGGBB » (null : couleurs par défaut).
   final String? primaryColor;
   final String? secondaryColor;
+
+  /// Chemin du logo dans l'espace d'images (null : écusson neutre).
+  final String? logoPath;
 
   /// Lien d'inscription à partager : il ouvre la page d'inscription avec le
   /// code du club déjà rempli.
@@ -197,7 +204,8 @@ class ClubRepository {
   Future<Club> fetchMyClub() async {
     final row = await _client
         .from('clubs')
-        .select('id,name,short_name,invite_code,primary_color,secondary_color')
+        .select(
+            'id,name,short_name,invite_code,primary_color,secondary_color,logo_path')
         .single();
     return Club.fromJson(row);
   }
@@ -235,6 +243,47 @@ class ClubRepository {
       params: {'p_primary': primary, 'p_secondary': secondary},
     );
     if (result is! Map) throw StateError('Les couleurs n’ont pas pu changer.');
+    return Club.fromJson(Map<String, dynamic>.from(result));
+  }
+
+  /// Adresse publique du logo du club, ou null.
+  String? logoUrl(Club club) {
+    final path = club.logoPath;
+    if (path == null || path.isEmpty) return null;
+    return _client.storage.from('badge-images').getPublicUrl(path);
+  }
+
+  /// Envoie l'image comme logo du club. Réservé aux administrateurs.
+  Future<Club> uploadLogo(
+      Uint8List bytes, String fileExt, String clubId) async {
+    final ext = fileExt.isEmpty ? 'png' : fileExt.toLowerCase();
+    // Chaque envoi prend un nouveau nom : le navigateur peut garder l'image
+    // un an sans jamais afficher l'ancienne.
+    final path =
+        'club-logos/$clubId/${DateTime.now().millisecondsSinceEpoch}.$ext';
+    await _client.storage.from('badge-images').uploadBinary(
+          path,
+          bytes,
+          fileOptions: FileOptions(
+            contentType: ext == 'jpg' || ext == 'jpeg'
+                ? 'image/jpeg'
+                : ext == 'webp'
+                    ? 'image/webp'
+                    : 'image/png',
+            cacheControl: '31536000',
+            upsert: false,
+          ),
+        );
+    return _setLogoPath(path);
+  }
+
+  /// Retire le logo : l'écusson neutre revient.
+  Future<Club> removeLogo() => _setLogoPath(null);
+
+  Future<Club> _setLogoPath(String? path) async {
+    final result =
+        await _client.rpc('admin_set_club_logo', params: {'p_path': path});
+    if (result is! Map) throw StateError('Le logo n’a pas pu être changé.');
     return Club.fromJson(Map<String, dynamic>.from(result));
   }
 

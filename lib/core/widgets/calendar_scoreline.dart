@@ -1,6 +1,7 @@
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/utils/app_formats.dart';
 import 'package:as_grinta/core/widgets/match_fixture.dart';
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:flutter/material.dart';
 
 /// Affiche d'une rencontre sur une seule ligne, pour les cartes du calendrier :
@@ -46,7 +47,7 @@ class CalendarScoreline extends StatelessWidget {
   /// et n'est jamais coupé par « … ».
   final bool limitNameLines;
 
-  static const String crestAsset = 'assets/images/club_crest.webp';
+  static const String crestAsset = ClubIdentity.defaultCrestAsset;
 
   /// Taille habituelle de l'écusson, celle des cartes du calendrier.
   static const double regularCrestSize = 32;
@@ -175,7 +176,7 @@ class _ScorelineTeam extends StatelessWidget {
         image: ResizeImage.resizeIfNeeded(
           null,
           crestPixels,
-          const AssetImage(CalendarScoreline.crestAsset),
+          ClubIdentity.crestImage,
         ),
         width: crestSize,
         height: crestSize,

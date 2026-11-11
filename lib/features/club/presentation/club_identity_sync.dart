@@ -30,6 +30,7 @@ final clubIdentitySyncProvider = Provider<void>((ref) {
         if (disposed) return;
         ClubIdentity.set(name: club.name, shortName: club.shortName);
         applyClubColors(club);
+        ClubIdentity.setLogoUrl(ref.read(clubRepositoryProvider).logoUrl(club));
       } catch (_) {
         // Le libellé neutre reste affiché ; la prochaine connexion réessaie.
       }

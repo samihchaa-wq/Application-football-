@@ -3,6 +3,7 @@ import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/features/badges/presentation/badge_trophy_button.dart';
 import 'package:as_grinta/features/notifications/presentation/notification_inbox_button.dart';
 import 'package:as_grinta/features/season_wrapped/presentation/season_wrapped_entry_button.dart';
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -66,11 +67,14 @@ class GrintaClubHomeButton extends StatelessWidget {
           height: 48,
           child: Align(
             alignment: Alignment.centerLeft,
-            child: Image.asset(
-              'assets/images/club_crest.webp',
-              height: 42,
+            child: Image(
               // Décodé à la taille affichée plutôt qu'en 680 × 741 px.
-              cacheHeight: (42 * MediaQuery.devicePixelRatioOf(context)).ceil(),
+              image: ResizeImage.resizeIfNeeded(
+                null,
+                (42 * MediaQuery.devicePixelRatioOf(context)).ceil(),
+                ClubIdentity.crestImage,
+              ),
+              height: 42,
               fit: BoxFit.contain,
               filterQuality: FilterQuality.high,
             ),

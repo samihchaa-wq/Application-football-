@@ -19,6 +19,7 @@ import 'package:as_grinta/features/players/presentation/hero_photo_margin.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:as_grinta/features/statistics/data/statistics_repository.dart';
 import 'package:as_grinta/features/statistics/presentation/stats_hub_page.dart';
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -297,8 +298,8 @@ class _Hero extends ConsumerWidget {
             height: 230,
             child: Opacity(
               opacity: .09,
-              child: Image.asset(
-                'assets/images/club_crest.webp',
+              child: Image(
+                image: ClubIdentity.crestImage,
                 fit: BoxFit.contain,
               ),
             ),
