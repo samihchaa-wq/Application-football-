@@ -1,3 +1,0 @@
--- Historical production migration 20260720033749.
--- Its pristine SQL is archived in supabase/migrations_legacy_production/20260720033749_integrity_backfill_and_staff_audit.sql.
--- Fresh installations are built by the canonical baseline at 20260809234943.

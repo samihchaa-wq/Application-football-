@@ -1,3 +1,0 @@
--- Historical production migration 20260731060000.
--- Its pristine SQL is archived in supabase/migrations_legacy_production/20260731060000_allow_postmatch_composition_updates.sql.
--- Fresh installations are built by the canonical baseline at 20260809234943.

@@ -1,3 +1,0 @@
--- Historical production migration 20260730153000.
--- Its pristine SQL is archived in supabase/migrations_legacy_production/20260730153000_playful_manual_availability_reminder_copy.sql.
--- Fresh installations are built by the canonical baseline at 20260809234943.

@@ -1,3 +1,0 @@
--- Historical production migration 20260803151200.
--- Its pristine SQL is archived in supabase/migrations_legacy_production/20260803151200_motm_strict_h2_without_source_dependency.sql.
--- Fresh installations are built by the canonical baseline at 20260809234943.

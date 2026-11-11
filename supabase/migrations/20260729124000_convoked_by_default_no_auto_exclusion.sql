@@ -1,3 +1,0 @@
--- Historical production migration 20260729124000.
--- Its pristine SQL is archived in supabase/migrations_legacy_production/20260729124000_convoked_by_default_no_auto_exclusion.sql.
--- Fresh installations are built by the canonical baseline at 20260809234943.

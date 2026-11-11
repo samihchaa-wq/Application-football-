@@ -1,3 +1,0 @@
--- Historical production migration 20260803142018.
--- Its pristine SQL is archived in supabase/migrations_legacy_production/20260803142018_notifications_v2_match_events_preferences.sql.
--- Fresh installations are built by the canonical baseline at 20260809234943.

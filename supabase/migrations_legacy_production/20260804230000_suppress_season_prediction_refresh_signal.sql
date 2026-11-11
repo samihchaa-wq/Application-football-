@@ -1,1 +1,0 @@
-Applied atomically via validated production deployment; canonical SQL is supabase/migrations/20260804230000_suppress_season_prediction_refresh_signal.sql;

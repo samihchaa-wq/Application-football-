@@ -1,3 +1,0 @@
--- Historical production migration 20260803161358.
--- Its pristine SQL is archived in supabase/migrations_legacy_production/20260803161358_match_weather_security_floor.sql.
--- Fresh installations are built by the canonical baseline at 20260809234943.

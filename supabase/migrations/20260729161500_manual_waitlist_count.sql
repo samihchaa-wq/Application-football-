@@ -1,3 +1,0 @@
--- Historical production migration 20260729161500.
--- Its pristine SQL is archived in supabase/migrations_legacy_production/20260729161500_manual_waitlist_count.sql.
--- Fresh installations are built by the canonical baseline at 20260809234943.

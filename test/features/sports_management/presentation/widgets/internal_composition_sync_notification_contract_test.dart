@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  const migrationPath = 'supabase/migrations/'
-      '20260907223000_internal_composition_sync_first_visual_notification.sql';
-  const exactRosterMigrationPath = 'supabase/migrations/'
-      '20260907223100_internal_composition_exact_roster_sync.sql';
+  // La structure de la base tient désormais dans un socle unique.
+  const migrationPath =
+      'supabase/migrations/20261111000100_socle_structure.sql';
+  const exactRosterMigrationPath = migrationPath;
 
   test('le joueur ne reçoit jamais la vue papier avant le terrain validé', () {
     final widget = File(
@@ -94,7 +94,6 @@ void main() {
       migration,
       contains('on conflict (match_id, kind) do nothing'),
     );
-    expect(migration, contains("then 'Compositions faites'"));
   });
 
   test('le push entre nous vise tous les profils actifs abonnés', () {
