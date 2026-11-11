@@ -1,3 +1,0 @@
--- Historical production migration 20260807111000.
--- Its pristine SQL is archived in supabase/migrations_legacy_production/20260807111000_canonical_historical_player_links.sql.
--- Fresh installations are built by the canonical baseline at 20260809234943.

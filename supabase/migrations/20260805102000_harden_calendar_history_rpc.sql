@@ -1,3 +1,0 @@
--- Historical production migration 20260805102000.
--- Its pristine SQL is archived in supabase/migrations_legacy_production/20260805102000_harden_calendar_history_rpc.sql.
--- Fresh installations are built by the canonical baseline at 20260809234943.

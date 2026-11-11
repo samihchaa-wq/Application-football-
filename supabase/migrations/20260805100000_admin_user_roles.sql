@@ -1,3 +1,0 @@
--- Historical production migration 20260805100000.
--- Its pristine SQL is archived in supabase/migrations_legacy_production/20260805100000_admin_user_roles.sql.
--- Fresh installations are built by the canonical baseline at 20260809234943.
