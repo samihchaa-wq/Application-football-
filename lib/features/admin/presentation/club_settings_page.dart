@@ -3,6 +3,7 @@ import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
 import 'package:as_grinta/core/widgets/grinta_loader.dart';
 import 'package:as_grinta/features/club/data/club_repository.dart';
+import 'package:as_grinta/features/club/presentation/club_rules_sync.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,6 +23,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
 
   Club? _club;
   ClubModules _modules = const ClubModules.allEnabled();
+  List<ClubRule> _rules = const [];
+  final Set<String> _pendingRules = {};
   Object? _loadError;
   bool _loading = true;
   bool _savingIdentity = false;
@@ -50,10 +53,12 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       final repository = ref.read(clubRepositoryProvider);
       final club = await repository.fetchMyClub();
       final modules = await repository.fetchModules();
+      final rules = await repository.fetchRules();
       if (!mounted) return;
       setState(() {
         _club = club;
         _modules = modules;
+        _rules = rules;
         _nameController.text = club.name;
         _shortNameController.text = club.shortName;
         _loading = false;
@@ -176,6 +181,78 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     }
   }
 
+  Future<void> _setRule(ClubRule rule, int? value) async {
+    setState(() => _pendingRules.add(rule.key));
+    try {
+      final rules =
+          await ref.read(clubRepositoryProvider).setRule(rule.key, value);
+      if (!mounted) return;
+      setState(() => _rules = rules);
+      applyClubRules(rules);
+    } catch (_) {
+      if (mounted) _showMessage('La règle n’a pas pu être enregistrée.');
+    } finally {
+      if (mounted) setState(() => _pendingRules.remove(rule.key));
+    }
+  }
+
+  List<Widget> _ruleSection(ThemeData theme) {
+    if (_rules.isEmpty) return const [];
+    final widgets = <Widget>[
+      const SizedBox(height: 28),
+      Text('Règles du club', style: theme.textTheme.titleMedium),
+      const SizedBox(height: 8),
+      const Text(
+        'Les horaires et délais propres à ton club. Les changements '
+        's’appliquent à tous les membres, pour les matchs à venir.',
+      ),
+    ];
+    String? group;
+    for (final rule in _rules) {
+      if (rule.group != group) {
+        group = rule.group;
+        widgets
+          ..add(const SizedBox(height: 16))
+          ..add(Text(rule.group, style: theme.textTheme.titleSmall));
+      }
+      widgets.add(
+        ListTile(
+          key: ValueKey('club-rule-${rule.key}'),
+          contentPadding: EdgeInsets.zero,
+          title: Text(rule.label),
+          subtitle: Text(
+            '${rule.description}\nPar défaut : ${rule.defaultValue} '
+            '${rule.unit}',
+          ),
+          isThreeLine: true,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                key: ValueKey('club-rule-${rule.key}-minus'),
+                icon: const Icon(Icons.remove_circle_outline),
+                onPressed:
+                    _pendingRules.contains(rule.key) || rule.value <= rule.min
+                        ? null
+                        : () => _setRule(rule, rule.value - 1),
+              ),
+              Text('${rule.value} ${rule.unit}'),
+              IconButton(
+                key: ValueKey('club-rule-${rule.key}-plus'),
+                icon: const Icon(Icons.add_circle_outline),
+                onPressed:
+                    _pendingRules.contains(rule.key) || rule.value >= rule.max
+                        ? null
+                        : () => _setRule(rule, rule.value + 1),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return widgets;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -296,6 +373,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
                 ? null
                 : (value) => _setModule(module, value),
           ),
+        ..._ruleSection(theme),
       ],
     );
   }
