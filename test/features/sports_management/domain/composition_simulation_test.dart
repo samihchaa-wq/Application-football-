@@ -1,4 +1,4 @@
-import '../../../support/position_profiles_fixture.dart';
+import 'position_profiles_fixture.dart';
 import 'package:as_grinta/features/sports_management/domain/composition_simulation.dart';
 import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
 import 'package:flutter_test/flutter_test.dart';
