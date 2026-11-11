@@ -198,6 +198,32 @@ select ok(
 );
 
 reset role;
+
+-- Pronostics désactivés par le club : le serveur refuse, puis accepte à
+-- nouveau après réactivation.
+insert into private.app_feature_flags (key, enabled, config, updated_at)
+values ('predictions', false, '{}'::jsonb, now())
+on conflict (club_id, key) do update set enabled = false;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-0000-0000-000000000002","role":"authenticated","aud":"authenticated"}',
+  true
+);
+set local role authenticated;
+select throws_ok(
+  $$select public.save_match_prediction('50000000-0000-0000-0000-000000000003', 2, 2)$$,
+  '42501',
+  'Les pronostics sont désactivés pour ce club.',
+  'un club qui a désactivé les pronostics n’en enregistre plus'
+);
+reset role;
+update private.app_feature_flags set enabled = true where key = 'predictions';
+set local role authenticated;
+select ok(
+  public.save_match_prediction('50000000-0000-0000-0000-000000000003', 1, 0),
+  'réactivés, les pronostics sont de nouveau acceptés'
+);
+reset role;
 select set_config(
   'request.jwt.claims',
   '{"sub":"10000000-0000-0000-0000-000000000004","role":"authenticated","aud":"authenticated"}',
