@@ -124,7 +124,11 @@ insert into reviewed_open_definers (fonction, motif) values
   ('get_my_club_access()',
    'ne renvoie que le statut du club du demandeur (actif ou suspendu), pour lui expliquer une suspension'),
   ('private.is_platform_operator()',
-   'garde elle-meme : vérifie que le demandeur est l’éditeur et ne renvoie qu’un booléen');
+   'garde elle-meme : vérifie que le demandeur est l’éditeur et ne renvoie qu’un booléen'),
+  ('accept_terms(text,text)',
+   'n’écrit que la ligne du demandeur : version des conditions acceptée et déclaration d’âge'),
+  ('export_my_data()',
+   'ne lit que les lignes du demandeur dans son club, sans les secrets de notification');
 
 create temporary view open_definers as
   select p.oid::regprocedure::text as fonction
