@@ -28,7 +28,15 @@ PGOPTIONS="-c loadtest.members=${MEMBERS} -c loadtest.matches=${MATCHES}" \
 echo
 
 echo "### Tâches planifiées (durée d'un passage, tous clubs confondus)"
-psql "$DB_URL" -v ON_ERROR_STOP=1 -q -f "$HERE/cron_timing.sql"
+# Chaque tâche est lancée seule, limitée à 120 s : une tâche trop lente est
+# signalée au lieu de bloquer tout le test.
+psql "$DB_URL" -q -c "create table if not exists loadtest.cron_timing (job text, schedule text, ms numeric, error text)"
+psql "$DB_URL" -At -c "select jobname from cron.job where jobname not like 'purge-%' order by jobname" |
+while read -r job; do
+  [ -z "$job" ] && continue
+  PGOPTIONS="-c statement_timeout=120000" psql "$DB_URL" -q -At -v job="$job" -f "$HERE/cron_timing.sql" 2>&1 || true
+done
+psql "$DB_URL" -q -f "$HERE/cron_summary.sql"
 echo
 
 echo "### Lecture : ouverture de l'appli par des membres au hasard"

@@ -85,6 +85,10 @@ declare
   k integer;
 begin
   for c in 1..v_clubs loop
+    if c % 50 = 0 then
+      raise notice 'clubs créés : % / % (% s)', c, v_clubs,
+        round(extract(epoch from clock_timestamp() - now()));
+    end if;
     v_club := (public.create_club('Club de charge ' || loadtest.letters(c), 'CH' || loadtest.letters(c))).id;
     perform set_config('app.club_id', v_club::text, true);
 
