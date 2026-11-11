@@ -1,0 +1,560 @@
+import 'package:as_grinta/core/providers/supabase_provider.dart';
+import 'package:as_grinta/core/utils/name_validation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+/// État d'un badge dans l'armoire.
+enum BadgeState { validated, inProgress, locked }
+
+class BadgeDef {
+  const BadgeDef({
+    required this.code,
+    required this.name,
+    required this.description,
+    required this.emoji,
+    required this.imageUrl,
+    required this.color,
+    required this.family,
+    required this.kind,
+    required this.category,
+    required this.metric,
+    required this.threshold,
+    required this.sortOrder,
+    this.hasStar = false,
+    this.standalone = false,
+    this.secret = false,
+    this.auto = false,
+    this.autoRule,
+  });
+
+  final String code;
+  final String name;
+  final String description;
+  final String emoji;
+  final String? imageUrl;
+
+  /// Couleur du carré de l'emblème (hex `#RRGGBB`).
+  final String? color;
+  final String family;
+
+  /// 'tier' | 'title' | 'custom'
+  final String kind;
+
+  /// 'all_time' | 'saison' | 'faits_de_jeu' | 'pronos'
+  final String category;
+  final String? metric;
+  final int? threshold;
+  final int sortOrder;
+
+  /// Étoile posée au-dessus du carré (paliers finaux + titres).
+  final bool hasStar;
+
+  /// Badge « exploit » autonome (ex. Triplé/Quadruplé/Quintuplé) : affiché seul,
+  /// sans barème gradué ni barre de progression.
+  final bool standalone;
+
+  /// Badge secret : masqué (« ??? » dans « À débloquer ») tant qu'il n'est pas
+  /// gagné. Une fois obtenu, il apparaît normalement dans « Validés ».
+  final bool secret;
+
+  /// Badge à barème décerné par le recalcul (métrique + seuil).
+  final bool auto;
+
+  /// Fait de match qui décerne ce badge automatiquement (ex. `clutch`).
+  /// Nul pour un badge seulement manuel ou à barème.
+  final String? autoRule;
+
+  /// Badge « mystère » : secret ou créé à la main par un admin. Dans
+  /// l'armoire, il reste à sa place parmi les badges à découvrir, même une
+  /// fois gagné.
+  bool get isMystery => secret || code.startsWith('custom_');
+
+  /// Vrai si l'application décerne ce badge toute seule, sans action admin.
+  bool get awardedAutomatically =>
+      (auto && metric != null && threshold != null) || autoRule != null;
+
+  factory BadgeDef.fromMap(Map<String, dynamic> m) => BadgeDef(
+        code: m['code'].toString(),
+        name: (m['name'] ?? '').toString(),
+        description: (m['description'] ?? '').toString(),
+        emoji: (m['emoji'] ?? '🏅').toString(),
+        imageUrl: m['image_url']?.toString(),
+        color: m['color']?.toString(),
+        family: (m['family'] ?? 'joueur').toString(),
+        kind: (m['kind'] ?? 'tier').toString(),
+        category: (m['category'] ?? 'all_time').toString(),
+        metric: m['metric']?.toString(),
+        threshold: (m['threshold'] as num?)?.toInt(),
+        sortOrder: (m['sort_order'] as num?)?.toInt() ?? 0,
+        hasStar: m['has_star'] == true,
+        standalone: m['standalone'] == true,
+        secret: m['secret'] == true,
+        auto: m['auto'] == true,
+        autoRule: m['auto_rule']?.toString(),
+      );
+}
+
+/// Un membre du club qui possède un badge.
+class BadgeHolder {
+  const BadgeHolder({required this.profileId, required this.name});
+
+  final String profileId;
+  final String name;
+}
+
+/// Regroupe les lignes `profile_badges` (avec badge et profil joints) par code
+/// de badge. Fonction pure, testable sans base de données.
+Map<String, List<BadgeHolder>> groupBadgeHolders(
+  List<Map<String, dynamic>> rows,
+) {
+  final byCode = <String, Map<String, BadgeHolder>>{};
+  for (final row in rows) {
+    final badge = row['badges'];
+    final code = badge is Map ? badge['code']?.toString() : null;
+    final profileId = row['profile_id']?.toString();
+    if (code == null || profileId == null) continue;
+    final profile = row['profiles'];
+    final name = _holderName(profile is Map ? profile : const {});
+    byCode.putIfAbsent(code, () => {})[profileId] =
+        BadgeHolder(profileId: profileId, name: name);
+  }
+  return {
+    for (final entry in byCode.entries)
+      entry.key: entry.value.values.toList()
+        ..sort((a, b) => compareBadgeNames(a.name, b.name)),
+  };
+}
+
+// Même priorité que la fiche joueur : surnom, puis prénom.
+String _holderName(Map<dynamic, dynamic> profile) {
+  for (final candidate in [profile['surnom'], profile['first_name']]) {
+    final name = capitalizePersonName(candidate?.toString() ?? '');
+    if (name.isNotEmpty) return name;
+  }
+  return 'Joueur';
+}
+
+/// Une entrée de l'armoire : un badge + son état pour la personne.
+class ArmoireBadge {
+  const ArmoireBadge({
+    required this.def,
+    required this.state,
+    this.current,
+    this.target,
+    this.displayValue,
+    this.awardedAt,
+    this.stars = 1,
+    this.isNew = false,
+    this.knownToClub = false,
+  });
+
+  final BadgeDef def;
+  final BadgeState state;
+
+  /// Badge pas encore gagné par la personne, mais déjà obtenu par au moins un
+  /// membre du club : il n'est plus un mystère. L'armoire le montre en noir
+  /// et blanc, avec son nom, au lieu d'une simple carte « Mystère ».
+  final bool knownToClub;
+
+  /// Vrai si le badge est gagné mais pas encore consulté (affiche une pastille
+  /// qui disparaît au clic).
+  final bool isNew;
+
+  /// Pour « en cours » : valeur de la saison/cumul actuel et seuil visé.
+  final int? current;
+  final int? target;
+
+  /// Chiffre réellement écrit sur l'emblème. Pour les badges carrière, c'est
+  /// le cumul actuel. Pour « Cette saison », c'est le meilleur total d'une
+  /// saison suivie, sauf sur le prochain palier où l'on montre la saison en
+  /// cours afin de rester cohérent avec la barre de progression.
+  final int? displayValue;
+
+  final DateTime? awardedAt;
+
+  /// Nombre d'étoiles à afficher au-dessus de l'emblème (paliers étoilés
+  /// rejouables : une étoile par saison / titre gagné). 1 par défaut.
+  final int stars;
+
+  double? get progress => (current != null && target != null && target! > 0)
+      ? (current! / target!).clamp(0.0, 1.0)
+      : null;
+
+  int? get remaining =>
+      (current != null && target != null) ? (target! - current!) : null;
+}
+
+class Armoire {
+  const Armoire({
+    required this.validated,
+    required this.inProgress,
+    required this.locked,
+  });
+
+  final List<ArmoireBadge> validated;
+  final List<ArmoireBadge> inProgress;
+  final List<ArmoireBadge> locked;
+
+  /// Section « Débloqués » : tous les badges gagnés, mystères compris. Un
+  /// mystère gagné reste aussi révélé à sa place dans « Badges mystères ».
+  List<ArmoireBadge> get unlocked => validated;
+
+  /// Section « Badges mystères » : badges pas encore gagnés et mystères déjà
+  /// gagnés, mélangés par ordre alphabétique. Un mystère gagné se révèle à
+  /// sa place au lieu de remonter en tête.
+  List<ArmoireBadge> get toDiscover => [
+        ...locked,
+        ...validated.where((b) => b.def.isMystery),
+      ]..sort((a, b) => compareBadgeNames(a.def.name, b.def.name));
+
+  /// Aperçu pour l'accueil : les badges validés les plus récents.
+  List<ArmoireBadge> get recent {
+    final sorted = [...validated]..sort((a, b) =>
+        (b.awardedAt ?? DateTime(0)).compareTo(a.awardedAt ?? DateTime(0)));
+    return sorted;
+  }
+}
+
+/// Compare deux noms de badges par ordre alphabétique, sans tenir compte des
+/// majuscules ni des accents (« Équipe » se range avec les E).
+int compareBadgeNames(String a, String b) {
+  final byFolded = _foldForSort(a).compareTo(_foldForSort(b));
+  return byFolded != 0 ? byFolded : a.compareTo(b);
+}
+
+const _accentFolds = {
+  'à': 'a',
+  'â': 'a',
+  'ä': 'a',
+  'á': 'a',
+  'ã': 'a',
+  'å': 'a',
+  'ç': 'c',
+  'é': 'e',
+  'è': 'e',
+  'ê': 'e',
+  'ë': 'e',
+  'î': 'i',
+  'ï': 'i',
+  'í': 'i',
+  'ì': 'i',
+  'ô': 'o',
+  'ö': 'o',
+  'ó': 'o',
+  'ò': 'o',
+  'õ': 'o',
+  'ù': 'u',
+  'û': 'u',
+  'ü': 'u',
+  'ú': 'u',
+  'ÿ': 'y',
+  'ñ': 'n',
+  'œ': 'oe',
+  'æ': 'ae',
+};
+
+String _foldForSort(String value) {
+  final buffer = StringBuffer();
+  for (final char in value.trim().toLowerCase().split('')) {
+    buffer.write(_accentFolds[char] ?? char);
+  }
+  return buffer.toString();
+}
+
+/// Range le catalogue en trois sections d'armoire à partir des données déjà
+/// chargées. Fonction pure : c'est elle qui décide quels badges sont visibles,
+/// donc elle est testable sans base de données.
+Armoire buildArmoire({
+  required List<BadgeDef> catalog,
+  required Map<String, DateTime> earnedAt,
+  required Set<String> featuredCodes,
+  required Set<String> seenCodes,
+  required Map<String, int> metrics,
+  required Map<String, int> displayMetrics,
+  required Map<String, int> starCounts,
+  Set<String> clubEarnedCodes = const {},
+}) {
+  final byCode = {for (final b in catalog) b.code: b};
+  bool isNewBadge(String code) =>
+      earnedAt.containsKey(code) && !seenCodes.contains(code);
+
+  int? personalDisplayValue(BadgeDef def) {
+    final metric = def.metric;
+    if (metric == null) return null;
+    return displayMetrics[metric] ?? metrics[metric] ?? 0;
+  }
+
+  final validated = <ArmoireBadge>[];
+  final inProgress = <ArmoireBadge>[];
+  final locked = <ArmoireBadge>[];
+
+  // Paliers : par métrique, on montre TOUS les paliers déjà gagnés + le
+  // suivant « en cours » avec sa progression.
+  // Les badges « standalone » (exploits autonomes) forment chacun leur propre
+  // groupe (clé = code), donc ils s'affichent séparément, sans barème gradué.
+  final byMetric = <String, List<BadgeDef>>{};
+  for (final b in catalog.where((b) => b.kind == 'tier' && b.metric != null)) {
+    final key = b.standalone ? 'code:${b.code}' : b.metric!;
+    byMetric.putIfAbsent(key, () => []).add(b);
+  }
+  byMetric.forEach((groupKey, tiers) {
+    tiers.sort((a, b) => (a.threshold ?? 0).compareTo(b.threshold ?? 0));
+    final metric = tiers.first.metric!;
+    final value = metrics[metric] ?? 0;
+    // Barème à un seul palier (titres, exploits autonomes) : pas de barre de
+    // progression ni de compteur « 0/1 · plus que 1 ».
+    final singleTier = tiers.length == 1;
+    // Un palier est « validé » dès qu'il a été GAGNÉ (ligne profile_badges),
+    // et le reste à vie — même si la stat de la saison est retombée. Chaque
+    // palier gagné garde sa propre vignette : franchir « Vétéran » ne fait
+    // pas disparaître « Fidèle ». Le premier palier pas encore gagné part
+    // en « en cours ».
+    final owned = <BadgeDef>[];
+    BadgeDef? nextUnowned;
+    for (final t in tiers) {
+      if (earnedAt.containsKey(t.code)) {
+        owned.add(t);
+      } else {
+        nextUnowned ??= t;
+      }
+    }
+    for (var i = 0; i < owned.length; i++) {
+      final tier = owned[i];
+      // Seul le palier le plus haut porte le cumul réel (« 132 matchs ») :
+      // sur les paliers déjà dépassés, ce chiffre serait répété à
+      // l'identique, donc chacun affiche son propre seuil.
+      final isHighestOwned = i == owned.length - 1;
+      validated.add(ArmoireBadge(
+        def: tier,
+        state: BadgeState.validated,
+        displayValue:
+            isHighestOwned ? personalDisplayValue(tier) : tier.threshold,
+        awardedAt: earnedAt[tier.code],
+        stars: starCounts[tier.code] ?? 1,
+        isNew: isNewBadge(tier.code),
+      ));
+    }
+    if (nextUnowned != null) {
+      if (nextUnowned.secret) {
+        // Badge secret pas encore gagné : reste masqué (« ??? ») dans la
+        // section « À débloquer », sans dévoiler son nom ni sa condition.
+        locked.add(ArmoireBadge(
+          def: nextUnowned,
+          state: BadgeState.locked,
+          knownToClub: clubEarnedCodes.contains(nextUnowned.code),
+        ));
+      } else {
+        inProgress.add(ArmoireBadge(
+          def: nextUnowned,
+          state: BadgeState.inProgress,
+          current: singleTier ? null : value,
+          target: singleTier ? null : nextUnowned.threshold,
+          displayValue: value,
+        ));
+      }
+    }
+  });
+
+  // Titres et badges custom : acquis une seule fois, à vie.
+  for (final b in catalog.where((b) => b.kind != 'tier')) {
+    if (earnedAt.containsKey(b.code)) {
+      validated.add(ArmoireBadge(
+        def: b,
+        state: BadgeState.validated,
+        displayValue: personalDisplayValue(b),
+        awardedAt: earnedAt[b.code],
+        stars: starCounts[b.code] ?? 1,
+        isNew: isNewBadge(b.code),
+      ));
+    } else {
+      locked.add(ArmoireBadge(
+        def: b,
+        state: BadgeState.locked,
+        knownToClub: clubEarnedCodes.contains(b.code),
+      ));
+    }
+  }
+
+  // Badges arborés qui ne sont plus dans le palier courant (ex. un badge
+  // saisonnier après un changement de saison) : on les garde visibles dans
+  // « Validés » pour que la personne puisse toujours les voir et les retirer.
+  final shownCodes = {for (final v in validated) v.def.code};
+  for (final code in featuredCodes) {
+    if (shownCodes.contains(code)) continue;
+    final def = byCode[code];
+    if (def == null) continue;
+    validated.add(ArmoireBadge(
+      def: def,
+      state: BadgeState.validated,
+      displayValue: personalDisplayValue(def),
+      awardedAt: earnedAt[code],
+      stars: starCounts[code] ?? 1,
+      isNew: isNewBadge(code),
+    ));
+  }
+
+  validated.sort((a, b) => a.def.sortOrder.compareTo(b.def.sortOrder));
+  inProgress.sort((a, b) => a.def.sortOrder.compareTo(b.def.sortOrder));
+  locked.sort((a, b) => a.def.sortOrder.compareTo(b.def.sortOrder));
+
+  return Armoire(validated: validated, inProgress: inProgress, locked: locked);
+}
+
+class BadgeRepository {
+  BadgeRepository(this._client);
+
+  final SupabaseClient _client;
+
+  Future<List<BadgeDef>> fetchCatalog() async {
+    final rows = await _client
+        .from('badges')
+        .select(
+            'code,name,description,emoji,image_url,color,family,kind,category,metric,threshold,sort_order,has_star,standalone,secret,auto,auto_rule')
+        .order('sort_order');
+    return (rows as List)
+        .map((r) => BadgeDef.fromMap(Map<String, dynamic>.from(r as Map)))
+        .toList();
+  }
+
+  /// Qui possède quel badge, pour tout le club : code du badge → titulaires,
+  /// par ordre alphabétique. Les badges gagnés sont lisibles par tout membre
+  /// connecté (c'est déjà ce qu'affiche la fiche d'un joueur).
+  Future<Map<String, List<BadgeHolder>>> fetchClubHolders() async {
+    final rows = await _client.from('profile_badges').select(
+          'profile_id, badges(code), '
+          'profiles!profile_badges_profile_id_fkey(first_name, surnom)',
+        );
+    return groupBadgeHolders([
+      for (final r in rows as List) Map<String, dynamic>.from(r as Map),
+    ]);
+  }
+
+  Future<Armoire> fetchArmoire(
+    String profileId, {
+    Set<String> clubEarnedCodes = const {},
+  }) async {
+    // Les cinq lectures sont indépendantes : elles partent ensemble au lieu
+    // de s'enchaîner (l'armoire attendait cinq allers-retours successifs).
+    final results = await Future.wait<Object?>([
+      fetchCatalog(),
+      // Badges directement attribués (paliers + custom).
+      _client
+          .from('profile_badges')
+          .select('badge_id, awarded_at, featured, badges(code)')
+          .eq('profile_id', profileId),
+      _client
+          .from('profile_badge_seen')
+          .select('badge_code')
+          .eq('profile_id', profileId),
+      _client.rpc(
+        'profile_badge_display_metrics',
+        params: {'p_profile_id': profileId},
+      ),
+      _client.rpc('profile_badge_stars', params: {'p_profile_id': profileId}),
+    ]);
+    final catalog = results[0]! as List<BadgeDef>;
+    final earnedRows = results[1];
+    final earnedAt = <String, DateTime>{};
+    final featuredCodes = <String>{};
+    for (final r in earnedRows as List) {
+      final m = Map<String, dynamic>.from(r as Map);
+      final b = m['badges'];
+      final code = b is Map ? b['code']?.toString() : null;
+      if (code != null) {
+        earnedAt[code] =
+            DateTime.tryParse(m['awarded_at']?.toString() ?? '') ?? DateTime(0);
+        if (m['featured'] == true) featuredCodes.add(code);
+      }
+    }
+
+    // Badges déjà consultés : ceux gagnés mais absents d'ici affichent la
+    // pastille « nouveau ».
+    final seenRows = results[2];
+    final seenCodes = {
+      for (final r in seenRows as List)
+        Map<String, dynamic>.from(r as Map)['badge_code'].toString(),
+    };
+
+    // Deux valeurs par métrique : `current_value` pilote toujours la
+    // progression/déblocage ; `display_value` pilote seulement le chiffre du
+    // badge (record de saison pour les badges saisonniers déjà gagnés).
+    final metricsRes = results[3];
+    final metrics = <String, int>{};
+    final displayMetrics = <String, int>{};
+    if (metricsRes is List) {
+      for (final r in metricsRes) {
+        final m = Map<String, dynamic>.from(r as Map);
+        final metric = m['metric']?.toString();
+        if (metric == null) continue;
+        metrics[metric] = (m['current_value'] as num?)?.toInt() ?? 0;
+        displayMetrics[metric] = (m['display_value'] as num?)?.toInt() ?? 0;
+      }
+    }
+
+    // Nombre d'étoiles par badge : un palier étoilé ré-atteint (nouvelle saison,
+    // titre regagné) ajoute une étoile. 1 par défaut pour les paliers carrière.
+    final starsRes = results[4];
+    final starCounts = <String, int>{};
+    if (starsRes is List) {
+      for (final r in starsRes) {
+        final m = Map<String, dynamic>.from(r as Map);
+        final code = m['badge_code']?.toString();
+        final n = (m['stars'] as num?)?.toInt() ?? 1;
+        if (code != null && n > 0) starCounts[code] = n;
+      }
+    }
+
+    return buildArmoire(
+      catalog: catalog,
+      earnedAt: earnedAt,
+      featuredCodes: featuredCodes,
+      seenCodes: seenCodes,
+      metrics: metrics,
+      displayMetrics: displayMetrics,
+      starCounts: starCounts,
+      clubEarnedCodes: clubEarnedCodes,
+    );
+  }
+
+  /// Marque un badge comme consulté (fait disparaître sa pastille « nouveau »).
+  Future<void> markBadgeSeen(String profileId, String code) async {
+    await _client.from('profile_badge_seen').upsert(
+      {'profile_id': profileId, 'badge_code': code},
+      onConflict: 'profile_id,badge_code',
+      ignoreDuplicates: true,
+    );
+  }
+}
+
+final badgeRepositoryProvider = Provider<BadgeRepository>((ref) {
+  return BadgeRepository(ref.watch(supabaseClientProvider));
+});
+
+/// Catalogue complet des badges (tous les paliers, titres, exploits).
+final badgeCatalogProvider =
+    FutureProvider.autoDispose<List<BadgeDef>>((ref) async {
+  return ref.watch(badgeRepositoryProvider).fetchCatalog();
+});
+
+/// Titulaires de chaque badge dans le club (code → joueurs).
+final badgeHoldersProvider =
+    FutureProvider.autoDispose<Map<String, List<BadgeHolder>>>((ref) async {
+  return ref.watch(badgeRepositoryProvider).fetchClubHolders();
+});
+
+/// Armoire de la personne connectée.
+final myArmoireProvider = FutureProvider.autoDispose<Armoire>((ref) async {
+  final client = ref.watch(supabaseClientProvider);
+  final uid = client.auth.currentUser?.id;
+  if (uid == null) {
+    return const Armoire(validated: [], inProgress: [], locked: []);
+  }
+  final holders = await ref.watch(badgeHoldersProvider.future);
+  return ref.watch(badgeRepositoryProvider).fetchArmoire(
+    uid,
+    clubEarnedCodes: {
+      for (final entry in holders.entries)
+        if (entry.value.isNotEmpty) entry.key,
+    },
+  );
+});

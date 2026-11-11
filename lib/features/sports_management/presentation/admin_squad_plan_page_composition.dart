@@ -1,0 +1,927 @@
+part of 'admin_squad_plan_page.dart';
+
+extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
+  MatchComposition _normalizeComposition(
+    MatchConvocations convocations,
+    MatchComposition? saved,
+    Set<String> goalkeeperIds,
+  ) {
+    final baseline = MatchComposition.initial(
+      convocations: convocations,
+      goalkeeperSeasonPlayerIds: goalkeeperIds,
+    );
+    if (saved == null) {
+      return _rescueOrphans(
+        baseline.copyWith(
+          entries: [
+            for (final entry in baseline.entries)
+              entry.canBeSelected
+                  ? entry.moveTo(MatchCompositionZone.bench)
+                  : entry.moveTo(MatchCompositionZone.notSelected),
+          ],
+        ),
+      );
+    }
+    final savedById = {
+      for (final entry in saved.entries) entry.participantId: entry,
+    };
+    return _preserveSavedLayout(
+      saved.copyWith(
+        entries: [
+          for (final base in baseline.entries)
+            if (!base.canBeSelected)
+              base.moveTo(MatchCompositionZone.notSelected)
+            else if (savedById[base.participantId] case final previous?)
+              // L'identité vient de l'effectif à jour, le placement et les
+              // statistiques de la composition enregistrée.
+              base
+                  .copyWith(
+                    slotLabel: previous.slotLabel,
+                    photoUrl: previous.photoUrl ?? base.photoUrl,
+                    goals: previous.goals,
+                    assists: previous.assists,
+                    isMotm: previous.isMotm,
+                  )
+                  .moveTo(
+                    previous.zone == MatchCompositionZone.field
+                        ? MatchCompositionZone.field
+                        : MatchCompositionZone.bench,
+                    x: previous.x,
+                    y: previous.y,
+                    sortOrder: previous.sortOrder,
+                  )
+            else
+              base.moveTo(MatchCompositionZone.bench),
+        ],
+      ),
+    );
+  }
+
+  MatchComposition _normalizePostMatchComposition(
+    SportMatchFinalization finalization,
+    MatchComposition? saved,
+  ) {
+    final baseline = MatchComposition.initialFromFinalization(
+      finalization: finalization,
+    );
+    if (saved == null) return baseline;
+    final savedById = {
+      for (final entry in saved.entries) entry.participantId: entry,
+    };
+    return _preserveSavedLayout(
+      saved.copyWith(
+        entries: [
+          for (final base in baseline.entries)
+            if (savedById[base.participantId] case final previous?)
+              // Après le match, c'est le compte rendu qui fait foi pour les
+              // buts et les passes ; seule la mise en place vient de la
+              // composition enregistrée.
+              base
+                  .copyWith(
+                    slotLabel: previous.slotLabel,
+                    photoUrl: base.photoUrl ?? previous.photoUrl,
+                  )
+                  .moveTo(
+                    base.canBeSelected
+                        ? previous.zone == MatchCompositionZone.field
+                            ? MatchCompositionZone.field
+                            : MatchCompositionZone.bench
+                        : MatchCompositionZone.notSelected,
+                    x: previous.x,
+                    y: previous.y,
+                    sortOrder: previous.sortOrder,
+                  )
+            else
+              base,
+        ],
+      ),
+    );
+  }
+
+  /// Une composition enregistrée est une donnée historique : l'ouvrir dans
+  /// l'éditeur ne doit jamais déplacer ses joueurs. On peut traduire le nom
+  /// d'un ancien dispositif vers son équivalent actuel pour le menu, mais les
+  /// coordonnées x/y sauvegardées restent la source de vérité tant que
+  /// l'admin ne choisit pas explicitement un autre dispositif.
+  MatchComposition _preserveSavedLayout(MatchComposition composition) {
+    final formation = formationForCodeOrNull(composition.formationCode);
+    if (formation == null || formation.code == composition.formationCode) {
+      return composition;
+    }
+    return composition.copyWith(formationCode: formation.code);
+  }
+
+  MatchComposition _rescueOrphans(MatchComposition composition) {
+    final formation = formationForCode(composition.formationCode);
+    final slots = formation.slots;
+    final field = composition.entriesFor(MatchCompositionZone.field);
+    final used = List<bool>.filled(slots.length, false);
+    final placement = <String, Offset>{};
+    final orphans = <MatchCompositionEntry>[];
+    for (final entry in field) {
+      final position = Offset(entry.x ?? .5, entry.y ?? .5);
+      var bestIndex = -1;
+      var bestDistance = 0.08;
+      for (var index = 0; index < slots.length; index += 1) {
+        if (used[index]) continue;
+        final distance = (position - slots[index].position).distance;
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestIndex = index;
+        }
+      }
+      if (bestIndex >= 0) {
+        used[bestIndex] = true;
+        placement[entry.participantId] = slots[bestIndex].position;
+      } else {
+        orphans.add(entry);
+      }
+    }
+    if (orphans.isEmpty) {
+      return composition.copyWith(formationCode: formation.code);
+    }
+    final ordered = [
+      ...orphans.where((entry) => entry.isGoalkeeper),
+      ...orphans.where((entry) => !entry.isGoalkeeper),
+    ];
+    final freeSlots = [
+      for (var index = 0; index < slots.length; index += 1)
+        if (!used[index]) index,
+    ];
+    final overflow = <String>{};
+    var next = 0;
+    for (final entry in ordered) {
+      if (next < freeSlots.length) {
+        placement[entry.participantId] = slots[freeSlots[next]].position;
+        next += 1;
+      } else {
+        overflow.add(entry.participantId);
+      }
+    }
+    final benchBase = composition.entriesFor(MatchCompositionZone.bench).length;
+    var benchExtra = 0;
+    return composition.copyWith(
+      formationCode: formation.code,
+      entries: [
+        for (final entry in composition.entries)
+          if (placement.containsKey(entry.participantId))
+            _entryWithStatus(
+              entry,
+              MatchCompositionZone.field,
+              x: placement[entry.participantId]!.dx,
+              y: placement[entry.participantId]!.dy,
+            )
+          else if (overflow.contains(entry.participantId))
+            _entryWithStatus(
+              entry,
+              MatchCompositionZone.bench,
+              sortOrder: benchBase + benchExtra++,
+            )
+          else
+            entry,
+      ],
+    );
+  }
+
+  /// Déplace une vignette de joueur d'une zone à l'autre.
+  ///
+  /// Tout ce qui s'affiche dessus — photo, buts, passes décisives, couronne —
+  /// est conservé : recopier ces champs un par un avait déjà fait disparaître
+  /// la photo des joueurs dès qu'on les déplaçait.
+  MatchCompositionEntry _entryWithStatus(
+    MatchCompositionEntry entry,
+    MatchCompositionZone zone, {
+    double? x,
+    double? y,
+    int? sortOrder,
+  }) {
+    return entry.moveTo(zone, x: x, y: y, sortOrder: sortOrder);
+  }
+
+  void _applyFormation(String code) {
+    final composition = _composition;
+    if (composition == null || _compositionLocked) return;
+    if (formationForCode(composition.formationCode).code == code) return;
+    final slots = formationForCode(code).slots;
+    final field = composition.entriesFor(MatchCompositionZone.field);
+    // Chaque titulaire rejoint le poste le plus proche de sa place actuelle.
+    final placement = {
+      for (final assigned in assignFieldPlayersToSlots(field, slots).entries)
+        assigned.key: assigned.value.position,
+    };
+    final overflow = <String>{
+      for (final entry in field)
+        if (!placement.containsKey(entry.participantId)) entry.participantId,
+    };
+    final benchBase = composition.entriesFor(MatchCompositionZone.bench).length;
+    var benchExtra = 0;
+    _updateState(() {
+      _composition = composition.copyWith(
+        formationCode: code,
+        entries: [
+          for (final entry in composition.entries)
+            if (placement.containsKey(entry.participantId))
+              _entryWithStatus(
+                entry,
+                MatchCompositionZone.field,
+                x: placement[entry.participantId]!.dx,
+                y: placement[entry.participantId]!.dy,
+              )
+            else if (overflow.contains(entry.participantId))
+              _entryWithStatus(
+                entry,
+                MatchCompositionZone.bench,
+                sortOrder: benchBase + benchExtra++,
+              )
+            else
+              entry,
+        ],
+      );
+      _compositionDirty = true;
+    });
+  }
+
+  void _dropOnSlot(MatchCompositionEntry moving, FootballFormationSlot slot) {
+    final composition = _composition;
+    if (composition == null || _compositionLocked) return;
+    final currentAtSlot = composition.entries
+        .where((entry) => entry.zone == MatchCompositionZone.field)
+        .cast<MatchCompositionEntry?>()
+        .firstWhere(
+          (entry) =>
+              entry != null &&
+              (Offset(entry.x ?? .5, entry.y ?? .5) - slot.position).distance <
+                  .12,
+          orElse: () => null,
+        );
+    final oldPosition = moving.zone == MatchCompositionZone.field
+        ? Offset(moving.x ?? .5, moving.y ?? .5)
+        : null;
+    _updateState(() {
+      _composition = composition.copyWith(
+        entries: [
+          for (final entry in composition.entries)
+            if (entry.participantId == moving.participantId)
+              _entryWithStatus(
+                entry,
+                MatchCompositionZone.field,
+                x: slot.position.dx,
+                y: slot.position.dy,
+              )
+            else if (currentAtSlot != null &&
+                entry.participantId == currentAtSlot.participantId)
+              oldPosition == null
+                  ? _entryWithStatus(entry, MatchCompositionZone.bench)
+                  : _entryWithStatus(
+                      entry,
+                      MatchCompositionZone.field,
+                      x: oldPosition.dx,
+                      y: oldPosition.dy,
+                    )
+            else
+              entry,
+        ],
+      );
+      _compositionDirty = true;
+    });
+  }
+
+  void _moveToBench(MatchCompositionEntry moving) {
+    final composition = _composition;
+    if (composition == null || _compositionLocked) return;
+    final benchCount =
+        composition.entriesFor(MatchCompositionZone.bench).length;
+    _updateState(() {
+      _composition = composition.copyWith(
+        entries: [
+          for (final entry in composition.entries)
+            if (entry.participantId == moving.participantId)
+              _entryWithStatus(
+                entry,
+                MatchCompositionZone.bench,
+                sortOrder: benchCount,
+              )
+            else
+              entry,
+        ],
+      );
+      _compositionDirty = true;
+    });
+  }
+
+  /// Les convoqués tels que la simulation les voit.
+  List<SimulationCandidate> _simulationCandidates(
+    MatchComposition composition,
+  ) {
+    return [
+      for (final entry in composition.entries)
+        if (_desiredEffectifStatuses[entry.participantId] ==
+            ConvocationStatus.convoked)
+          SimulationCandidate(
+            participantId: entry.participantId,
+            displayName: entry.displayName,
+            benchCount: _finishedBenchCounts[entry.participantId] ?? 0,
+            profile: _positionProfiles[
+                _canonicalPlayerIds[entry.seasonPlayerId] ?? ''],
+            isGuest: entry.isGuest,
+            isGoalkeeper: entry.isGoalkeeper,
+            benchedLastTime: _benchedLastTime.contains(entry.participantId),
+          ),
+    ];
+  }
+
+  /// Propose un onze à partir des postes de référence des joueurs.
+  ///
+  /// La simulation ne fait que remplir l'écran : rien n'est envoyé au serveur
+  /// tant que l'admin n'a pas appuyé sur Enregistrer, et tout reste
+  /// déplaçable.
+  Future<void> _simulateComposition() async {
+    final composition = _composition;
+    if (composition == null || _compositionLocked || _postMatch) return;
+
+    if (composition.fieldCount > 0) {
+      final confirmed = await _confirmAction(
+        title: 'Simuler une composition',
+        content: Text(
+          'Les ${composition.fieldCount} joueurs déjà placés sur le terrain '
+          'seront repositionnés. Le dispositif '
+          '${formationForCode(composition.formationCode).code} est conservé.',
+        ),
+        actionLabel: 'Simuler',
+        actionIcon: Icons.auto_awesome_outlined,
+      );
+      if (!confirmed || !mounted) return;
+    }
+
+    final formation = formationForCode(composition.formationCode);
+    final simulation = simulateComposition(
+      slots: formation.slots,
+      candidates: _simulationCandidates(composition),
+    );
+
+    final placedSlots = {
+      for (final placement in simulation.placements)
+        placement.candidate.participantId: placement.slot,
+    };
+    final benchOrder = {
+      for (var index = 0; index < simulation.bench.length; index += 1)
+        simulation.bench[index].participantId: index,
+    };
+
+    _updateState(() {
+      _composition = composition.copyWith(
+        entries: [
+          for (final entry in composition.entries)
+            if (placedSlots[entry.participantId] case final slot?)
+              _entryWithStatus(
+                entry,
+                MatchCompositionZone.field,
+                x: slot.position.dx,
+                y: slot.position.dy,
+              )
+            else if (benchOrder[entry.participantId] case final order?)
+              _entryWithStatus(
+                entry,
+                MatchCompositionZone.bench,
+                sortOrder: order,
+              )
+            else
+              _entryWithStatus(entry, MatchCompositionZone.notSelected),
+        ],
+      );
+      _compositionDirty = true;
+    });
+  }
+
+  MatchComposition _compositionReadyToSave() {
+    final composition = _composition!;
+    final currentConvoked = _postMatch
+        ? _actualPresent
+        : {for (final player in _convokedPlayers) player.participantId};
+    var benchOrder = 0;
+    return composition.copyWith(
+      entries: [
+        for (final entry in composition.entries)
+          if (!currentConvoked.contains(entry.participantId))
+            _entryWithStatus(entry, MatchCompositionZone.notSelected)
+          else if (entry.zone == MatchCompositionZone.field)
+            entry
+          else
+            _entryWithStatus(
+              entry,
+              MatchCompositionZone.bench,
+              sortOrder: benchOrder++,
+            ),
+      ],
+    );
+  }
+
+  Future<void> _persistComposition() async {
+    final composition = _composition;
+    if (composition == null || _compositionLocked || !_compositionDirty) {
+      return;
+    }
+    // Le serveur refuse une composition tant que l'effectif du match n'existe
+    // pas. L'écran l'écrit au chargement ; on rattrape ici le cas rare où
+    // cette première écriture a échoué.
+    if (!_postMatch && !_effectifWritten) {
+      await _persistEffectif();
+      if (!mounted || !_effectifWritten) {
+        if (mounted) {
+          _showMessage('Effectif indisponible : réessaie dans un instant.');
+        }
+        return;
+      }
+    }
+    final ready = _compositionReadyToSave();
+    // La première mise en ligne prévient les convoqués, et le message ne se
+    // rattrape pas : on le dit avant, une seule fois, celle qui compte.
+    if (compositionPublicationWillNotify(
+      alreadyPublished: composition.version > 0,
+      sheetNamesPlayers: true,
+      postMatch: _postMatch,
+    )) {
+      final confirmed = await _confirmAction(
+        title: 'Publier la composition ?',
+        actionLabel: 'Valider',
+        actionIcon: Icons.notifications_active_outlined,
+        content: const Text(
+          'Publier la composition enverra une notification à tous les joueurs '
+          'convoqués.',
+        ),
+      );
+      if (!confirmed || !mounted) return;
+    }
+    _updateState(() => _busy = true);
+    try {
+      final repository = ref.read(matchCompositionRepositoryProvider);
+      final limit = int.tryParse(_limitController.text) ??
+          _convocations?.squadSizeLimit ??
+          14;
+      final selectedCount =
+          ready.entriesFor(MatchCompositionZone.field).length +
+              ready.entriesFor(MatchCompositionZone.bench).length;
+      final allowException = selectedCount > limit;
+      late final MatchComposition result;
+      if (_postMatch) {
+        result = _compositionExisted
+            ? await repository.updatePostMatchComposition(
+                composition: ready,
+                allowSquadSizeException: allowException,
+                reason: 'Composition réelle enregistrée',
+              )
+            : await repository.createPostMatchComposition(
+                composition: ready,
+                allowSquadSizeException: allowException,
+                reason: 'Composition réelle enregistrée',
+              );
+      } else {
+        await repository.saveComposition(
+          composition: ready,
+          allowSquadSizeException: allowException,
+          reason: 'Composition enregistrée',
+        );
+        result = await repository.publishComposition(
+          matchId: ready.matchId,
+          allowSquadSizeException: allowException,
+          reason: 'Composition enregistrée',
+        );
+      }
+      if (!mounted) return;
+      if (!_postMatch) {
+        // Celui qui publie ne voit pas la vidéo d'elle-même : il a l'aperçu.
+        _videoAutoChecked.add(ready.matchId);
+        final store = ref.read(compositionVideoSeenStoreProvider);
+        unawaited(store.markPublishedHere(ready.matchId));
+        unawaited(store.markSeen(ready.matchId));
+      }
+      _updateState(() {
+        _composition = result;
+        _compositionDirty = false;
+        _editingPublishedComposition = false;
+        if (_postMatch) _compositionExisted = true;
+      });
+      ref.invalidate(publishedMatchCompositionProvider(ready.matchId));
+      _showMessage('Composition enregistrée.');
+    } catch (error) {
+      if (mounted) _showMessage(humanizeError(error));
+    } finally {
+      if (mounted) _updateState(() => _busy = false);
+    }
+  }
+
+  Widget _buildPublishedCompositionPreview(
+    List<MatchCompositionEntry> field,
+    List<MatchCompositionEntry> bench,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (_locked) ...[
+          Card(
+            color: Theme.of(context).colorScheme.secondaryContainer,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.lock_clock_rounded,
+                        color:
+                            Theme.of(context).colorScheme.onSecondaryContainer,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'La composition se modifie maintenant depuis le '
+                          'Live. Le dispositif, le terrain et le banc y '
+                          'restent corrigeables jusqu’au coup d’envoi.',
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSecondaryContainer,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
+                    onPressed: () =>
+                        _updateState(() => _step = _AdminStep.live),
+                    icon: const Icon(Icons.sports_soccer_rounded),
+                    label: const Text('Ouvrir le Live'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+        ],
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
+            // Les joueurs calés sur leur poste, comme chez les joueurs : la
+            // vidéo s'y pose exactement.
+            child: CompositionPitchWithBench(
+              key: _publishedLanding.area,
+              pitchKey: _publishedLanding.pitch,
+              field: alignFieldToFormation(_composition?.formationCode, field),
+              bench: bench,
+              maxWidth: 520,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: field.isEmpty
+              ? null
+              : () => _previewCompositionVideo(
+                    field,
+                    bench,
+                    landing: _publishedLanding,
+                  ),
+          icon: const Icon(Icons.play_circle_outline_rounded),
+          label: const Text('Aperçu de la vidéo'),
+        ),
+        if (!_compositionLocked) ...[
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: () =>
+                _updateState(() => _editingPublishedComposition = true),
+            icon: const Icon(Icons.edit_outlined),
+            label: const Text('Modifier la composition'),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// Un autre admin que celui qui a publié voit la vidéo comme un joueur :
+  /// à chaque ouverture depuis la notification, et à sa première visite de
+  /// la compo publiée.
+  void _scheduleCompositionVideoAutoplay(
+    List<MatchCompositionEntry> field,
+    List<MatchCompositionEntry> bench,
+  ) {
+    final matchId = _selectedMatchId;
+    if (matchId == null || _videoAutoChecked.contains(matchId)) return;
+    if (!field.any((entry) => !entry.isVacant)) return;
+    _videoAutoChecked.add(matchId);
+    final fromNotification = widget.fromNotification;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final store = ref.read(compositionVideoSeenStoreProvider);
+      if (!await store.shouldAutoplay(
+        matchId,
+        fromNotification: fromNotification,
+      )) {
+        return;
+      }
+      if (!mounted || _selectedMatchId != matchId) return;
+      if (_step != _AdminStep.composition) return;
+      // Une autre page ouverte par-dessus : pas de vidéo dans son dos.
+      if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
+      if (fromNotification) {
+        // L'adresse perd sa marque : recharger ne relance pas la vidéo.
+        GoRouter.maybeOf(context)?.replace(
+          '/matches/$matchId/lineup?section=composition',
+        );
+      }
+      unawaited(store.markSeen(matchId));
+      await _previewCompositionVideo(
+        field,
+        bench,
+        preview: false,
+        landing: _publishedLanding,
+      );
+    });
+  }
+
+  /// Montre à l'admin la vidéo de la composition affichée à l'écran, même
+  /// pas encore enregistrée. Rien n'est écrit et personne n'est prévenu.
+  Future<void> _previewCompositionVideo(
+    List<MatchCompositionEntry> field,
+    List<MatchCompositionEntry> bench, {
+    bool preview = true,
+    CompositionLanding? landing,
+    bool returnToPage = false,
+  }) async {
+    // Pendant l'appui, avant toute attente : débloque la vidéo du stade.
+    primeStadiumVideo();
+    final composition = _composition;
+    final matchId = _selectedMatchId;
+    if (composition == null || matchId == null) return;
+    UpcomingMatchFixtureData? fixture;
+    try {
+      fixture = await ref.read(upcomingMatchFixtureProvider(matchId).future);
+    } catch (_) {
+      // Sans la fiche du match, l'accroche se contente de l'effectif.
+    }
+    if (!mounted) return;
+    final convocations = _convocations;
+    // Le coach n'apparaît que s'il s'est dit présent.
+    final coach = convocations?.players
+        .where((player) => player.isCoach && player.isAvailable)
+        .firstOrNull;
+    // Comme les joueurs, il porte la tenue choisie dans Infos pour ce match.
+    // En cas d'absence de variante ou d'erreur réseau : portrait France.
+    var kitPhotos = const <String, String>{};
+    if (coach != null) {
+      try {
+        kitPhotos = await ref
+            .read(matchKitPhotoOverridesProvider(matchId).future)
+            .timeout(const Duration(seconds: 4));
+      } catch (_) {
+        // Ne jamais empêcher l'aperçu de démarrer pour une photo manquante.
+      }
+    }
+    if (!mounted) return;
+    await showCompositionPresentation(
+      context,
+      preview: preview,
+      landing: landing,
+      returnToPage: returnToPage,
+      data: buildCompositionPresentationData(
+        formationCode: composition.formationCode,
+        field: field,
+        bench: bench,
+        fixture: fixture,
+        fallbackOpponent: convocations?.opponentName,
+        fallbackKickoffAt: convocations?.kickoffAt,
+        coach: coach == null
+            ? null
+            : CompositionPresentationCoach(
+                id: coach.participantId,
+                name: coach.shortName,
+                photoUrl: coachPhotoForMatchKit(
+                  seasonPlayerId: coach.seasonPlayerId,
+                  francePhotoUrl: coach.photoUrl,
+                  photoOverrides: kitPhotos,
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildComposition() {
+    final composition = _composition!;
+    final matchId = _selectedMatchId;
+    final kitPhotos = matchId == null
+        ? const <String, String>{}
+        : ref.watch(matchKitPhotoOverridesProvider(matchId)).valueOrNull ??
+            const <String, String>{};
+    final field = withMatchKitPhotos(
+        composition.entriesFor(MatchCompositionZone.field), kitPhotos);
+    final bench = withMatchKitPhotos(
+        composition.entriesFor(MatchCompositionZone.bench), kitPhotos)
+      ..removeWhere(
+        (entry) =>
+            _desiredEffectifStatuses[entry.participantId] !=
+            ConvocationStatus.convoked,
+      );
+
+    if (composition.isPublished &&
+        !_postMatch &&
+        !_editingPublishedComposition) {
+      _scheduleCompositionVideoAutoplay(field, bench);
+      return _buildPublishedCompositionPreview(field, bench);
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Depuis T-15 cet écran est en lecture seule côté serveur. Sans ce
+        // panneau, l'admin restait devant une composition figée sans savoir
+        // que tout reste corrigeable dans le Live.
+        if (_locked && !_postMatch) ...[
+          Card(
+            color: Theme.of(context).colorScheme.secondaryContainer,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.lock_clock_rounded,
+                        color:
+                            Theme.of(context).colorScheme.onSecondaryContainer,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'La composition se modifie maintenant depuis le '
+                          'Live. Le dispositif, le terrain et le banc y '
+                          'restent corrigeables jusqu’au coup d’envoi.',
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSecondaryContainer,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
+                    onPressed: () =>
+                        _updateState(() => _step = _AdminStep.live),
+                    icon: const Icon(Icons.sports_soccer_rounded),
+                    label: const Text('Ouvrir le Live'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+        ],
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (_postMatch)
+                  _FormationDropdown(
+                    value: formationForCode(composition.formationCode).code,
+                    onChanged: _compositionLocked ? null : _applyFormation,
+                  )
+                else
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _FormationDropdown(
+                          value:
+                              formationForCode(composition.formationCode).code,
+                          onChanged:
+                              _compositionLocked ? null : _applyFormation,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: SizedBox(
+                          height: 56,
+                          child: OutlinedButton(
+                            onPressed: _compositionLocked
+                                ? null
+                                : _simulateComposition,
+                            style: OutlinedButton.styleFrom(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                            ),
+                            child: const Text(
+                              'Simuler une composition',
+                              maxLines: 2,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        Center(
+          child: FormationPitchEditor(
+            slots: formationForCode(composition.formationCode).slots,
+            entries: field,
+            editable: !_compositionLocked,
+            onDroppedOnSlot: _dropOnSlot,
+            onRemoveFromField: _moveToBench,
+            finishedBenchCounts: _postMatch ? const {} : _finishedBenchCounts,
+            benchedLastTime: _postMatch ? const {} : _benchedLastTime,
+          ),
+        ),
+        const SizedBox(height: 14),
+        DragTarget<MatchCompositionEntry>(
+          onWillAcceptWithDetails: (details) => !_compositionLocked,
+          onAcceptWithDetails: (details) => _moveToBench(details.data),
+          builder: (context, candidates, rejected) => Card(
+            color: candidates.isNotEmpty
+                ? Theme.of(context).colorScheme.primaryContainer
+                : null,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Remplaçants (${bench.length})',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w400,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  if (bench.isEmpty)
+                    const Text('Aucun remplaçant.')
+                  else
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 14,
+                      children: [
+                        for (final entry in bench)
+                          _BenchBox(
+                            entry: entry,
+                            draggable: !_compositionLocked,
+                            finishedBenchCount: _postMatch
+                                ? 0
+                                : _finishedBenchCounts[entry.participantId] ??
+                                    0,
+                            benchedLastTime: !_postMatch &&
+                                _benchedLastTime.contains(entry.participantId),
+                          ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            // Phase de test : l'admin regarde la vidéo de la composition à
+            // l'écran, sans rien enregistrer ni prévenir personne.
+            if (!_postMatch) ...[
+              OutlinedButton.icon(
+                onPressed: field.isEmpty
+                    ? null
+                    : () => _previewCompositionVideo(
+                          field,
+                          bench,
+                          returnToPage: true,
+                        ),
+                icon: const Icon(Icons.play_circle_outline_rounded),
+                label: const Text('Aperçu'),
+              ),
+              const SizedBox(width: 12),
+            ],
+            Expanded(
+              child: FilledButton.icon(
+                onPressed: _compositionLocked || !_compositionDirty
+                    ? null
+                    : _persistComposition,
+                icon: const Icon(Icons.save_outlined),
+                label: const Text('Enregistrer'),
+              ),
+            ),
+          ],
+        ),
+        if (_locked && !_postMatch)
+          const Padding(
+            padding: EdgeInsets.only(top: 10),
+            child: Text(
+              'Composition verrouillée ici : les corrections passent par le '
+              'Live.',
+            ),
+          ),
+      ],
+    );
+  }
+}

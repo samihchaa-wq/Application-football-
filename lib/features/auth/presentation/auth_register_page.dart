@@ -1,0 +1,223 @@
+import 'package:as_grinta/core/security/password_policy.dart';
+import 'package:as_grinta/core/utils/name_validation.dart';
+import 'package:as_grinta/core/widgets/grinta_adaptive_form.dart';
+import 'package:as_grinta/core/widgets/grinta_auth_surface.dart';
+import 'package:as_grinta/core/widgets/grinta_loader.dart';
+import 'package:as_grinta/features/auth/data/auth_repository.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+class AuthRegisterPage extends ConsumerStatefulWidget {
+  const AuthRegisterPage({super.key});
+
+  @override
+  ConsumerState<AuthRegisterPage> createState() => _AuthRegisterPageState();
+}
+
+class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _submitting = false;
+
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _passwordController.dispose();
+    _confirmController.dispose();
+    super.dispose();
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _submit() async {
+    final firstName = _firstNameController.text.trim();
+    final lastName = _lastNameController.text.trim();
+    final password = _passwordController.text;
+
+    if (firstName.isEmpty || lastName.isEmpty) {
+      _showError('Renseigne ton prénom et ton nom.');
+      return;
+    }
+    if (!isValidPersonName(firstName) || !isValidPersonName(lastName)) {
+      _showError('Le prénom et le nom ne doivent contenir que des lettres.');
+      return;
+    }
+    final passwordError = PasswordPolicy.validate(password);
+    if (passwordError != null) {
+      _showError(passwordError);
+      return;
+    }
+    if (password != _confirmController.text) {
+      _showError('Les deux mots de passe ne correspondent pas.');
+      return;
+    }
+
+    setState(() => _submitting = true);
+    try {
+      final username = await ref.read(authRepositoryProvider).registerAccount(
+            firstName: firstName,
+            lastName: lastName,
+            password: password,
+          );
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Compte créé'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Retiens bien ton identifiant, tu en auras besoin pour te '
+                'connecter :',
+              ),
+              const SizedBox(height: 12),
+              SelectableText(
+                username,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w400,
+                  fontSize: 20,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Ton compte restera en attente jusqu’à sa validation par '
+                'un admin.',
+              ),
+            ],
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Compris'),
+            ),
+          ],
+        ),
+      );
+      if (mounted) context.go('/auth/sign-in');
+    } on StateError catch (error) {
+      _showError(error.message);
+    } on ArgumentError catch (error) {
+      _showError(error.message?.toString() ?? PasswordPolicy.helperText);
+    } catch (_) {
+      _showError('La création du compte a échoué.');
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GrintaAuthSurface(
+      maxWidth: 760,
+      title: 'Créer mon compte',
+      subtitle: 'Le compte sera accessible après validation par un admin.',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          GrintaAdaptiveForm(
+            children: [
+              TextField(
+                controller: _firstNameController,
+                textInputAction: TextInputAction.next,
+                textCapitalization: TextCapitalization.words,
+                autofillHints: const [AutofillHints.givenName],
+                decoration: const InputDecoration(
+                  labelText: 'Prénom',
+                  prefixIcon: Icon(Icons.person_outline),
+                ),
+              ),
+              TextField(
+                controller: _lastNameController,
+                textInputAction: TextInputAction.next,
+                textCapitalization: TextCapitalization.words,
+                autofillHints: const [AutofillHints.familyName],
+                decoration: const InputDecoration(
+                  labelText: 'Nom',
+                  prefixIcon: Icon(Icons.badge_outlined),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Un AutofillGroup dédié + un seul champ marqué "newPassword" :
+          // avec deux champs identiquement tagués, certains navigateurs
+          // (Safari en particulier) confondent les deux champs après la
+          // confirmation et le premier redevient impossible à retoucher
+          // (le clavier ne se réaffiche plus).
+          AutofillGroup(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextField(
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  textInputAction: TextInputAction.next,
+                  autofillHints: const [AutofillHints.newPassword],
+                  decoration: InputDecoration(
+                    labelText: 'Mot de passe',
+                    helperText: PasswordPolicy.helperText,
+                    helperMaxLines: 2,
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      tooltip: _obscurePassword
+                          ? 'Afficher le mot de passe'
+                          : 'Masquer le mot de passe',
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                      ),
+                      onPressed: () => setState(
+                        () => _obscurePassword = !_obscurePassword,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _confirmController,
+                  obscureText: _obscurePassword,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _submitting ? null : _submit(),
+                  decoration: const InputDecoration(
+                    labelText: 'Confirme ton mot de passe',
+                    prefixIcon: Icon(Icons.lock_outline),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          FilledButton.icon(
+            onPressed: _submitting ? null : _submit,
+            icon: _submitting
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: GrintaProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.sports_soccer),
+            label:
+                Text(_submitting ? 'Création en cours…' : 'Créer mon compte'),
+          ),
+          const SizedBox(height: 12),
+          TextButton(
+            onPressed: _submitting ? null : () => context.go('/auth/sign-in'),
+            child: const Text('J’ai déjà un compte — se connecter'),
+          ),
+        ],
+      ),
+    );
+  }
+}

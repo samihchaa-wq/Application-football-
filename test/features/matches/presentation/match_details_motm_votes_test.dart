@@ -1,0 +1,358 @@
+import 'package:as_grinta/core/theme/app_theme.dart';
+import 'package:as_grinta/features/auth/data/auth_repository.dart';
+import 'package:as_grinta/features/auth/domain/auth_profile.dart';
+import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
+import 'package:as_grinta/features/matches/data/match_details_repository.dart';
+import 'package:as_grinta/features/matches/presentation/match_details_page.dart';
+import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
+import 'package:as_grinta/features/sports_management/data/match_kit_photo_overrides.dart';
+import 'package:as_grinta/features/sports_management/data/match_sport_report_repository.dart';
+import 'package:as_grinta/features/sports_management/data/sport_motm_vote_repository.dart';
+import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
+import 'package:as_grinta/features/sports_management/domain/sport_motm_vote.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
+
+const _matchId = 'match-1';
+
+MatchDetailsData _details() => MatchDetailsData(
+      matchId: _matchId,
+      opponentId: 'opp',
+      opponentName: 'FC Test',
+      isInternal: false,
+      kickoffAt: DateTime(2026, 9, 20, 15),
+      status: 'archive',
+      resultValidatedAt: DateTime(2026, 9, 20, 17),
+      location: 'domicile',
+      address: null,
+      matchType: 'amical',
+      championshipRound: null,
+      scoreGrinta: 2,
+      scoreOpponent: 1,
+      oddsWin: null,
+      oddsDraw: null,
+      oddsLoss: null,
+      predictionParticipantCount: 0,
+      headToHead: const [],
+      playerStats: const [],
+      startingLineup: const [],
+      predictions: const [],
+    );
+
+Map<String, dynamic> _candidate(
+  String id,
+  String name,
+  int? votes, {
+  bool? winner,
+}) =>
+    {
+      'participant_id': id,
+      'display_name': name,
+      'votes_count': votes,
+      'is_winner': winner,
+    };
+
+SportMotmVote _vote(String state, List<Map<String, dynamic>> candidates) =>
+    SportMotmVote.fromJson({
+      'match_id': _matchId,
+      'state': state,
+      'candidates': candidates,
+    });
+
+Future<void> _pump(
+  WidgetTester tester,
+  SportMotmVote vote, {
+  MatchComposition? composition,
+  Map<String, String> kitPhotos = const {},
+  void Function()? onCompositionFetch,
+  MatchDetailsData? details,
+}) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        matchDetailsProvider(_matchId)
+            .overrideWith((ref) async => details ?? _details()),
+        sportMotmVoteProvider(_matchId).overrideWith((ref) async => vote),
+        authControllerProvider.overrideWith(
+          (ref) => AuthController(_FakeAuthRepository()),
+        ),
+        sportsManagementEnabledProvider.overrideWithValue(true),
+        isAdminViewProvider.overrideWithValue(false),
+        publishedMatchCompositionProvider(_matchId).overrideWith((ref) async {
+          onCompositionFetch?.call();
+          return composition;
+        }),
+        matchKitPhotoOverridesProvider(_matchId)
+            .overrideWith((ref) async => kitPhotos),
+        matchGoalActionsProvider(_matchId).overrideWith((ref) async => []),
+      ],
+      child: const MaterialApp(home: MatchDetailsPage(matchId: _matchId)),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+void main() {
+  testWidgets(
+      'post-match composition displays Netherlands portraits selected in Infos '
+      'and retains France when no alternative exists', (tester) async {
+    final composition = MatchComposition.tryFromRpc({
+      'match_id': _matchId,
+      'status': 'published',
+      'entries': [
+        {
+          'participant_id': 'p1',
+          'season_player_id': 'season-1',
+          'display_name': 'Alex',
+          'zone': 'field',
+          'x': 0.35,
+          'y': 0.45,
+          'photo_url': 'https://example.invalid/france-alex.png',
+        },
+        {
+          'participant_id': 'p2',
+          'season_player_id': 'season-2',
+          'display_name': 'Bruno',
+          'zone': 'field',
+          'x': 0.65,
+          'y': 0.45,
+          'photo_url': 'https://example.invalid/france-bruno.png',
+        },
+      ],
+    });
+
+    await _pump(
+      tester,
+      _vote('open', []),
+      composition: composition,
+      kitPhotos: const {
+        'season-1': 'https://example.invalid/netherlands-alex.png',
+      },
+    );
+
+    final pitch =
+        tester.widget<CompositionPitch>(find.byType(CompositionPitch));
+    final photos = {
+      for (final entry in pitch.entries) entry.seasonPlayerId: entry.photoUrl,
+    };
+    expect(
+      photos['season-1'],
+      'https://example.invalid/netherlands-alex.png',
+    );
+    expect(photos['season-2'], 'https://example.invalid/france-bruno.png');
+    // The published composition must not be rewritten by its display.
+    expect(
+      composition!.entries.first.photoUrl,
+      'https://example.invalid/france-alex.png',
+    );
+  });
+
+  testWidgets('Votes HDM lists ranked vote counts once the vote is closed',
+      (tester) async {
+    await _pump(
+      tester,
+      _vote('closed', [
+        _candidate('a', 'Alice', 1),
+        _candidate('b', 'Bruno', 4, winner: true),
+        _candidate('c', 'Chloé', 0),
+        _candidate('d', 'David', 2),
+      ]),
+      composition: MatchComposition.tryFromRpc({
+        'match_id': _matchId,
+        'status': 'published',
+        'entries': [
+          {
+            'participant_id': 'b',
+            'display_name': 'Brunito',
+            'zone': 'bench',
+          },
+        ],
+      }),
+    );
+
+    expect(find.text('Votes Homme du match'), findsOneWidget);
+    // Fermé à l'ouverture de la fiche : le classement s'affiche au toucher.
+    expect(find.text('4 voix'), findsNothing);
+    await tester.tap(find.text('Votes Homme du match'));
+    await tester.pumpAndSettle();
+    final card = find.ancestor(
+      of: find.text('Votes Homme du match'),
+      matching: find.byType(Card),
+    );
+    Finder inCard(Finder finder) => find.descendant(of: card, matching: finder);
+    // Le surnom de la composition remplace le nom du scrutin, avec sa pastille.
+    expect(inCard(find.text('Brunito')), findsOneWidget);
+    expect(inCard(find.byType(PlayerAvatar)), findsNWidgets(3));
+    expect(find.text('4 voix'), findsOneWidget);
+    expect(find.text('2 voix'), findsOneWidget);
+    expect(find.text('1 voix'), findsOneWidget);
+    expect(find.text('Chloé'), findsNothing);
+    final bruno = tester.getTopLeft(inCard(find.text('Brunito'))).dy;
+    final david = tester.getTopLeft(find.text('David')).dy;
+    final alice = tester.getTopLeft(find.text('Alice')).dy;
+    expect(bruno < david && david < alice, isTrue);
+  });
+
+  testWidgets(
+      'scrolling down then back up keeps the composition loaded, '
+      'so the page does not jump', (tester) async {
+    var fetches = 0;
+    final base = _details();
+    await _pump(
+      tester,
+      _vote('closed', [_candidate('a', 'Alice', 3, winner: true)]),
+      onCompositionFetch: () => fetches++,
+      // Assez de pronos pour pousser la composition loin hors de l'écran.
+      details: MatchDetailsData(
+        matchId: base.matchId,
+        opponentId: base.opponentId,
+        opponentName: base.opponentName,
+        isInternal: base.isInternal,
+        kickoffAt: base.kickoffAt,
+        status: base.status,
+        resultValidatedAt: base.resultValidatedAt,
+        location: base.location,
+        address: base.address,
+        matchType: base.matchType,
+        championshipRound: base.championshipRound,
+        scoreGrinta: base.scoreGrinta,
+        scoreOpponent: base.scoreOpponent,
+        oddsWin: null,
+        oddsDraw: null,
+        oddsLoss: null,
+        predictionParticipantCount: 60,
+        headToHead: const [],
+        playerStats: const [],
+        startingLineup: const [],
+        predictions: [
+          for (var i = 0; i < 60; i++)
+            MatchPredictionResult(
+              profileId: 'p$i',
+              name: 'Joueur $i',
+              scoreGrinta: 2,
+              scoreOpponent: 1,
+              points: 3,
+              usedX2: false,
+            ),
+        ],
+      ),
+      composition: MatchComposition.tryFromRpc({
+        'match_id': _matchId,
+        'status': 'published',
+        'entries': [
+          {'participant_id': 'a', 'display_name': 'Alice', 'zone': 'bench'},
+        ],
+      }),
+    );
+    expect(fetches, 1);
+
+    // Prono ouvert : la page devient assez longue pour sortir la
+    // composition de l'écran.
+    await tester.tap(find.text('Prono'));
+    await tester.pumpAndSettle();
+
+    final list = find.byType(Scrollable).first;
+    await tester.drag(list, const Offset(0, -20000));
+    await tester.pumpAndSettle();
+    await tester.drag(list, const Offset(0, 20000));
+    await tester.pumpAndSettle();
+
+    expect(fetches, 1);
+    // Prono reste ouvert après l'aller-retour.
+    expect(find.text('Joueur 0'), findsOneWidget);
+  });
+
+  testWidgets('Prono frames each row with the colour of its multiplier',
+      (tester) async {
+    // Score réel : Grinta 2 – 1 Adversaire.
+    MatchPredictionResult prono(String name, int g, int o, double points) =>
+        MatchPredictionResult(
+          profileId: name,
+          name: name,
+          scoreGrinta: g,
+          scoreOpponent: o,
+          points: points,
+          usedX2: false,
+        );
+    final base = _details();
+    await _pump(
+      tester,
+      _vote('closed', [_candidate('a', 'Alice', 3, winner: true)]),
+      details: MatchDetailsData(
+        matchId: base.matchId,
+        opponentId: base.opponentId,
+        opponentName: base.opponentName,
+        isInternal: base.isInternal,
+        kickoffAt: base.kickoffAt,
+        status: base.status,
+        resultValidatedAt: base.resultValidatedAt,
+        location: base.location,
+        address: base.address,
+        matchType: base.matchType,
+        championshipRound: base.championshipRound,
+        scoreGrinta: base.scoreGrinta,
+        scoreOpponent: base.scoreOpponent,
+        oddsWin: null,
+        oddsDraw: null,
+        oddsLoss: null,
+        predictionParticipantCount: 6,
+        headToHead: const [],
+        playerStats: const [],
+        startingLineup: const [],
+        predictions: [
+          prono('Exact', 2, 1, 200),
+          prono('Ecart', 3, 2, 150),
+          prono('UneEquipe', 2, 0, 150),
+          prono('Vainqueur', 4, 0, 100),
+          prono('Rate', 0, 1, 0),
+        ],
+      ),
+    );
+    await tester.tap(find.text('Prono'));
+    await tester.pumpAndSettle();
+
+    Color? frame(String name) {
+      final row = tester.widget<Container>(
+        find
+            .ancestor(of: find.text(name), matching: find.byType(Container))
+            .first,
+      );
+      final border = (row.decoration as BoxDecoration?)?.border as Border?;
+      return border?.top.color;
+    }
+
+    expect(frame('Exact'), const Color(0xFF9B6CFF));
+    expect(frame('Ecart'), AppTheme.reward);
+    expect(frame('UneEquipe'), AppTheme.reward);
+    expect(frame('Vainqueur'), const Color(0xFF39E784));
+    expect(frame('Rate'), isNull);
+  });
+
+  testWidgets('Votes HDM stays hidden while the vote is open', (tester) async {
+    await _pump(
+      tester,
+      _vote('open', [_candidate('a', 'Alice', null)]),
+    );
+
+    expect(find.text('Votes Homme du match'), findsNothing);
+  });
+}
+
+class _FakeAuthRepository implements AuthRepository {
+  @override
+  Stream<supabase.AuthState> get authStateChanges => const Stream.empty();
+
+  @override
+  bool get hasSession => false;
+
+  @override
+  Future<AuthProfile?> fetchProfile({bool retryAfterSignIn = false}) async =>
+      null;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}

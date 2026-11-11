@@ -1,0 +1,167 @@
+import 'package:as_grinta/core/widgets/grinta_auth_surface.dart';
+import 'package:as_grinta/core/widgets/grinta_loader.dart';
+import 'package:as_grinta/core/widgets/grinta_status_banner.dart';
+import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+class AuthSignInPage extends ConsumerStatefulWidget {
+  const AuthSignInPage({super.key});
+
+  @override
+  ConsumerState<AuthSignInPage> createState() => _AuthSignInPageState();
+}
+
+class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text;
+    if (username.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Renseigne ton identifiant et ton mot de passe.'),
+        ),
+      );
+      return;
+    }
+    await ref
+        .read(authControllerProvider.notifier)
+        .signIn(username: username, password: password);
+  }
+
+  Future<void> _forgotPassword() async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Mot de passe oublié'),
+        content: const Text(
+          'Demande à un administrateur du club de réinitialiser ton mot '
+          'de passe depuis l’application. Il te communiquera un lien à '
+          'ouvrir pour choisir directement ton nouveau mot de passe.',
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Compris'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final authState = ref.watch(authControllerProvider);
+    final error = authState.error;
+
+    return GrintaAuthSurface(
+      subtitle: 'L’application de gestion sportive de l’AS Grinta.',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (error != null && error.isNotEmpty) ...[
+            GrintaStatusBanner(
+              title: signInErrorTitle(error),
+              message: signInErrorDetail(error),
+              tone: GrintaStatusTone.error,
+              compact: true,
+            ),
+            const SizedBox(height: 16),
+          ],
+          TextField(
+            controller: _usernameController,
+            textInputAction: TextInputAction.next,
+            autocorrect: false,
+            autofillHints: const [AutofillHints.username],
+            decoration: const InputDecoration(
+              labelText: 'Identifiant',
+              prefixIcon: Icon(Icons.person_outline),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _passwordController,
+            obscureText: _obscurePassword,
+            textInputAction: TextInputAction.done,
+            autofillHints: const [AutofillHints.password],
+            onSubmitted: (_) {
+              if (!authState.isLoading) _submit();
+            },
+            decoration: InputDecoration(
+              labelText: 'Mot de passe',
+              prefixIcon: const Icon(Icons.lock_outline),
+              suffixIcon: IconButton(
+                tooltip: _obscurePassword
+                    ? 'Afficher le mot de passe'
+                    : 'Masquer le mot de passe',
+                icon: Icon(
+                  _obscurePassword
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                ),
+                onPressed: () => setState(
+                  () => _obscurePassword = !_obscurePassword,
+                ),
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: authState.isLoading ? null : _forgotPassword,
+              child: const Text('Mot de passe oublié ?'),
+            ),
+          ),
+          FilledButton.icon(
+            onPressed: authState.isLoading ? null : _submit,
+            icon: authState.isLoading
+                ? const SizedBox.square(
+                    dimension: 18,
+                    child: GrintaProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.login_rounded),
+            label: Text(authState.isLoading ? 'Connexion…' : 'Se connecter'),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed:
+                authState.isLoading ? null : () => context.go('/auth/register'),
+            icon: const Icon(Icons.person_add_alt_outlined),
+            label: const Text('Créer mon compte'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Titre du bandeau d'erreur de connexion.
+@visibleForTesting
+String signInErrorTitle(String error) => error == 'Ce compte n’est pas actif.'
+    ? 'Accès refusé'
+    : 'Connexion impossible';
+
+/// Texte du bandeau, sans répéter son titre : « Connexion impossible » en
+/// titre suivi de « Connexion impossible. Vérifie ton identifiant… » disait
+/// deux fois la même chose.
+@visibleForTesting
+String signInErrorDetail(String error) {
+  final title = signInErrorTitle(error);
+  final repeated = '$title. ';
+  if (error.startsWith(repeated) && error.length > repeated.length) {
+    return error.substring(repeated.length);
+  }
+  return error;
+}

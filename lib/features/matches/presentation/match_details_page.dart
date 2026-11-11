@@ -1,0 +1,844 @@
+import 'package:as_grinta/core/theme/app_theme.dart';
+import 'package:as_grinta/core/utils/app_errors.dart';
+import 'package:as_grinta/core/widgets/collapsible_section_card.dart';
+import 'package:as_grinta/core/widgets/match_detail_header_card.dart';
+import 'package:as_grinta/core/widgets/match_sheet_top_row.dart';
+import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:as_grinta/features/badges/presentation/name_with_badges.dart';
+import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
+import 'package:as_grinta/features/sports_management/data/match_sport_report_repository.dart';
+import 'package:as_grinta/features/match_live/presentation/widgets/match_faits_du_match_card.dart';
+import 'package:as_grinta/features/matches/data/match_details_repository.dart';
+import 'package:as_grinta/features/matches/presentation/widgets/completed_match_composition_card.dart';
+import 'package:as_grinta/features/sports_management/data/match_availability_board_repository.dart';
+import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
+import 'package:as_grinta/features/sports_management/data/match_kit_photo_overrides.dart';
+import 'package:as_grinta/features/sports_management/data/sport_motm_vote_repository.dart';
+import 'package:as_grinta/features/sports_management/domain/match_availability_board.dart';
+import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
+import 'package:as_grinta/features/sports_management/domain/sport_motm_vote.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/stadium_video.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:as_grinta/core/widgets/grinta_loader.dart';
+
+int compareMatchPredictionResultsForDisplay(
+  MatchPredictionResult a,
+  MatchPredictionResult b, {
+  required String? currentProfileId,
+}) {
+  final pointsComparison = b.points.compareTo(a.points);
+  if (pointsComparison != 0) return pointsComparison;
+
+  final aIsCurrent =
+      currentProfileId != null && a.profileId == currentProfileId;
+  final bIsCurrent =
+      currentProfileId != null && b.profileId == currentProfileId;
+  if (aIsCurrent != bIsCurrent) return aIsCurrent ? -1 : 1;
+
+  final nameComparison =
+      a.name.trim().toLowerCase().compareTo(b.name.trim().toLowerCase());
+  if (nameComparison != 0) return nameComparison;
+
+  // Deterministic fallback for duplicate display names.
+  return a.profileId.compareTo(b.profileId);
+}
+
+class MatchDetailsPage extends ConsumerWidget {
+  const MatchDetailsPage({super.key, required this.matchId});
+
+  final String matchId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final detailsAsync = ref.watch(matchDetailsProvider(matchId));
+    final isAdmin = ref.watch(isAdminViewProvider);
+    final sportsEnabled = ref.watch(sportsManagementEnabledProvider);
+    final currentProfileId = ref.watch(
+      authControllerProvider.select((state) => state.profile?.id),
+    );
+
+    // Composition et faits du match sont des blocs de la liste qui ne
+    // restent construits que tant qu'ils sont proches de l'écran. Sans
+    // écoute ici, leurs données se libèrent dès qu'on défile plus bas, puis
+    // se rechargent en remontant : le bloc repart à hauteur nulle et fait
+    // sauter le défilement. On les garde donc en vie tant que la page est
+    // ouverte.
+    if (sportsEnabled) {
+      void keepAlive(Object? _, Object? __) {}
+      ref
+        ..listen(publishedMatchCompositionProvider(matchId), keepAlive)
+        ..listen(matchKitPhotoOverridesProvider(matchId), keepAlive)
+        ..listen(matchGoalActionsProvider(matchId), keepAlive);
+    }
+
+    return Scaffold(
+      body: SafeArea(
+        bottom: false,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await ref.read(featureFlagsControllerProvider.notifier).refresh();
+            ref
+              ..invalidate(matchDetailsProvider(matchId))
+              ..invalidate(publishedMatchCompositionProvider(matchId))
+              ..invalidate(matchKitPhotoOverridesProvider(matchId))
+              ..invalidate(matchGoalActionsProvider(matchId))
+              ..invalidate(sportMotmVoteProvider(matchId));
+            await ref.read(matchDetailsProvider(matchId).future);
+          },
+          child: detailsAsync.when(
+            loading: () => MatchSheetListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+              children: const [
+                MatchSheetTopRow(),
+                SizedBox(height: 170),
+                Center(child: GrintaProgressIndicator()),
+              ],
+            ),
+            error: (error, _) => MatchSheetListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              children: [
+                const MatchSheetTopRow(),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Text(humanizeError(error)),
+                  ),
+                ),
+              ],
+            ),
+            data: (details) {
+              if (!details.isValidated) {
+                return MatchSheetListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                  children: [
+                    MatchSheetTopRow(
+                      header: _UpcomingHeader(details: details),
+                      bottomSpacing: 0,
+                    ),
+                    const SizedBox(height: 16),
+                    if (sportsEnabled)
+                      _UpcomingModules(matchId: matchId, isAdmin: isAdmin)
+                    else
+                      const Card(
+                        child: Padding(
+                          padding: EdgeInsets.all(18),
+                          child: Text('Gestion sportive indisponible.'),
+                        ),
+                      ),
+                  ],
+                );
+              }
+
+              final vote = sportsEnabled
+                  ? ref.watch(sportMotmVoteProvider(matchId)).valueOrNull
+                  : null;
+              final motmActionLabel =
+                  vote != null && vote.isOpen && vote.isEligibleVoter
+                      ? (vote.hasVoted
+                          ? 'Vote Homme du match enregistré'
+                          : 'Voter pour l’Homme du match')
+                      : null;
+              return MatchSheetListView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                children: [
+                  MatchSheetTopRow(
+                    bottomSpacing: 0,
+                    header: MatchDetailHeaderCard(
+                      homeName: details.location == 'domicile'
+                          ? 'AS Grinta'
+                          : details.opponentName,
+                      awayName: details.location == 'domicile'
+                          ? details.opponentName
+                          : 'AS Grinta',
+                      grintaIsHome: details.location == 'domicile',
+                      homeScore: details.location == 'domicile'
+                          ? details.scoreGrinta ?? 0
+                          : details.scoreOpponent ?? 0,
+                      awayScore: details.location == 'domicile'
+                          ? details.scoreOpponent ?? 0
+                          : details.scoreGrinta ?? 0,
+                      finished: true,
+                      kickoffAt: details.kickoffAt,
+                      matchType: details.matchType,
+                      typeLabel: calendarMatchTypeLabel(
+                        details.matchType,
+                        details.championshipRound,
+                      ),
+                      address: details.address,
+                      motmActionLabel: motmActionLabel,
+                      onMotmTap: motmActionLabel == null
+                          ? null
+                          : () => context.push('/matches/$matchId/vote'),
+                      compact: true,
+                    ),
+                  ),
+                  _CompletedCompositionCard(
+                    details: details,
+                    matchId: matchId,
+                    sportsEnabled: sportsEnabled,
+                  ),
+                  _CompletedFactsSection(
+                    matchId: matchId,
+                    sportsEnabled: sportsEnabled,
+                  ),
+                  if (vote != null && vote.isClosed && vote.winners.isNotEmpty)
+                    _MotmVotesCard(matchId: matchId, vote: vote),
+                  if (details.predictions.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    _PredictionsTable(
+                      matchId: matchId,
+                      predictions: details.predictions,
+                      actualGrinta: details.scoreGrinta ?? 0,
+                      actualOpponent: details.scoreOpponent ?? 0,
+                      isHome: details.location == 'domicile',
+                      currentProfileId: currentProfileId,
+                    ),
+                  ],
+                  if (isAdmin) ...[
+                    const SizedBox(height: 16),
+                    _PostgameAdminActions(
+                      details: details,
+                      matchId: matchId,
+                      sportsEnabled: sportsEnabled,
+                    ),
+                  ],
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PostgameAdminActions extends ConsumerWidget {
+  const _PostgameAdminActions({
+    required this.details,
+    required this.matchId,
+    required this.sportsEnabled,
+  });
+
+  final MatchDetailsData details;
+  final String matchId;
+  final bool sportsEnabled;
+
+  Widget _actions(BuildContext context, DateTime deadline) {
+    return _PostgameDeadlineGate(
+      deadline: deadline,
+      child: FilledButton.icon(
+        onPressed: () => context.push('/matches/$matchId/finalize'),
+        icon: const Icon(Icons.edit_note_outlined),
+        label: const Text('Modifier les statistiques'),
+      ),
+    );
+  }
+
+  DateTime? _deadlineFromVote(DateTime anchor, Object? rawVote) {
+    final vote = rawVote;
+    if (vote == null) return anchor;
+
+    var deadline = anchor;
+    if (vote case final dynamic typedVote) {
+      final closesAt = typedVote.closesAt as DateTime?;
+      if (closesAt != null && closesAt.isBefore(deadline)) {
+        deadline = closesAt;
+      }
+      final isClosed = typedVote.isClosed == true;
+      final closedAt = isClosed ? typedVote.closedAt as DateTime? : null;
+      if (closedAt != null && closedAt.isBefore(deadline)) {
+        deadline = closedAt;
+      }
+    }
+    return deadline;
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (details.status == 'archive') return const SizedBox.shrink();
+
+    final validatedAt = details.resultValidatedAt;
+    if (validatedAt == null) return const SizedBox.shrink();
+    final anchor = validatedAt.add(const Duration(hours: 24));
+
+    if (!sportsEnabled) return _actions(context, anchor);
+
+    return ref.watch(sportMotmVoteProvider(matchId)).when(
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
+          data: (vote) {
+            final deadline = _deadlineFromVote(anchor, vote);
+            if (deadline == null) return const SizedBox.shrink();
+            return _actions(context, deadline);
+          },
+        );
+  }
+}
+
+/// Efface la chronologie rapportée par le Live quand celui-ci a été mal
+/// rempli. Le bouton n'apparaît que s'il y a effectivement des faits à
+/// supprimer, et ne touche à rien d'autre que ces faits.
+class _PostgameDeadlineGate extends StatefulWidget {
+  const _PostgameDeadlineGate({required this.deadline, required this.child});
+
+  final DateTime deadline;
+  final Widget child;
+
+  @override
+  State<_PostgameDeadlineGate> createState() => _PostgameDeadlineGateState();
+}
+
+class _PostgameDeadlineGateState extends State<_PostgameDeadlineGate> {
+  int _generation = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleDeadlineRefresh();
+  }
+
+  @override
+  void didUpdateWidget(covariant _PostgameDeadlineGate oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!oldWidget.deadline.isAtSameMomentAs(widget.deadline)) {
+      _scheduleDeadlineRefresh();
+    }
+  }
+
+  void _scheduleDeadlineRefresh() {
+    final generation = ++_generation;
+    final delay = widget.deadline.difference(DateTime.now());
+    if (delay <= Duration.zero) return;
+
+    Future<void>.delayed(delay, () {
+      if (!mounted || generation != _generation) return;
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _generation += 1;
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!DateTime.now().isBefore(widget.deadline)) {
+      return const SizedBox.shrink();
+    }
+    return widget.child;
+  }
+}
+
+class _UpcomingHeader extends StatelessWidget {
+  const _UpcomingHeader({required this.details});
+
+  final MatchDetailsData details;
+
+  @override
+  Widget build(BuildContext context) {
+    final home = details.location == 'domicile';
+    return MatchDetailHeaderCard(
+      homeName: home ? 'AS Grinta' : details.opponentName,
+      awayName: home ? details.opponentName : 'AS Grinta',
+      grintaIsHome: home,
+      kickoffAt: details.kickoffAt,
+      matchType: details.matchType,
+      typeLabel: calendarMatchTypeLabel(
+        details.matchType,
+        details.championshipRound,
+      ),
+      address: details.address,
+      compact: true,
+    );
+  }
+}
+
+class _UpcomingModules extends ConsumerWidget {
+  const _UpcomingModules({required this.matchId, required this.isAdmin});
+
+  final String matchId;
+  final bool isAdmin;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Côté joueur, une carte ne s'affiche qu'une fois son contenu publié :
+    // avant, elle menait à une page vide. L'administrateur, lui, garde ses
+    // deux cartes pour préparer l'effectif et la composition.
+    var showEffectif = true;
+    var showComposition = true;
+    if (!isAdmin) {
+      final board = ref.watch(matchAvailabilityBoardProvider(matchId));
+      final published = playerMatchModulesPublished(board.valueOrNull);
+      showEffectif = published.effectif;
+      showComposition = published.composition;
+    }
+    if (!showEffectif && !showComposition) return const SizedBox.shrink();
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 520;
+        final effectif = _MatchModule(
+          icon: Icons.groups_2_outlined,
+          title: 'Effectif',
+          subtitle: isAdmin
+              ? 'Sélectionner puis enregistrer l’effectif.'
+              : 'Consulter les joueurs convoqués.',
+          onTap: () => context.push(
+            isAdmin
+                ? '/matches/$matchId/composition?step=effectif'
+                : '/matches/$matchId/lineup?section=effectif',
+          ),
+        );
+        final composition = _MatchModule(
+          icon: Icons.dashboard_customize_outlined,
+          title: 'Composition',
+          subtitle: isAdmin
+              ? 'Créer, enregistrer et publier la composition.'
+              : 'Consulter la composition publiée.',
+          onTap: () {
+            // La vidéo de la compo peut se lancer à l'arrivée : l'appui la
+            // débloque sur iPhone.
+            if (!isAdmin) primeStadiumVideo();
+            context.push(
+              isAdmin
+                  ? '/matches/$matchId/composition?step=composition'
+                  : '/matches/$matchId/lineup?section=composition',
+            );
+          },
+        );
+        final modules = [
+          if (showEffectif) effectif,
+          if (showComposition) composition,
+        ];
+        if (compact || modules.length == 1) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (var index = 0; index < modules.length; index += 1) ...[
+                if (index > 0) const SizedBox(height: 12),
+                modules[index],
+              ],
+            ],
+          );
+        }
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: effectif),
+            const SizedBox(width: 12),
+            Expanded(child: composition),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Ce qu'un joueur peut déjà consulter pour un match à venir : l'effectif
+/// une fois les convocations publiées, la composition une fois publiée.
+/// Tant que le tableau n'est pas chargé, rien n'est montré.
+@visibleForTesting
+({bool effectif, bool composition}) playerMatchModulesPublished(
+  MatchAvailabilityBoard? board,
+) {
+  if (board == null) return (effectif: false, composition: false);
+  return (
+    effectif: board.convocationState == 'published',
+    composition: board.compositionPublished,
+  );
+}
+
+class _MatchModule extends StatelessWidget {
+  const _MatchModule({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(radius: 24, child: Icon(icon)),
+              const SizedBox(height: 14),
+              Text(
+                title,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(fontWeight: FontWeight.w400),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                subtitle,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: AppTheme.textSecondary),
+              ),
+              const SizedBox(height: 12),
+              const Align(
+                alignment: Alignment.centerRight,
+                child: Icon(Icons.chevron_right),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CompletedFactsSection extends ConsumerWidget {
+  const _CompletedFactsSection({
+    required this.matchId,
+    required this.sportsEnabled,
+  });
+
+  final String matchId;
+  final bool sportsEnabled;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!sportsEnabled) return const SizedBox.shrink();
+    // Le bloc ne montre que les buts du compte rendu validé : sans but, il
+    // n'a rien à afficher.
+    final goals = ref.watch(matchGoalActionsProvider(matchId)).valueOrNull;
+    if (goals == null || goals.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: MatchFaitsDuMatchCard(matchId: matchId),
+    );
+  }
+}
+
+class _CompletedCompositionCard extends ConsumerWidget {
+  const _CompletedCompositionCard({
+    required this.details,
+    required this.matchId,
+    required this.sportsEnabled,
+  });
+
+  final MatchDetailsData details;
+  final String matchId;
+  final bool sportsEnabled;
+
+  List<CompletedPlayerSummary> _playersFromMatchDetails(
+    MatchComposition composition,
+  ) {
+    final playersByName = <String, CompletedPlayerSummary>{};
+    // La composition publiée porte déjà la photo de chaque joueur : la liste
+    // de repli affiche ainsi les mêmes pastilles que le terrain.
+    final photoByName = <String, String>{};
+    for (final entry in composition.entries) {
+      final photoUrl = entry.photoUrl?.trim();
+      if (photoUrl == null || photoUrl.isEmpty) continue;
+      photoByName[entry.displayName.trim().toLowerCase()] = photoUrl;
+    }
+
+    final motmKeys = {
+      for (final player in details.startingLineup)
+        if (player.isManOfTheMatch) player.name.trim().toLowerCase(),
+    };
+
+    void addPlayer(String rawName, int goals) {
+      final name = rawName.trim();
+      if (name.isEmpty) return;
+      final key = name.toLowerCase();
+      final existing = playersByName[key];
+      if (existing == null || goals > existing.goals) {
+        playersByName[key] = CompletedPlayerSummary(
+          name: name,
+          goals: goals,
+          photoUrl: photoByName[key],
+          isMotm: motmKeys.contains(key),
+        );
+      }
+    }
+
+    for (final player in details.playerStats) {
+      addPlayer(player.name, player.goals);
+    }
+    for (final player in details.startingLineup) {
+      addPlayer(player.name, player.goals);
+    }
+
+    return playersByName.values.toList()
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!sportsEnabled) return const SizedBox.shrink();
+    final composition =
+        ref.watch(publishedMatchCompositionProvider(matchId)).valueOrNull;
+    if (composition == null) return const SizedBox.shrink();
+
+    // L'après-match utilise le maillot choisi dans Infos, comme l'avant-match.
+    // Attendre les variantes évite un bref affichage du maillot France.
+    final kitPhotosAsync = ref.watch(matchKitPhotoOverridesProvider(matchId));
+    if (kitPhotosAsync.isLoading) return const SizedBox.shrink();
+    final kitPhotos = kitPhotosAsync.valueOrNull ?? const <String, String>{};
+    final displayedComposition = kitPhotos.isEmpty
+        ? composition
+        : composition.copyWith(
+            entries: withMatchKitPhotos(composition.entries, kitPhotos),
+          );
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: CompletedCompositionCard(
+        composition: displayedComposition,
+        fallbackPlayers: _playersFromMatchDetails(displayedComposition),
+      ),
+    );
+  }
+}
+
+/// Classement du vote Homme du match, affiché seulement une fois le scrutin
+/// clos et le vainqueur révélé. Seuls les joueurs ayant reçu au moins une
+/// voix apparaissent ; les ex æquo partagent le même rang.
+///
+/// Nom et photo viennent de la composition publiée, comme sur le terrain
+/// juste au-dessus ; sans composition, on garde le nom du scrutin (surnom
+/// sinon prénom) et une pastille d'initiales.
+class _MotmVotesCard extends ConsumerWidget {
+  const _MotmVotesCard({required this.matchId, required this.vote});
+
+  final String matchId;
+  final SportMotmVote vote;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final composition =
+        ref.watch(publishedMatchCompositionProvider(matchId)).valueOrNull;
+    final entriesByParticipant = {
+      for (final entry
+          in composition?.entries ?? const <MatchCompositionEntry>[])
+        entry.participantId: entry,
+    };
+    final ranked = vote.candidates
+        .where((candidate) => (candidate.votesCount ?? 0) > 0)
+        .toList()
+      ..sort((a, b) {
+        final votesComparison =
+            (b.votesCount ?? 0).compareTo(a.votesCount ?? 0);
+        if (votesComparison != 0) return votesComparison;
+        return a.displayName
+            .trim()
+            .toLowerCase()
+            .compareTo(b.displayName.trim().toLowerCase());
+      });
+    if (ranked.isEmpty) return const SizedBox.shrink();
+
+    final rows = <Widget>[];
+    var rank = 0;
+    int? previousVotes;
+    for (var i = 0; i < ranked.length; i++) {
+      final candidate = ranked[i];
+      final votes = candidate.votesCount ?? 0;
+      final entry = entriesByParticipant[candidate.participantId];
+      final name = entry?.displayName ?? candidate.displayName;
+      if (votes != previousVotes) rank = i + 1;
+      previousVotes = votes;
+      rows.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 28,
+                child: Text(
+                  '$rank',
+                  style: const TextStyle(color: AppTheme.textSecondary),
+                ),
+              ),
+              PlayerAvatar(
+                photoUrl: entry?.photoUrl,
+                name: name,
+                lastName: entry?.lastInitial,
+                isGoalkeeper: candidate.isGoalkeeper,
+                size: 36,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(name, overflow: TextOverflow.ellipsis),
+              ),
+              Text('$votes voix'),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: CollapsibleSectionCard(
+        storageKey: 'match-$matchId-votes-hdm',
+        title: 'Votes Homme du match',
+        childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 12),
+        children: rows,
+      ),
+    );
+  }
+}
+
+class _PredictionsTable extends StatelessWidget {
+  const _PredictionsTable({
+    required this.matchId,
+    required this.predictions,
+    required this.actualGrinta,
+    required this.actualOpponent,
+    required this.isHome,
+    required this.currentProfileId,
+  });
+
+  final String matchId;
+  final List<MatchPredictionResult> predictions;
+  final int actualGrinta;
+  final int actualOpponent;
+  final bool isHome;
+  final String? currentProfileId;
+
+  int _result(int home, int away) => home == away ? 0 : (home > away ? 1 : -1);
+
+  /// Couleur de l'encadré selon le multiplicateur du barème
+  /// (voir PredictionScoring) : violet ×2, or ×1,5, vert ×1, rien à 0.
+  Color? _colorFor(MatchPredictionResult prediction) {
+    if (prediction.points <= 0) return null;
+    final exact = prediction.scoreGrinta == actualGrinta &&
+        prediction.scoreOpponent == actualOpponent;
+    if (exact) return const Color(0xFF9B6CFF);
+    final correctWinner =
+        _result(prediction.scoreGrinta, prediction.scoreOpponent) ==
+            _result(actualGrinta, actualOpponent);
+    if (!correctWinner) return null;
+    final sameGap = prediction.scoreGrinta - prediction.scoreOpponent ==
+        actualGrinta - actualOpponent;
+    final oneTeamExact = prediction.scoreGrinta == actualGrinta ||
+        prediction.scoreOpponent == actualOpponent;
+    if (sameGap || oneTeamExact) return AppTheme.reward;
+    return const Color(0xFF39E784);
+  }
+
+  Widget _predictionRow(
+    BuildContext context,
+    MatchPredictionResult prediction,
+  ) {
+    final highlightColor = _colorFor(prediction);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        border: highlightColor == null
+            ? null
+            : Border.all(color: highlightColor, width: 1.7),
+        color: highlightColor?.withValues(alpha: .08),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: NameWithBadges(
+              profileId: prediction.profileId,
+              name: prediction.name,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              isHome
+                  ? '${prediction.scoreGrinta}–${prediction.scoreOpponent}'
+                  : '${prediction.scoreOpponent}–${prediction.scoreGrinta}',
+              textAlign: TextAlign.center,
+            ),
+          ),
+          SizedBox(
+            width: 30,
+            child: prediction.usedX2
+                ? const Align(
+                    alignment: Alignment.centerRight,
+                    child: _X2Badge(),
+                  )
+                : null,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              prediction.points.round().toString(),
+              textAlign: TextAlign.end,
+              style: const TextStyle(fontWeight: FontWeight.w400),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final sortedPredictions = predictions.toList()
+      ..sort(
+        (a, b) => compareMatchPredictionResultsForDisplay(
+          a,
+          b,
+          currentProfileId: currentProfileId,
+        ),
+      );
+
+    return CollapsibleSectionCard(
+      storageKey: 'match-$matchId-prono',
+      title: 'Prono',
+      childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 12),
+      children: [
+        for (final prediction in sortedPredictions)
+          _predictionRow(context, prediction),
+      ],
+    );
+  }
+}
+
+/// Pastille « ×2 » indiquant qu'un joueur a utilisé son bonus double sur ce
+/// pronostic (ses points sont doublés).
+class _X2Badge extends StatelessWidget {
+  const _X2Badge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: AppTheme.accent.withValues(alpha: .18),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppTheme.accent.withValues(alpha: .55)),
+      ),
+      child: const Text(
+        '×2',
+        style: TextStyle(
+          color: AppTheme.accent,
+          fontWeight: FontWeight.w400,
+          fontSize: 11,
+        ),
+      ),
+    );
+  }
+}

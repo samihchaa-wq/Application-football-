@@ -1,0 +1,758 @@
+import 'dart:ui' as ui;
+
+import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:as_grinta/features/badges/data/badge_repository.dart';
+import 'package:as_grinta/features/badges/presentation/badge_emblem.dart';
+import 'package:as_grinta/features/season_wrapped/data/season_wrapped_repository.dart';
+import 'package:as_grinta/features/season_wrapped/presentation/season_wrapped_button.dart';
+import 'package:as_grinta/features/season_wrapped/presentation/season_wrapped_page.dart';
+import 'package:as_grinta/features/season_wrapped/presentation/season_wrapped_share_sheet.dart';
+import 'package:as_grinta/features/season_wrapped/presentation/wrapped_theme.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+SeasonWrapped _wrapped() => SeasonWrapped.fromJson({
+      'season_name': '2026-2027',
+      'roster_size': 14,
+      'matches_played': 12,
+      'matches_played_rank': 4,
+      'wins': 7,
+      'draws': 2,
+      'losses': 3,
+      'win_pct': 58.33,
+      'win_pct_rank': 2,
+      'win_pct_pool': 9,
+      // Cinq heures et demie : le cas qui fait défiler heures puis minutes.
+      'avg_response_hours': 5.5,
+      'avg_response_rank': 1,
+      'avg_response_pool': 9,
+      'goals': 5,
+      'goals_rank': 1,
+      'motm': 0,
+      'motm_rank': 8,
+      'clean_matches': 6,
+      'clean_matches_rank': 2,
+      'versatility': 2,
+      'versatility_rank': 1,
+      'badge_count': 2,
+      'badges': [
+        {'code': 'a', 'name': 'Fidèle', 'emoji': '📅'},
+        {'code': 'b', 'name': 'Mur', 'emoji': '🧱'},
+      ],
+      'top_position': 'Milieu',
+      'position_shares': [
+        {'position': 'Milieu', 'share': 60},
+        {'position': 'Milieu défensif', 'share': 40},
+      ],
+    });
+
+Widget _host(
+  Widget child,
+  List<Override> overrides, {
+  bool reducedMotion = false,
+}) {
+  return ProviderScope(
+    overrides: overrides,
+    child: MaterialApp(
+      home: MediaQuery(
+        data: MediaQueryData(disableAnimations: reducedMotion),
+        child: child,
+      ),
+    ),
+  );
+}
+
+ArmoireBadge _badgeArmoire(
+  String code,
+  String nom, {
+  String? metric = 'matches_played',
+  String category = 'joueur_all_time',
+  bool etoile = false,
+}) =>
+    ArmoireBadge(
+      def: BadgeDef(
+        code: code,
+        name: nom,
+        description: '',
+        emoji: '📅',
+        imageUrl: null,
+        color: null,
+        family: 'joueur',
+        kind: 'tier',
+        category: category,
+        metric: metric,
+        threshold: 100,
+        sortOrder: 1,
+        hasStar: etoile,
+      ),
+      state: BadgeState.validated,
+      // Le joueur en est à 132, mais le badge s'obtient à 100.
+      displayValue: 132,
+    );
+
+/// Les écrans du bilan, dans l'ordre. Les nommer évite de compter les appuis
+/// à la main dans chaque test.
+const _ecranVictoires = 3;
+const _ecranButs = 4;
+const _ecranHdm = 5;
+const _ecranSansEncaisser = 6;
+const _ecranPoste = 7;
+const _ecranReactivite = 8;
+const _ecranBadges = 9;
+const _ecranCloture = 10;
+const _nombreEcrans = 11;
+
+/// Avance de [pas] écrans depuis celui affiché.
+Future<void> _avancer(WidgetTester tester, int pas) async {
+  for (var i = 0; i < pas; i += 1) {
+    await tester.tapAt(const Offset(900, 1500));
+    await tester.pump();
+    await tester.pump();
+  }
+}
+
+/// Depuis l'ouverture, va jusqu'à l'écran [ecran].
+Future<void> _allerA(WidgetTester tester, int ecran) => _avancer(tester, ecran);
+
+List<Override> _storyOverrides({List<ArmoireBadge> armoire = const []}) => [
+      mySeasonWrappedProvider.overrideWith((ref) async => _wrapped()),
+      wrappedPlayerNameProvider.overrideWithValue('Samih'),
+      // Sans cette surcharge l'armoire tenterait de joindre la base : l'écran
+      // des badges retomberait sur son affichage de secours sans le dire.
+      myArmoireProvider.overrideWith(
+        (ref) async => Armoire(
+          validated: armoire,
+          inProgress: const [],
+          locked: const [],
+        ),
+      ),
+    ];
+
+List<Override> _buttonOverrides({
+  required bool available,
+  required bool admin,
+}) =>
+    [
+      seasonWrappedStateProvider.overrideWith(
+        (ref) async => available
+            ? const SeasonWrappedState(
+                available: true,
+                seasonName: '2026-2027',
+              )
+            : const SeasonWrappedState.unavailable(),
+      ),
+      isAdminViewProvider.overrideWithValue(admin),
+    ];
+
+void main() {
+  testWidgets('le bouton reste invisible pendant la saison', (tester) async {
+    await tester.pumpWidget(
+      _host(
+        const Scaffold(body: SeasonWrappedButton()),
+        _buttonOverrides(available: false, admin: false),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('season-wrapped-button')), findsNothing);
+  });
+
+  testWidgets('un administrateur garde un accès en aperçu', (tester) async {
+    await tester.pumpWidget(
+      _host(
+        const Scaffold(body: SeasonWrappedButton()),
+        _buttonOverrides(available: false, admin: true),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final button = find.byKey(const ValueKey('season-wrapped-button'));
+    expect(button, findsOneWidget);
+    expect(tester.widget<IconButton>(button).tooltip, 'Ma saison (aperçu)');
+  });
+
+  testWidgets('l’aperçu annonce ses chiffres d’exemple', (tester) async {
+    await tester.pumpWidget(
+      _host(
+        const SeasonWrappedPage(preview: true),
+        [
+          seasonWrappedStateProvider.overrideWith(
+            (ref) async => const SeasonWrappedState.unavailable(),
+          ),
+          wrappedPlayerNameProvider.overrideWithValue('Samih'),
+        ],
+        reducedMotion: true,
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('wrapped-preview-badge')),
+      findsOneWidget,
+    );
+    expect(find.text('APERÇU · CHIFFRES D’EXEMPLE'), findsOneWidget);
+    expect(find.text('SAMIH'), findsOneWidget);
+  });
+
+  test('la saison en cours se déduit du mois', () {
+    expect(
+      SeasonWrappedPage.currentSeasonName(DateTime(2026, 8, 22)),
+      '2026-2027',
+    );
+    expect(
+      SeasonWrappedPage.currentSeasonName(DateTime(2027, 3, 4)),
+      '2026-2027',
+    );
+    expect(
+      SeasonWrappedPage.currentSeasonName(DateTime(2027, 7, 1)),
+      '2027-2028',
+    );
+  });
+
+  testWidgets('le bouton apparaît entre deux saisons', (tester) async {
+    await tester.pumpWidget(
+      _host(
+        const Scaffold(body: SeasonWrappedButton()),
+        _buttonOverrides(available: true, admin: false),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final button = find.byKey(const ValueKey('season-wrapped-button'));
+    expect(button, findsOneWidget);
+    // Un vrai bilan n'est jamais présenté comme un aperçu.
+    expect(tester.widget<IconButton>(button).tooltip, 'Ma saison');
+  });
+
+  testWidgets('le bilan ouvre sur la feuille de saison', (tester) async {
+    await tester.pumpWidget(
+      _host(const SeasonWrappedPage(), _storyOverrides(), reducedMotion: true),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('TA SAISON'), findsOneWidget);
+    expect(find.text('La saison est finie. Voici ton résumé…'), findsOneWidget);
+    // Le millésime est posé sur deux lignes, en très grand.
+    expect(find.text('2026\n2027'), findsOneWidget);
+    expect(find.text('SAMIH'), findsOneWidget);
+    // Un segment de progression par écran.
+    expect(find.byType(LinearProgressIndicator), findsNWidgets(_nombreEcrans));
+  });
+
+  testWidgets('un appui à droite avance, un appui à gauche revient',
+      (tester) async {
+    await tester.pumpWidget(
+      _host(const SeasonWrappedPage(), _storyOverrides(), reducedMotion: true),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    final width = tester.view.physicalSize.width / tester.view.devicePixelRatio;
+    final height =
+        tester.view.physicalSize.height / tester.view.devicePixelRatio;
+
+    await tester.tapAt(Offset(width * .8, height * .55));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('MATCHS JOUÉS'), findsOneWidget);
+    expect(find.text('12'), findsOneWidget);
+
+    await tester.tapAt(Offset(width * .1, height * .55));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('2026\n2027'), findsOneWidget);
+  });
+
+  testWidgets('le poste et la polyvalence tiennent en un écran',
+      (tester) async {
+    tester.view.physicalSize = const Size(1200, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      _host(const SeasonWrappedPage(), _storyOverrides(), reducedMotion: true),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    await _allerA(tester, _ecranPoste);
+
+    expect(find.text('TON POSTE'), findsOneWidget);
+    expect(find.text('LE PLUS SOUVENT'), findsOneWidget);
+    expect(find.text('MILIEU'), findsOneWidget);
+    // Le terrain montre déjà les postes occupés : leur compte se lit
+    // en légende, avec son classement, plutôt que sur un écran de plus.
+    expect(find.textContaining('Deux postes'), findsOneWidget);
+    expect(find.byType(WrappedRankBadge), findsOneWidget);
+  });
+
+  testWidgets('les buts et l’homme du match ne partagent plus un écran',
+      (tester) async {
+    tester.view.physicalSize = const Size(1200, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      _host(const SeasonWrappedPage(), _storyOverrides(), reducedMotion: true),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    await _allerA(tester, _ecranButs);
+    expect(find.text('BUTS'), findsOneWidget);
+    expect(find.text('5'), findsOneWidget);
+    expect(find.text('HOMME DU MATCH'), findsNothing);
+    // Un seul chiffre par écran, donc un seul classement.
+    expect(find.byType(WrappedRankBadge), findsOneWidget);
+
+    await _avancer(tester, _ecranHdm - _ecranButs);
+    expect(find.text('HOMME DU MATCH'), findsOneWidget);
+    expect(find.text('BUTS'), findsNothing);
+    expect(find.textContaining('anonyme'), findsOneWidget);
+  });
+
+  testWidgets('chaque statistique a son écran, dans l’ordre annoncé',
+      (tester) async {
+    tester.view.physicalSize = const Size(1200, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      _host(const SeasonWrappedPage(), _storyOverrides(), reducedMotion: true),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    const ordre = [
+      'TA SAISON',
+      'MATCHS JOUÉS',
+      'L’ÉQUIPE QUAND TU ÉTAIS LÀ',
+      'POURCENTAGE DE VICTOIRES',
+      'BUTS',
+      'HOMME DU MATCH',
+      'MATCHS SANS ENCAISSER',
+      'TON POSTE',
+      'DÉLAI MOYEN DE RÉPONSE',
+      'TES BADGES',
+      'TA SAISON EN ENTIER',
+    ];
+    expect(ordre.length, _nombreEcrans);
+
+    for (var i = 0; i < ordre.length; i += 1) {
+      expect(
+        find.text(ordre[i]),
+        findsOneWidget,
+        reason: 'écran ${i + 1} : « ${ordre[i]} » attendu',
+      );
+      if (i < ordre.length - 1) await _avancer(tester, 1);
+    }
+  });
+
+  testWidgets('plus aucun mot géant ne traîne au fond des écrans', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      _host(const SeasonWrappedPage(), _storyOverrides(), reducedMotion: true),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    // « BUTS » sert aussi d'intitulé : seuls les mots qui ne meublaient que le
+    // fond peuvent être cherchés par leur texte.
+    const meubles = ['GRINTA', 'PRÉSENT', 'DISPO', 'ÉQUIPE'];
+
+    for (var i = 0; i < _nombreEcrans; i += 1) {
+      for (final mot in meubles) {
+        expect(find.text(mot), findsNothing,
+            reason: 'écran ${i + 1}, « $mot »');
+      }
+
+      // Ces mots étaient les seuls dessinés en contour. Sur le téléphone le
+      // contour sortait plein, et le mot masquait le texte à lire.
+      for (final texte in tester.widgetList<Text>(find.byType(Text))) {
+        expect(
+          texte.style?.foreground,
+          isNull,
+          reason: 'écran ${i + 1} : « ${texte.data} » est dessiné en contour',
+        );
+      }
+
+      await tester.tapAt(const Offset(300, 400));
+      await tester.pump();
+      await tester.pump();
+    }
+  });
+
+  testWidgets('aucun texte du bilan n’est en gras', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      _host(const SeasonWrappedPage(), _storyOverrides(), reducedMotion: true),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    // La moyenne tassait une police deja condensee : une phrase entiere
+    // finissait en bloc noir sur le telephone. Rien ne doit la depasser.
+    for (var i = 0; i < _nombreEcrans; i += 1) {
+      for (final texte in tester.widgetList<Text>(find.byType(Text))) {
+        final poids = texte.style?.fontWeight;
+        if (poids == null) continue;
+        expect(
+          poids.value,
+          lessThanOrEqualTo(FontWeight.w400.value),
+          reason: 'ecran ${i + 1} : « ${texte.data} » en ${poids.value}',
+        );
+      }
+      await tester.tapAt(const Offset(300, 400));
+      await tester.pump();
+      await tester.pump();
+    }
+  });
+
+  testWidgets('le délai monte en deux temps : les heures, puis les minutes', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    // Sans le réglage « réduire les animations » : c'est l'animation qu'on
+    // vient regarder.
+    await tester.pumpWidget(
+      _host(const SeasonWrappedPage(), _storyOverrides()),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    for (var i = 0; i < _ecranReactivite; i += 1) {
+      await tester.tapAt(const Offset(900, 1500));
+      await tester.pump();
+    }
+
+    String? affiche() {
+      final trouves = tester
+          .widgetList<Text>(find.byType(Text))
+          .map((t) => t.data)
+          .whereType<String>()
+          .where((t) => t.contains(' h '));
+      return trouves.isEmpty ? null : trouves.first;
+    }
+
+    int heuresDe(String texte) => int.parse(texte.split(' h ').first);
+    int minutesDe(String texte) => int.parse(texte.split(' h ').last);
+
+    // Le gabarit est complet des la premiere image : rien ne surgit en route.
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(affiche(), isNotNull, reason: 'le délai doit être affiché');
+
+    // Pendant que les heures montent, les minutes restent à zéro.
+    var heuresVues = <int>{};
+    for (var ms = 320; ms <= 1300; ms += 120) {
+      await tester.pump(const Duration(milliseconds: 120));
+      final texte = affiche()!;
+      heuresVues.add(heuresDe(texte));
+      expect(
+        minutesDe(texte),
+        0,
+        reason: 'à $ms ms les minutes ne doivent pas avoir bougé : $texte',
+      );
+    }
+    expect(
+      heuresVues.length,
+      greaterThan(1),
+      reason: 'les heures doivent défiler, pas sauter à leur valeur',
+    );
+
+    // Puis les minutes prennent le relais, heures arrivées.
+    final minutesVues = <int>{};
+    for (var i = 0; i < 8; i += 1) {
+      await tester.pump(const Duration(milliseconds: 90));
+      final texte = affiche()!;
+      expect(heuresDe(texte), 5, reason: 'les heures sont arrivées : $texte');
+      minutesVues.add(minutesDe(texte));
+    }
+    expect(
+      minutesVues.length,
+      greaterThan(1),
+      reason: 'les minutes doivent défiler à leur tour',
+    );
+
+    await tester.pumpAndSettle();
+    expect(affiche(), '5 h 30');
+  });
+
+  testWidgets('la réactivité s’annonce comme une moyenne', (tester) async {
+    tester.view.physicalSize = const Size(1200, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      _host(const SeasonWrappedPage(), _storyOverrides(), reducedMotion: true),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    await _allerA(tester, _ecranReactivite);
+
+    // Le chiffre est une moyenne, jamais un cumul : l'écran doit le dire.
+    expect(find.text('DÉLAI MOYEN DE RÉPONSE'), findsOneWidget);
+    expect(find.textContaining('En moyenne'), findsOneWidget);
+  });
+
+  testWidgets('les matchs sans encaisser se lisent comme les autres stats', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      _host(const SeasonWrappedPage(), _storyOverrides(), reducedMotion: true),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    await _allerA(tester, _ecranSansEncaisser);
+
+    // C'est un des dix criteres : son propre ecran, intitule, grand chiffre
+    // et classement — pas une note de bas de page.
+    expect(find.text('MATCHS SANS ENCAISSER'), findsOneWidget);
+    expect(find.text('6'), findsOneWidget);
+    expect(find.byType(WrappedRankBadge), findsOneWidget);
+  });
+
+  testWidgets('les badges de la saison ont leur écran', (tester) async {
+    tester.view.physicalSize = const Size(1200, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      _host(const SeasonWrappedPage(), _storyOverrides(), reducedMotion: true),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    await _allerA(tester, _ecranBadges);
+
+    expect(find.text('TES BADGES'), findsOneWidget);
+    // Le compte, puis chaque badge nommé.
+    expect(find.text('2'), findsOneWidget);
+    expect(find.text('Fidèle'), findsOneWidget);
+    expect(find.text('Mur'), findsOneWidget);
+    // Les badges ne sont pas classés : la comparaison n'aurait pas de sens.
+    expect(find.byType(WrappedRankBadge), findsNothing);
+  });
+
+  testWidgets('un badge connu de l’armoire garde sa vraie vignette', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      _host(
+        const SeasonWrappedPage(),
+        // L'armoire connaît « Fidèle », pas « Mur ».
+        _storyOverrides(armoire: [_badgeArmoire('a', 'Fidèle')]),
+        reducedMotion: true,
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    await _allerA(tester, _ecranBadges);
+
+    // Le badge connu est dessiné comme dans l'armoire, avec sa valeur et son
+    // critère — pas seulement son nom.
+    expect(find.byType(BadgeEmblem), findsOneWidget);
+    // La vignette annonce le palier du badge, pas le compteur du joueur.
+    expect(find.text('100'), findsWidgets);
+    expect(find.text('132'), findsNothing);
+    expect(find.textContaining('CARRIÈRE'), findsWidgets);
+    // Celui que l'armoire ignore garde son nom seul, sans disparaître.
+    expect(find.text('Mur'), findsOneWidget);
+  });
+
+  testWidgets('les vignettes de badges sont alignées entre elles',
+      (tester) async {
+    tester.view.physicalSize = const Size(1200, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      _host(
+        const SeasonWrappedPage(),
+        // Deux vignettes de hauteurs naturelles différentes : l'une porte une
+        // étoile et pas de nombre, l'autre l'inverse.
+        _storyOverrides(
+          armoire: [
+            _badgeArmoire('a', 'Fidèle'),
+            _badgeArmoire(
+              'b',
+              'Mur',
+              metric: 'title_most_present',
+              category: 'palmares',
+              etoile: true,
+            ),
+          ],
+        ),
+        reducedMotion: true,
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    await _allerA(tester, _ecranBadges);
+
+    final vignettes = tester.widgetList<BadgeEmblem>(find.byType(BadgeEmblem));
+    expect(vignettes.length, 2);
+
+    final boites = find
+        .byType(BadgeEmblem)
+        .evaluate()
+        .map((element) => tester.getRect(find.byWidget(element.widget)))
+        .toList();
+    // Les deux vignettes reposent sur la même ligne du bas : sans cela, les
+    // noms écrits en dessous ne s'alignent plus.
+    expect((boites[0].bottom - boites[1].bottom).abs(), lessThan(0.5));
+  });
+
+  testWidgets('la dernière page propose le partage', (tester) async {
+    tester.view.physicalSize = const Size(1200, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      _host(const SeasonWrappedPage(), _storyOverrides(), reducedMotion: true),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    await _allerA(tester, _ecranCloture);
+
+    expect(find.text('TA SAISON EN ENTIER'), findsOneWidget);
+    expect(find.text('PARTAGER MA SAISON'), findsOneWidget);
+    expect(find.text('Partager par thème'), findsOneWidget);
+    // Les valeurs du récapitulatif sont bien celles du bilan.
+    expect(find.text('12'), findsOneWidget);
+    expect(find.text('58 %'), findsOneWidget);
+    expect(find.text('7 V · 2 N · 3 D'), findsOneWidget);
+  });
+
+  testWidgets('le pourcentage garde son signe', (tester) async {
+    tester.view.physicalSize = const Size(1200, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      _host(const SeasonWrappedPage(), _storyOverrides(), reducedMotion: true),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    await _allerA(tester, _ecranVictoires);
+
+    expect(find.text('POURCENTAGE DE VICTOIRES'), findsOneWidget);
+    expect(find.text('58 %'), findsOneWidget);
+  });
+
+  testWidgets('la musique se coupe et se remet', (tester) async {
+    await tester.pumpWidget(
+      _host(const SeasonWrappedPage(), _storyOverrides(), reducedMotion: true),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    final mute = find.byKey(const ValueKey('wrapped-mute-button'));
+    expect(mute, findsOneWidget);
+    expect(
+      tester.widget<IconButton>(mute).tooltip,
+      'Couper la musique',
+    );
+  });
+
+  testWidgets('la feuille partagée porte le nom du joueur', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: SeasonWrappedFullShareSheet(
+            wrapped: _wrapped(),
+            playerName: 'Samih',
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('AS GRINTA · 2026-2027'), findsOneWidget);
+    expect(find.text('MA SAISON'), findsOneWidget);
+    expect(find.text('SAMIH'), findsOneWidget);
+  });
+
+  testWidgets('la feuille se transforme en une vraie image', (tester) async {
+    final captureKey = GlobalKey();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        // Centrée, la feuille garde sa taille propre — comme dans l'écran,
+        // où elle est posée hors champ sans contrainte d'étirement.
+        home: Center(
+          child: RepaintBoundary(
+            key: captureKey,
+            child: SeasonWrappedShareSheet(
+              sheet: _wrapped().sheets.first,
+              seasonName: '2026-2027',
+              playerName: 'Samih',
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final boundary =
+        captureKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+
+    // L'encodage PNG est un vrai travail asynchrone : il doit sortir du temps
+    // simulé du test, sinon il ne se termine jamais.
+    await tester.runAsync(() async {
+      final image = await boundary.toImage(
+        pixelRatio: kSeasonWrappedSharePixelRatio,
+      );
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+
+      expect(image.width, (kSeasonWrappedShareWidth * 3).round());
+      expect(image.height, (kSeasonWrappedShareHeight * 3).round());
+      expect(bytes, isNotNull);
+      expect(bytes!.lengthInBytes, greaterThan(0));
+      image.dispose();
+    });
+  });
+
+  testWidgets('un joueur sans bilan voit un message clair', (tester) async {
+    await tester.pumpWidget(
+      _host(
+        const SeasonWrappedPage(),
+        [
+          mySeasonWrappedProvider.overrideWith((ref) async => null),
+          wrappedPlayerNameProvider.overrideWithValue('Samih'),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pas encore de bilan'), findsOneWidget);
+  });
+}

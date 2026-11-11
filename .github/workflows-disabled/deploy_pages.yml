@@ -1,0 +1,311 @@
+name: Deploy Flutter Web to GitHub Pages
+
+on:
+  workflow_run:
+    workflows: [Flutter CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      target_sha:
+        description: 'Full main commit SHA to deploy. Leave empty for current main.'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+env:
+  TARGET_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.target_sha || github.event.workflow_run.head_sha || github.sha }}
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout validated revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ env.TARGET_SHA }}
+          fetch-depth: 0
+      - name: Validate manual rollback target
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$TARGET_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo '::error::target_sha must be a full 40-character commit SHA.'
+            exit 1
+          fi
+          git fetch origin main
+          if ! git merge-base --is-ancestor "$TARGET_SHA" origin/main; then
+            echo '::error::Only commits already present in main history may be deployed.'
+            exit 1
+          fi
+      - name: Setup Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          cache: true
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Read application version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(awk '/^version:/{print $2}' pubspec.yaml)
+          test -n "$version"
+          echo "APP_VERSION=$version" >> "$GITHUB_ENV"
+      - name: Stamp web deployment version
+        shell: bash
+        run: |
+          set -euo pipefail
+          short_sha="${TARGET_SHA:0:12}"
+          web_version="${APP_VERSION}-${short_sha}"
+          cat > web/build_version.js <<EOF
+          (function (globalScope) {
+            globalScope.AS_GRINTA_WEB_VERSION = '${web_version}';
+          })(typeof self !== 'undefined' ? self : window);
+          EOF
+          echo "WEB_VERSION=$web_version" >> "$GITHUB_ENV"
+      - name: Configure Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - name: Build Flutter Web
+        run: |
+          flutter build web \
+            --release \
+            --base-href "/AS-Grinta/" \
+            --pwa-strategy=none \
+            --no-web-resources-cdn \
+            --dart-define-from-file=config/production.json \
+            --dart-define=APP_VERSION="$APP_VERSION"
+      - name: Version critical web shell assets
+        run: python3 tool/stamp_web_release.py
+      - name: Enforce web performance budget
+        env:
+          MAX_MAIN_DART_JS_BYTES: '6000000'
+          MAX_MAIN_DART_JS_GZIP_BYTES: '1700000'
+        run: python3 tool/check_web_performance_budget.py
+      - name: Add SPA fallback
+        run: cp build/web/index.html build/web/404.html
+      - name: Validate generated assets
+        run: |
+          set -euo pipefail
+          test -s build/web/index.html
+          test -s build/web/app_shell.js
+          test -s build/web/build_version.js
+          test -s build/web/flutter_bootstrap.js
+          test -s build/web/main.dart.js
+          test -s build/web/favicon.svg
+          grep -Fq "$WEB_VERSION" build/web/build_version.js
+          grep -Fq "build_version.js?v=$WEB_VERSION" build/web/index.html
+          grep -Fq "app_shell.js?v=$WEB_VERSION" build/web/index.html
+          grep -Fq '"mainJsPath":"main.dart.js?v=' build/web/flutter_bootstrap.js
+          grep -q 'version-check' build/web/app_shell.js
+          grep -q '/AS-Grinta/' build/web/index.html
+          grep -q 'Content-Security-Policy' build/web/index.html
+          grep -q 'staleWhileRevalidate' build/web/sw.js
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+
+  smoke-test:
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout validated configuration
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ env.TARGET_SHA }}
+      - name: Verify public application files
+        run: |
+          set -euo pipefail
+          base=$(jq -r '.PUBLIC_APP_URL' config/production.json)
+          token="${TARGET_SHA}-$(date +%s)"
+          curl --retry 5 --retry-delay 5 -LfsS "${base}?audit=${token}" -o /tmp/index.html
+          curl --retry 5 --retry-delay 5 -LfsS "${base}app_shell.js?audit=${token}" -o /tmp/app_shell.js
+          curl --retry 5 --retry-delay 5 -LfsS "${base}build_version.js?audit=${token}" -o /tmp/build_version.js
+          curl --retry 5 --retry-delay 5 -LfsS "${base}flutter_bootstrap.js?audit=${token}" -o /tmp/flutter_bootstrap.js
+          curl --retry 5 --retry-delay 5 -LfsS "${base}main.dart.js?audit=${token}" -o /tmp/main.dart.js
+          curl --retry 5 --retry-delay 5 -LfsS "${base}favicon.svg?audit=${token}" -o /tmp/favicon.svg
+          test -s /tmp/index.html
+          test -s /tmp/app_shell.js
+          test -s /tmp/build_version.js
+          test -s /tmp/flutter_bootstrap.js
+          test -s /tmp/main.dart.js
+          test -s /tmp/favicon.svg
+          web_version=$(sed -nE "s/.*AS_GRINTA_WEB_VERSION = '([^']+)'.*/\1/p" /tmp/build_version.js | head -n 1)
+          test -n "$web_version"
+          grep -Fq "${TARGET_SHA:0:12}" /tmp/build_version.js
+          grep -Fq "build_version.js?v=$web_version" /tmp/index.html
+          grep -Fq "app_shell.js?v=$web_version" /tmp/index.html
+          grep -q 'version-check' /tmp/app_shell.js
+          grep -q 'Content-Security-Policy' /tmp/index.html
+          grep -q '/AS-Grinta/' /tmp/index.html
+      - name: Verify HTTPS transport
+        run: |
+          set -euo pipefail
+          base=$(jq -r '.PUBLIC_APP_URL' config/production.json)
+          case "$base" in
+            https://*) ;;
+            *) echo 'PUBLIC_APP_URL doit utiliser HTTPS.' >&2; exit 1 ;;
+          esac
+          curl --retry 5 --retry-delay 3 -I -LfsS "$base" -o /tmp/pages-headers.txt
+          grep -qi '^strict-transport-security:' /tmp/pages-headers.txt || \
+            echo '::warning::GitHub Pages ne renvoie pas de HSTS visible sur cette requête.'
+      - name: Verify Supabase availability
+        run: |
+          set -euo pipefail
+          supabase_url=$(jq -r '.SUPABASE_URL' config/production.json)
+          publishable_key=$(jq -r '.SUPABASE_ANON_KEY' config/production.json)
+          test -n "$supabase_url"
+          test -n "$publishable_key"
+          curl --retry 5 --retry-delay 3 -LfsS \
+            "$supabase_url/auth/v1/health" \
+            -H "apikey: $publishable_key" \
+            -o /tmp/supabase-health.json
+          test -s /tmp/supabase-health.json
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Install Playwright Core
+        run: npm install --no-save playwright-core@1.52.0
+      - name: Verify rendered Flutter application
+        env:
+          APP_URL: https://samihchaa-wq.github.io/AS-Grinta/
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const { chromium } = require('playwright-core');
+
+          (async () => {
+            const browser = await chromium.launch({
+              headless: true,
+              executablePath: '/usr/bin/google-chrome',
+              args: ['--no-sandbox', '--disable-dev-shm-usage'],
+            });
+            const context = await browser.newContext({
+              viewport: { width: 390, height: 844 },
+              serviceWorkers: 'block',
+            });
+            const page = await context.newPage();
+            const errors = [];
+            page.on('pageerror', error => errors.push(`pageerror: ${error.stack || error.message}`));
+            page.on('console', message => {
+              if (message.type() === 'error') errors.push(`console.error: ${message.text()}`);
+            });
+            page.on('requestfailed', request => {
+              errors.push(`requestfailed: ${request.url()} ${request.failure()?.errorText ?? ''}`);
+            });
+            page.on('response', response => {
+              if (response.status() >= 400) errors.push(`http ${response.status()}: ${response.url()}`);
+            });
+            const response = await page.goto(
+              `${process.env.APP_URL}?smoke=${Date.now()}`,
+              { waitUntil: 'networkidle', timeout: 90000 },
+            );
+            if (!response || response.status() >= 400) {
+              throw new Error(`HTTP ${response?.status() ?? 'sans réponse'}`);
+            }
+            await page
+              .locator('flutter-view, flt-glass-pane, canvas')
+              .first()
+              .waitFor({ state: 'attached', timeout: 45000 });
+            await page.waitForTimeout(3000);
+            await page.screenshot({ path: 'as-grinta-smoke.png', fullPage: true });
+            fs.writeFileSync('as-grinta-smoke-errors.log', errors.join('\n'));
+            const size = fs.statSync('as-grinta-smoke.png').size;
+            if (size < 4000) throw new Error(`Capture anormalement vide: ${size} octets`);
+            if (errors.length > 0) throw new Error(errors.join(' | '));
+            await browser.close();
+          })().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+      - name: Upload smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pages-smoke-diagnostic
+          path: |
+            as-grinta-smoke.png
+            as-grinta-smoke-errors.log
+            /tmp/pages-headers.txt
+          if-no-files-found: warn
+
+  deployment-status:
+    needs: [build, deploy, smoke-test]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+    steps:
+      - name: Publish Pages deployment status
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUILD_RESULT: ${{ needs.build.result }}
+          DEPLOY_RESULT: ${{ needs.deploy.result }}
+          SMOKE_RESULT: ${{ needs.smoke-test.result }}
+        run: |
+          set -euo pipefail
+          publish_status() {
+            local context="$1"
+            local result="$2"
+            local state=failure
+            if [[ "$result" == success ]]; then
+              state=success
+            fi
+            curl -LfsS \
+              -X POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/statuses/${TARGET_SHA}" \
+              -d "{\"state\":\"$state\",\"context\":\"$context\",\"description\":\"$result\"}"
+          }
+
+          publish_status pages/build "$BUILD_RESULT"
+          publish_status pages/deploy "$DEPLOY_RESULT"
+          publish_status pages/smoke "$SMOKE_RESULT"
+
+          state=failure
+          description="Pages deployment or smoke test failed"
+          if [[ "$BUILD_RESULT" == success && "$DEPLOY_RESULT" == success && "$SMOKE_RESULT" == success ]]; then
+            state=success
+            description="Pages deployed and public smoke test passed"
+          fi
+          curl -LfsS \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/statuses/${TARGET_SHA}" \
+            -d "{\"state\":\"$state\",\"context\":\"pages/public-smoke\",\"description\":\"$description\"}"

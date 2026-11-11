@@ -1,0 +1,3 @@
+-- Historical production migration 20260720150000.
+-- Its pristine SQL is archived in supabase/migrations_legacy_production/20260720150000_sports_management_waitlist_rotation.sql.
+-- Fresh installations are built by the canonical baseline at 20260809234943.

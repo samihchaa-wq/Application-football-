@@ -1,0 +1,212 @@
+import 'package:as_grinta/core/utils/match_window.dart';
+import 'package:as_grinta/features/matches/domain/match_meeting.dart';
+
+class MatchModel {
+  const MatchModel({
+    required this.id,
+    required this.seasonId,
+    required this.opponentId,
+    required this.kickoffAt,
+    required this.isHome,
+    required this.plannedDurationMinutes,
+    required this.status,
+    required this.grintaScore,
+    required this.opponentScore,
+    this.predictionsClosedAt,
+    this.resultValidatedAt,
+    this.liveState,
+    this.liveFinishedAt,
+    this.liveExported = false,
+    this.oddsWin,
+    this.oddsDraw,
+    this.oddsLoss,
+    this.createdBy,
+    this.createdAt,
+    this.updatedAt,
+    this.opponentName,
+    this.seasonName,
+    this.address,
+    this.meetingAt,
+    this.matchType = 'championnat',
+    this.championshipRound,
+    this.jerseyNote,
+  });
+
+  final String id;
+  final String seasonId;
+  final String opponentId;
+  final DateTime kickoffAt;
+  final bool isHome;
+  final int plannedDurationMinutes;
+  final String status;
+  final int? grintaScore;
+  final int? opponentScore;
+  final DateTime? predictionsClosedAt;
+  final DateTime? resultValidatedAt;
+
+  /// État du Tableau Blanc, s'il a été ouvert pour ce match.
+  final String? liveState;
+  final DateTime? liveFinishedAt;
+  final bool liveExported;
+
+  final double? oddsWin;
+  final double? oddsDraw;
+  final double? oddsLoss;
+  final String? createdBy;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final String? opponentName;
+  final String? seasonName;
+
+  /// Adresse du lieu de la rencontre (facultative).
+  final String? address;
+
+  /// Heure de rendez-vous explicite. NULL = 30 min avant le coup d’envoi.
+  final DateTime? meetingAt;
+
+  DateTime get effectiveMeetingAt =>
+      resolvedMatchMeetingAt(kickoffAt: kickoffAt, customMeetingAt: meetingAt);
+
+  /// « amical », « championnat » ou « entre_nous ».
+  final String matchType;
+
+  /// Numéro persistant du match de championnat (J1, J2, ...).
+  /// Nul pour les autres types de rencontre.
+  final int? championshipRound;
+
+  /// Commentaire libre sur le maillot à porter, à titre informatif.
+  final String? jerseyNote;
+
+  String get locationLabel => isHome ? 'Domicile' : 'Extérieur';
+  bool get isArchived => status == 'archive';
+  bool get isCancelled => status == 'annule';
+  bool get isFriendly => matchType == 'amical';
+  bool get isInternal => matchType == 'entre_nous';
+  bool get isLiveSessionFinished => liveState == 'finished';
+
+  /// Un « Match entre nous » est considéré terminé dès son heure de coup
+  /// d'envoi. Supabase applique la même règle côté serveur ; ce calcul local
+  /// évite un état transitoire erroné si l'écran conserve une donnée en cache.
+  bool isFinishedAt({DateTime? now}) {
+    if (status == 'termine' || status == 'archive') return true;
+    if (!isInternal || status != 'a_venir') return false;
+
+    final reference = (now ?? DateTime.now()).toUtc();
+    return !reference.isBefore(kickoffAt.toUtc());
+  }
+
+  bool get isFinished => isFinishedAt();
+
+  String get matchTypeLabel {
+    if (isInternal) return 'Match entre nous';
+    if (isFriendly) return 'Match amical';
+    final round = championshipRound;
+    return round == null ? 'Championnat' : 'Championnat · J$round';
+  }
+
+  /// Libellé court destiné aux cartes du calendrier.
+  String get calendarTypeLabel {
+    if (isInternal) return 'Match entre nous';
+    if (isFriendly) return 'Amical';
+    final round = championshipRound;
+    return round == null ? 'Championnat' : 'Championnat · J$round';
+  }
+
+  MatchDisplayPhase phase({DateTime? now}) {
+    if (!isCancelled && isFinishedAt(now: now)) {
+      return MatchDisplayPhase.past;
+    }
+    return matchDisplayPhase(
+      kickoffAt: kickoffAt,
+      status: status,
+      plannedDurationMinutes: plannedDurationMinutes,
+      liveState: liveState,
+      now: now,
+    );
+  }
+
+  String get statusLabel {
+    switch (phase()) {
+      case MatchDisplayPhase.upcoming:
+        return 'À venir';
+      case MatchDisplayPhase.next:
+        return 'Prochain';
+      case MatchDisplayPhase.live:
+        return 'En direct';
+      case MatchDisplayPhase.awaitingValidation:
+        return 'À valider';
+      case MatchDisplayPhase.past:
+        return isArchived ? 'Archivé' : 'Terminé';
+      case MatchDisplayPhase.cancelled:
+        return 'Annulé';
+    }
+  }
+
+  factory MatchModel.fromJson(Map<String, dynamic> json) {
+    final serverKickoff =
+        DateTime.tryParse('${json['kickoff_at'] ?? ''}')?.toLocal();
+    final date = (json['match_date'] ?? '').toString();
+    final time = (json['match_time'] ?? '00:00:00').toString();
+    final kickoffAt =
+        serverKickoff ?? DateTime.tryParse('${date}T$time') ?? DateTime(1970);
+    final oddsRaw = json['match_odds'];
+    final odds = oddsRaw is List && oddsRaw.isNotEmpty
+        ? Map<String, dynamic>.from(oddsRaw.first as Map)
+        : oddsRaw is Map
+            ? Map<String, dynamic>.from(oddsRaw)
+            : const <String, dynamic>{};
+    final liveRaw = json['match_live_sessions'];
+    final live = liveRaw is List && liveRaw.isNotEmpty
+        ? Map<String, dynamic>.from(liveRaw.first as Map)
+        : liveRaw is Map
+            ? Map<String, dynamic>.from(liveRaw)
+            : const <String, dynamic>{};
+
+    return MatchModel(
+      id: json['id']?.toString() ?? '',
+      seasonId: json['season_id']?.toString() ?? '',
+      opponentId: json['opponent_id']?.toString() ?? '',
+      kickoffAt: kickoffAt,
+      isHome: json['location'] == 'domicile',
+      plannedDurationMinutes:
+          int.tryParse('${json['planned_duration_minutes']}') ?? 90,
+      status: (json['status'] ?? 'a_venir').toString(),
+      grintaScore: json['score_as_grinta'] == null
+          ? null
+          : int.tryParse('${json['score_as_grinta']}'),
+      opponentScore: json['score_adverse'] == null
+          ? null
+          : int.tryParse('${json['score_adverse']}'),
+      predictionsClosedAt: DateTime.tryParse(
+        '${json['predictions_closed_at'] ?? ''}',
+      )?.toLocal(),
+      resultValidatedAt: DateTime.tryParse(
+        '${json['result_validated_at'] ?? ''}',
+      )?.toLocal(),
+      liveState: live['state']?.toString(),
+      liveFinishedAt:
+          DateTime.tryParse('${live['finished_at'] ?? ''}')?.toLocal(),
+      liveExported: live['exported'] == true,
+      oddsWin: (odds['odds_victoire_as_grinta'] as num?)?.toDouble(),
+      oddsDraw: (odds['odds_nul'] as num?)?.toDouble(),
+      oddsLoss: (odds['odds_victoire_adverse'] as num?)?.toDouble(),
+      createdBy: json['created_by']?.toString(),
+      createdAt: DateTime.tryParse('${json['created_at'] ?? ''}')?.toLocal(),
+      updatedAt: DateTime.tryParse('${json['updated_at'] ?? ''}')?.toLocal(),
+      opponentName: json['opponents'] is Map
+          ? json['opponents']['name']?.toString()
+          : null,
+      seasonName:
+          json['seasons'] is Map ? json['seasons']['name']?.toString() : null,
+      address: (json['address']?.toString().trim().isNotEmpty ?? false)
+          ? json['address'].toString()
+          : null,
+      meetingAt: DateTime.tryParse('${json['meeting_at'] ?? ''}')?.toLocal(),
+      matchType: (json['match_type'] ?? 'championnat').toString(),
+      championshipRound: (json['championship_round'] as num?)?.toInt(),
+      jerseyNote: (json['jersey_note']?.toString().trim().isNotEmpty ?? false)
+          ? json['jersey_note'].toString()
+          : null,
+    );
+  }
+}

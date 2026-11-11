@@ -1,0 +1,3 @@
+-- Historical production migration 20260727002000.
+-- Its pristine SQL is archived in supabase/migrations_legacy_production/20260727002000_explicit_deny_rls_policies.sql.
+-- Fresh installations are built by the canonical baseline at 20260809234943.

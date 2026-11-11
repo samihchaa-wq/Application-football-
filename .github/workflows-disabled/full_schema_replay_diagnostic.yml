@@ -1,0 +1,61 @@
+name: Supabase full schema replay diagnostic
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/tests/database/**'
+      - '.github/workflows/full_schema_replay_diagnostic.yml'
+      - '.github/workflows/migration_inventory.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '41 4 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  replay-diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf # v2
+        with:
+          version: 2.111.0
+
+      - name: Replay the complete migration history
+        id: replay
+        shell: bash
+        run: |
+          set +e
+          set -o pipefail
+          supabase start 2>&1 | tee full-schema-replay.log
+          code=${PIPESTATUS[0]}
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          # Compté à chaque exécution : un nombre écrit en dur devient faux
+          # dès la migration suivante.
+          migration_count=$(find supabase/migrations -maxdepth 1 -type f -name '*.sql' | wc -l | tr -d ' ')
+          {
+            echo "## Full schema replay diagnostic"
+            if [ "$code" -eq 0 ]; then
+              echo "✅ Les ${migration_count} migrations de supabase/migrations recréent l'application depuis une base vide."
+            else
+              echo "❌ La reconstruction complète depuis une base vide échoue."
+            fi
+            echo
+            echo "Code de sortie : $code"
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$code"
+
+      - name: Upload replay log
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: full-schema-replay-diagnostic
+          path: full-schema-replay.log
+          if-no-files-found: warn

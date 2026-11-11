@@ -1,0 +1,3 @@
+-- Historical production migration 20260731190000.
+-- Its pristine SQL is archived in supabase/migrations_legacy_production/20260731190000_match_live_available_before_kickoff.sql.
+-- Fresh installations are built by the canonical baseline at 20260809234943.

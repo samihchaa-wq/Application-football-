@@ -1,0 +1,3 @@
+-- Historical production migration 20260721001818.
+-- Its pristine SQL is archived in supabase/migrations_legacy_production/20260721001818_sports_management_availability_notification_rpc_grants.sql.
+-- Fresh installations are built by the canonical baseline at 20260809234943.

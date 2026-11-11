@@ -1,0 +1,3 @@
+-- Historical production migration 20260803142514.
+-- Its pristine SQL is archived in supabase/migrations_legacy_production/20260803142514_convocation_push_via_targeted_custom_transport.sql.
+-- Fresh installations are built by the canonical baseline at 20260809234943.

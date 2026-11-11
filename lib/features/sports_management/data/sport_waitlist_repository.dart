@@ -1,0 +1,226 @@
+import 'package:as_grinta/core/providers/supabase_provider.dart';
+import 'package:as_grinta/features/sports_management/domain/availability_reminder_models.dart';
+import 'package:as_grinta/features/sports_management/domain/sport_waitlist_models.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+abstract interface class SportWaitlistRepository {
+  Future<SportWaitlist> fetchWaitlist({String? seasonId});
+
+  /// Lecture accessible à tout joueur actif, sans les effets de bord de
+  /// [fetchWaitlist] (pas d'initialisation ni de clôture des tours en
+  /// retard) et sans possibilité de modification.
+  Future<SportWaitlist> fetchWaitlistReadOnly({String? seasonId});
+
+  /// Corrige le compteur de passages en attente d'un joueur. Le serveur
+  /// recalcule aussitôt le classement ; l'écran le montre au rafraîchissement.
+  Future<void> setWaitlistManualCount({
+    required String seasonPlayerId,
+    required int count,
+  });
+
+  Future<List<AdminSportMatch>> fetchUpcomingMatches();
+
+  Future<MatchConvocations> fetchMatchConvocations(String matchId);
+
+  Future<AvailabilityReminderSummary> fetchReminderSummary(String matchId);
+
+  Future<AvailabilityReminderResult> sendAvailabilityReminder({
+    required String matchId,
+    String? seasonPlayerId,
+    String? reason,
+  });
+
+  /// Écrit l'effectif du match.
+  ///
+  /// [changedPlayerIds] désigne les joueurs que l'admin a réellement déplacés
+  /// depuis la dernière lecture. Seules ces décisions sont figées ; les autres
+  /// restent automatiques et suivent l'ordre de la liste d'attente.
+  Future<MatchConvocations> publishEffectif({
+    required String matchId,
+    required int squadSizeLimit,
+    required Map<String, ConvocationStatus> decisions,
+    Set<String> changedPlayerIds = const {},
+    String? reason,
+  });
+
+  /// Enregistre une disponibilité à la place du joueur.
+  ///
+  /// C'est le seul moyen de sortir de l'effectif un joueur qui s'était déclaré
+  /// disponible : le serveur exige une décision d'effectif pour chacun d'eux,
+  /// et refuse de les laisser sans réponse. Le geste est réservé aux admins et
+  /// tracé côté serveur avec son motif.
+  Future<void> overrideAvailability({
+    required String matchId,
+    required String seasonPlayerId,
+    required String status,
+    String? reason,
+  });
+}
+
+class SupabaseSportWaitlistRepository implements SportWaitlistRepository {
+  SupabaseSportWaitlistRepository(this._client);
+
+  final SupabaseClient _client;
+
+  @override
+  Future<SportWaitlist> fetchWaitlist({String? seasonId}) async {
+    final response = await _client.rpc(
+      'admin_get_sport_waitlist',
+      params: {'p_season_id': seasonId},
+    );
+    return SportWaitlist.fromRpc(response);
+  }
+
+  @override
+  Future<SportWaitlist> fetchWaitlistReadOnly({String? seasonId}) async {
+    final response = await _client.rpc(
+      'get_sport_waitlist',
+      params: {'p_season_id': seasonId},
+    );
+    return SportWaitlist.fromRpc(response);
+  }
+
+  @override
+  Future<void> setWaitlistManualCount({
+    required String seasonPlayerId,
+    required int count,
+  }) async {
+    await _client.rpc(
+      'admin_set_waitlist_manual_count',
+      params: {'p_season_player_id': seasonPlayerId, 'p_count': count},
+    );
+  }
+
+  @override
+  Future<List<AdminSportMatch>> fetchUpcomingMatches() async {
+    final rows = await _client
+        .from('matches')
+        .select('id, kickoff_at, match_type, opponents(name)')
+        .inFilter('status', const ['a_venir', 'termine']).order('kickoff_at',
+            ascending: false);
+    return (rows as List)
+        .map((row) => Map<String, dynamic>.from(row as Map))
+        .map(
+          (row) => AdminSportMatch.fromJson({
+            'id': row['id'],
+            'kickoff_at': row['kickoff_at'],
+            'match_type': row['match_type'],
+            'opponent_name': (row['opponents'] as Map?)?['name'],
+          }),
+        )
+        .toList();
+  }
+
+  @override
+  Future<MatchConvocations> fetchMatchConvocations(String matchId) async {
+    final response = await _client.rpc(
+      'admin_get_match_convocations',
+      params: {'p_match_id': matchId},
+    );
+    return MatchConvocations.fromRpc(response);
+  }
+
+  @override
+  Future<AvailabilityReminderSummary> fetchReminderSummary(
+    String matchId,
+  ) async {
+    final response = await _client.rpc(
+      'admin_get_match_availability_reminders',
+      params: {'p_match_id': matchId},
+    );
+    return AvailabilityReminderSummary.fromRpc(response);
+  }
+
+  @override
+  Future<AvailabilityReminderResult> sendAvailabilityReminder({
+    required String matchId,
+    String? seasonPlayerId,
+    String? reason,
+  }) async {
+    final response = await _client.rpc(
+      'admin_send_match_availability_reminder',
+      params: {
+        'p_match_id': matchId,
+        'p_season_player_id': seasonPlayerId,
+        'p_reason': _clean(reason),
+      },
+    );
+    return AvailabilityReminderResult.fromRpc(response);
+  }
+
+  @override
+  Future<MatchConvocations> publishEffectif({
+    required String matchId,
+    required int squadSizeLimit,
+    required Map<String, ConvocationStatus> decisions,
+    Set<String> changedPlayerIds = const {},
+    String? reason,
+  }) async {
+    final response = await _client.rpc(
+      'admin_publish_match_effectif',
+      params: _effectifParams(
+        matchId: matchId,
+        squadSizeLimit: squadSizeLimit,
+        decisions: decisions,
+        changedPlayerIds: changedPlayerIds,
+        reason: reason,
+      ),
+    );
+    return MatchConvocations.fromRpc(response);
+  }
+
+  @override
+  Future<void> overrideAvailability({
+    required String matchId,
+    required String seasonPlayerId,
+    required String status,
+    String? reason,
+  }) async {
+    await _client.rpc(
+      'admin_override_match_availability',
+      params: {
+        'p_match_id': matchId,
+        'p_season_player_id': seasonPlayerId,
+        'p_status': status,
+        'p_private_comment': null,
+        // Le motif est obligatoire côté serveur : il alimente le journal
+        // d'audit des décisions prises à la place d'un joueur.
+        'p_reason': _clean(reason) ?? 'Décision prise depuis l’effectif',
+      },
+    );
+  }
+
+  Map<String, Object?> _effectifParams({
+    required String matchId,
+    required int squadSizeLimit,
+    required Map<String, ConvocationStatus> decisions,
+    required Set<String> changedPlayerIds,
+    String? reason,
+  }) {
+    return {
+      'p_match_id': matchId,
+      'p_squad_size_limit': squadSizeLimit,
+      'p_decisions': [
+        for (final decision in decisions.entries)
+          {
+            'season_player_id': decision.key,
+            'status': decision.value.wireValue,
+            'changed': changedPlayerIds.contains(decision.key),
+          },
+      ],
+      'p_reason': _clean(reason),
+    };
+  }
+
+  String? _clean(String? value) {
+    final trimmed = value?.trim();
+    return trimmed == null || trimmed.isEmpty ? null : trimmed;
+  }
+}
+
+final sportWaitlistRepositoryProvider = Provider<SportWaitlistRepository>((
+  ref,
+) {
+  return SupabaseSportWaitlistRepository(ref.watch(supabaseClientProvider));
+});

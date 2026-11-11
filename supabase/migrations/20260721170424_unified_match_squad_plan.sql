@@ -1,0 +1,3 @@
+-- Historical production migration 20260721170424.
+-- Its pristine SQL is archived in supabase/migrations_legacy_production/20260721170424_unified_match_squad_plan.sql.
+-- Fresh installations are built by the canonical baseline at 20260809234943.

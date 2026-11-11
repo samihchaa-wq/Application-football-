@@ -1,0 +1,3 @@
+-- Historical production migration 20260808140000.
+-- Its pristine SQL is archived in supabase/migrations_legacy_production/20260808140000_composition_follows_convocation.sql.
+-- Fresh installations are built by the canonical baseline at 20260809234943.

@@ -1,0 +1,138 @@
+name: Supabase business and RLS tests
+
+on:
+  # Le verrou de migrations n'est lu par aucun de ces tests : une pull request
+  # qui ne change que lui (resynchronisation automatique après déploiement)
+  # n'a pas besoin de relancer une base complète.
+  pull_request:
+    branches: [main]
+    paths:
+      - 'supabase/**'
+      - '!supabase/production_migrations.lock'
+      - '.github/workflows/supabase_business_tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/**'
+      - '!supabase/production_migrations.lock'
+      - '.github/workflows/supabase_business_tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-business-tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  database-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf # v2
+        with:
+          version: 2.111.0
+
+      - name: Verify local database tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase --version
+          supabase start --help > /dev/null
+          supabase test db --help > /dev/null
+          supabase db lint --help > /dev/null
+          psql --version
+          python3 --version
+
+      - name: Verify Edge Function security contract
+        shell: bash
+        run: python3 supabase/tests/edge/verify_edge_security_contract.py
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2
+        with:
+          deno-version: v2.x
+
+      - name: Test push delivery, notification history, request security, password policy and weather geocoding
+        shell: bash
+        run: |
+          deno test \
+            supabase/functions/send-push/delivery_log_test.ts \
+            supabase/functions/send-push/delivery_policy_test.ts \
+            supabase/functions/send-push/history_test.ts \
+            supabase/functions/send-push/request_security_test.ts \
+            supabase/functions/register-account/password_policy_test.ts \
+            supabase/functions/send-push/weather_refresh_test.ts
+
+      - name: Start isolated Supabase database from canonical history
+        shell: bash
+        run: |
+          set -o pipefail
+          supabase start 2>&1 | tee supabase-start.log
+
+      - name: Install test-only helpers
+        shell: bash
+        run: |
+          set -o pipefail
+          DB_URL='postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+          {
+            psql "$DB_URL" -v ON_ERROR_STOP=1 \
+              -f supabase/tests/bootstrap/pgtap_like_compat.sql
+            psql "$DB_URL" -v ON_ERROR_STOP=1 \
+              -f supabase/tests/bootstrap/grant_pgtap_test_helpers.sql
+          } 2>&1 | tee supabase-test-helpers.log
+
+      - name: Run every pgTAP business and RLS test
+        shell: bash
+        run: |
+          set -euo pipefail
+          : > supabase-tests.log
+          test_count=0
+          while IFS= read -r test_file; do
+            echo "::group::$test_file"
+            supabase test db "$test_file" 2>&1 | tee -a supabase-tests.log
+            echo "::endgroup::"
+            test_count=$((test_count + 1))
+          done < <(find supabase/tests/database -maxdepth 1 -type f -name '*.test.sql' | sort)
+          if [ "$test_count" -eq 0 ]; then
+            echo 'No database tests discovered under supabase/tests/database.' >&2
+            exit 1
+          fi
+
+      # Échoue sur toute erreur réelle des fonctions de public et private.
+      # Seuls les faux positifs des tables pg_temp créées à l'exécution sont
+      # ignorés, un par un, dans supabase/tests/lint/check_db_lint.py.
+      - name: Lint database functions
+        shell: bash
+        run: |
+          set -euo pipefail
+          DB_URL='postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+          supabase db lint --db-url "$DB_URL" --schema public,private \
+            --level error --output-format json \
+            > supabase-db-lint.json 2> supabase-db-lint.log
+          python3 supabase/tests/lint/check_db_lint.py supabase-db-lint.json \
+            2>&1 | tee -a supabase-db-lint.log
+
+      - name: Upload database diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: supabase-business-tests
+          path: |
+            supabase-start.log
+            supabase-test-helpers.log
+            supabase-tests.log
+            supabase-db-lint.log
+            supabase-db-lint.json
+          if-no-files-found: warn
+
+      - name: Stop isolated Supabase stack
+        if: always()
+        shell: bash
+        run: supabase stop --no-backup || true

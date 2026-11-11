@@ -1,0 +1,636 @@
+import 'package:as_grinta/core/providers/supabase_provider.dart';
+import 'package:as_grinta/core/theme/app_theme.dart';
+import 'package:as_grinta/core/utils/app_errors.dart';
+import 'package:as_grinta/core/widgets/equal_height_column.dart';
+import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
+import 'package:as_grinta/core/widgets/grinta_empty_state.dart';
+import 'package:as_grinta/core/widgets/grinta_loader.dart';
+import 'package:as_grinta/features/badges/data/badge_repository.dart';
+import 'package:as_grinta/features/badges/domain/badge_admin_access.dart';
+import 'package:as_grinta/features/badges/data/featured_badges_repository.dart';
+import 'package:as_grinta/features/badges/data/statistics_badge_emblems_provider.dart';
+import 'package:as_grinta/features/badges/presentation/badge_detail_sheet.dart';
+import 'package:as_grinta/features/badges/presentation/badge_emblem.dart';
+import 'package:as_grinta/features/badges/presentation/badge_emblem_body.dart';
+import 'package:as_grinta/features/badges/presentation/locked_badge_emblem.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+/// Armoire à badges : Validés · En cours · À débloquer.
+class ArmoirePage extends ConsumerWidget {
+  const ArmoirePage({super.key});
+
+  Future<void> _toggleFeatured(
+    BuildContext context,
+    WidgetRef ref,
+    String code,
+    bool nowFeatured,
+  ) async {
+    try {
+      await ref
+          .read(featuredBadgesRepositoryProvider)
+          .setFeatured(code, nowFeatured);
+      ref.invalidate(myFeaturedCodesProvider);
+      ref.invalidate(featuredBadgesProvider);
+      // Badges affichés à côté des prénoms (classements, statistiques).
+      ref.invalidate(statisticsBadgeEmblemsProvider);
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(humanizeError(e))));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final armoireAsync = ref.watch(myArmoireProvider);
+    final featured = ref
+        .watch(myFeaturedCodesProvider)
+        .maybeWhen(data: (codes) => codes, orElse: () => const <String>{});
+    final hasBadgeAdminAccess = ref.watch(canManageBadgesProvider);
+
+    return Scaffold(
+      appBar: GrintaAppBar(
+        title: const Text('Armoire à badges'),
+        actions: [
+          if (hasBadgeAdminAccess)
+            IconButton(
+              tooltip: 'Gérer les badges',
+              icon: const Icon(Icons.admin_panel_settings_outlined),
+              onPressed: () => context.push('/admin/badges'),
+            ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(badgeHoldersProvider);
+          ref.invalidate(myArmoireProvider);
+          ref.invalidate(myFeaturedCodesProvider);
+          await ref.read(myArmoireProvider.future);
+        },
+        child: armoireAsync.when(
+          loading: () => const Center(child: GrintaProgressIndicator()),
+          error: (e, _) => ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              Card(
+                child: GrintaEmptyState(
+                  icon: Icons.error_outline_rounded,
+                  title: 'Collection indisponible',
+                  message: humanizeError(e),
+                ),
+              ),
+            ],
+          ),
+          data: (armoire) {
+            final unlocked = armoire.unlocked;
+            final toDiscover = armoire.toDiscover;
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
+              children: [
+                if (armoire.validated.isEmpty &&
+                    armoire.inProgress.isEmpty &&
+                    armoire.locked.isEmpty)
+                  const Card(
+                    child: GrintaEmptyState(
+                      icon: Icons.emoji_events_outlined,
+                      title: 'Ta collection est vide',
+                      message: 'Joue, pronostique et gagne des matchs pour '
+                          'débloquer tes premiers badges.',
+                    ),
+                  ),
+                if (unlocked.isNotEmpty) ...[
+                  _SectionTitle(
+                    title: 'Débloqués',
+                    count: unlocked.length,
+                    icon: Icons.workspace_premium_rounded,
+                  ),
+                  const SizedBox(height: 14),
+                  _BadgeGrid(
+                    badges: unlocked,
+                    featuredCodes: featured,
+                    onToggleFeatured: (code, nowFeatured) =>
+                        _toggleFeatured(context, ref, code, nowFeatured),
+                  ),
+                  const SizedBox(height: 28),
+                ],
+                if (armoire.inProgress.isNotEmpty) ...[
+                  _SectionTitle(
+                    title: 'En progression',
+                    count: armoire.inProgress.length,
+                    icon: Icons.trending_up_rounded,
+                  ),
+                  const SizedBox(height: 14),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final emblemSize = _inProgressEmblemSize(
+                        context,
+                        armoire.inProgress,
+                        constraints.maxWidth,
+                      );
+                      return EqualHeightColumn(
+                        spacing: 10,
+                        children: [
+                          for (final b in armoire.inProgress)
+                            _InProgressTile(badge: b, emblemSize: emblemSize),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 30),
+                ],
+                if (toDiscover.isNotEmpty) ...[
+                  _SectionTitle(
+                    title: 'Badges mystères',
+                    count: toDiscover.length,
+                    icon: Icons.lock_outline_rounded,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Continue à jouer pour révéler ces récompenses.',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: AppTheme.textFaint),
+                  ),
+                  const SizedBox(height: 14),
+                  _BadgeGrid(
+                    badges: toDiscover,
+                    discover: true,
+                    featuredCodes: featured,
+                    onToggleFeatured: (code, nowFeatured) =>
+                        _toggleFeatured(context, ref, code, nowFeatured),
+                  ),
+                ],
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle({
+    required this.title,
+    required this.count,
+    required this.icon,
+  });
+
+  final String title;
+  final int count;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: AppTheme.primaryBright),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w400),
+        ),
+        const Spacer(),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceHigh,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: AppTheme.outline.withValues(alpha: .46)),
+          ),
+          child: Text(
+            '$count',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  fontWeight: FontWeight.w400,
+                  color: AppTheme.textSecondary,
+                ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BadgeGrid extends StatelessWidget {
+  const _BadgeGrid({
+    required this.badges,
+    this.discover = false,
+    this.featuredCodes,
+    this.onToggleFeatured,
+  });
+
+  final List<ArmoireBadge> badges;
+
+  /// Grille « Badges mystères » : les badges que personne n'a encore gagnés
+  /// restent masqués, ceux déjà gagnés par un membre du club apparaissent en
+  /// noir et blanc, et les mystères gagnés n'affichent que leur emblème, sans
+  /// nom.
+  final bool discover;
+  final Set<String>? featuredCodes;
+  final void Function(String code, bool nowFeatured)? onToggleFeatured;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: _gridSpacing,
+      runSpacing: 14,
+      children: [
+        for (final b in badges)
+          _BadgeTile(
+            badge: b,
+            locked: b.state == BadgeState.locked,
+            showName: !discover,
+            featured: featuredCodes?.contains(b.def.code) ?? false,
+            onToggleFeatured: onToggleFeatured,
+          ),
+      ],
+    );
+  }
+}
+
+/// Cinq badges par ligne dans les grilles de l'armoire.
+const _gridColumns = 5;
+const _gridSpacing = 8.0;
+
+String? badgeValueLabel(ArmoireBadge badge) =>
+    baremeLabelFor(badge.def.metric, badge.displayValue);
+
+class _BadgeTile extends ConsumerWidget {
+  const _BadgeTile({
+    required this.badge,
+    this.locked = false,
+    this.showName = true,
+    this.featured = false,
+    this.onToggleFeatured,
+  });
+
+  final ArmoireBadge badge;
+  final bool locked;
+  final bool showName;
+  final bool featured;
+  final void Function(String code, bool nowFeatured)? onToggleFeatured;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tile = (MediaQuery.of(context).size.width -
+            32 -
+            (_gridColumns - 1) * _gridSpacing) /
+        _gridColumns;
+    final emblem = tile < 87 ? tile : 87.0;
+
+    if (locked && badge.knownToClub) {
+      // Déjà gagné par quelqu'un du club : on le montre, en noir et blanc
+      // et sous cadenas, et on peut l'ouvrir pour lire sa condition.
+      return SizedBox(
+        width: tile,
+        child: GestureDetector(
+          onTap: () => showBadgeDetailSheet(
+            context,
+            badge.def,
+            owned: false,
+            showLadder: false,
+            showHolders: true,
+          ),
+          child: LockedBadgeEmblem(
+            size: emblem,
+            emblem: BadgeEmblem(
+              emoji: badge.def.emoji,
+              imageUrl: badge.def.imageUrl,
+              color: badge.def.color,
+              baremeLabel: baremeLabelFor(
+                badge.def.metric,
+                badge.def.threshold,
+              ),
+              descriptor: badgeDescriptorFor(
+                code: badge.def.code,
+                metric: badge.def.metric,
+                category: badge.def.category,
+                name: badge.def.name,
+              ),
+              showStar: badge.def.hasStar,
+              size: emblem,
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (locked) {
+      return SizedBox(
+        width: tile,
+        child: Column(
+          children: [
+            // Même silhouette qu'un vrai badge (carte haute aux coins
+            // arrondis), pour que les mystères révélés s'alignent dessus.
+            Container(
+              height: emblem * badgeEmblemHeightRatio(),
+              width: emblem,
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceHigh,
+                borderRadius: BorderRadius.circular(emblem * .16),
+                border: Border.all(
+                  color: AppTheme.outline.withValues(alpha: .38),
+                ),
+              ),
+              alignment: Alignment.center,
+              child: const Icon(
+                Icons.lock_outline_rounded,
+                color: AppTheme.textFaint,
+                size: 22,
+              ),
+            ),
+            const SizedBox(height: 7),
+            Text(
+              'Mystère',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: AppTheme.textFaint,
+                    fontWeight: FontWeight.w400,
+                  ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final canFeature = onToggleFeatured != null;
+    final valueLabel = badgeValueLabel(badge);
+    return SizedBox(
+      width: tile,
+      child: Column(
+        children: [
+          GestureDetector(
+            onTap: () {
+              if (badge.isNew) {
+                final uid =
+                    ref.read(supabaseClientProvider).auth.currentUser?.id;
+                if (uid != null) {
+                  ref
+                      .read(badgeRepositoryProvider)
+                      .markBadgeSeen(uid, badge.def.code);
+                  ref.invalidate(myArmoireProvider);
+                }
+              }
+              showBadgeDetailSheet(
+                context,
+                badge.def,
+                isFeatured: featured,
+                showLadder: false,
+                showHolders: true,
+                onToggleFeatured: canFeature
+                    ? () => onToggleFeatured!(badge.def.code, !featured)
+                    : null,
+              );
+            },
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                BadgeEmblem(
+                  emoji: badge.def.emoji,
+                  imageUrl: badge.def.imageUrl,
+                  color: badge.def.color,
+                  baremeLabel: valueLabel,
+                  descriptor: badgeDescriptorFor(
+                    code: badge.def.code,
+                    metric: badge.def.metric,
+                    category: badge.def.category,
+                    name: badge.def.name,
+                  ),
+                  showStar: badge.def.hasStar,
+                  starCount: badge.stars,
+                  size: emblem,
+                ),
+                if (badge.isNew)
+                  Positioned(
+                    top: -2,
+                    left: -2,
+                    child: Container(
+                      width: 11,
+                      height: 11,
+                      decoration: BoxDecoration(
+                        color: AppTheme.accent,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppTheme.background,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                if (featured)
+                  Positioned(
+                    top: -3,
+                    right: -3,
+                    child: Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: BoxDecoration(
+                        color: AppTheme.reward,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppTheme.background,
+                          width: 2,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.star_rounded,
+                        size: 12,
+                        color: AppTheme.background,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          if (showName) ...[
+            const SizedBox(height: 7),
+            Text(
+              badge.def.name,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w400,
+                    height: 1.15,
+                  ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// Mise en page d'une carte « En progression » : marges intérieures, espace
+// entre l'emblème et le texte, puis place du chevron à droite.
+const _tilePadding = 14.0;
+const _tileBorder = 1.0;
+const _emblemGap = 14.0;
+const _chevronSpace = 8.0 + 24.0;
+const _nameGap = 3.0;
+const _progressGap = 10.0;
+
+TextStyle? _tileNameStyle(BuildContext context) =>
+    Theme.of(context).textTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.w400,
+        );
+
+TextStyle? _tileDescriptionStyle(BuildContext context) =>
+    Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: AppTheme.textFaint,
+        );
+
+TextStyle? _tileCountStyle(BuildContext context) =>
+    Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: AppTheme.textSecondary,
+          fontWeight: FontWeight.w400,
+        );
+
+double _textHeight(
+  BuildContext context,
+  String text,
+  TextStyle? style,
+  double maxWidth,
+) {
+  final painter = TextPainter(
+    text: TextSpan(text: text, style: style),
+    textDirection: Directionality.of(context),
+    textScaler: MediaQuery.textScalerOf(context),
+  )..layout(maxWidth: maxWidth);
+  final height = painter.height;
+  painter.dispose();
+  return height;
+}
+
+/// Taille commune des emblèmes « En progression » : la plus petite qui
+/// atteint la hauteur du plus grand bloc nom + description + jauge de la
+/// liste. Les cartes n'ont ainsi pas de vide créé par l'emblème.
+///
+/// La largeur laissée au texte dépend de celle de l'emblème, et inversement :
+/// quelques passes suffisent à stabiliser le résultat.
+double _inProgressEmblemSize(
+  BuildContext context,
+  List<ArmoireBadge> badges,
+  double availableWidth,
+) {
+  final anyStar = badges.any((b) => b.def.hasStar);
+  final ratio = badgeEmblemHeightRatio(hasStar: anyStar);
+  final nameStyle = _tileNameStyle(context);
+  final descriptionStyle = _tileDescriptionStyle(context);
+  final countStyle = _tileCountStyle(context);
+  var emblem = 60.0;
+  for (var pass = 0; pass < 4; pass++) {
+    final textWidth = availableWidth -
+        2 * (_tilePadding + _tileBorder) -
+        emblem -
+        _emblemGap -
+        _chevronSpace;
+    if (textWidth <= 0) return emblem;
+    var tallest = 0.0;
+    for (final b in badges) {
+      var height = _textHeight(context, b.def.name, nameStyle, textWidth);
+      if (b.def.description.isNotEmpty) {
+        height += _nameGap +
+            _textHeight(
+                context, b.def.description, descriptionStyle, textWidth);
+      }
+      if (b.target != null) {
+        height += _progressGap +
+            _textHeight(
+                context, '${b.current}/${b.target}', countStyle, textWidth);
+      }
+      tallest = height > tallest ? height : tallest;
+    }
+    emblem = tallest / ratio;
+  }
+  return emblem;
+}
+
+class _InProgressTile extends StatelessWidget {
+  const _InProgressTile({required this.badge, required this.emblemSize});
+
+  final ArmoireBadge badge;
+  final double emblemSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final showProgress = badge.target != null;
+    return GestureDetector(
+      onTap: () => showBadgeDetailSheet(context, badge.def),
+      child: Container(
+        padding: const EdgeInsets.all(_tilePadding),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+          border: Border.all(color: AppTheme.outline.withValues(alpha: .52)),
+        ),
+        child: Row(
+          children: [
+            BadgeEmblem(
+              emoji: badge.def.emoji,
+              imageUrl: badge.def.imageUrl,
+              color: badge.def.color,
+              baremeLabel: badgeValueLabel(badge),
+              descriptor: badgeDescriptorFor(
+                code: badge.def.code,
+                metric: badge.def.metric,
+                category: badge.def.category,
+                name: badge.def.name,
+              ),
+              showStar: badge.def.hasStar,
+              starCount: badge.stars,
+              size: emblemSize,
+            ),
+            const SizedBox(width: _emblemGap),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(badge.def.name, style: _tileNameStyle(context)),
+                  if (badge.def.description.isNotEmpty) ...[
+                    const SizedBox(height: _nameGap),
+                    Text(
+                      badge.def.description,
+                      style: _tileDescriptionStyle(context),
+                    ),
+                  ],
+                  if (showProgress) ...[
+                    const SizedBox(height: _progressGap),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(999),
+                            child: GrintaLinearProgressIndicator(
+                              value: badge.progress ?? 0,
+                              minHeight: 6,
+                              backgroundColor: AppTheme.surfaceHigh,
+                              valueColor: const AlwaysStoppedAnimation(
+                                AppTheme.primaryBright,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          '${badge.current}/${badge.target}',
+                          style: _tileCountStyle(context),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.chevron_right_rounded, color: AppTheme.textFaint),
+          ],
+        ),
+      ),
+    );
+  }
+}

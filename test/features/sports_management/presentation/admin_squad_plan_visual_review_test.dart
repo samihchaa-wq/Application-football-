@@ -1,0 +1,1164 @@
+import 'dart:io';
+import 'dart:ui' as ui;
+
+import 'package:as_grinta/core/theme/app_theme.dart';
+import 'package:as_grinta/features/matches/presentation/widgets/upcoming_match_fixture_header.dart';
+import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
+import 'package:as_grinta/features/sports_management/data/sport_waitlist_repository.dart';
+import 'package:as_grinta/features/sports_management/domain/availability_reminder_models.dart';
+import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
+import 'package:as_grinta/features/sports_management/domain/player_position_history.dart';
+import 'package:as_grinta/features/sports_management/domain/sport_waitlist_models.dart';
+import 'package:as_grinta/features/sports_management/presentation/admin_squad_plan_page.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_presentation.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/formation_pitch_editor.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+const _captureKey = Key('admin-squad-plan-visual-review');
+const _matchId = 'match-visual-review';
+const _minNameSlot = 56.0;
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('captures the compact effectif saved on the fly', (
+    tester,
+  ) async {
+    await _setPhoneViewport(tester);
+    await _pumpWorkspace(
+      tester,
+      convocations: _convocations(),
+      initialStep: 'effectif',
+    );
+
+    expect(
+      find.textContaining('jusqu’à ce que tu appuies sur Enregistrer.'),
+      findsNothing,
+    );
+    final waitlistButton = find.widgetWithText(
+      OutlinedButton,
+      'Liste d’attente',
+    );
+    final guestButton = find.widgetWithText(
+      OutlinedButton,
+      'Ajouter un invité',
+    );
+    expect(waitlistButton, findsOneWidget);
+    expect(guestButton, findsOneWidget);
+    final waitlistExpanded = find.ancestor(
+      of: waitlistButton,
+      matching: find.byType(Expanded),
+    );
+    final guestExpanded = find.ancestor(
+      of: guestButton,
+      matching: find.byType(Expanded),
+    );
+    expect(waitlistExpanded, findsOneWidget);
+    expect(guestExpanded, findsOneWidget);
+    expect(tester.widget<Expanded>(waitlistExpanded).flex, 1);
+    expect(tester.widget<Expanded>(guestExpanded).flex, 1);
+    final limitField = find.widgetWithText(TextField, 'Convoqués');
+    expect(limitField, findsOneWidget);
+    expect(
+      tester.getTopLeft(waitlistButton).dy,
+      tester.getTopLeft(limitField).dy,
+    );
+    expect(
+      tester.getTopLeft(guestButton).dy,
+      tester.getTopLeft(limitField).dy,
+    );
+    expect(
+      find.byType(LongPressDraggable<ConvocationPlayer>),
+      findsNWidgets(5),
+    );
+    expect(
+      find.byKey(const ValueKey('effectif-player-p1')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('effectif-player-p5')),
+      findsOneWidget,
+    );
+    expect(find.widgetWithText(FilledButton, 'Enregistrer'), findsNothing);
+    expect(
+      find.text('Chaque changement est enregistré tout de suite.'),
+      findsNothing,
+    );
+    expect(find.textContaining('Brouillon'), findsNothing);
+    await _capture(tester, 'effectif_compact_enregistrer.png');
+  });
+
+  testWidgets('affiche le coach en premier parmi les convoqués', (
+    tester,
+  ) async {
+    await _setPhoneViewport(tester);
+    await _pumpWorkspace(
+      tester,
+      convocations: _convocations(withCoach: true),
+      initialStep: 'effectif',
+    );
+
+    final coach = find.byKey(const ValueKey('effectif-player-coach'));
+    final highestWaitlist = find.byKey(const ValueKey('effectif-player-p3'));
+    final nextWaitlist = find.byKey(const ValueKey('effectif-player-p2'));
+    final lowestWaitlist = find.byKey(const ValueKey('effectif-player-p1'));
+
+    expect(coach, findsOneWidget);
+    expect(highestWaitlist, findsOneWidget);
+    expect(nextWaitlist, findsOneWidget);
+    expect(lowestWaitlist, findsOneWidget);
+
+    final coachTopLeft = tester.getTopLeft(coach);
+    final highestTopLeft = tester.getTopLeft(highestWaitlist);
+    final nextTopLeft = tester.getTopLeft(nextWaitlist);
+    final lowestTopLeft = tester.getTopLeft(lowestWaitlist);
+
+    // Le coach est l'unique exception : il prend la première case, puis les
+    // joueurs gardent leur ordre actuel, du plus loin au plus haut de la liste
+    // d'attente (3, 2, 1).
+    expect(coachTopLeft.dy, closeTo(highestTopLeft.dy, .5));
+    expect(coachTopLeft.dx, lessThan(highestTopLeft.dx));
+    expect(highestTopLeft.dy, closeTo(nextTopLeft.dy, .5));
+    expect(highestTopLeft.dx, lessThan(nextTopLeft.dx));
+    expect(lowestTopLeft.dy, greaterThan(highestTopLeft.dy));
+  });
+
+  testWidgets('les prénoms gardent assez de place sur un iPhone', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await _pumpWorkspace(
+      tester,
+      convocations: _convocations(withCoach: true),
+      initialStep: 'effectif',
+    );
+
+    // Place laissée au prénom à côté d'une icône : le coach (sifflet) et un
+    // sans réponse (cloche de relance). « Philippe » ou « Nicolas » y
+    // étaient coupés avec les anciennes marges.
+    double nameSlotWidth(String name) => tester
+        .getSize(
+          find
+              .ancestor(of: find.text(name), matching: find.byType(Expanded))
+              .first,
+        )
+        .width;
+
+    expect(nameSlotWidth('Philippe'), greaterThanOrEqualTo(_minNameSlot));
+    expect(nameSlotWidth('Emma'), greaterThanOrEqualTo(_minNameSlot));
+  });
+
+  testWidgets('sur ordinateur, les prénoms des sans réponse restent lisibles', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1440, 1100));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await _pumpWorkspace(
+      tester,
+      convocations: _convocations(withCoach: true),
+      initialStep: 'effectif',
+    );
+
+    // Quatre colonnes côte à côte ne laissaient que deux ou trois lettres
+    // aux prénoms de la colonne « Sans réponse », et coupaient son titre.
+    final nameSlot = tester
+        .getSize(
+          find
+              .ancestor(of: find.text('Emma'), matching: find.byType(Expanded))
+              .first,
+        )
+        .width;
+    expect(nameSlot, greaterThanOrEqualTo(120));
+
+    final title = find.textContaining('Sans réponse (');
+    final titleText = tester.widget<Text>(title);
+    final painter = TextPainter(
+      text: TextSpan(text: titleText.data, style: titleText.style),
+      textDirection: TextDirection.ltr,
+      textScaler: MediaQuery.textScalerOf(tester.element(title)),
+    )..layout();
+    expect(tester.getSize(title).width, greaterThanOrEqualTo(painter.width));
+  });
+
+  testWidgets('« Sans réponse » compte l’entraîneur comme les autres', (
+    tester,
+  ) async {
+    await _setPhoneViewport(tester);
+    await _pumpWorkspace(
+      tester,
+      convocations: _convocations(withCoach: true, coachUnanswered: true),
+      initialStep: 'effectif',
+    );
+
+    // La vue joueur affichait déjà « Sans réponse (2) » ; l'administrateur
+    // voyait « 1 + coach ».
+    expect(find.text('Sans réponse (2)'), findsOneWidget);
+    expect(find.textContaining('+ coach'), findsNothing);
+  });
+
+  testWidgets('captures the compact composition controls', (tester) async {
+    await _setPhoneViewport(tester);
+    await _pumpWorkspace(
+      tester,
+      convocations: _convocations(),
+      initialStep: 'composition',
+    );
+
+    expect(find.text('Composition'), findsNothing);
+    expect(find.textContaining('Choisis un dispositif'), findsNothing);
+    final formation = find.byType(DropdownButtonFormField<String>);
+    final simulateButton = find.widgetWithText(
+      OutlinedButton,
+      'Simuler une composition',
+    );
+    expect(formation, findsOneWidget);
+    expect(simulateButton, findsOneWidget);
+    final formationExpanded = find.ancestor(
+      of: formation,
+      matching: find.byType(Expanded),
+    );
+    final simulateExpanded = find.ancestor(
+      of: simulateButton,
+      matching: find.byType(Expanded),
+    );
+    expect(formationExpanded, findsOneWidget);
+    expect(simulateExpanded, findsOneWidget);
+    expect(tester.widget<Expanded>(formationExpanded).flex, 1);
+    expect(tester.widget<Expanded>(simulateExpanded).flex, 1);
+    expect(find.text('Remplaçants (3)'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Enregistrer'), findsOneWidget);
+    expect(
+      find.widgetWithText(FilledButton, 'Publier la composition'),
+      findsNothing,
+    );
+    expect(find.textContaining('Brouillon'), findsNothing);
+    await _capture(tester, 'composition_enregistrer.png');
+  });
+
+  testWidgets(
+    'moves absent and unanswered players through avatar tiles',
+    (tester) async {
+      await _setWideViewport(tester);
+      final convocations = _convocations();
+      final repository = _FakeSportWaitlistRepository(convocations);
+      await _pumpWorkspace(
+        tester,
+        convocations: convocations,
+        initialStep: 'effectif',
+        waitlistRepository: repository,
+      );
+
+      expect(find.text('Convoqués (3)'), findsOneWidget);
+      expect(find.text('Liste d’attente (0)'), findsOneWidget);
+      expect(find.text('Absents (1)'), findsOneWidget);
+      expect(find.text('Sans réponse (1)'), findsOneWidget);
+      expect(
+        find.byType(LongPressDraggable<ConvocationPlayer>),
+        findsNWidgets(5),
+      );
+
+      await _dragPlayerToColumn(tester, playerName: 'Diego', columnIndex: 0);
+      expect(find.text('Convoqués (4)'), findsOneWidget);
+      expect(find.text('Absents (0)'), findsOneWidget);
+      expect(find.text('Diego'), findsOneWidget);
+
+      await _dragPlayerToColumn(tester, playerName: 'Emma', columnIndex: 1);
+      expect(find.text('Liste d’attente (1)'), findsOneWidget);
+      expect(find.text('Sans réponse (0)'), findsOneWidget);
+      expect(find.text('Emma'), findsOneWidget);
+
+      // Le retour vers la colonne de disponibilité d'origine doit rester
+      // possible, puis le joueur peut être replacé parmi les convoqués.
+      await _dragPlayerToColumn(tester, playerName: 'Diego', columnIndex: 2);
+      expect(find.text('Convoqués (3)'), findsOneWidget);
+      expect(find.text('Absents (1)'), findsOneWidget);
+      await _dragPlayerToColumn(tester, playerName: 'Diego', columnIndex: 0);
+
+      // Aucun bouton à presser : les décisions partent d'elles-mêmes, une
+      // fois le geste terminé.
+      expect(find.widgetWithText(FilledButton, 'Enregistrer'), findsNothing);
+      await _pumpFrames(tester, count: 20);
+
+      expect(repository.lastDecisions?['sp4'], ConvocationStatus.convoked);
+      expect(repository.lastDecisions?['sp5'], ConvocationStatus.notConvoked);
+    },
+  );
+
+  testWidgets('un effectif jamais écrit part tout seul au chargement', (
+    tester,
+  ) async {
+    await _setPhoneViewport(tester);
+    final repository = _FakeSportWaitlistRepository(
+      _convocations(published: false),
+    );
+    await _pumpWorkspace(
+      tester,
+      convocations: _convocations(published: false),
+      initialStep: 'effectif',
+      waitlistRepository: repository,
+    );
+
+    expect(find.widgetWithText(FilledButton, 'Enregistrer'), findsNothing);
+    expect(repository.lastDecisions?['sp1'], ConvocationStatus.convoked);
+    // Recopier le calcul du serveur n'est pas une décision de l'admin : rien
+    // n'est figé, la liste d'attente reste automatique.
+    expect(repository.lastChangedPlayerIds, isEmpty);
+  });
+
+  testWidgets('convoquer depuis la liste d’attente demande confirmation', (
+    tester,
+  ) async {
+    await _setWideViewport(tester);
+    final convocations = _convocations(withWaitlisted: true);
+    final repository = _FakeSportWaitlistRepository(convocations);
+    await _pumpWorkspace(
+      tester,
+      convocations: convocations,
+      initialStep: 'effectif',
+      waitlistRepository: repository,
+    );
+
+    expect(find.text('Liste d’attente (1)'), findsOneWidget);
+
+    // Annuler laisse le joueur où il est, et n'écrit rien.
+    await _dragPlayerToColumn(tester, playerName: 'Clara', columnIndex: 0);
+    expect(find.text('Prévenir Clara ?'), findsOneWidget);
+    await tester.tap(find.widgetWithText(TextButton, 'Annuler'));
+    await _pumpFrames(tester, count: 20);
+    expect(find.text('Liste d’attente (1)'), findsOneWidget);
+    expect(repository.lastDecisions, isNull);
+
+    // Confirmer déplace le joueur et déclenche l'écriture.
+    await _dragPlayerToColumn(tester, playerName: 'Clara', columnIndex: 0);
+    expect(find.text('Prévenir Clara ?'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirmer'));
+    await _pumpFrames(tester, count: 20);
+    expect(find.text('Liste d’attente (0)'), findsOneWidget);
+    expect(repository.lastDecisions?['sp3'], ConvocationStatus.convoked);
+    // Seul le joueur déplacé par l'admin est signalé comme décision figée.
+    expect(repository.lastChangedPlayerIds, {'sp3'});
+  });
+
+  testWidgets('un joueur absent convoqué ne demande aucune confirmation', (
+    tester,
+  ) async {
+    await _setWideViewport(tester);
+    final convocations = _convocations();
+    final repository = _FakeSportWaitlistRepository(convocations);
+    await _pumpWorkspace(
+      tester,
+      convocations: convocations,
+      initialStep: 'effectif',
+      waitlistRepository: repository,
+    );
+
+    await _dragPlayerToColumn(tester, playerName: 'Diego', columnIndex: 0);
+    expect(find.textContaining('Prévenir'), findsNothing);
+    await _pumpFrames(tester, count: 20);
+    expect(repository.lastDecisions?['sp4'], ConvocationStatus.convoked);
+  });
+
+  testWidgets('un convoqué peut passer chez les absents', (tester) async {
+    await _setWideViewport(tester);
+    final convocations = _convocations();
+    final repository = _FakeSportWaitlistRepository(convocations);
+    await _pumpWorkspace(
+      tester,
+      convocations: convocations,
+      initialStep: 'effectif',
+      waitlistRepository: repository,
+    );
+
+    expect(find.text('Convoqués (3)'), findsOneWidget);
+    expect(find.text('Absents (1)'), findsOneWidget);
+
+    // Annuler laisse le joueur convoqué et n'écrit rien.
+    await _dragPlayerToColumn(tester, playerName: 'Bruno', columnIndex: 2);
+    expect(find.text('Noter Bruno absent ?'), findsOneWidget);
+    await tester.tap(find.widgetWithText(TextButton, 'Annuler'));
+    await _pumpFrames(tester, count: 20);
+    expect(find.text('Convoqués (3)'), findsOneWidget);
+    expect(find.text('Absents (1)'), findsOneWidget);
+    expect(repository.overrides, isEmpty);
+
+    // Confirmer enregistre l'absence à la place du joueur.
+    await _dragPlayerToColumn(tester, playerName: 'Bruno', columnIndex: 2);
+    expect(find.text('Noter Bruno absent ?'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Noter absent'));
+    await _pumpFrames(tester, count: 40);
+
+    expect(repository.overrides, [('sp2', 'absent')]);
+    expect(find.text('Convoqués (2)'), findsOneWidget);
+    expect(find.text('Absents (2)'), findsOneWidget);
+  });
+
+  testWidgets('un sans réponse peut passer chez les absents', (tester) async {
+    await _setWideViewport(tester);
+    final convocations = _convocations();
+    final repository = _FakeSportWaitlistRepository(convocations);
+    await _pumpWorkspace(
+      tester,
+      convocations: convocations,
+      initialStep: 'effectif',
+      waitlistRepository: repository,
+    );
+
+    await _dragPlayerToColumn(tester, playerName: 'Emma', columnIndex: 2);
+    await tester.tap(find.widgetWithText(FilledButton, 'Noter absent'));
+    await _pumpFrames(tester, count: 40);
+
+    expect(repository.overrides, [('sp5', 'absent')]);
+    expect(find.text('Sans réponse (0)'), findsOneWidget);
+    expect(find.text('Absents (2)'), findsOneWidget);
+  });
+
+  testWidgets('publier la première composition demande confirmation', (
+    tester,
+  ) async {
+    await _setTallViewport(tester);
+    final repository = _FakeMatchCompositionRepository();
+    await _pumpWorkspace(
+      tester,
+      convocations: _convocations(),
+      initialStep: 'composition',
+      compositionRepository: repository,
+    );
+
+    // Placer les joueurs suffit à rendre la feuille enregistrable.
+    final simulate = find.widgetWithText(
+      OutlinedButton,
+      'Simuler une composition',
+    );
+    await tester.ensureVisible(simulate);
+    await _pumpFrames(tester, count: 5);
+    await tester.tap(simulate);
+    await _pumpFrames(tester, count: 10);
+
+    final save = find.widgetWithText(FilledButton, 'Enregistrer');
+    await tester.ensureVisible(save);
+    await _pumpFrames(tester, count: 5);
+    await tester.tap(save);
+    await _pumpFrames(tester, count: 10);
+
+    expect(find.text('Publier la composition ?'), findsOneWidget);
+    expect(
+      find.textContaining('enverra une notification à tous les joueurs'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.widgetWithText(TextButton, 'Annuler'));
+    await _pumpFrames(tester, count: 10);
+    expect(repository.saveCalls, 0);
+    expect(repository.publishCalls, 0);
+
+    await tester.ensureVisible(save);
+    await _pumpFrames(tester, count: 5);
+    await tester.tap(save);
+    await _pumpFrames(tester, count: 10);
+    await tester.tap(find.widgetWithText(FilledButton, 'Valider'));
+    await _pumpFrames(tester, count: 20);
+    expect(repository.saveCalls, 1);
+    expect(repository.publishCalls, 1);
+  });
+
+  testWidgets(
+      '« Aperçu », juste avant « Enregistrer », montre la vidéo '
+      'sans rien enregistrer', (tester) async {
+    await _setTallViewport(tester);
+    debugPresentationBackground = (context, cue) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => cue.onReady());
+      return const ColoredBox(color: Colors.black);
+    };
+    addTearDown(() => debugPresentationBackground = null);
+    final repository = _FakeMatchCompositionRepository();
+    await _pumpWorkspace(
+      tester,
+      convocations: _convocations(),
+      initialStep: 'composition',
+      compositionRepository: repository,
+    );
+
+    final preview = find.widgetWithText(OutlinedButton, 'Aperçu');
+    final save = find.widgetWithText(FilledButton, 'Enregistrer');
+    expect(tester.widget<OutlinedButton>(preview).onPressed, isNull);
+
+    final simulate = find.widgetWithText(
+      OutlinedButton,
+      'Simuler une composition',
+    );
+    await tester.ensureVisible(simulate);
+    await _pumpFrames(tester, count: 5);
+    await tester.tap(simulate);
+    await _pumpFrames(tester, count: 10);
+
+    await tester.ensureVisible(save);
+    await _pumpFrames(tester, count: 5);
+    // Sur la même ligne, à gauche de « Enregistrer ».
+    expect(tester.getCenter(preview).dy, tester.getCenter(save).dy);
+    expect(tester.getCenter(preview).dx, lessThan(tester.getCenter(save).dx));
+
+    await tester.tap(preview);
+    await _pumpFrames(tester, count: 10);
+    expect(find.byType(CompositionPresentationPage), findsOneWidget);
+    expect(find.text('Passer'), findsOneWidget);
+
+    // La vidéo se referme d'elle-même et rend l'éditeur, sans copie de
+    // l'écran ni « Revoir ».
+    await tester.tap(find.text('Passer'));
+    await _pumpFrames(tester);
+    expect(find.byType(CompositionPresentationPage), findsNothing);
+    expect(find.text('Revoir'), findsNothing);
+    expect(preview, findsOneWidget);
+    expect(repository.saveCalls, 0);
+    expect(repository.publishCalls, 0);
+  });
+
+  testWidgets('la simulation titularise le remplaçant de son dernier match', (
+    tester,
+  ) async {
+    await _setTallViewport(tester);
+    await _pumpWorkspace(
+      tester,
+      convocations: _convocations(),
+      initialStep: 'composition',
+      compositionRepository: _FakeMatchCompositionRepository(
+        benchHistory: const FinishedBenchHistory(benchedLastTime: {'p2'}),
+      ),
+    );
+
+    final simulate = find.widgetWithText(
+      OutlinedButton,
+      'Simuler une composition',
+    );
+    await tester.ensureVisible(simulate);
+    await _pumpFrames(tester, count: 5);
+    await tester.tap(simulate);
+    await _pumpFrames(tester, count: 10);
+
+    // Plus de message récapitulatif après la simulation.
+    expect(find.textContaining('titulaire cette fois'), findsNothing);
+    expect(find.textContaining('À toi d’ajuster.'), findsNothing);
+  });
+
+  testWidgets(
+      'le compteur banc est bleu pour le remplaçant de son dernier '
+      'match', (tester) async {
+    await _setTallViewport(tester);
+    await _pumpWorkspace(
+      tester,
+      convocations: _convocations(),
+      initialStep: 'composition',
+      compositionRepository: _FakeMatchCompositionRepository(
+        benchHistory: const FinishedBenchHistory(
+          counts: {'p2': 1, 'p3': 2},
+          benchedLastTime: {'p2'},
+        ),
+      ),
+    );
+
+    Color? badgeColor(int count) {
+      final badge = find.byWidgetPredicate(
+        (widget) => widget is SubstituteHistoryBadge && widget.count == count,
+      );
+      expect(badge, findsOneWidget);
+      // Le bleu s'ajoute au compteur : le nombre de débuts sur le banc reste
+      // affiché.
+      expect(
+        find.descendant(of: badge, matching: find.text('$count')),
+        findsOneWidget,
+      );
+      final box = tester.widget<Container>(
+        find.descendant(of: badge, matching: find.byType(Container)).first,
+      );
+      return (box.decoration! as BoxDecoration).color;
+    }
+
+    // Sur le banc : Bruno, remplaçant la dernière fois qu'il a joué, en bleu ;
+    // Clara garde la pastille habituelle.
+    expect(badgeColor(1), AppTheme.primary);
+    expect(badgeColor(2), isNot(AppTheme.primary));
+
+    final simulate = find.widgetWithText(
+      OutlinedButton,
+      'Simuler une composition',
+    );
+    await tester.ensureVisible(simulate);
+    await _pumpFrames(tester, count: 5);
+    await tester.tap(simulate);
+    await _pumpFrames(tester, count: 10);
+
+    // Sur le terrain, après la simulation, le repère suit le joueur.
+    expect(badgeColor(1), AppTheme.primary);
+    expect(badgeColor(2), isNot(AppTheme.primary));
+  });
+
+  testWidgets(
+    'une composition publiée du prochain match passe en aperçu compact',
+    (tester) async {
+      await _setPhoneViewport(tester);
+      final initial = MatchComposition.initial(
+        convocations: _convocations(),
+        goalkeeperSeasonPlayerIds: const {'sp1'},
+      );
+      final published = initial.copyWith(
+        version: 2,
+        entries: [
+          for (var index = 0; index < initial.entries.length; index++)
+            if (index == 0)
+              initial.entries[index].moveTo(
+                MatchCompositionZone.field,
+                x: .5,
+                y: .9,
+              )
+            else
+              initial.entries[index].moveTo(
+                MatchCompositionZone.bench,
+                sortOrder: index - 1,
+              ),
+        ],
+      );
+      final repository = _FakeMatchCompositionRepository(saved: published);
+
+      await _pumpWorkspace(
+        tester,
+        convocations: _convocations(),
+        initialStep: 'composition',
+        compositionRepository: repository,
+      );
+
+      expect(find.byType(CompositionPitchWithBench), findsOneWidget);
+      expect(find.byType(FormationPitchEditor), findsNothing);
+      expect(
+        find.widgetWithText(OutlinedButton, 'Modifier la composition'),
+        findsOneWidget,
+      );
+      expect(
+        find.widgetWithText(OutlinedButton, 'Simuler une composition'),
+        findsNothing,
+      );
+
+      await tester.tap(
+        find.widgetWithText(OutlinedButton, 'Modifier la composition'),
+      );
+      await _pumpFrames(tester, count: 5);
+
+      expect(find.byType(CompositionPitchWithBench), findsNothing);
+      expect(find.byType(FormationPitchEditor), findsOneWidget);
+      expect(
+        find.widgetWithText(OutlinedButton, 'Simuler une composition'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('retoucher une composition déjà publiée ne demande rien', (
+    tester,
+  ) async {
+    await _setTallViewport(tester);
+    final published = MatchComposition.initial(
+      convocations: _convocations(),
+      goalkeeperSeasonPlayerIds: const {'sp1'},
+    ).copyWith(version: 2);
+    final repository = _FakeMatchCompositionRepository(saved: published);
+    await _pumpWorkspace(
+      tester,
+      convocations: _convocations(),
+      initialStep: 'composition',
+      compositionRepository: repository,
+    );
+
+    final modify = find.widgetWithText(
+      OutlinedButton,
+      'Modifier la composition',
+    );
+    await tester.ensureVisible(modify);
+    await tester.tap(modify);
+    await _pumpFrames(tester, count: 5);
+
+    final simulate = find.widgetWithText(
+      OutlinedButton,
+      'Simuler une composition',
+    );
+    await tester.ensureVisible(simulate);
+    await _pumpFrames(tester, count: 5);
+    await tester.tap(simulate);
+    await _pumpFrames(tester, count: 10);
+
+    final save = find.widgetWithText(FilledButton, 'Enregistrer');
+    await tester.ensureVisible(save);
+    await _pumpFrames(tester, count: 5);
+    await tester.tap(save);
+    await _pumpFrames(tester, count: 20);
+
+    expect(find.text('Publier la composition ?'), findsNothing);
+    expect(repository.saveCalls, 1);
+  });
+
+  testWidgets('la compo reste accessible sans effectif enregistré', (
+    tester,
+  ) async {
+    await _setPhoneViewport(tester);
+    await _pumpWorkspace(
+      tester,
+      convocations: _convocations(published: false),
+      initialStep: 'composition',
+    );
+
+    expect(
+        find.widgetWithText(FilledButton, 'Aller à l’effectif'), findsNothing);
+    expect(find.byType(DropdownButtonFormField<String>), findsOneWidget);
+    expect(
+      find.widgetWithText(OutlinedButton, 'Simuler une composition'),
+      findsOneWidget,
+    );
+  });
+}
+
+Future<void> _setPhoneViewport(WidgetTester tester) async {
+  await tester.binding.setSurfaceSize(const Size(430, 932));
+  addTearDown(() => tester.binding.setSurfaceSize(null));
+}
+
+Future<void> _setWideViewport(WidgetTester tester) async {
+  await tester.binding.setSurfaceSize(const Size(1500, 1100));
+  addTearDown(() => tester.binding.setSurfaceSize(null));
+}
+
+/// Écran assez haut pour que la feuille et ses boutons tiennent d'un bloc :
+/// sans cela, le bouton d'enregistrement sort de la zone touchable.
+Future<void> _setTallViewport(WidgetTester tester) async {
+  await tester.binding.setSurfaceSize(const Size(1200, 2400));
+  addTearDown(() => tester.binding.setSurfaceSize(null));
+}
+
+Future<void> _pumpWorkspace(
+  WidgetTester tester, {
+  required MatchConvocations convocations,
+  required String initialStep,
+  _FakeSportWaitlistRepository? waitlistRepository,
+  _FakeMatchCompositionRepository? compositionRepository,
+}) async {
+  await tester.pumpWidget(
+    RepaintBoundary(
+      key: _captureKey,
+      child: ProviderScope(
+        overrides: [
+          sportWaitlistRepositoryProvider.overrideWithValue(
+            waitlistRepository ?? _FakeSportWaitlistRepository(convocations),
+          ),
+          matchCompositionRepositoryProvider.overrideWithValue(
+            compositionRepository ?? _FakeMatchCompositionRepository(),
+          ),
+          upcomingMatchFixtureProvider(_matchId).overrideWith(
+            (ref) async => const UpcomingMatchFixtureData(
+              status: 'a_venir',
+              location: 'domicile',
+              opponentName: 'Olympique Test',
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          locale: const Locale('fr', 'FR'),
+          supportedLocales: const [Locale('fr', 'FR')],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          theme: AppTheme.dark,
+          home: AdminSquadPlanPage(
+            initialMatchId: _matchId,
+            initialStep: initialStep,
+          ),
+        ),
+      ),
+    ),
+  );
+  await _pumpFrames(tester, count: 20);
+}
+
+Future<void> _dragPlayerToColumn(
+  WidgetTester tester, {
+  required String playerName,
+  required int columnIndex,
+}) async {
+  final player = find.ancestor(
+    of: find.text(playerName),
+    matching: find.byType(LongPressDraggable<ConvocationPlayer>),
+  );
+  expect(player, findsOneWidget);
+  final target = find.byType(DragTarget<ConvocationPlayer>).at(columnIndex);
+  final gesture = await tester.startGesture(tester.getCenter(player));
+  await tester.pump(kLongPressTimeout + const Duration(milliseconds: 100));
+  await gesture.moveTo(tester.getCenter(target));
+  await tester.pump(const Duration(milliseconds: 200));
+  await gesture.up();
+  await _pumpFrames(tester, count: 4);
+}
+
+Future<void> _pumpFrames(WidgetTester tester, {int count = 10}) async {
+  for (var index = 0; index < count; index += 1) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+}
+
+Future<void> _capture(WidgetTester tester, String fileName) async {
+  await tester.pump();
+  final boundary = tester.renderObject<RenderRepaintBoundary>(
+    find.byKey(_captureKey),
+  );
+  await tester.runAsync(() async {
+    final image = await boundary.toImage(pixelRatio: 1.5);
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    if (bytes == null) throw StateError('Capture PNG impossible.');
+    final directory = Directory('build/visual-review');
+    await directory.create(recursive: true);
+    await File('${directory.path}/$fileName').writeAsBytes(
+      bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
+    );
+  });
+}
+
+MatchConvocations _withAvailability(
+  MatchConvocations convocations,
+  String seasonPlayerId,
+  String availabilityStatus,
+) {
+  final players = [
+    for (final player in convocations.players)
+      if (player.seasonPlayerId != seasonPlayerId)
+        player
+      else
+        ConvocationPlayer(
+          participantId: player.participantId,
+          seasonPlayerId: player.seasonPlayerId,
+          firstName: player.firstName,
+          lastName: player.lastName,
+          availabilityStatus: availabilityStatus,
+          convocationStatus: ConvocationStatus.notApplicable,
+          publishedConvocationStatus: ConvocationStatus.notApplicable,
+          manualOverride: false,
+          waitlistPosition: player.waitlistPosition,
+          recommendedNotConvoked: false,
+          turnShouldConsume: false,
+          turnState: player.turnState,
+          promotedAfterWithdrawalAt: player.promotedAfterWithdrawalAt,
+          isGoalkeeper: player.isGoalkeeper,
+        ),
+  ];
+  return MatchConvocations(
+    matchId: convocations.matchId,
+    opponentName: convocations.opponentName,
+    kickoffAt: convocations.kickoffAt,
+    seasonId: convocations.seasonId,
+    squadSizeLimit: convocations.squadSizeLimit,
+    publishedSquadSizeLimit: convocations.publishedSquadSizeLimit,
+    convocationState: convocations.convocationState,
+    convocationVersion: convocations.convocationVersion,
+    hasUnpublishedChanges: convocations.hasUnpublishedChanges,
+    lateWithdrawalCutoffAt: convocations.lateWithdrawalCutoffAt,
+    availableCount: players.where((player) => player.isAvailable).length,
+    convokedCount: players.where((player) => player.isConvoked).length,
+    notConvokedCount: players.where((player) => player.isNotConvoked).length,
+    players: players,
+  );
+}
+
+MatchConvocations _convocations({
+  bool published = true,
+  bool withWaitlisted = false,
+  bool withCoach = false,
+  bool coachUnanswered = false,
+}) {
+  final players = [
+    _player(
+      id: 'p1',
+      seasonPlayerId: 'sp1',
+      name: 'Alex',
+      isGoalkeeper: true,
+      status: ConvocationStatus.convoked,
+      waitlistPosition: 1,
+    ),
+    _player(
+      id: 'p2',
+      seasonPlayerId: 'sp2',
+      name: 'Bruno',
+      status: ConvocationStatus.convoked,
+      waitlistPosition: 2,
+    ),
+    _player(
+      id: 'p3',
+      seasonPlayerId: 'sp3',
+      name: 'Clara',
+      status: withWaitlisted
+          ? ConvocationStatus.notConvoked
+          : ConvocationStatus.convoked,
+      waitlistPosition: 3,
+    ),
+    _player(
+      id: 'p4',
+      seasonPlayerId: 'sp4',
+      name: 'Diego',
+      availabilityStatus: 'absent',
+      status: ConvocationStatus.notApplicable,
+    ),
+    _player(
+      id: 'p5',
+      seasonPlayerId: 'sp5',
+      name: 'Emma',
+      availabilityStatus: 'no_response',
+      status: ConvocationStatus.notApplicable,
+    ),
+    if (withCoach)
+      _player(
+        id: 'coach',
+        seasonPlayerId: 'sp-coach',
+        name: 'Philippe',
+        availabilityStatus: coachUnanswered ? 'no_response' : 'available',
+        status: coachUnanswered
+            ? ConvocationStatus.notApplicable
+            : ConvocationStatus.convoked,
+        isCoach: true,
+      ),
+  ];
+
+  return MatchConvocations(
+    matchId: _matchId,
+    opponentName: 'Olympique Test',
+    kickoffAt: DateTime.now().add(const Duration(days: 2)),
+    seasonId: 'season-visual',
+    squadSizeLimit: 14,
+    publishedSquadSizeLimit: 14,
+    convocationState: published ? 'published' : 'draft',
+    convocationVersion: published ? 2 : 0,
+    hasUnpublishedChanges: !published,
+    lateWithdrawalCutoffAt: null,
+    availableCount: players.where((player) => player.isAvailable).length,
+    convokedCount: players.where((player) => player.isConvoked).length,
+    notConvokedCount: players.where((player) => player.isNotConvoked).length,
+    players: players,
+  );
+}
+
+ConvocationPlayer _player({
+  required String id,
+  required String seasonPlayerId,
+  required String name,
+  required ConvocationStatus status,
+  String availabilityStatus = 'available',
+  bool isGoalkeeper = false,
+  bool isCoach = false,
+  int? waitlistPosition,
+}) {
+  return ConvocationPlayer(
+    participantId: id,
+    seasonPlayerId: seasonPlayerId,
+    firstName: name,
+    lastName: 'Grinta',
+    availabilityStatus: availabilityStatus,
+    convocationStatus: status,
+    publishedConvocationStatus: status,
+    manualOverride: true,
+    waitlistPosition: waitlistPosition,
+    recommendedNotConvoked: false,
+    turnShouldConsume: status == ConvocationStatus.notConvoked,
+    turnState: status == ConvocationStatus.notConvoked
+        ? WaitlistTurnState.pending
+        : WaitlistTurnState.waived,
+    promotedAfterWithdrawalAt: null,
+    isCoach: isCoach,
+    isGoalkeeper: isGoalkeeper,
+  );
+}
+
+class _FakeSportWaitlistRepository implements SportWaitlistRepository {
+  _FakeSportWaitlistRepository(this.convocations) : _state = convocations;
+
+  final MatchConvocations convocations;
+  MatchConvocations _state;
+  Map<String, ConvocationStatus>? lastDecisions;
+  Set<String>? lastChangedPlayerIds;
+  final List<(String, String)> overrides = [];
+
+  @override
+  Future<List<AdminSportMatch>> fetchUpcomingMatches() async => [
+        AdminSportMatch(
+          id: _matchId,
+          opponentName: 'Olympique Test',
+          kickoffAt: convocations.kickoffAt,
+        ),
+      ];
+
+  @override
+  Future<MatchConvocations> fetchMatchConvocations(String matchId) async =>
+      _state;
+
+  @override
+  Future<AvailabilityReminderSummary> fetchReminderSummary(
+    String matchId,
+  ) async {
+    return const AvailabilityReminderSummary(
+      matchId: _matchId,
+      availabilityState: 'open',
+      noResponseCount: 1,
+      openSentCount: 1,
+      j3SentCount: 0,
+      j1SentCount: 0,
+      canRemind: true,
+      players: [],
+    );
+  }
+
+  @override
+  Future<MatchConvocations> publishEffectif({
+    required String matchId,
+    required int squadSizeLimit,
+    required Map<String, ConvocationStatus> decisions,
+    Set<String> changedPlayerIds = const {},
+    String? reason,
+  }) async {
+    lastDecisions = Map<String, ConvocationStatus>.from(decisions);
+    lastChangedPlayerIds = Set<String>.from(changedPlayerIds);
+    // Le serveur renvoie l'effectif tel qu'il vient de l'écrire : sans cette
+    // fidélité, le faux dépôt renverrait l'écran à son état de départ.
+    _state = _publishedWith(_state, decisions);
+    return _state;
+  }
+
+  @override
+  Future<void> overrideAvailability({
+    required String matchId,
+    required String seasonPlayerId,
+    required String status,
+    String? reason,
+  }) async {
+    overrides.add((seasonPlayerId, status));
+    // Le serveur retire de l'effectif le convoqué qui devient absent : le faux
+    // dépôt doit en faire autant, sinon l'écran ne verrait jamais le résultat.
+    _state = _withAvailability(_state, seasonPlayerId, status);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+MatchConvocations _publishedWith(
+  MatchConvocations convocations,
+  Map<String, ConvocationStatus> decisions,
+) {
+  final players = [
+    for (final player in convocations.players)
+      ConvocationPlayer(
+        participantId: player.participantId,
+        seasonPlayerId: player.seasonPlayerId,
+        firstName: player.firstName,
+        lastName: player.lastName,
+        availabilityStatus: player.availabilityStatus,
+        convocationStatus:
+            decisions[player.seasonPlayerId] ?? ConvocationStatus.notApplicable,
+        publishedConvocationStatus:
+            decisions[player.seasonPlayerId] ?? ConvocationStatus.notApplicable,
+        manualOverride: true,
+        waitlistPosition: player.waitlistPosition,
+        recommendedNotConvoked: false,
+        turnShouldConsume: player.turnShouldConsume,
+        turnState: player.turnState,
+        promotedAfterWithdrawalAt: player.promotedAfterWithdrawalAt,
+        isGoalkeeper: player.isGoalkeeper,
+      ),
+  ];
+
+  return MatchConvocations(
+    matchId: convocations.matchId,
+    opponentName: convocations.opponentName,
+    kickoffAt: convocations.kickoffAt,
+    seasonId: convocations.seasonId,
+    squadSizeLimit: convocations.squadSizeLimit,
+    publishedSquadSizeLimit: convocations.squadSizeLimit,
+    convocationState: 'published',
+    convocationVersion: convocations.convocationVersion + 1,
+    hasUnpublishedChanges: false,
+    lateWithdrawalCutoffAt: convocations.lateWithdrawalCutoffAt,
+    availableCount: players.where((player) => player.isAvailable).length,
+    convokedCount: players.where((player) => player.isConvoked).length,
+    notConvokedCount: players.where((player) => player.isNotConvoked).length,
+    players: players,
+  );
+}
+
+class _FakeMatchCompositionRepository implements MatchCompositionRepository {
+  _FakeMatchCompositionRepository({
+    this.saved,
+    this.benchHistory = FinishedBenchHistory.empty,
+  });
+
+  /// Feuille déjà enregistrée côté serveur, ou null si le match n'en a pas.
+  final MatchComposition? saved;
+
+  /// Ce que les matchs déjà joués disent du banc.
+  final FinishedBenchHistory benchHistory;
+  int saveCalls = 0;
+  int publishCalls = 0;
+
+  @override
+  Future<MatchComposition?> fetchAdminComposition(String matchId) async =>
+      saved;
+
+  @override
+  Future<MatchComposition> saveComposition({
+    required MatchComposition composition,
+    required bool allowSquadSizeException,
+    String? reason,
+  }) async {
+    saveCalls += 1;
+    return composition.copyWith(version: composition.version + 1);
+  }
+
+  @override
+  Future<MatchComposition> publishComposition({
+    required String matchId,
+    required bool allowSquadSizeException,
+    String? reason,
+  }) async {
+    publishCalls += 1;
+    return MatchComposition.initial(
+      convocations: _convocations(),
+      goalkeeperSeasonPlayerIds: const {'sp1'},
+    ).copyWith(version: 1);
+  }
+
+  @override
+  Future<Set<String>> fetchGoalkeeperSeasonPlayerIds(
+    List<String> seasonPlayerIds,
+  ) async =>
+      {'sp1'};
+
+  @override
+  Future<Map<String, String>> fetchCanonicalPlayerIds(
+    List<String> seasonPlayerIds,
+  ) async =>
+      const {};
+
+  @override
+  Future<List<PlayedPosition>> fetchPlayerPositionHistory(
+    DateTime since,
+  ) async =>
+      const [];
+
+  @override
+  Future<FinishedBenchHistory> fetchFinishedBenchHistory(
+    String matchId,
+  ) async =>
+      benchHistory;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}

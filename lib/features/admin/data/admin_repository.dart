@@ -1,0 +1,341 @@
+import 'package:as_grinta/core/logging/app_logger.dart';
+import 'package:as_grinta/core/providers/supabase_provider.dart';
+import 'package:as_grinta/core/utils/app_errors.dart';
+import 'package:as_grinta/core/utils/name_validation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+class AdminProfileItem {
+  const AdminProfileItem({
+    required this.id,
+    required this.firstName,
+    required this.lastName,
+    required this.surnom,
+    required this.username,
+    required this.passwordSet,
+    required this.role,
+    required this.status,
+  });
+
+  final String id;
+  final String firstName;
+  final String lastName;
+  final String surnom;
+  final String username;
+  final bool passwordSet;
+  final String role;
+  final String status;
+
+  String get fullName => capitalizePersonName('$firstName $lastName');
+
+  String get displayName {
+    final nickname = capitalizePersonName(surnom);
+    if (nickname.isNotEmpty) return nickname;
+    final first = capitalizePersonName(firstName);
+    if (first.isNotEmpty) return first;
+    return fullName.isEmpty ? 'Compte sans nom' : fullName;
+  }
+}
+
+class AdminHistoricalPlayer {
+  const AdminHistoricalPlayer({
+    required this.id,
+    required this.name,
+    required this.matchesPlayed,
+    required this.goals,
+    required this.linkedProfileId,
+  });
+
+  final int id;
+  final String name;
+  final int matchesPlayed;
+  final int goals;
+  final String? linkedProfileId;
+}
+
+class AdminSeasonItem {
+  const AdminSeasonItem({
+    required this.id,
+    required this.name,
+    required this.status,
+  });
+
+  final String id;
+  final String name;
+  final String status;
+}
+
+class AdminDashboardData {
+  const AdminDashboardData({
+    required this.profiles,
+    required this.seasons,
+    required this.openSeasonId,
+  });
+
+  final List<AdminProfileItem> profiles;
+  final List<AdminSeasonItem> seasons;
+  final String? openSeasonId;
+}
+
+class AdminRepository {
+  AdminRepository(this._client);
+
+  final SupabaseClient _client;
+
+  Future<AdminDashboardData> fetchDashboard() async {
+    final seasonsRaw = await _client
+        .from('seasons')
+        .select('id, name, status')
+        .order('name', ascending: false);
+    final seasons = (seasonsRaw as List)
+        .map((row) => Map<String, dynamic>.from(row))
+        .map(
+          (row) => AdminSeasonItem(
+            id: row['id'].toString(),
+            name: row['name'].toString(),
+            status: row['status'].toString(),
+          ),
+        )
+        .toList();
+    final openSeason = seasons.where((season) => season.status == 'open');
+    final openSeasonId = openSeason.isEmpty ? null : openSeason.first.id;
+
+    final profilesRaw = await _client.rpc('staff_list_profiles');
+    final profiles = (profilesRaw as List)
+        .map((row) => Map<String, dynamic>.from(row))
+        .map((row) {
+      final rawRole = (row['role'] ?? 'pronostiqueur').toString();
+      return AdminProfileItem(
+        id: row['id'].toString(),
+        firstName: (row['first_name'] ?? '').toString(),
+        lastName: (row['last_name'] ?? '').toString(),
+        surnom: (row['surnom'] ?? '').toString(),
+        username: (row['username'] ?? '').toString(),
+        passwordSet: row['password_set'] != false,
+        // Compatibilité pendant la transition de production : l'ancien
+        // rôle « moderateur » est présenté comme Admin.
+        role: rawRole == 'moderateur' ? 'admin' : rawRole,
+        status: (row['status'] ?? 'active').toString(),
+      );
+    }).toList()
+      // La liste affiche le nom affiché (surnom compris) : elle est donc
+      // rangée selon lui. Triée par prénom, « Zizou » tombait entre Karim et
+      // Maxime.
+      ..sort(
+        (a, b) => personNameSortKey(a.displayName)
+            .compareTo(personNameSortKey(b.displayName)),
+      );
+
+    return AdminDashboardData(
+      profiles: profiles,
+      seasons: seasons,
+      openSeasonId: openSeasonId,
+    );
+  }
+
+  /// Génère côté serveur un lien de réinitialisation à usage unique, sans
+  /// envoyer d'e-mail. Retourne ce lien (à transmettre par l'admin au joueur
+  /// par le canal de son choix) : en l'ouvrant, le joueur choisit directement
+  /// son nouveau mot de passe.
+  ///
+  /// La copie dans le presse-papiers est volontairement laissée à l'appelant,
+  /// déclenchée par un geste explicite : sur le web (iOS Safari/PWA notamment),
+  /// une écriture presse-papiers après un `await` est bloquée par le navigateur
+  /// et ferait échouer toute l'opération alors que le lien a déjà été généré
+  /// côté serveur.
+  Future<String> resetAccountPassword(String userId) async {
+    final FunctionResponse resetResponse;
+    try {
+      resetResponse = await _client.functions.invoke(
+        'manage-user',
+        body: {'action': 'reset-password', 'userId': userId},
+      );
+    } on FunctionsHttpException catch (error) {
+      throw functionHttpError(error, fallback: 'La réinitialisation a échoué.');
+    }
+    final resetData = resetResponse.data;
+    if (resetResponse.status < 200 ||
+        resetResponse.status >= 300 ||
+        resetData is! Map ||
+        resetData['reset'] != true) {
+      final message = resetData is Map && resetData['error'] != null
+          ? resetData['error'].toString()
+          : 'La réinitialisation a échoué.';
+      throw StateError(message);
+    }
+
+    final resetLink = (resetData['resetLink'] ?? '').toString();
+    if (resetLink.isEmpty) {
+      throw StateError('Le lien de réinitialisation n’a pas été retourné.');
+    }
+
+    return resetLink;
+  }
+
+  Future<void> deleteAccount(String userId) async {
+    final FunctionResponse response;
+    try {
+      response = await _client.functions.invoke(
+        'manage-user',
+        body: {'action': 'delete', 'userId': userId},
+      );
+    } on FunctionsHttpException catch (error) {
+      throw functionHttpError(
+        error,
+        fallback: 'La suppression du compte a échoué.',
+      );
+    }
+    final data = response.data;
+    if (response.status < 200 ||
+        response.status >= 300 ||
+        data is! Map ||
+        data['deleted'] != true) {
+      final message = data is Map && data['error'] != null
+          ? data['error'].toString()
+          : 'La suppression du compte a échoué.';
+      throw StateError(message);
+    }
+  }
+
+  Future<void> _updatePrivilegedProfileFields({
+    required String profileId,
+    String? role,
+    String? status,
+    bool? isGoalkeeper,
+  }) async {
+    final result = await _client.rpc(
+      'admin_update_profile_fields',
+      params: {
+        'p_profile_id': profileId,
+        'p_role': role,
+        'p_status': status,
+        'p_is_goalkeeper': isGoalkeeper,
+      },
+    );
+    if (result != true) {
+      throw StateError('Le profil n’a pas pu être mis à jour.');
+    }
+  }
+
+  Future<void> updateProfileStatus(String profileId, String status) async {
+    if (!const ['active', 'archived'].contains(status)) {
+      throw ArgumentError('Statut invalide.');
+    }
+    await _updatePrivilegedProfileFields(profileId: profileId, status: status);
+  }
+
+  /// Attribue l'un des deux niveaux d'accès applicatifs.
+  Future<void> updateProfileRole(String profileId, String role) async {
+    if (!const ['pronostiqueur', 'admin'].contains(role)) {
+      throw ArgumentError('Rôle invalide.');
+    }
+    await _updatePrivilegedProfileFields(profileId: profileId, role: role);
+  }
+
+  Future<void> validateProfile(
+    String profileId, {
+    String? seasonPlayerId,
+  }) async {
+    final result = await _client.rpc(
+      'staff_validate_profile',
+      params: {'p_profile_id': profileId, 'p_season_player_id': seasonPlayerId},
+    );
+    if (result != true) {
+      throw StateError('Le compte n’a pas pu être validé.');
+    }
+  }
+
+  /// Liste des joueurs de l'historique importé (pour le rattachement).
+  Future<List<AdminHistoricalPlayer>> fetchHistoricalPlayers() async {
+    final rows = await _client.rpc('staff_list_historical_players');
+    return (rows as List? ?? const [])
+        .map((row) => Map<String, dynamic>.from(row as Map))
+        .map(
+          (row) => AdminHistoricalPlayer(
+            id: (row['id'] as num).toInt(),
+            name: (row['player_name'] ?? '').toString(),
+            matchesPlayed: (row['matches_played'] as num?)?.toInt() ?? 0,
+            goals: (row['goals'] as num?)?.toInt() ?? 0,
+            linkedProfileId: row['profile_id']?.toString(),
+          ),
+        )
+        .toList();
+  }
+
+  /// Rattache (ou détache si [historicalId] est null) l'historique d'un joueur
+  /// à un compte, par identifiant. Les badges sont recalculés côté serveur.
+  Future<void> setHistoricalProfile({
+    required String profileId,
+    required int? historicalId,
+  }) async {
+    final result = await _client.rpc(
+      'staff_set_historical_profile',
+      params: {'p_profile_id': profileId, 'p_historical_id': historicalId},
+    );
+    if (result != true) {
+      throw StateError('L’historique n’a pas pu être rattaché.');
+    }
+  }
+
+  Future<String> createSeason(String name) async {
+    final trimmed = name.trim();
+    if (!RegExp(r'^\d{4}-\d{4}$').hasMatch(trimmed)) {
+      throw ArgumentError('Le nom doit respecter le format 2026-2027.');
+    }
+    final startYear = int.parse(trimmed.substring(0, 4));
+    final endYear = int.parse(trimmed.substring(5));
+    if (endYear != startYear + 1) {
+      throw ArgumentError('La saison doit couvrir deux années consécutives.');
+    }
+    final result = await _client.rpc(
+      'open_or_create_season',
+      params: {'p_name': trimmed},
+    );
+    final id = result?.toString() ?? '';
+    if (id.isEmpty) {
+      throw StateError('La saison n’a pas pu être ouverte.');
+    }
+    return id;
+  }
+
+  Future<void> setSeasonStatus(String seasonId, String status) async {
+    if (!const ['open', 'terminee', 'archived'].contains(status)) {
+      throw ArgumentError('Statut de saison invalide.');
+    }
+    final result = await _client.rpc(
+      'set_season_status',
+      params: {'p_season_id': seasonId, 'p_status': status},
+    );
+    if (result != true) {
+      throw StateError('Le statut de la saison n’a pas pu être modifié.');
+    }
+  }
+
+  /// Envoie une notification écrite par l'admin aux destinataires choisis.
+  /// Renvoie le nombre de destinataires réellement retenus par le serveur.
+  Future<int> sendCustomNotification({
+    required String title,
+    required String body,
+    required List<String> profileIds,
+  }) async {
+    final result = await _client.rpc(
+      'admin_send_custom_push',
+      params: {'p_title': title, 'p_body': body, 'p_profile_ids': profileIds},
+    );
+    return (result as num?)?.toInt() ?? 0;
+  }
+}
+
+final adminRepositoryProvider = Provider<AdminRepository>((ref) {
+  return AdminRepository(ref.watch(supabaseClientProvider));
+});
+
+final adminDashboardProvider = FutureProvider<AdminDashboardData>((ref) async {
+  try {
+    return await ref.watch(adminRepositoryProvider).fetchDashboard();
+  } catch (error, stackTrace) {
+    // L'écran n'affiche qu'un message simple : le détail reste ici.
+    AppLogger.error('admin.dashboard.load', error, stackTrace);
+    rethrow;
+  }
+});

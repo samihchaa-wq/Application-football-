@@ -1,0 +1,3 @@
+-- Historical production migration 20260727000100.
+-- Its pristine SQL is archived in supabase/migrations_legacy_production/20260727000100_restrict_public_definer_execution.sql.
+-- Fresh installations are built by the canonical baseline at 20260809234943.

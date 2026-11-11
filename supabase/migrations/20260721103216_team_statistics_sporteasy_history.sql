@@ -1,0 +1,3 @@
+-- Historical production migration 20260721103216.
+-- Its pristine SQL is archived in supabase/migrations_legacy_production/20260721103216_team_statistics_sporteasy_history.sql.
+-- Fresh installations are built by the canonical baseline at 20260809234943.

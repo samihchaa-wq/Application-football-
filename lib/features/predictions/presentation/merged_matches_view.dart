@@ -1,0 +1,962 @@
+import 'dart:async';
+
+import 'package:as_grinta/app/shell/module_navigation.dart';
+import 'package:as_grinta/core/theme/app_spacing.dart';
+import 'package:as_grinta/core/theme/app_theme.dart';
+import 'package:as_grinta/core/theme/calendar_card_palette.dart';
+import 'package:as_grinta/core/utils/match_window.dart';
+import 'package:as_grinta/core/widgets/calendar_scoreline.dart';
+import 'package:as_grinta/core/widgets/grinta_empty_state.dart';
+import 'package:as_grinta/core/widgets/grinta_loader.dart';
+import 'package:as_grinta/core/widgets/match_address_sheet.dart';
+import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:as_grinta/features/home/presentation/home_next_match_card.dart';
+import 'package:as_grinta/features/match_live/data/match_live_notification_repository.dart';
+import 'package:as_grinta/features/match_live/presentation/widgets/match_live_notification_bell.dart';
+import 'package:as_grinta/features/matches/data/calendar_history_repository.dart';
+import 'package:as_grinta/features/matches/data/club_events_repository.dart';
+import 'package:as_grinta/features/matches/domain/club_event.dart';
+import 'package:as_grinta/features/matches/domain/match_model.dart';
+import 'package:as_grinta/features/matches/presentation/matches_controller.dart';
+import 'package:as_grinta/features/matches/presentation/widgets/admin_match_options_button.dart';
+import 'package:as_grinta/features/matches/presentation/widgets/calendar_feed_event_card.dart';
+import 'package:as_grinta/features/matches/presentation/widgets/historical_match_card.dart';
+import 'package:as_grinta/features/predictions/presentation/widgets/match_history_card.dart';
+import 'package:as_grinta/features/sports_management/presentation/match_availability_provider.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/match_availability_selector.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+double? _persistedMergedMatchesScrollOffset;
+
+class MergedMatchesView extends ConsumerStatefulWidget {
+  const MergedMatchesView({super.key, this.focusMatchId});
+
+  /// Match à amener en haut de l'écran à l'ouverture, par exemple depuis une
+  /// notification de disponibilité. Sans lui, ou s'il ne figure pas dans le
+  /// calendrier, c'est le dernier match joué pendant 48 h après son coup
+  /// d'envoi (le vote Homme du match, clos 24 h après le coup d'envoi, puis
+  /// 24 h pour en voir le résultat) ; ensuite, le prochain match.
+  final String? focusMatchId;
+
+  @override
+  ConsumerState<MergedMatchesView> createState() => _MergedMatchesViewState();
+}
+
+class _MergedMatchesViewState extends ConsumerState<MergedMatchesView> {
+  final GlobalKey _focusMatchKey = GlobalKey();
+  late final ScrollController _scrollController;
+  String? _lastFocusSignature;
+
+  /// Carte visée par le dernier affichage. Le positionnement s'arrête si elle
+  /// change en cours de route, au lieu de suivre la clé de focus vers une
+  /// autre carte.
+  String? _builtFocusKey;
+  String? _positioningFocusKey;
+
+  /// Faux jusqu'au premier positionnement : la liste reste masquée le temps
+  /// de se placer sur le bon match, au lieu de montrer le haut de la liste
+  /// puis de défiler sous les yeux.
+  bool _revealed = false;
+  Timer? _revealFallback;
+
+  void _reveal() {
+    if (_revealed || !mounted) return;
+    setState(() => _revealed = true);
+  }
+
+  bool _userScrollInterrupted = false;
+
+  /// Vrai dès que la personne fait défiler elle-même. Une mise à jour des
+  /// données ne la ramène plus alors sur le match mis en avant ; seule une
+  /// vraie demande (retour sur l'onglet, notification) le fait.
+  bool _userHasScrolled = false;
+  String? _lastRequestToken;
+
+  bool _handleScrollNotification(ScrollNotification notification) {
+    if (notification is ScrollStartNotification &&
+        notification.dragDetails != null) {
+      _userScrollInterrupted = true;
+      _userHasScrolled = true;
+    }
+    return false;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController(
+      initialScrollOffset: _persistedMergedMatchesScrollOffset ?? 0,
+    );
+    Future.microtask(
+      () => ref.read(matchesControllerProvider.notifier).load(allSeasons: true),
+    );
+    // Filet de sécurité : la liste s'affiche quoi qu'il arrive.
+    _revealFallback = Timer(const Duration(seconds: 3), _reveal);
+  }
+
+  @override
+  void dispose() {
+    _revealFallback?.cancel();
+    if (_scrollController.hasClients) {
+      _persistedMergedMatchesScrollOffset = _scrollController.offset;
+    }
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _refresh() async {
+    final state = ref.read(matchesControllerProvider);
+    ref.invalidate(clubEventsProvider);
+    ref.invalidate(allHistoricalMatchesProvider);
+    await ref
+        .read(matchesControllerProvider.notifier)
+        .load(seasonId: state.selectedSeasonId, allSeasons: true);
+  }
+
+  void _focusRelevantMatch({
+    required String? focusKey,
+    required int? focusIndex,
+    required int totalEntries,
+    required bool cardIsReady,
+    required String requestToken,
+    required int dataVersion,
+  }) {
+    if (focusKey == null || focusIndex == null || !cardIsReady) return;
+
+    // Des matchs ajoutés au-dessus (historique relu depuis le serveur, par
+    // exemple) décalent la liste : on se recale sur la même carte, sauf si la
+    // personne a déjà fait défiler.
+    final explicitRequest = requestToken != _lastRequestToken;
+    if (!explicitRequest && _userHasScrolled) return;
+    final signature = '$focusKey:$requestToken:$dataVersion';
+    if (_lastFocusSignature == signature) return;
+    _lastRequestToken = requestToken;
+    if (explicitRequest) _userHasScrolled = false;
+    _lastFocusSignature = signature;
+    _positioningFocusKey = focusKey;
+    _userScrollInterrupted = false;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _positionRelevantMatch(
+        signature,
+        focusIndex: focusIndex,
+        totalEntries: totalEntries,
+      );
+    });
+  }
+
+  Future<void> _positionRelevantMatch(
+    String signature, {
+    required int focusIndex,
+    required int totalEntries,
+    int attempt = 0,
+  }) async {
+    // Un positionnement plus récent a pris le relais (par exemple quand les
+    // matchs de la saison arrivent après l'historique) : c'est lui qui
+    // montrera la liste, une fois placé.
+    if (!mounted || _lastFocusSignature != signature) return;
+    if (_userScrollInterrupted) {
+      _reveal();
+      return;
+    }
+
+    // Le saut approximatif ne sert qu'à faire construire une carte encore
+    // hors de portée. Quand elle est déjà là, il faisait dépasser le bon match
+    // avant de revenir dessus.
+    if (_focusMatchKey.currentContext == null &&
+        _scrollController.hasClients &&
+        totalEntries > 0) {
+      final position = _scrollController.position;
+      final estimated = position.maxScrollExtent * (focusIndex / totalEntries);
+      if ((position.pixels - estimated).abs() > 200) {
+        position.jumpTo(estimated.clamp(0.0, position.maxScrollExtent));
+      }
+    }
+
+    final targetContext = _focusMatchKey.currentContext;
+    if (targetContext == null) {
+      if (attempt >= 20) {
+        _lastFocusSignature = null;
+        _reveal();
+        return;
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 60));
+      if (!mounted ||
+          _lastFocusSignature != signature ||
+          _userScrollInterrupted) {
+        return;
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _positionRelevantMatch(
+          signature,
+          focusIndex: focusIndex,
+          totalEntries: totalEntries,
+          attempt: attempt + 1,
+        );
+      });
+      return;
+    }
+
+    for (var i = 0; i < 6; i += 1) {
+      if (!mounted ||
+          _lastFocusSignature != signature ||
+          _builtFocusKey != _positioningFocusKey) {
+        return;
+      }
+      if (_userScrollInterrupted) {
+        _reveal();
+        return;
+      }
+      final ctx = _focusMatchKey.currentContext;
+      if (ctx == null || !ctx.mounted) return;
+      await Scrollable.ensureVisible(
+        ctx,
+        alignment: 0,
+        alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
+        duration: Duration.zero,
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 60));
+    }
+    // Placée et stable : la liste peut apparaître.
+    if (mounted && _lastFocusSignature == signature) _reveal();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(matchesControllerProvider);
+    final isAdmin = ref.watch(isAdminViewProvider);
+    final eventsAsync = ref.watch(clubEventsProvider);
+    final historyAsync = ref.watch(allHistoricalMatchesProvider);
+    final events = eventsAsync.valueOrNull ?? const <ClubEvent>[];
+    final historicalMatches =
+        historyAsync.valueOrNull ?? const <HistoricalMatchResult>[];
+    final now = DateTime.now();
+
+    final entries = <_FeedEntry>[];
+    for (final match in state.matches) {
+      switch (match.phase(now: now)) {
+        case MatchDisplayPhase.upcoming:
+          entries.add(_FeedEntry.match(match, _FeedKind.upcomingMatch));
+        case MatchDisplayPhase.next:
+          entries.add(_FeedEntry.match(match, _FeedKind.nextMatch));
+        case MatchDisplayPhase.live:
+          entries.add(_FeedEntry.match(match, _FeedKind.liveMatch));
+        case MatchDisplayPhase.awaitingValidation:
+          entries.add(
+            _FeedEntry.match(match, _FeedKind.awaitingValidationMatch),
+          );
+        case MatchDisplayPhase.past:
+          entries.add(_FeedEntry.match(match, _FeedKind.pastMatch));
+        case MatchDisplayPhase.cancelled:
+          entries.add(
+            _FeedEntry.match(
+              match,
+              match.kickoffAt.isAfter(now)
+                  ? _FeedKind.upcomingMatch
+                  : _FeedKind.pastMatch,
+            ),
+          );
+      }
+    }
+    entries.addAll(events.map((event) => _FeedEntry.event(event, now: now)));
+    entries.addAll(historicalMatches.map(_FeedEntry.historical));
+
+    entries.sort((a, b) => a.date.compareTo(b.date));
+    final feedSections = _buildFeedSections(entries);
+
+    final requestedIndex = widget.focusMatchId == null
+        ? -1
+        : entries.indexWhere((entry) => entry.match?.id == widget.focusMatchId);
+    int? focusIndex = requestedIndex >= 0 ? requestedIndex : null;
+    if (focusIndex == null) {
+      for (var i = 0; i < entries.length; i += 1) {
+        if (entries[i].date.isAfter(now)) break;
+        focusIndex = i;
+      }
+    }
+    if (focusIndex == null && entries.isNotEmpty) {
+      focusIndex = 0;
+    }
+
+    // Par défaut, le dernier match joué reste en haut pendant 48 h après son
+    // coup d'envoi, puis le prochain match prend sa place. La règle se calcule
+    // sur place, sans attendre le serveur : l'écran se positionne dès que les
+    // matchs sont là.
+    if (requestedIndex < 0) {
+      final lastPlayedIndex = _lastPlayedMatchIndex(entries, now);
+      final nextIndex = _nextMatchIndex(entries, now);
+      if (lastPlayedIndex != null &&
+          nextIndex != null &&
+          _lastPlayedMatchIsStale(entries[lastPlayedIndex].match!, now)) {
+        focusIndex = nextIndex;
+      }
+    }
+
+    final focusKey = focusIndex == null ? null : _entryKey(entries[focusIndex]);
+    _builtFocusKey = focusKey;
+    final focusRequest = ref.watch(matchesFocusRequestProvider);
+    // Toutes les sources du calendrier doivent être là avant de se placer :
+    // une source arrivée après coup déplacerait la liste sous les yeux.
+    final dataComplete = !state.isLoading &&
+        state.matches.isNotEmpty &&
+        (eventsAsync.hasValue || eventsAsync.hasError) &&
+        (historyAsync.hasValue || historyAsync.hasError);
+    final focusCardIsReady = focusKey != null && dataComplete;
+
+    _focusRelevantMatch(
+      focusKey: focusKey,
+      focusIndex: focusIndex,
+      totalEntries: entries.length,
+      cardIsReady: focusCardIsReady,
+      requestToken: '$focusRequest',
+      dataVersion: entries.length,
+    );
+
+    const cacheExtent = 1800.0;
+
+    // À l'ouverture, rien n'est montré tant que la liste n'est pas placée sur
+    // le bon match : seulement l'indicateur de chargement. Une erreur ou un
+    // calendrier vide s'affichent tout de suite.
+    final nothingToPlace = state.error != null ||
+        (!state.isLoading && dataComplete && entries.isEmpty);
+    final hideUntilPositioned = !_revealed && !nothingToPlace;
+
+    return Stack(
+      children: [
+        AnimatedOpacity(
+          opacity: hideUntilPositioned ? 0 : 1,
+          duration: const Duration(milliseconds: 120),
+          child: RefreshIndicator(
+            onRefresh: _refresh,
+            child: NotificationListener<ScrollNotification>(
+              onNotification: _handleScrollNotification,
+              child: CustomScrollView(
+                controller: _scrollController,
+                scrollCacheExtent: const ScrollCacheExtent.pixels(cacheExtent),
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: AppSpacing.microGap),
+                  ),
+                  if (state.isLoading)
+                    const SliverPadding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppSpacing.screenGutter,
+                      ),
+                      sliver: SliverToBoxAdapter(child: _LoadingCard()),
+                    )
+                  else if (state.error != null)
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.screenGutter,
+                      ),
+                      sliver: SliverToBoxAdapter(
+                        child: _MessageCard(
+                          title: 'Matchs indisponibles',
+                          icon: Icons.wifi_off_rounded,
+                          message: state.error!,
+                          tone: GrintaEmptyTone.alert,
+                        ),
+                      ),
+                    )
+                  else if (entries.isEmpty)
+                    const SliverPadding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppSpacing.screenGutter,
+                      ),
+                      sliver: SliverToBoxAdapter(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _MessageCard(
+                              title: 'Aucun match',
+                              message:
+                                  'Le premier match apparaîtra ici dès qu’il sera créé.',
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    ..._buildFeedSlivers(
+                      sections: feedSections,
+                      focusKey: focusKey,
+                      focusMatchKey: _focusMatchKey,
+                      isAdmin: isAdmin,
+                      now: now,
+                    ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                ],
+              ),
+            ),
+          ),
+        ),
+        if (hideUntilPositioned)
+          const Positioned.fill(
+            child: IgnorePointer(child: _LoadingCard()),
+          ),
+      ],
+    );
+  }
+}
+
+/// Durée pendant laquelle le dernier match joué reste en haut du calendrier
+/// après son coup d'envoi. Le vote Homme du match se ferme 24 h après le coup
+/// d'envoi (`private.match_motm_closes_at`) ; le résultat reste ensuite en
+/// vue 24 h.
+const lastMatchFocusDuration = Duration(hours: 48);
+
+int? _lastPlayedMatchIndex(List<_FeedEntry> entries, DateTime now) {
+  int? index;
+  for (var i = 0; i < entries.length; i += 1) {
+    final match = entries[i].match;
+    if (entries[i].date.isAfter(now)) break;
+    if (match != null && match.phase(now: now) != MatchDisplayPhase.cancelled) {
+      index = i;
+    }
+  }
+  return index;
+}
+
+int? _nextMatchIndex(List<_FeedEntry> entries, DateTime now) {
+  int? fallback;
+  for (var i = 0; i < entries.length; i += 1) {
+    final match = entries[i].match;
+    if (match == null || !entries[i].date.isAfter(now)) continue;
+    if (match.phase(now: now) != MatchDisplayPhase.cancelled) return i;
+    fallback ??= i;
+  }
+  return fallback;
+}
+
+/// Vrai quand le dernier match joué doit céder la place au prochain.
+bool _lastPlayedMatchIsStale(MatchModel match, DateTime now) =>
+    now.isAfter(match.kickoffAt.add(lastMatchFocusDuration));
+
+String _entryKey(_FeedEntry entry) {
+  if (entry.match != null) return 'match:${entry.match!.id}';
+  if (entry.event != null) return 'event:${entry.event!.id}';
+  if (entry.historical != null) return 'historical:${entry.historical!.id}';
+  return 'unknown';
+}
+
+/// Regroupe les sections d'une même phase (« Terminés », « À venir ») dans un
+/// bloc de défilement.
+///
+/// Un en-tête collant reste épinglé au bloc qui le contient : celui de la
+/// phase précédente se fait pousser hors de l'écran par le suivant au lieu de
+/// s'empiler avec lui et de rogner le haut des cartes.
+List<Widget> _buildFeedSlivers({
+  required List<_FeedSection> sections,
+  required String? focusKey,
+  required GlobalKey focusMatchKey,
+  required bool isAdmin,
+  required DateTime now,
+}) {
+  final slivers = <Widget>[];
+  var group = <Widget>[];
+
+  void closeGroup() {
+    if (group.isEmpty) return;
+    slivers.add(SliverMainAxisGroup(slivers: group));
+    group = <Widget>[];
+  }
+
+  for (var index = 0; index < sections.length; index += 1) {
+    final section = sections[index];
+    final next = index + 1 < sections.length ? sections[index + 1] : null;
+    if (section.showPhaseTitle) closeGroup();
+    group.addAll(
+      _buildFeedSectionSlivers(
+        section: section,
+        isFirstSection: index == 0,
+        endsGroup: next == null || next.showPhaseTitle,
+        focusKey: focusKey,
+        focusMatchKey: focusMatchKey,
+        isAdmin: isAdmin,
+        now: now,
+      ),
+    );
+  }
+  closeGroup();
+
+  return slivers;
+}
+
+List<Widget> _buildFeedSectionSlivers({
+  required _FeedSection section,
+  required bool isFirstSection,
+  required bool endsGroup,
+  required String? focusKey,
+  required GlobalKey focusMatchKey,
+  required bool isAdmin,
+  required DateTime now,
+}) {
+  final title = section.showPhaseTitle ? section.title : null;
+
+  return [
+    // L'espace qui sépare deux phases appartient à la phase suivante. Laissé
+    // sous la dernière carte « Terminés », il gardait l'en-tête « Terminés »
+    // épinglé au-dessus de « À venir » alors qu'il n'y avait plus rien
+    // dessous : un bloc garde son en-tête tant qu'une partie de lui, même
+    // vide, reste à l'écran.
+    if (title != null && !isFirstSection)
+      const SliverToBoxAdapter(
+        child: SizedBox(height: CalendarCardSpacing.betweenCards),
+      ),
+    // La clé de focus ne doit jamais être posée sur cet en-tête épinglé :
+    // `Scrollable.ensureVisible` ne sait pas viser un en-tête collé et part
+    // alors jusqu'en bas de la liste, ce qui laisse la carte visée coupée sous
+    // les en-têtes. Elle reste donc toujours sur la carte elle-même.
+    if (title != null)
+      SliverPersistentHeader(
+        pinned: true,
+        delegate: _FeedSectionHeaderDelegate(title: title),
+      ),
+    if (title != null)
+      const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.microGap)),
+    if (section.showSeasonTitle)
+      SliverToBoxAdapter(
+        child: _SeasonDivider(seasonName: section.seasonName),
+      ),
+    SliverPadding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.screenGutter,
+      ),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final entry = section.entries[index];
+          final isFocusCard = focusKey != null && _entryKey(entry) == focusKey;
+          final isLastCard = endsGroup && index == section.entries.length - 1;
+
+          return Padding(
+            key: isFocusCard ? focusMatchKey : null,
+            padding: EdgeInsets.only(
+              bottom: isLastCard ? 0 : CalendarCardSpacing.betweenCards,
+            ),
+            child: _buildEntryCard(entry, isAdmin, now),
+          );
+        }, childCount: section.entries.length),
+      ),
+    ),
+  ];
+}
+
+class _SeasonDivider extends StatelessWidget {
+  const _SeasonDivider({required this.seasonName});
+
+  final String seasonName;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.screenGutter,
+        AppSpacing.microGap,
+        AppSpacing.screenGutter,
+        AppSpacing.contentGap,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Divider(color: AppTheme.outline.withValues(alpha: .45)),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              'Saison $seasonName',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: AppTheme.textSecondary,
+                    fontWeight: FontWeight.w400,
+                  ),
+            ),
+          ),
+          Expanded(
+            child: Divider(color: AppTheme.outline.withValues(alpha: .45)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeedSectionHeaderDelegate extends SliverPersistentHeaderDelegate {
+  const _FeedSectionHeaderDelegate({required this.title});
+
+  static const double _height = 38;
+
+  final String title;
+
+  @override
+  double get minExtent => _height;
+
+  @override
+  double get maxExtent => _height;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.black,
+        border: Border(
+          bottom: BorderSide(
+            color: AppTheme.outline.withValues(
+              alpha: overlapsContent ? .5 : .25,
+            ),
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.screenGutter,
+        ),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            title,
+            style: Theme.of(context)
+                .textTheme
+                .titleSmall
+                ?.copyWith(color: Colors.white, fontWeight: FontWeight.w400),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _FeedSectionHeaderDelegate oldDelegate) =>
+      oldDelegate.title != title;
+}
+
+Widget _buildEntryCard(_FeedEntry entry, bool isAdmin, DateTime now) {
+  switch (entry.kind) {
+    case _FeedKind.upcomingMatch:
+      return _UpcomingMatchCard(match: entry.match!, isAdmin: isAdmin);
+    case _FeedKind.nextMatch:
+      return _UpcomingMatchCard(match: entry.match!, isAdmin: isAdmin);
+    case _FeedKind.liveMatch:
+      final match = entry.match!;
+      return HomeNextMatchCard(
+        match: match,
+        isAdmin: isAdmin,
+        initialSection: match.isInternal ? 'composition' : 'live',
+        showAvailability: now.isBefore(match.kickoffAt),
+      );
+    case _FeedKind.awaitingValidationMatch:
+      final match = entry.match!;
+      return HomeNextMatchCard(
+        match: match,
+        isAdmin: isAdmin,
+        initialSection: match.liveState == null
+            ? 'info'
+            : match.isInternal
+                ? 'composition'
+                : 'live',
+        showAvailability: false,
+      );
+    case _FeedKind.pastMatch:
+      final match = entry.match!;
+      return MatchHistoryCard(
+        match: match,
+        adminActions: isAdmin && AdminMatchOptionsButton.hasOptions(match)
+            ? AdminMatchOptionsButton(match: match)
+            : null,
+      );
+    case _FeedKind.historicalMatch:
+      return HistoricalMatchCard(match: entry.historical!);
+    case _FeedKind.pastEvent:
+    case _FeedKind.event:
+      return CalendarFeedEventCard(event: entry.event!, isAdmin: isAdmin);
+  }
+}
+
+class _UpcomingMatchCard extends ConsumerWidget {
+  const _UpcomingMatchCard({required this.match, required this.isAdmin});
+
+  final MatchModel match;
+  final bool isAdmin;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final opponent = match.opponentName ?? 'Adversaire';
+    final homeName = match.isHome ? 'AS Grinta' : opponent;
+    final awayName = match.isHome ? opponent : 'AS Grinta';
+    final now = DateTime.now();
+    final availability = ref.watch(myMatchAvailabilityProvider(match.id));
+    final serverAvailability = availability.valueOrNull;
+    final fallbackOpensAt = matchFeaturesOpenAt(match.kickoffAt);
+    final availabilityIsOpen = !match.isCancelled &&
+        now.isBefore(match.kickoffAt) &&
+        (serverAvailability?.canRespond == true ||
+            (serverAvailability == null && !now.isBefore(fallbackOpensAt)));
+    final detailsRoute = availabilityIsOpen
+        ? '/matches/${match.id}/lineup?section=info'
+        : '/matches/${match.id}/lineup?section=info&infoOnly=true';
+    final cardSurface = match.isCancelled
+        ? CalendarCardPalette.cancelledSurface
+        : CalendarCardPalette.matchSurface(match.matchType);
+    final cardBorder = match.isCancelled
+        ? CalendarCardPalette.cancelledBorder
+        : CalendarCardPalette.matchBorder(match.matchType);
+
+    final adminActions = isAdmin && AdminMatchOptionsButton.hasOptions(match)
+        ? IconTheme(
+            data: IconThemeData(color: cardBorder),
+            child: AdminMatchOptionsButton(match: match),
+          )
+        : null;
+    final canHaveGoalAlerts = !match.isInternal &&
+        !match.isCancelled &&
+        !match.isFinished &&
+        !match.isLiveSessionFinished;
+    final goalAlertStatus = canHaveGoalAlerts
+        ? ref.watch(matchLiveNotificationStatusProvider(match.id)).valueOrNull
+        : null;
+    final showGoalBell = goalAlertStatus?.eligible == true;
+    final actionWidgets = <Widget>[
+      if (showGoalBell)
+        SizedBox.square(
+          dimension: CalendarCardActionsOverlay.actionExtent,
+          child: MatchLiveNotificationBell(
+            matchId: match.id,
+            subscribed: goalAlertStatus!.subscribed,
+          ),
+        ),
+      if (adminActions != null)
+        SizedBox.square(
+          dimension: CalendarCardActionsOverlay.actionExtent,
+          child: adminActions,
+        ),
+    ];
+    final actionCount = actionWidgets.length;
+    final cardActions = actionWidgets.isEmpty
+        ? null
+        : Row(mainAxisSize: MainAxisSize.min, children: actionWidgets);
+
+    final fixture = match.isInternal
+        ? const CalendarCenteredTitle('Match entre nous')
+        : CalendarScoreline(
+            homeName: homeName,
+            awayName: awayName,
+            grintaIsHome: match.isHome,
+            foreground: AppTheme.textPrimary,
+          );
+
+    final address = match.address?.trim();
+    final content = CalendarCardSections(
+      header: CalendarDateLine(
+        kickoffAt: match.kickoffAt,
+        label: match.isInternal ? null : match.calendarTypeLabel,
+        endInset: CalendarCardActionsOverlay.dateInsetFor(actionCount),
+      ),
+      bodyBottomPadding:
+          match.isCancelled ? CalendarCardSpacing.cancelledBodyBottom : null,
+      body: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          fixture,
+          if (match.isCancelled) ...[
+            const SizedBox(height: CalendarCardSpacing.cancelledLabelGap),
+            const CalendarCancelledLabel(),
+          ],
+          if (availabilityIsOpen)
+            MatchAvailabilitySelector(
+              matchId: match.id,
+              embeddedOnDark: true,
+              topSpacing: CalendarCardSpacing.line,
+            ),
+        ],
+      ),
+      footer: address != null && address.isNotEmpty
+          ? CalendarAddressLine(
+              address,
+              onTap: () => showMatchAddressSheet(context, address),
+            )
+          : null,
+    );
+
+    return Card(
+      color: cardSurface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        side: BorderSide(color: cardBorder, width: 1.2),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: CalendarCardActionsOverlay(
+        actions: cardActions,
+        actionsWidth: actionCount * CalendarCardActionsOverlay.actionExtent,
+        child: match.isCancelled
+            ? content
+            : InkWell(onTap: () => context.push(detailsRoute), child: content),
+      ),
+    );
+  }
+}
+
+enum _FeedKind {
+  upcomingMatch,
+  nextMatch,
+  liveMatch,
+  awaitingValidationMatch,
+  pastMatch,
+  historicalMatch,
+  pastEvent,
+  event,
+}
+
+class _FeedEntry {
+  const _FeedEntry._({
+    required this.kind,
+    required this.date,
+    this.match,
+    this.event,
+    this.historical,
+  });
+
+  final _FeedKind kind;
+  final DateTime date;
+  final MatchModel? match;
+  final ClubEvent? event;
+  final HistoricalMatchResult? historical;
+
+  factory _FeedEntry.match(MatchModel match, _FeedKind kind) =>
+      _FeedEntry._(kind: kind, date: match.kickoffAt, match: match);
+
+  factory _FeedEntry.event(ClubEvent event, {required DateTime now}) =>
+      _FeedEntry._(
+        kind:
+            event.startsAt.isAfter(now) ? _FeedKind.event : _FeedKind.pastEvent,
+        date: event.startsAt,
+        event: event,
+      );
+
+  factory _FeedEntry.historical(HistoricalMatchResult historical) =>
+      _FeedEntry._(
+        kind: _FeedKind.historicalMatch,
+        date: historical.date,
+        historical: historical,
+      );
+}
+
+enum _FeedSectionKind { finished, upcoming }
+
+class _FeedSection {
+  _FeedSection({
+    required this.kind,
+    required this.seasonName,
+    required this.showPhaseTitle,
+    required this.showSeasonTitle,
+    required this.entries,
+  });
+
+  final _FeedSectionKind kind;
+  final String seasonName;
+  final bool showPhaseTitle;
+  final bool showSeasonTitle;
+  final List<_FeedEntry> entries;
+
+  String get title {
+    switch (kind) {
+      case _FeedSectionKind.finished:
+        return 'Terminés';
+      case _FeedSectionKind.upcoming:
+        return 'À venir';
+    }
+  }
+}
+
+List<_FeedSection> _buildFeedSections(List<_FeedEntry> entries) {
+  final sections = <_FeedSection>[];
+
+  for (final entry in entries) {
+    final kind = _feedSectionKind(entry.kind);
+    final seasonName = _seasonNameFor(entry.date);
+    final previous = sections.lastOrNull;
+    if (previous == null ||
+        previous.kind != kind ||
+        previous.seasonName != seasonName) {
+      sections.add(
+        _FeedSection(
+          kind: kind,
+          seasonName: seasonName,
+          showPhaseTitle: previous == null || previous.kind != kind,
+          showSeasonTitle:
+              previous == null || previous.seasonName != seasonName,
+          entries: [entry],
+        ),
+      );
+      continue;
+    }
+    previous.entries.add(entry);
+  }
+
+  return sections;
+}
+
+String _seasonNameFor(DateTime date) {
+  final startYear = date.month >= DateTime.july ? date.year : date.year - 1;
+  return '$startYear-${startYear + 1}';
+}
+
+_FeedSectionKind _feedSectionKind(_FeedKind kind) {
+  switch (kind) {
+    case _FeedKind.pastMatch:
+    case _FeedKind.historicalMatch:
+    case _FeedKind.pastEvent:
+      return _FeedSectionKind.finished;
+    case _FeedKind.upcomingMatch:
+    case _FeedKind.nextMatch:
+    case _FeedKind.liveMatch:
+    case _FeedKind.awaitingValidationMatch:
+    case _FeedKind.event:
+      return _FeedSectionKind.upcoming;
+  }
+}
+
+class _LoadingCard extends StatelessWidget {
+  const _LoadingCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.only(top: AppSpacing.contentGap),
+      child: Center(child: GrintaProgressIndicator()),
+    );
+  }
+}
+
+class _MessageCard extends StatelessWidget {
+  const _MessageCard({
+    required this.title,
+    required this.message,
+    this.icon = Icons.sports_soccer_rounded,
+    this.tone = GrintaEmptyTone.neutral,
+  });
+
+  final String title;
+  final String message;
+  final IconData icon;
+  final GrintaEmptyTone tone;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: GrintaEmptyState(
+        icon: icon,
+        title: title,
+        message: message,
+        tone: tone,
+        compact: true,
+      ),
+    );
+  }
+}

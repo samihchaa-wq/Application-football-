@@ -1,0 +1,3 @@
+-- Historical production migration 20260801050000.
+-- Its pristine SQL is archived in supabase/migrations_legacy_production/20260801050000_goal_scorer_later_and_opponent_own_goal.sql.
+-- Fresh installations are built by the canonical baseline at 20260809234943.

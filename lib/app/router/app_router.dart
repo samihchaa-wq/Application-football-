@@ -1,0 +1,377 @@
+import 'dart:async';
+
+import 'package:as_grinta/app/router/auth_redirect.dart';
+import 'package:as_grinta/app/router/deferred_route_page.dart';
+import 'package:as_grinta/app/router/initial_app_location.dart';
+import 'package:as_grinta/app/shell/app_shell.dart';
+import 'package:as_grinta/features/admin/presentation/admin_menu_page.dart'
+    deferred as admin_menu;
+import 'package:as_grinta/features/admin/presentation/admin_notification_page.dart'
+    deferred as admin_notification;
+import 'package:as_grinta/features/admin/presentation/admin_page.dart'
+    deferred as admin_administration;
+import 'package:as_grinta/features/auth/presentation/auth_loading_page.dart';
+import 'package:as_grinta/features/auth/presentation/auth_register_page.dart';
+import 'package:as_grinta/features/auth/presentation/auth_sign_in_page.dart';
+import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:as_grinta/features/auth/presentation/forced_password_change_page.dart';
+import 'package:as_grinta/features/badges/presentation/armoire_page.dart';
+import 'package:as_grinta/features/badges/presentation/badge_admin_page.dart'
+    deferred as badge_admin;
+import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
+import 'package:as_grinta/features/matches/data/calendar_history_repository.dart';
+import 'package:as_grinta/features/matches/presentation/historical_match_detail_page.dart';
+import 'package:as_grinta/features/matches/presentation/match_details_page.dart';
+import 'package:as_grinta/features/matches/presentation/matches_page.dart';
+import 'package:as_grinta/features/matches/presentation/upcoming_match_prediction_page.dart';
+import 'package:as_grinta/features/more/presentation/more_page.dart';
+import 'package:as_grinta/features/notifications/presentation/notifications_page.dart';
+import 'package:as_grinta/features/players/presentation/player_card_link.dart';
+import 'package:as_grinta/features/players/data/player_stat_ranking.dart';
+import 'package:as_grinta/features/players/presentation/player_card_page.dart';
+import 'package:as_grinta/features/players/presentation/player_stat_ranking_page.dart';
+import 'package:as_grinta/features/players/presentation/players_registry_page.dart';
+import 'package:as_grinta/features/predictions/presentation/pronos_hub_page.dart';
+import 'package:as_grinta/features/profile/presentation/profile_page.dart';
+import 'package:as_grinta/features/season_wrapped/presentation/season_wrapped_page.dart'
+    deferred as season_wrapped;
+import 'package:as_grinta/features/sports_management/presentation/admin_guests_page.dart'
+    deferred as admin_guests;
+import 'package:as_grinta/features/sports_management/presentation/admin_squad_plan_page.dart';
+import 'package:as_grinta/features/sports_management/presentation/admin_waitlist_page.dart'
+    deferred as admin_waitlist;
+import 'package:as_grinta/features/sports_management/presentation/match_lineup_page.dart';
+import 'package:as_grinta/features/sports_management/presentation/match_report_page.dart';
+import 'package:as_grinta/features/sports_management/presentation/sport_motm_vote_page.dart';
+import 'package:as_grinta/features/statistics/presentation/stats_hub_page.dart';
+import 'package:as_grinta/features/unavailability/presentation/unavailability_page.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+@visibleForTesting
+bool shouldUseNoTransitionPageForWebKitHistory({
+  required bool isWeb,
+  required TargetPlatform platform,
+}) {
+  return isWeb &&
+      (platform == TargetPlatform.iOS || platform == TargetPlatform.macOS);
+}
+
+Page<void> _browserSafeMatchPage({
+  required GoRouterState state,
+  required Widget child,
+}) {
+  // Flutter issue #114324: iOS WebKit can briefly redraw the route that is
+  // being left after the native browser history swipe has already revealed
+  // the destination. A real NoTransitionPage avoids that extra PageRoute.
+  if (shouldUseNoTransitionPageForWebKitHistory(
+    isWeb: kIsWeb,
+    platform: defaultTargetPlatform,
+  )) {
+    return NoTransitionPage<void>(key: state.pageKey, child: child);
+  }
+  return MaterialPage<void>(key: state.pageKey, child: child);
+}
+
+final appRouterProvider = Provider<GoRouter>((ref) {
+  final refreshNotifier = _RouterRefreshNotifier();
+  ref.listen<AuthState>(
+    authControllerProvider,
+    (_, __) => refreshNotifier.refresh(),
+  );
+  ref.listen(
+    featureFlagsControllerProvider,
+    (_, __) => refreshNotifier.refresh(),
+  );
+  ref.onDispose(refreshNotifier.dispose);
+
+  return GoRouter(
+    initialLocation: initialAppLocation(),
+    overridePlatformDefaultLocation: kIsWeb,
+    refreshListenable: refreshNotifier,
+    redirect: (context, state) => resolveAuthRedirect(
+      authState: ref.read(authControllerProvider),
+      uri: state.uri,
+      matchedLocation: state.matchedLocation,
+      sportsManagementEnabled: ref.read(sportsManagementRoutingStateProvider),
+    ),
+    routes: [
+      GoRoute(path: '/', redirect: (_, __) => '/matches'),
+      GoRoute(path: '/home', redirect: (_, __) => '/matches'),
+      GoRoute(path: '/accueil', redirect: (_, __) => '/matches'),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) => AppShell(
+          location: state.uri.toString(),
+          navigationShell: navigationShell,
+        ),
+        branches: [
+          StatefulShellBranch(
+            initialLocation: '/matches',
+            routes: [
+              GoRoute(
+                path: '/matches',
+                // `?match=<id>` ouvre le calendrier sur la carte de ce match :
+                // c'est là que se répond la disponibilité.
+                pageBuilder: (_, state) => NoTransitionPage(
+                  key: const ValueKey<String>('matches-root'),
+                  child: PronosHubPage(
+                    initialCategory: 'matches',
+                    focusMatchId: state.uri.queryParameters['match'],
+                  ),
+                ),
+              ),
+              GoRoute(
+                path: '/matches/:matchId',
+                pageBuilder: (context, state) => _browserSafeMatchPage(
+                  state: state,
+                  child: MatchDetailsPage(
+                    matchId: state.pathParameters['matchId'] ?? '',
+                  ),
+                ),
+              ),
+              GoRoute(
+                path: '/matches/history/:matchId',
+                pageBuilder: (context, state) => _browserSafeMatchPage(
+                  state: state,
+                  child: HistoricalMatchDetailPage(
+                    matchId: state.pathParameters['matchId'] ?? '',
+                    initialMatch: state.extra is HistoricalMatchResult
+                        ? state.extra as HistoricalMatchResult
+                        : null,
+                  ),
+                ),
+              ),
+              GoRoute(
+                path: '/matches/:matchId/lineup',
+                builder: (context, state) => MatchLineupPage(
+                  matchId: state.pathParameters['matchId'] ?? '',
+                ),
+              ),
+              GoRoute(
+                path: '/matches/:matchId/vote',
+                builder: (context, state) => SportMotmVotePage(
+                  matchId: state.pathParameters['matchId'] ?? '',
+                ),
+              ),
+              GoRoute(
+                path: '/matches/:matchId/finalize',
+                builder: (context, state) => MatchReportPage(
+                  matchId: state.pathParameters['matchId'] ?? '',
+                ),
+              ),
+              GoRoute(
+                path: '/matches/:matchId/prediction',
+                builder: (context, state) => UpcomingMatchPredictionPage(
+                  matchId: state.pathParameters['matchId'] ?? '',
+                ),
+              ),
+              GoRoute(
+                path: '/matches/:matchId/composition',
+                builder: (context, state) => AdminSquadPlanPage(
+                  initialMatchId: state.pathParameters['matchId'],
+                  initialStep: state.uri.queryParameters['step'],
+                ),
+              ),
+              GoRoute(
+                path: '/matches/:matchId/guests',
+                builder: (context, state) => DeferredRoutePage(
+                  load: admin_guests.loadLibrary,
+                  builder: (_) => admin_guests.AdminGuestsPage(
+                    initialMatchId: state.pathParameters['matchId'],
+                  ),
+                ),
+              ),
+              GoRoute(
+                path: '/admin',
+                builder: (_, __) => DeferredRoutePage(
+                  load: admin_menu.loadLibrary,
+                  builder: (_) => admin_menu.AdminMenuPage(),
+                ),
+              ),
+              GoRoute(
+                path: '/admin/administration',
+                builder: (_, __) => DeferredRoutePage(
+                  load: admin_administration.loadLibrary,
+                  builder: (_) => admin_administration.AdminPage(),
+                ),
+              ),
+              GoRoute(
+                path: '/admin/matches',
+                builder: (_, __) => const MatchesPage(),
+              ),
+              GoRoute(
+                path: '/admin/composition',
+                builder: (_, __) => const AdminSquadPlanPage(),
+              ),
+              GoRoute(
+                path: '/admin/guests',
+                builder: (_, __) => DeferredRoutePage(
+                  load: admin_guests.loadLibrary,
+                  builder: (_) => admin_guests.AdminGuestsPage(),
+                ),
+              ),
+              GoRoute(
+                path: '/admin/waitlist',
+                builder: (_, __) => DeferredRoutePage(
+                  load: admin_waitlist.loadLibrary,
+                  builder: (_) => admin_waitlist.AdminWaitlistPage(),
+                ),
+              ),
+              GoRoute(
+                path: '/waitlist',
+                builder: (_, __) => DeferredRoutePage(
+                  load: admin_waitlist.loadLibrary,
+                  builder: (_) =>
+                      admin_waitlist.AdminWaitlistPage(editable: false),
+                ),
+              ),
+              GoRoute(
+                path: '/admin/badges',
+                builder: (_, __) => DeferredRoutePage(
+                  load: badge_admin.loadLibrary,
+                  builder: (_) => badge_admin.BadgeAdminPage(),
+                ),
+              ),
+              GoRoute(
+                path: '/admin/notification',
+                builder: (_, __) => DeferredRoutePage(
+                  load: admin_notification.loadLibrary,
+                  builder: (_) => admin_notification.AdminNotificationPage(),
+                ),
+              ),
+              GoRoute(path: '/more', builder: (_, __) => const MorePage()),
+              GoRoute(
+                path: '/players',
+                builder: (_, __) => const PlayersRegistryPage(),
+              ),
+              GoRoute(
+                path: '/profile',
+                builder: (_, __) => const ProfilePage(),
+              ),
+              GoRoute(
+                path: '/armoire',
+                builder: (_, __) => const ArmoirePage(),
+              ),
+              GoRoute(
+                path: '/notifications',
+                builder: (_, state) => NotificationsPage(
+                  initialTab:
+                      state.uri.queryParameters['onglet'] == 'parametres'
+                          ? NotificationsTab.settings
+                          : NotificationsTab.history,
+                ),
+              ),
+              GoRoute(
+                path: '/unavailability',
+                builder: (_, __) => const UnavailabilityPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            initialLocation: '/stats',
+            routes: [
+              GoRoute(
+                path: '/stats',
+                pageBuilder: (context, state) {
+                  final section = state.uri.queryParameters['section'];
+                  return NoTransitionPage(
+                    key: ValueKey<String>('stats:$section'),
+                    child: StatsHubPage(initialSection: section),
+                  );
+                },
+              ),
+              GoRoute(
+                path: '/stats/joueur',
+                builder: (context, state) => PlayerCardPage(
+                  playerKey: playerCardKeyFromUri(state.uri),
+                ),
+              ),
+              GoRoute(
+                path: '/stats/joueur/classement',
+                builder: (context, state) => PlayerStatRankingPage(
+                  stat: PlayerStat.fromSlug(state.uri.queryParameters['stat']),
+                  initialPeriod: statisticsPeriodFromKey(
+                    state.uri.queryParameters['periode'],
+                  ),
+                  playerKey: playerCardKeyFromUri(state.uri),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/pronos',
+        redirect: (context, state) {
+          final category = state.uri.queryParameters['category'];
+          if (category == 'matches' || category == null) return '/matches';
+          return '/stats?section=rankings';
+        },
+      ),
+      // Hors de la barre de navigation : le bilan de saison est un passage
+      // ponctuel, ouvert depuis le calendrier pendant l'intersaison.
+      GoRoute(
+        path: '/wrapped',
+        builder: (context, state) => DeferredRoutePage(
+          load: season_wrapped.loadLibrary,
+          builder: (_) => season_wrapped.SeasonWrappedPage(
+            preview: state.uri.queryParameters['apercu'] == '1',
+          ),
+        ),
+      ),
+      GoRoute(path: '/predictions', redirect: (_, __) => '/matches'),
+      GoRoute(
+        path: '/predictions/leaderboard',
+        redirect: (_, __) => '/stats?section=rankings',
+      ),
+      GoRoute(
+        path: '/statistics',
+        redirect: (_, __) => '/stats?section=players',
+      ),
+      GoRoute(
+        path: '/auth/loading',
+        builder: (_, __) => const AuthLoadingPage(),
+      ),
+      GoRoute(
+        path: '/auth/sign-in',
+        builder: (_, __) => const AuthSignInPage(),
+      ),
+      GoRoute(
+        path: '/auth/register',
+        builder: (_, __) => const AuthRegisterPage(),
+      ),
+      GoRoute(
+        path: '/auth/new-password',
+        builder: (_, __) => const ForcedPasswordChangePage(),
+      ),
+    ],
+  );
+});
+
+class _RouterRefreshNotifier extends ChangeNotifier {
+  bool _scheduled = false;
+  bool _disposed = false;
+
+  /// Riverpod prévient les écouteurs d'un changement avant d'invalider les
+  /// providers qui en dépendent. Relancer les redirections tout de suite
+  /// faisait lire au routeur, à l'instant où la connexion aboutit, les
+  /// réglages du club d'avant la session (« gestion sportive coupée ») : la
+  /// page Effectif ouverte ou rafraîchie partait vers les pronos. Une
+  /// microtâche laisse ces providers se mettre à jour d'abord.
+  void refresh() {
+    if (_scheduled) return;
+    _scheduled = true;
+    scheduleMicrotask(() {
+      _scheduled = false;
+      if (!_disposed) notifyListeners();
+    });
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+}

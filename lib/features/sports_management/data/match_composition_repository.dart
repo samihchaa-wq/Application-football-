@@ -1,0 +1,308 @@
+import 'package:as_grinta/core/providers/supabase_provider.dart';
+import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
+import 'package:as_grinta/features/sports_management/domain/player_position_history.dart';
+import 'package:flutter/painting.dart' show Offset;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+/// Ce que les matchs déjà joués disent du banc, participant par participant.
+class FinishedBenchHistory {
+  const FinishedBenchHistory({
+    this.counts = const {},
+    this.benchedLastTime = const {},
+  });
+
+  static const FinishedBenchHistory empty = FinishedBenchHistory();
+
+  /// Nombre de matchs terminés commencés sur le banc.
+  final Map<String, int> counts;
+
+  /// Les participants qui ont commencé remplaçants la dernière fois qu'ils
+  /// ont joué cette saison.
+  final Set<String> benchedLastTime;
+}
+
+abstract interface class MatchCompositionRepository {
+  Future<MatchComposition?> fetchAdminComposition(String matchId);
+  Future<MatchComposition?> fetchPublishedComposition(String matchId);
+  Future<Set<String>> fetchGoalkeeperSeasonPlayerIds(
+    List<String> seasonPlayerIds,
+  );
+  Future<Map<String, String>> fetchCanonicalPlayerIds(
+    List<String> seasonPlayerIds,
+  );
+  Future<FinishedBenchHistory> fetchFinishedBenchHistory(String matchId);
+  Future<List<PlayedPosition>> fetchPlayerPositionHistory(DateTime since);
+  Future<MatchComposition> saveComposition({
+    required MatchComposition composition,
+    required bool allowSquadSizeException,
+    String? reason,
+  });
+  Future<MatchComposition> createPostMatchComposition({
+    required MatchComposition composition,
+    required bool allowSquadSizeException,
+    String? reason,
+  });
+  Future<MatchComposition> updatePostMatchComposition({
+    required MatchComposition composition,
+    required bool allowSquadSizeException,
+    String? reason,
+  });
+  Future<MatchComposition> publishComposition({
+    required String matchId,
+    required bool allowSquadSizeException,
+    String? reason,
+  });
+}
+
+class SupabaseMatchCompositionRepository implements MatchCompositionRepository {
+  SupabaseMatchCompositionRepository(this._client);
+
+  final SupabaseClient _client;
+
+  @override
+  Future<MatchComposition?> fetchAdminComposition(String matchId) async {
+    final response = await _client.rpc(
+      'admin_get_match_composition',
+      params: {'p_match_id': matchId},
+    );
+    return MatchComposition.tryFromRpc(response);
+  }
+
+  @override
+  Future<MatchComposition?> fetchPublishedComposition(String matchId) async {
+    final response = await _client.rpc(
+      'get_published_match_composition',
+      params: {'p_match_id': matchId},
+    );
+    return MatchComposition.tryFromRpc(response);
+  }
+
+  @override
+  Future<Set<String>> fetchGoalkeeperSeasonPlayerIds(
+    List<String> seasonPlayerIds,
+  ) async {
+    final permanentIds = seasonPlayerIds
+        .map((id) => id.trim())
+        .where((id) => id.isNotEmpty)
+        .toSet()
+        .toList(growable: false);
+    if (permanentIds.isEmpty) return const {};
+    final rows = await _client
+        .from('season_players')
+        .select('id')
+        .inFilter('id', permanentIds)
+        .eq('is_goalkeeper', true);
+    return (rows as List)
+        .map((row) => Map<String, dynamic>.from(row as Map))
+        .map((row) => row['id'].toString())
+        .toSet();
+  }
+
+  /// Identité canonique de chaque joueur de l'effectif, indexée par
+  /// `season_players.id`.
+  ///
+  /// C'est cette identité, stable d'une saison à l'autre, qui donne accès aux
+  /// postes de référence utilisés par la simulation de composition.
+  @override
+  Future<Map<String, String>> fetchCanonicalPlayerIds(
+    List<String> seasonPlayerIds,
+  ) async {
+    final ids = seasonPlayerIds
+        .map((id) => id.trim())
+        .where((id) => id.isNotEmpty)
+        .toSet()
+        .toList(growable: false);
+    if (ids.isEmpty) return const {};
+    final rows = await _client
+        .from('season_players')
+        .select('id, player_id')
+        .inFilter('id', ids);
+    return {
+      for (final row in (rows as List).cast<Map<String, dynamic>>())
+        if (_clean(row['player_id']?.toString()) case final playerId?)
+          row['id'].toString(): playerId,
+    };
+  }
+
+  @override
+  Future<FinishedBenchHistory> fetchFinishedBenchHistory(
+    String matchId,
+  ) async {
+    final response = await _client.rpc(
+      'admin_get_finished_bench_counts',
+      params: {'p_match_id': matchId},
+    );
+    if (response is! List) return FinishedBenchHistory.empty;
+    final counts = <String, int>{};
+    final benchedLastTime = <String>{};
+    for (final row in response) {
+      final entry = Map<String, dynamic>.from(row as Map);
+      final participantId = entry['participant_id'].toString();
+      counts[participantId] =
+          (entry['finished_bench_count'] as num?)?.toInt() ?? 0;
+      // Clé absente tant que la base n'a pas reçu sa mise à jour : personne
+      // n'est alors signalé, et la simulation se passe de ce critère.
+      if (entry['benched_last_time'] == true) {
+        benchedLastTime.add(participantId);
+      }
+    }
+    return FinishedBenchHistory(
+      counts: counts,
+      benchedLastTime: benchedLastTime,
+    );
+  }
+
+  /// Les placements des titulaires sur les matchs déjà joués depuis [since].
+  ///
+  /// Ils prolongent l'archive figée dans l'application : c'est ce qui permet
+  /// aux postes de référence de suivre un joueur qui change de poste.
+  @override
+  Future<List<PlayedPosition>> fetchPlayerPositionHistory(
+    DateTime since,
+  ) async {
+    final response = await _client.rpc(
+      'admin_get_player_position_history',
+      params: {'p_since': since.toUtc().toIso8601String()},
+    );
+    if (response is! List) return const [];
+    return [
+      for (final row in response.cast<Map<String, dynamic>>())
+        if (_playedPosition(row) case final position?) position,
+    ];
+  }
+
+  PlayedPosition? _playedPosition(Map<String, dynamic> row) {
+    final playerId = _clean(row['player_id']?.toString());
+    final x = (row['x'] as num?)?.toDouble();
+    final y = (row['y'] as num?)?.toDouble();
+    final kickoffAt = DateTime.tryParse(row['kickoff_at']?.toString() ?? '');
+    if (playerId == null || x == null || y == null || kickoffAt == null) {
+      return null;
+    }
+    return PlayedPosition(
+      playerId: playerId,
+      position: Offset(x, y),
+      kickoffAt: kickoffAt.toLocal(),
+    );
+  }
+
+  @override
+  Future<MatchComposition> saveComposition({
+    required MatchComposition composition,
+    required bool allowSquadSizeException,
+    String? reason,
+  }) async {
+    final response = await _client.rpc(
+      'admin_save_match_composition',
+      params: {
+        'p_match_id': composition.matchId,
+        'p_formation_code': _clean(composition.formationCode),
+        'p_entries': [
+          for (final entry in composition.entries) entry.toRpcJson(),
+        ],
+        'p_allow_squad_size_exception': allowSquadSizeException,
+        'p_reason': _clean(reason),
+        // Concurrence optimiste : le serveur refuse l'écriture si un autre
+        // admin a enregistré depuis le chargement de cet écran.
+        'p_expected_version': composition.version,
+      },
+    );
+    final saved = MatchComposition.tryFromRpc(response);
+    if (saved == null) {
+      throw const FormatException('Réponse de composition invalide.');
+    }
+    return saved;
+  }
+
+  @override
+  Future<MatchComposition> createPostMatchComposition({
+    required MatchComposition composition,
+    required bool allowSquadSizeException,
+    String? reason,
+  }) async {
+    final response = await _client.rpc(
+      'admin_create_postmatch_composition',
+      params: {
+        'p_match_id': composition.matchId,
+        'p_formation_code': _clean(composition.formationCode),
+        'p_entries': [
+          for (final entry in composition.entries) entry.toRpcJson(),
+        ],
+        'p_allow_squad_size_exception': allowSquadSizeException,
+        'p_reason': _clean(reason),
+      },
+    );
+    final published = MatchComposition.tryFromRpc(response);
+    if (published == null) {
+      throw const FormatException('Composition post-match invalide.');
+    }
+    return published;
+  }
+
+  @override
+  Future<MatchComposition> updatePostMatchComposition({
+    required MatchComposition composition,
+    required bool allowSquadSizeException,
+    String? reason,
+  }) async {
+    final response = await _client.rpc(
+      'admin_update_postmatch_composition',
+      params: {
+        'p_match_id': composition.matchId,
+        'p_formation_code': _clean(composition.formationCode),
+        'p_entries': [
+          for (final entry in composition.entries) entry.toRpcJson(),
+        ],
+        'p_allow_squad_size_exception': allowSquadSizeException,
+        'p_reason': _clean(reason),
+      },
+    );
+    final published = MatchComposition.tryFromRpc(response);
+    if (published == null) {
+      throw const FormatException('Composition post-match invalide.');
+    }
+    return published;
+  }
+
+  @override
+  Future<MatchComposition> publishComposition({
+    required String matchId,
+    required bool allowSquadSizeException,
+    String? reason,
+  }) async {
+    final response = await _client.rpc(
+      'admin_publish_match_composition',
+      params: {
+        'p_match_id': matchId,
+        'p_allow_squad_size_exception': allowSquadSizeException,
+        'p_reason': _clean(reason),
+      },
+    );
+    final published = MatchComposition.tryFromRpc(response);
+    if (published == null) {
+      throw const FormatException('Publication de composition invalide.');
+    }
+    return published;
+  }
+
+  String? _clean(String? value) {
+    final trimmed = value?.trim();
+    return trimmed == null || trimmed.isEmpty ? null : trimmed;
+  }
+}
+
+final matchCompositionRepositoryProvider = Provider<MatchCompositionRepository>(
+  (ref) {
+    return SupabaseMatchCompositionRepository(
+      ref.watch(supabaseClientProvider),
+    );
+  },
+);
+
+final publishedMatchCompositionProvider = FutureProvider.autoDispose
+    .family<MatchComposition?, String>((ref, matchId) {
+  return ref
+      .watch(matchCompositionRepositoryProvider)
+      .fetchPublishedComposition(matchId);
+});

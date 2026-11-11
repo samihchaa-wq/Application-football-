@@ -1,0 +1,355 @@
+import 'package:as_grinta/core/logging/app_logger.dart';
+import 'package:as_grinta/core/providers/supabase_provider.dart';
+import 'package:as_grinta/features/matches/domain/match_model.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+class MatchesRepository {
+  MatchesRepository(this._client);
+
+  final SupabaseClient _client;
+
+  Future<List<MatchModel>> fetchMatches({String? seasonId}) async {
+    var query = _client.from('matches').select('''
+      id,
+      season_id,
+      opponent_id,
+      match_date,
+      match_time,
+      kickoff_at,
+      meeting_at,
+      location,
+      planned_duration_minutes,
+      status,
+      score_as_grinta,
+      score_adverse,
+      predictions_closed_at,
+      result_validated_at,
+      address,
+      match_type,
+      championship_round,
+      jersey_note,
+      created_by,
+      created_at,
+      updated_at,
+      opponents(name),
+      seasons(name),
+      match_odds(
+        odds_victoire_as_grinta,
+        odds_nul,
+        odds_victoire_adverse
+      ),
+      match_live_sessions(
+        state,
+        finished_at,
+        exported
+      )
+    ''');
+
+    if (seasonId != null && seasonId.isNotEmpty) {
+      query = query.eq('season_id', seasonId);
+    }
+
+    final response = await query
+        .order('match_date', ascending: false)
+        .order('match_time', ascending: false);
+    return (response as List)
+        .map((row) => MatchModel.fromJson(Map<String, dynamic>.from(row)))
+        .toList();
+  }
+
+  Future<List<Map<String, dynamic>>> fetchSeasons() async {
+    final response =
+        await _client.from('seasons').select('id, name, status').order('name');
+    return (response as List)
+        .map((row) => Map<String, dynamic>.from(row))
+        .toList();
+  }
+
+  Future<List<Map<String, dynamic>>> fetchOpponents() async {
+    final response = await _client
+        .from('opponents')
+        .select('id, name, address')
+        .order('name');
+    return (response as List)
+        .map((row) => Map<String, dynamic>.from(row))
+        .toList();
+  }
+
+  /// Adresse du terrain d'AS Grinta (mémorisée pour les matchs à domicile).
+  Future<String?> fetchClubHomeAddress() async {
+    final row = await _client
+        .from('club_settings')
+        .select('home_address')
+        .maybeSingle();
+    final value = row?['home_address']?.toString().trim();
+    return value == null || value.isEmpty ? null : value;
+  }
+
+  /// Journée du championnat, telle que fixée par la ligue.
+  ///
+  /// [round] null rend la main au numéro automatique (journée suivante de la
+  /// saison).
+  Future<void> setMatchChampionshipRound({
+    required String matchId,
+    required int? round,
+  }) async {
+    await _client.rpc(
+      'admin_set_match_championship_round',
+      params: {
+        'p_match_id': matchId,
+        'p_championship_round': round,
+      },
+    );
+  }
+
+  Future<String> createOpponent(String name) async {
+    final result = await _client.rpc(
+      'get_or_create_opponent',
+      params: {'p_name': name.trim()},
+    );
+    if (result == null || result.toString().isEmpty) {
+      throw StateError('L’adversaire n’a pas pu être créé.');
+    }
+    return result.toString();
+  }
+
+  /// Crée le match, ses cotes, son adresse, son type et son maillot en une
+  /// seule transaction serveur, et renvoie son identifiant. Une coupure
+  /// réseau ne peut donc plus laisser un match partiellement enregistré.
+  Future<String> createMatch({
+    required String seasonId,
+    required String opponentId,
+    required DateTime kickoffAt,
+    required bool isHome,
+    required double oddsWin,
+    required double oddsDraw,
+    required double oddsLoss,
+    int? squadSizeLimit,
+    String? address,
+    bool rememberAddressAsDefault = false,
+    String matchType = 'championnat',
+    String? jerseyNote,
+    DateTime? meetingAt,
+  }) async {
+    final result = await _client.rpc(
+      'admin_create_match_complete_v3',
+      params: {
+        'p_season_id': seasonId,
+        'p_opponent_id': opponentId,
+        'p_match_date': kickoffAt.toIso8601String().split('T').first,
+        'p_match_time': _formatTime(kickoffAt),
+        'p_location': isHome ? 'domicile' : 'exterieur',
+        'p_win': oddsWin,
+        'p_draw': oddsDraw,
+        'p_loss': oddsLoss,
+        'p_squad_size_limit': squadSizeLimit,
+        'p_address': address,
+        'p_remember_address_as_default': rememberAddressAsDefault,
+        'p_match_type': matchType,
+        'p_jersey_note': jerseyNote,
+        'p_availability_schedule_mode': 'automatic',
+        'p_availability_opens_at': null,
+        'p_meeting_at': meetingAt?.toUtc().toIso8601String(),
+      },
+    );
+    if (result == null || result.toString().isEmpty) {
+      throw StateError('Le match n’a pas pu être créé.');
+    }
+    return result.toString();
+  }
+
+  /// Crée un « match entre nous » (sans adversaire réel, sans cotes, sans
+  /// limite convocable) et renvoie son identifiant.
+  Future<String> createInternalMatch({
+    required String seasonId,
+    required DateTime kickoffAt,
+    String? address,
+    DateTime? meetingAt,
+  }) async {
+    final result = await _client.rpc(
+      'create_internal_match_v3',
+      params: {
+        'p_season_id': seasonId,
+        'p_match_date': kickoffAt.toIso8601String().split('T').first,
+        'p_match_time': _formatTime(kickoffAt),
+        'p_address': address,
+        'p_availability_schedule_mode': 'automatic',
+        'p_availability_opens_at': null,
+        'p_meeting_at': meetingAt?.toUtc().toIso8601String(),
+      },
+    );
+    if (result == null || result.toString().isEmpty) {
+      throw StateError('Le match n’a pas pu être créé.');
+    }
+    return result.toString();
+  }
+
+  Future<void> updateInternalMatch({
+    required String id,
+    required String seasonId,
+    required DateTime kickoffAt,
+    required DateTime expectedUpdatedAt,
+    String? address,
+    DateTime? meetingAt,
+  }) async {
+    final result = await _client.rpc(
+      'update_internal_match_v2',
+      params: {
+        'p_match_id': id,
+        'p_season_id': seasonId,
+        'p_match_date': kickoffAt.toIso8601String().split('T').first,
+        'p_match_time': _formatTime(kickoffAt),
+        'p_address': address,
+        'p_expected_updated_at': expectedUpdatedAt.toUtc().toIso8601String(),
+        'p_meeting_at': meetingAt?.toUtc().toIso8601String(),
+      },
+    );
+    if (result != true) {
+      throw StateError('Le match n’a pas pu être enregistré.');
+    }
+  }
+
+  /// Cotes suggérées par le même modèle serveur que la cote officielle,
+  /// calculées avec la date réelle du match. Retourne null en cas d'échec.
+  Future<({double win, double draw, double loss})?> previewMatchOdds({
+    required String opponentId,
+    required bool isHome,
+    required DateTime referenceDate,
+  }) async {
+    try {
+      final result = await _client.rpc(
+        'preview_match_odds',
+        params: {
+          'p_opponent_id': opponentId,
+          'p_location': isHome ? 'domicile' : 'exterieur',
+          'p_reference_date': referenceDate.toIso8601String().split('T').first,
+        },
+      );
+      if (result is! Map) return null;
+      final map = Map<String, dynamic>.from(result);
+      final win = (map['win'] as num?)?.toDouble();
+      final draw = (map['draw'] as num?)?.toDouble();
+      final loss = (map['loss'] as num?)?.toDouble();
+      if (win == null || draw == null || loss == null) return null;
+      return (win: win, draw: draw, loss: loss);
+    } catch (error, stackTrace) {
+      AppLogger.error('matches.preview_odds', error, stackTrace);
+      return null;
+    }
+  }
+
+  /// Enregistre le match, ses cotes, son adresse, son type et son maillot en
+  /// une seule transaction serveur.
+  Future<void> updateMatch({
+    required String id,
+    required String seasonId,
+    required String opponentId,
+    required DateTime kickoffAt,
+    required bool isHome,
+    required String status,
+    required double oddsWin,
+    required double oddsDraw,
+    required double oddsLoss,
+    required DateTime expectedUpdatedAt,
+    int? squadSizeLimit,
+    String? address,
+    bool rememberAddressAsDefault = false,
+    String matchType = 'championnat',
+    String? jerseyNote,
+    DateTime? meetingAt,
+  }) async {
+    final result = await _client.rpc(
+      'admin_update_match_complete_v2',
+      params: {
+        'p_match_id': id,
+        'p_season_id': seasonId,
+        'p_opponent_id': opponentId,
+        'p_match_date': kickoffAt.toIso8601String().split('T').first,
+        'p_match_time': _formatTime(kickoffAt),
+        'p_location': isHome ? 'domicile' : 'exterieur',
+        'p_status': status,
+        'p_win': oddsWin,
+        'p_draw': oddsDraw,
+        'p_loss': oddsLoss,
+        'p_expected_updated_at': expectedUpdatedAt.toUtc().toIso8601String(),
+        'p_squad_size_limit': squadSizeLimit,
+        'p_address': address,
+        'p_remember_address_as_default': rememberAddressAsDefault,
+        'p_match_type': matchType,
+        'p_jersey_note': jerseyNote,
+        'p_meeting_at': meetingAt?.toUtc().toIso8601String(),
+      },
+    );
+    if (result != true) {
+      throw StateError('Le match et ses cotes n’ont pas pu être enregistrés.');
+    }
+  }
+
+  Future<int> fetchSportSquadLimit(String matchId) async {
+    final response = await _client.rpc(
+      'admin_get_match_convocations',
+      params: {'p_match_id': matchId},
+    );
+    if (response is! Map) {
+      throw const FormatException('Configuration sportive invalide.');
+    }
+    return (response['squad_size_limit'] as num?)?.toInt() ?? 14;
+  }
+
+  Future<void> deleteMatch(String id) async {
+    final result = await _client.rpc(
+      'delete_match',
+      params: {'p_match_id': id},
+    );
+    if (result != true) {
+      throw StateError('Le match n’existe plus ou n’a pas pu être supprimé.');
+    }
+  }
+
+  Future<void> cancelMatch(String id) async {
+    final result = await _client.rpc(
+      'cancel_match',
+      params: {'p_match_id': id},
+    );
+    if (result != true) {
+      throw StateError('Le match n’existe plus ou n’a pas pu être annulé.');
+    }
+  }
+
+  Future<void> updateMatchStatus({
+    required String id,
+    required String status,
+  }) async {
+    if (status == 'archive') {
+      final result = await _client.rpc(
+        'archive_match',
+        params: {'p_match_id': id},
+      );
+      if (result != true) {
+        throw StateError('Le match n’a pas pu être archivé.');
+      }
+      return;
+    }
+
+    final updated = await _client
+        .from('matches')
+        .update({'status': status})
+        .eq('id', id)
+        .select('id')
+        .maybeSingle();
+    if (updated == null) {
+      throw StateError('Le statut du match n’a pas pu être modifié.');
+    }
+  }
+
+  String _formatTime(DateTime value) {
+    String two(int number) => number.toString().padLeft(2, '0');
+    return '${two(value.hour)}:${two(value.minute)}:${two(value.second)}';
+  }
+}
+
+final matchesRepositoryProvider = Provider<MatchesRepository>((ref) {
+  final client = ref.watch(supabaseClientProvider);
+  return MatchesRepository(client);
+});

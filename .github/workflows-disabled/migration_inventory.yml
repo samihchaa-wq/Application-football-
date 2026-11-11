@@ -1,0 +1,264 @@
+name: Supabase migration guard
+
+on:
+  # Ces deux verifications sont obligatoires pour fusionner. Un filtre de
+  # chemins les empechait de demarrer des que la modification ne touchait pas
+  # les migrations : elles ne rendaient alors jamais de verdict, et une
+  # verification obligatoire qui ne repond pas bloque la fusion pour toujours.
+  # Elles s'executent donc sur toute pull request. Les deux prennent moins de
+  # trente secondes.
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/tests/database/**'
+      - 'supabase/production_migrations.lock'
+      - '.github/workflows/migration_inventory.yml'
+  # Hebdomadaire (lundi) depuis le passage du dépôt en privé : chaque pull
+  # request et chaque déploiement refont déjà ce contrôle.
+  schedule:
+    - cron: '17 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-local-migrations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Reject edits or deletions of existing migrations
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="origin/${{ github.base_ref }}"
+          changed=$(git diff --name-status "$base...HEAD" -- supabase/migrations)
+          echo "$changed"
+          if [ -n "$changed" ] && echo "$changed" | awk '$1 != "A" { found=1 } END { exit !found }'; then
+            if [[ "${{ github.head_ref }}" != rebuild/full-migration-history* ]]; then
+              echo "Existing migration files are immutable. Add a new migration instead." >&2
+              exit 1
+            fi
+            echo "Controlled historical reconstruction branch: existing migration edits are allowed only while full replay remains a required check."
+          fi
+
+      - name: Validate newly added migration names and timestamps
+        if: >-
+          github.event_name == 'pull_request' &&
+          !startsWith(github.head_ref, 'rebuild/full-migration-history')
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="origin/${{ github.base_ref }}"
+          mapfile -t added < <(git diff --name-only --diff-filter=A "$base...HEAD" -- 'supabase/migrations/*.sql' | sort)
+          if [ "${#added[@]}" -eq 0 ]; then
+            echo "No new migration file."
+            exit 0
+          fi
+
+          base_latest=$(git ls-tree -r --name-only "$base" -- supabase/migrations \
+            | sed -nE 's#^.*/([0-9]{14})_[a-z0-9_]+\.sql$#\1#p' \
+            | sort \
+            | tail -n 1)
+          test -n "$base_latest"
+          previous="$base_latest"
+
+          for file in "${added[@]}"; do
+            name=$(basename "$file")
+            if [[ ! "$name" =~ ^[0-9]{14}_[a-z0-9_]+\.sql$ ]]; then
+              echo "Invalid migration filename: $name" >&2
+              exit 1
+            fi
+
+            version=${name%%_*}
+            duplicates=$(find supabase/migrations -maxdepth 1 -type f -name "${version}_*.sql" | wc -l)
+            if [ "$duplicates" -ne 1 ]; then
+              echo "Migration timestamp $version is not unique." >&2
+              exit 1
+            fi
+
+            if [[ "$version" < "$previous" || "$version" == "$previous" ]]; then
+              echo "Migration $name is not newer than $previous." >&2
+              echo "New migrations must be strictly ordered after the base branch history." >&2
+              exit 1
+            fi
+            previous="$version"
+          done
+
+      - name: Validate reconstructed production inventory
+        if: >-
+          github.event_name == 'pull_request' &&
+          startsWith(github.head_ref, 'rebuild/full-migration-history') &&
+          hashFiles('supabase/migrations_legacy_synthetic/.production_history_fetched') != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          source supabase/production_migrations.lock
+          find supabase/migrations -maxdepth 1 -type f -name '*.sql' -printf '%f\n' \
+            | sed -nE 's/^([0-9]{14})_.+\.sql$/\1/p' \
+            | sort -u > /tmp/local-versions.txt
+          actual_count=$(wc -l < /tmp/local-versions.txt | tr -d ' ')
+          actual_latest=$(tail -n 1 /tmp/local-versions.txt)
+          actual_md5=$(md5sum /tmp/local-versions.txt | awk '{print $1}')
+          test "$actual_count" = "$MIGRATION_COUNT"
+          test "$actual_latest" = "$LATEST_VERSION"
+          test "$actual_md5" = "$VERSION_MD5"
+
+      - name: Validate production lock syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          source supabase/production_migrations.lock
+          [[ "${MIGRATION_COUNT:-}" =~ ^[0-9]+$ ]]
+          [[ "${LATEST_VERSION:-}" =~ ^[0-9]{14}$ ]]
+          [[ "${VERSION_MD5:-}" =~ ^[0-9a-f]{32}$ ]]
+
+      - name: Ensure production lock is only changed from an approved verification branch
+        if: >-
+          github.event_name == 'pull_request' &&
+          !startsWith(github.head_ref, 'ci/supabase-migration-drift-guard') &&
+          !startsWith(github.head_ref, 'rebuild/full-migration-history')
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="origin/${{ github.base_ref }}"
+          if git diff --name-only "$base...HEAD" | grep -qx 'supabase/production_migrations.lock'; then
+            echo "The production lock may only be updated from ci/supabase-migration-drift-guard* after a verified deployment or from rebuild/full-migration-history* while its production-inventory and full-replay checks remain mandatory." >&2
+            exit 1
+          fi
+
+  compare-production-history:
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: ovzijmqrnsgcmryinkfa
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Require Supabase verification secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_ACCESS_TOKEN:-}" ] || [ -z "${SUPABASE_DB_PASSWORD:-}" ]; then
+            echo "::error::Supabase migration drift guard cannot run without SUPABASE_ACCESS_TOKEN and SUPABASE_DB_PASSWORD."
+            exit 1
+          fi
+
+      - uses: supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf # v2
+        with:
+          version: 2.111.0
+
+      - name: Read remote migration history
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase link --project-ref "$SUPABASE_PROJECT_ID"
+          supabase migration list > /tmp/migration-list.txt
+          cat /tmp/migration-list.txt
+          awk -F'|' '
+            {
+              remote=$2
+              gsub(/[^0-9]/, "", remote)
+              if (length(remote) == 14 && remote ~ /^[0-9]+$/) print remote
+            }
+          ' /tmp/migration-list.txt | sort -u > /tmp/remote-versions.txt
+          test -s /tmp/remote-versions.txt
+
+          find supabase/migrations -maxdepth 1 -type f -name '*.sql' -printf '%f\n' \
+            | sed -nE 's/^([0-9]{14})_.+\.sql$/\1/p' \
+            | sort -u > /tmp/local-versions.txt
+          test -s /tmp/local-versions.txt
+
+      - name: Require compatible GitHub versus production inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          comm -23 /tmp/remote-versions.txt /tmp/local-versions.txt > /tmp/remote-only.txt
+          comm -13 /tmp/remote-versions.txt /tmp/local-versions.txt > /tmp/local-only.txt
+
+          : > /tmp/allowed-local-only.txt
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="origin/${{ github.base_ref }}"
+            git diff --name-only --diff-filter=A "$base...HEAD" -- 'supabase/migrations/*.sql' \
+              | sed -nE 's#^.*/([0-9]{14})_[a-z0-9_]+\.sql$#\1#p' \
+              | sort -u > /tmp/allowed-local-only.txt
+          fi
+
+          remote_only=$(wc -l < /tmp/remote-only.txt | tr -d ' ')
+          local_only=$(wc -l < /tmp/local-only.txt | tr -d ' ')
+          allowed_local_only=$(wc -l < /tmp/allowed-local-only.txt | tr -d ' ')
+
+          {
+            echo "## Supabase migration inventory"
+            echo "- Versions présentes seulement en production : $remote_only"
+            echo "- Versions présentes seulement dans GitHub : $local_only"
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              echo "- Nouvelles versions autorisées par cette PR : $allowed_local_only"
+            fi
+            if [ "$remote_only" -gt 0 ]; then
+              echo
+              echo "### Production seulement"
+              sed 's/^/- `/' /tmp/remote-only.txt | sed 's/$/`/'
+            fi
+            if [ "$local_only" -gt 0 ]; then
+              echo
+              echo "### GitHub seulement"
+              sed 's/^/- `/' /tmp/local-only.txt | sed 's/$/`/'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "Remote-only versions:"
+          cat /tmp/remote-only.txt
+          echo "Local-only versions:"
+          cat /tmp/local-only.txt
+          echo "Allowed local-only versions for this event:"
+          cat /tmp/allowed-local-only.txt
+
+          if [ "$remote_only" -ne 0 ]; then
+            echo "::error::Production contains migration versions that GitHub does not contain."
+            exit 1
+          fi
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            comm -23 /tmp/local-only.txt /tmp/allowed-local-only.txt > /tmp/disallowed-local-only.txt
+            if [ -s /tmp/disallowed-local-only.txt ]; then
+              echo "Disallowed local-only versions:"
+              cat /tmp/disallowed-local-only.txt
+              echo "::error::A pull request may only be ahead of production by migration files newly added by that pull request."
+              exit 1
+            fi
+          elif [ "$local_only" -ne 0 ]; then
+            echo "::error::GitHub and production migration inventories differ."
+            exit 1
+          fi
+
+      - name: Compare production with committed baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          source supabase/production_migrations.lock
+          actual_count=$(wc -l < /tmp/remote-versions.txt | tr -d ' ')
+          actual_latest=$(tail -n 1 /tmp/remote-versions.txt)
+          actual_md5=$(md5sum /tmp/remote-versions.txt | awk '{print $1}')
+
+          printf 'Expected: count=%s latest=%s md5=%s\n' \
+            "$MIGRATION_COUNT" "$LATEST_VERSION" "$VERSION_MD5"
+          printf 'Actual:   count=%s latest=%s md5=%s\n' \
+            "$actual_count" "$actual_latest" "$actual_md5"
+
+          test "$actual_count" = "$MIGRATION_COUNT"
+          test "$actual_latest" = "$LATEST_VERSION"
+          test "$actual_md5" = "$VERSION_MD5"

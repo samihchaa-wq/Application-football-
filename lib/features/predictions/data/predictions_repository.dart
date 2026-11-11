@@ -1,0 +1,278 @@
+import 'dart:async';
+
+import 'package:as_grinta/core/providers/supabase_provider.dart';
+import 'package:as_grinta/core/utils/match_window.dart';
+import 'package:as_grinta/features/matches/data/match_info_repository.dart';
+import 'package:as_grinta/features/predictions/domain/prediction_scoring.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+const _predictionReadTimeout = Duration(seconds: 8);
+const _predictionWriteTimeout = Duration(seconds: 12);
+
+class PredictionWriteOutcomeUnknown implements Exception {
+  const PredictionWriteOutcomeUnknown();
+
+  @override
+  String toString() => 'Prediction write outcome is unknown.';
+}
+
+Future<void> confirmPredictionWrite({
+  required Future<void> Function() submit,
+  required Future<bool> Function() readBackMatchesExpected,
+  Duration writeTimeout = _predictionWriteTimeout,
+  Duration readTimeout = _predictionReadTimeout,
+}) async {
+  try {
+    await submit().timeout(writeTimeout);
+    return;
+  } on PostgrestException {
+    // Le serveur a explicitement refusé l'écriture : l'échec est certain.
+    rethrow;
+  } on StateError {
+    // Un résultat RPC inattendu est également un échec certain, pas une
+    // coupure réseau ambiguë à confirmer par une lecture.
+    rethrow;
+  } catch (_) {
+    // Timeout, transport interrompu ou accusé perdu : l'écriture a peut-être
+    // été appliquée. On ne la rejoue pas ; on relit son état serveur.
+  }
+
+  try {
+    if (await readBackMatchesExpected().timeout(readTimeout)) {
+      return;
+    }
+  } catch (_) {
+    // La relecture est elle-même indisponible : le résultat reste inconnu.
+  }
+
+  throw const PredictionWriteOutcomeUnknown();
+}
+
+class MatchPredictionItem {
+  const MatchPredictionItem({
+    required this.matchId,
+    required this.opponentName,
+    required this.kickoffAt,
+    required this.status,
+    this.isHome = true,
+    required this.scoreGrinta,
+    required this.scoreOpponent,
+    required this.isFilled,
+    required this.oddsWin,
+    required this.oddsDraw,
+    required this.oddsLoss,
+    required this.actualScoreGrinta,
+    required this.actualScoreOpponent,
+    this.predictionsClosedAt,
+    this.availabilityOpensAt,
+  });
+
+  final String matchId;
+  final String opponentName;
+  final DateTime kickoffAt;
+  final String status;
+  final bool isHome;
+  final int scoreGrinta;
+  final int scoreOpponent;
+  final bool isFilled;
+  final double? oddsWin;
+  final double? oddsDraw;
+  final double? oddsLoss;
+  final int? actualScoreGrinta;
+  final int? actualScoreOpponent;
+  final DateTime? predictionsClosedAt;
+
+  /// Ouverture des disponibilités du match, quand le joueur peut la lire : le
+  /// prono s'ouvre en même temps si c'est avant J-6.
+  final DateTime? availabilityOpensAt;
+
+  DateTime get opensAt => matchEffectiveFeaturesOpenAt(
+        kickoffAt,
+        availabilityOpensAt: availabilityOpensAt,
+      );
+  DateTime get closesAt => matchPredictionClosesAt(kickoffAt);
+
+  bool isClosedAt(DateTime now) =>
+      status != 'a_venir' ||
+      now.isBefore(opensAt) ||
+      !now.isBefore(closesAt) ||
+      (predictionsClosedAt != null && !now.isBefore(predictionsClosedAt!));
+
+  bool canEditAt(DateTime now) => !isClosedAt(now);
+  bool get isClosed => isClosedAt(DateTime.now());
+  bool get canEdit => canEditAt(DateTime.now());
+  bool get hasResult =>
+      actualScoreGrinta != null && actualScoreOpponent != null;
+
+  double? get earnedPoints {
+    if (!isFilled || !hasResult) return hasResult ? 0 : null;
+    final actualResult = _result(actualScoreGrinta!, actualScoreOpponent!);
+    final decimalOdds = switch (actualResult) {
+      1 => oddsWin,
+      0 => oddsDraw,
+      _ => oddsLoss,
+    };
+    return PredictionScoring.points(
+      predictedHome: scoreGrinta,
+      predictedAway: scoreOpponent,
+      actualHome: actualScoreGrinta!,
+      actualAway: actualScoreOpponent!,
+      baseOdds: decimalOdds,
+    );
+  }
+
+  static int _result(int grinta, int opponent) {
+    if (grinta > opponent) return 1;
+    if (grinta == opponent) return 0;
+    return -1;
+  }
+}
+
+class PredictionsRepository {
+  PredictionsRepository(this._client);
+
+  final SupabaseClient _client;
+
+  static const _matchSelect = '''
+    id,
+    match_date,
+    match_time,
+    kickoff_at,
+    status,
+    location,
+    score_as_grinta,
+    score_adverse,
+    predictions_closed_at,
+    opponents(name),
+    match_odds(
+      odds_victoire_as_grinta,
+      odds_nul,
+      odds_victoire_adverse
+    ),
+    match_sport_workflows(availability_opens_at)
+  ''';
+
+  static const _predictionSelect =
+      'match_id, predicted_score_as_grinta, predicted_score_adverse, is_filled';
+
+  Future<MatchPredictionItem?> fetchMatchPrediction(String matchId) async {
+    final match = await _client
+        .from('matches')
+        .select(_matchSelect)
+        .eq('id', matchId)
+        .maybeSingle();
+    if (match == null) return null;
+
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) {
+      throw StateError('Ta session a expiré. Reconnecte-toi.');
+    }
+    final prediction = await _client
+        .from('match_predictions')
+        .select(_predictionSelect)
+        .eq('profile_id', userId)
+        .eq('match_id', matchId)
+        .maybeSingle();
+
+    return _buildItem(
+      Map<String, dynamic>.from(match),
+      prediction:
+          prediction == null ? null : Map<String, dynamic>.from(prediction),
+    );
+  }
+
+  MatchPredictionItem _buildItem(
+    Map<String, dynamic> matchMap, {
+    required Map<String, dynamic>? prediction,
+  }) {
+    final matchId = matchMap['id'].toString();
+    final serverKickoff = DateTime.tryParse(
+      '${matchMap['kickoff_at'] ?? ''}',
+    )?.toLocal();
+    final date = matchMap['match_date']?.toString() ?? '';
+    final time = matchMap['match_time']?.toString() ?? '00:00:00';
+    final kickoffAt =
+        serverKickoff ?? DateTime.tryParse('${date}T$time') ?? DateTime(1970);
+    final opponent = matchMap['opponents'] is Map
+        ? Map<String, dynamic>.from(matchMap['opponents'] as Map)
+        : const <String, dynamic>{};
+    final oddsRaw = matchMap['match_odds'];
+    final odds = oddsRaw is List && oddsRaw.isNotEmpty
+        ? Map<String, dynamic>.from(oddsRaw.first as Map)
+        : oddsRaw is Map
+            ? Map<String, dynamic>.from(oddsRaw)
+            : const <String, dynamic>{};
+
+    return MatchPredictionItem(
+      matchId: matchId,
+      opponentName: opponent['name']?.toString() ?? 'Adversaire',
+      kickoffAt: kickoffAt,
+      status: matchMap['status']?.toString() ?? 'a_venir',
+      isHome: matchMap['location']?.toString() != 'exterieur',
+      scoreGrinta:
+          int.tryParse('${prediction?['predicted_score_as_grinta'] ?? 0}') ?? 0,
+      scoreOpponent:
+          int.tryParse('${prediction?['predicted_score_adverse'] ?? 0}') ?? 0,
+      isFilled: prediction?['is_filled'] == true,
+      oddsWin: (odds['odds_victoire_as_grinta'] as num?)?.toDouble(),
+      oddsDraw: (odds['odds_nul'] as num?)?.toDouble(),
+      oddsLoss: (odds['odds_victoire_adverse'] as num?)?.toDouble(),
+      actualScoreGrinta: matchMap['score_as_grinta'] == null
+          ? null
+          : int.tryParse('${matchMap['score_as_grinta']}'),
+      actualScoreOpponent: matchMap['score_adverse'] == null
+          ? null
+          : int.tryParse('${matchMap['score_adverse']}'),
+      predictionsClosedAt: DateTime.tryParse(
+        '${matchMap['predictions_closed_at'] ?? ''}',
+      )?.toLocal(),
+      availabilityOpensAt: embeddedAvailabilityOpensAt(
+        matchMap['match_sport_workflows'],
+      ),
+    );
+  }
+
+  Future<void> savePrediction({
+    required String matchId,
+    required int scoreGrinta,
+    required int scoreOpponent,
+  }) async {
+    if (_client.auth.currentUser == null) {
+      throw StateError('Ta session a expiré. Reconnecte-toi.');
+    }
+    if (scoreGrinta < 0 ||
+        scoreGrinta > 99 ||
+        scoreOpponent < 0 ||
+        scoreOpponent > 99) {
+      throw ArgumentError('Les scores doivent être compris entre 0 et 99.');
+    }
+
+    await confirmPredictionWrite(
+      submit: () async {
+        final result = await _client.rpc(
+          'save_match_prediction',
+          params: {
+            'p_match_id': matchId,
+            'p_score_as_grinta': scoreGrinta,
+            'p_score_adverse': scoreOpponent,
+          },
+        );
+        if (result != true) {
+          throw StateError('Le pronostic n’a pas pu être enregistré.');
+        }
+      },
+      readBackMatchesExpected: () async {
+        final current = await fetchMatchPrediction(matchId);
+        return current != null &&
+            current.isFilled &&
+            current.scoreGrinta == scoreGrinta &&
+            current.scoreOpponent == scoreOpponent;
+      },
+    );
+  }
+}
+
+final predictionsRepositoryProvider = Provider<PredictionsRepository>((ref) {
+  return PredictionsRepository(ref.watch(supabaseClientProvider));
+});

@@ -1,0 +1,3 @@
+-- Historical production migration 20260803183000.
+-- Its pristine SQL is archived in supabase/migrations_legacy_production/20260803183000_harden_notifications_motm_and_hot_paths.sql.
+-- Fresh installations are built by the canonical baseline at 20260809234943.

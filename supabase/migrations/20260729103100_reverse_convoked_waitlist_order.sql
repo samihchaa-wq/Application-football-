@@ -1,0 +1,3 @@
+-- Historical production migration 20260729103100.
+-- Its pristine SQL is archived in supabase/migrations_legacy_production/20260729103100_reverse_convoked_waitlist_order.sql.
+-- Fresh installations are built by the canonical baseline at 20260809234943.

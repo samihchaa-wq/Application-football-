@@ -1,0 +1,511 @@
+import 'package:as_grinta/app/shell/module_navigation.dart';
+import 'package:as_grinta/core/theme/app_spacing.dart';
+import 'package:as_grinta/core/utils/app_errors.dart';
+import 'package:as_grinta/core/utils/name_validation.dart';
+import 'package:as_grinta/core/utils/ranking.dart';
+import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
+import 'package:as_grinta/core/widgets/grinta_empty_state.dart';
+import 'package:as_grinta/core/widgets/grinta_secondary_tabs.dart';
+import 'package:as_grinta/core/widgets/sticky_header_table.dart';
+import 'package:as_grinta/core/widgets/grinta_skeleton.dart';
+import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:as_grinta/features/badges/presentation/badge_display_scope.dart';
+import 'package:as_grinta/features/badges/presentation/name_with_badges.dart';
+import 'package:as_grinta/features/players/presentation/player_card_link.dart';
+import 'package:as_grinta/features/predictions/presentation/pronos_hub_page.dart';
+import 'package:as_grinta/features/statistics/data/statistics_repository.dart';
+import 'package:as_grinta/features/statistics/presentation/team_statistics_panel.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+enum _StatsSection { rankings, players, team }
+
+class StatsHubPage extends ConsumerStatefulWidget {
+  const StatsHubPage({super.key, this.initialSection});
+
+  final String? initialSection;
+
+  @override
+  ConsumerState<StatsHubPage> createState() => _StatsHubPageState();
+}
+
+class _StatsHubPageState extends ConsumerState<StatsHubPage> {
+  late _StatsSection _section = switch (widget.initialSection) {
+    'rankings' => _StatsSection.rankings,
+    'team' => _StatsSection.team,
+    _ => _StatsSection.players,
+  };
+  StatisticsPeriod _period = StatisticsPeriod.current;
+
+  // Change à chaque appui sur l'onglet Statistiques : le panneau est recréé,
+  // ce qui remet son tri à zéro et remonte le tableau en haut.
+  int _resetGeneration = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen<int>(statsResetRequestProvider, (previous, next) {
+      setState(() {
+        _section = _StatsSection.players;
+        _period = StatisticsPeriod.current;
+        _resetGeneration++;
+      });
+    });
+    final hasPeriod = _section != _StatsSection.rankings;
+    return Scaffold(
+      appBar: GrintaAppBar(
+        title: const Text('Statistiques'),
+        actions: grintaHomeActions(context),
+      ),
+      // Seul le module Statistiques arbore les badges à côté des noms : les
+      // mêmes panneaux montés ailleurs (Prono, Calendrier) rendent le nom seul.
+      body: BadgeDisplayScope(
+        showBadges: true,
+        // Partout dans le module, toucher un nom ouvre la fiche du joueur.
+        child: PlayerCardLinkScope(
+          enabled: true,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.screenGutter,
+                  AppSpacing.contentGap,
+                  AppSpacing.screenGutter,
+                  AppSpacing.contentGap,
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: SegmentedButton<_StatsSection>(
+                    expandedInsets: EdgeInsets.zero,
+                    showSelectedIcon: false,
+                    segments: const [
+                      ButtonSegment(
+                        value: _StatsSection.players,
+                        label: Text('Joueurs'),
+                      ),
+                      ButtonSegment(
+                        value: _StatsSection.team,
+                        label: Text('Équipe'),
+                      ),
+                      ButtonSegment(
+                        value: _StatsSection.rankings,
+                        label: Text('Prono'),
+                      ),
+                    ],
+                    selected: {_section},
+                    onSelectionChanged: (value) {
+                      setState(() => _section = value.first);
+                    },
+                  ),
+                ),
+              ),
+              if (hasPeriod)
+                GrintaSecondaryTabs<StatisticsPeriod>(
+                  segments: const [
+                    ButtonSegment(
+                      value: StatisticsPeriod.current,
+                      label: Text('Actuelle'),
+                    ),
+                    ButtonSegment(
+                      value: StatisticsPeriod.previous,
+                      label: Text('Précédente'),
+                    ),
+                    ButtonSegment(
+                      value: StatisticsPeriod.allTime,
+                      label: Text('Toutes'),
+                    ),
+                  ],
+                  selected: {_period},
+                  onSelectionChanged: (value) {
+                    setState(() => _period = value.first);
+                  },
+                ),
+              Expanded(
+                key: ValueKey<int>(_resetGeneration),
+                child: switch (_section) {
+                  _StatsSection.rankings => const RankingsPanel(),
+                  _StatsSection.players => _PlayersPanel(period: _period),
+                  _StatsSection.team => TeamStatisticsPanel(period: _period),
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+enum _PlayerStatCol {
+  name,
+  played,
+  goals,
+  assists,
+  cleanSheets,
+  hdm,
+  wins,
+  draws,
+  losses,
+}
+
+const _playerValueFlex = 1;
+const _playerBadgeSize = statisticsBadgeSize;
+
+/// Les colonnes de statistiques (J, B, [PD], CS, HDM, G, N, P) se partagent la
+/// zone défilante. On réserve à chacune la même largeur qu'avant l'arrivée des
+/// passes décisives, sinon « HDM » et sa flèche de tri ne tiennent plus.
+const _playerColumnWidth = 64.0;
+const _playerColumnCountWithoutAssists = 7;
+
+/// Les passes décisives ne sont suivies que depuis leur mise en service : une
+/// période antérieure n'en contient aucune, et afficher une colonne vide y
+/// ferait croire à un manque de saisie plutôt qu'à une donnée qui n'existait
+/// pas encore.
+///
+/// La saison en cours montre donc toujours la colonne — c'est là qu'on saisit —
+/// et une période passée ne la montre que si elle porte réellement des passes.
+/// Aucune date n'est écrite en dur : la colonne apparaîtra d'elle-même dans
+/// « Saison précédente » et « Toutes saisons » dès que celles-ci couvriront une
+/// saison où des passes ont été enregistrées.
+bool statisticsShowsAssistsColumn(StatisticsPeriodData data) {
+  if (data.period == StatisticsPeriod.current) return true;
+  return data.players.any((player) => player.assists > 0);
+}
+
+class _PlayersPanel extends ConsumerStatefulWidget {
+  const _PlayersPanel({required this.period});
+
+  final StatisticsPeriod period;
+
+  @override
+  ConsumerState<_PlayersPanel> createState() => _PlayersPanelState();
+}
+
+class _PlayersPanelState extends ConsumerState<_PlayersPanel> {
+  _PlayerStatCol? _sort;
+  bool _descending = true;
+
+  void _onSort(_PlayerStatCol column) {
+    setState(() {
+      if (_sort == column) {
+        _descending = !_descending;
+      } else {
+        _sort = column;
+        _descending = column != _PlayerStatCol.name;
+      }
+    });
+  }
+
+  num _value(_PlayerStatCol column, PlayerStatistics player) {
+    return switch (column) {
+      _PlayerStatCol.played => player.matchesPlayed ?? 0,
+      _PlayerStatCol.goals => player.goals,
+      _PlayerStatCol.assists => player.assists,
+      _PlayerStatCol.cleanSheets => player.teamCleanSheets,
+      _PlayerStatCol.wins => player.wins ?? 0,
+      _PlayerStatCol.draws => player.draws ?? 0,
+      _PlayerStatCol.losses => player.losses ?? 0,
+      _PlayerStatCol.hdm => player.hdm ?? 0,
+      _PlayerStatCol.name => 0,
+    };
+  }
+
+  Future<void> _refresh() async {
+    ref.invalidate(statisticsPeriodProvider(widget.period));
+    await ref.read(statisticsPeriodProvider(widget.period).future);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final async = ref.watch(statisticsPeriodProvider(widget.period));
+    final currentProfileId = ref.watch(
+      authControllerProvider.select((state) => state.profile?.id),
+    );
+
+    return async.when(
+      loading: () => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: GrintaSkeleton.rows(itemCount: 7),
+      ),
+      error: (error, _) => _Message(
+        title: 'Statistiques indisponibles',
+        message: humanizeError(error),
+        onRefresh: _refresh,
+      ),
+      data: (data) {
+        if (data.players.isEmpty) {
+          return _Message(
+            title: 'Pas encore de statistiques',
+            message: 'Les stats apparaîtront après le premier match validé.',
+            onRefresh: _refresh,
+          );
+        }
+
+        final showsAssists = statisticsShowsAssistsColumn(data);
+        final players = [...data.players];
+        // Trier sur une colonne que cette période n'affiche pas donnerait un
+        // classement inexplicable : on retombe sur l'ordre par défaut.
+        final sort =
+            !showsAssists && _sort == _PlayerStatCol.assists ? null : _sort;
+        if (sort != null) {
+          players.sort((a, b) {
+            final comparison = sort == _PlayerStatCol.name
+                ? a.playerName.toLowerCase().compareTo(
+                      b.playerName.toLowerCase(),
+                    )
+                : _value(sort, a).compareTo(_value(sort, b));
+            if (comparison == 0) {
+              return a.playerName.toLowerCase().compareTo(
+                    b.playerName.toLowerCase(),
+                  );
+            }
+            return _descending ? -comparison : comparison;
+          });
+        }
+
+        // Rang sportif sur la colonne triee. Trie par nom, ou sans tri, la
+        // colonne redevient une simple position dans la liste.
+        final ranks = sort == null || sort == _PlayerStatCol.name
+            ? [for (var index = 0; index < players.length; index++) index + 1]
+            : competitionRanks(players, (player) => _value(sort, player));
+
+        final pinnedWidth = grintaTablePinnedWidthForNames(
+          context,
+          players.map(
+            (player) => capitalizePersonName(player.playerName),
+          ),
+          trailingWidth: _playerBadgeSize,
+          trailingGap: nameWithBadgesGap,
+        );
+
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.screenGutter,
+            AppSpacing.contentGap,
+            AppSpacing.screenGutter,
+            32,
+          ),
+          child: StickyHeaderTableCard(
+            onRefresh: _refresh,
+            pinnedWidth: pinnedWidth,
+            minWidth: pinnedWidth +
+                (_playerColumnCountWithoutAssists + (showsAssists ? 1 : 0)) *
+                    _playerColumnWidth,
+            pinnedHeader: _PlayersPinnedHeader(
+              sort: sort,
+              descending: _descending,
+              onSort: _onSort,
+            ),
+            scrollableHeader: _PlayersScrollableHeader(
+              sort: sort,
+              descending: _descending,
+              onSort: _onSort,
+              showsAssists: showsAssists,
+            ),
+            rows: [
+              for (var index = 0; index < players.length; index++)
+                _playersRow(
+                  context,
+                  rank: ranks[index],
+                  player: players[index],
+                  isCurrentUser: currentProfileId != null &&
+                      players[index].profileId == currentProfileId,
+                  showsAssists: showsAssists,
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _PlayersPinnedHeader extends StatelessWidget {
+  const _PlayersPinnedHeader({
+    required this.sort,
+    required this.descending,
+    required this.onSort,
+  });
+
+  final _PlayerStatCol? sort;
+  final bool descending;
+  final ValueChanged<_PlayerStatCol> onSort;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = grintaTableHeaderTextStyle(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: SortableHeaderCell(
+              label: '',
+              align: TextAlign.center,
+              active: sort == _PlayerStatCol.name,
+              descending: descending,
+              onTap: () => onSort(_PlayerStatCol.name),
+              style: style,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PlayersScrollableHeader extends StatelessWidget {
+  const _PlayersScrollableHeader({
+    required this.sort,
+    required this.descending,
+    required this.onSort,
+    required this.showsAssists,
+  });
+
+  final _PlayerStatCol? sort;
+  final bool descending;
+  final ValueChanged<_PlayerStatCol> onSort;
+  final bool showsAssists;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = grintaTableHeaderTextStyle(context);
+
+    Widget valueCell(String label, _PlayerStatCol column) {
+      return SortableHeaderCell(
+        label: label,
+        flex: _playerValueFlex,
+        active: sort == column,
+        descending: descending,
+        onTap: () => onSort(column),
+        style: style,
+      );
+    }
+
+    return Padding(
+      padding: grintaTableScrollableHeaderPadding,
+      child: Row(
+        children: [
+          valueCell('J', _PlayerStatCol.played),
+          valueCell('B', _PlayerStatCol.goals),
+          if (showsAssists) valueCell('PD', _PlayerStatCol.assists),
+          valueCell('CS', _PlayerStatCol.cleanSheets),
+          valueCell('HDM', _PlayerStatCol.hdm),
+          valueCell('G', _PlayerStatCol.wins),
+          valueCell('N', _PlayerStatCol.draws),
+          valueCell('P', _PlayerStatCol.losses),
+        ],
+      ),
+    );
+  }
+}
+
+StickyTableRow _playersRow(
+  BuildContext context, {
+  required int rank,
+  required PlayerStatistics player,
+  required bool isCurrentUser,
+  required bool showsAssists,
+}) {
+  final valueStyle = grintaTableCellTextStyle(context);
+
+  Widget value(int number) {
+    return Expanded(
+      flex: _playerValueFlex,
+      child: Text('$number', textAlign: TextAlign.center, style: valueStyle),
+    );
+  }
+
+  Widget pinned = PlayerCardLink(
+    playerKey: (
+      profileId: player.profileId,
+      fullName: player.fullName,
+      isGoalkeeper: player.isGoalkeeper,
+    ),
+    child: Padding(
+      padding: grintaTablePinnedRowPadding,
+      child: Row(
+        children: [
+          GrintaTableRankCell(rank: rank),
+          Expanded(
+            child: NameWithBadges(
+              profileId: player.profileId,
+              name: player.playerName,
+              badgeSize: _playerBadgeSize,
+              alignBadgesEnd: true,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  Widget scrollable = Padding(
+    padding: grintaTableScrollableRowPadding,
+    child: Row(
+      children: [
+        value(player.matchesPlayed ?? 0),
+        value(player.goals),
+        if (showsAssists) value(player.assists),
+        value(player.teamCleanSheets),
+        value(player.hdm ?? 0),
+        value(player.wins ?? 0),
+        value(player.draws ?? 0),
+        value(player.losses ?? 0),
+      ],
+    ),
+  );
+
+  if (isCurrentUser) {
+    final accent = Theme.of(context).colorScheme.secondary;
+    pinned = DecoratedBox(
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: .14),
+        border: Border(left: BorderSide(color: accent, width: 4)),
+      ),
+      child: pinned,
+    );
+    scrollable = DecoratedBox(
+      decoration: BoxDecoration(color: accent.withValues(alpha: .14)),
+      child: scrollable,
+    );
+  }
+
+  return StickyTableRow(pinned: pinned, scrollable: scrollable);
+}
+
+class _Message extends StatelessWidget {
+  const _Message({
+    required this.title,
+    required this.message,
+    required this.onRefresh,
+  });
+
+  final String title;
+  final String message;
+  final Future<void> Function() onRefresh;
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.screenGutter,
+          AppSpacing.sectionGap,
+          AppSpacing.screenGutter,
+          32,
+        ),
+        children: [
+          Card(
+            child: GrintaEmptyState(
+              icon: Icons.bar_chart_rounded,
+              title: title,
+              message: message,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

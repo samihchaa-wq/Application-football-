@@ -1,0 +1,274 @@
+import 'package:as_grinta/core/providers/supabase_provider.dart';
+import 'package:as_grinta/features/matches/domain/match_meeting.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+/// Données légères communes à toute la fiche d'un match.
+///
+/// Elles sont chargées une seule fois puis partagées entre le bandeau, les
+/// règles temporelles et l'onglet Info. L'historique des confrontations reste
+/// volontairement séparé afin de n'être demandé que lorsque l'onglet Info en a
+/// réellement besoin.
+class MatchCore {
+  const MatchCore({
+    required this.kickoffAt,
+    required this.address,
+    this.meetingAt,
+    required this.opponentId,
+    required this.status,
+    required this.location,
+    required this.opponentName,
+    this.matchType = 'championnat',
+    this.championshipRound,
+    this.jerseyNote,
+    this.availabilityOpensAt,
+  });
+
+  final DateTime? kickoffAt;
+  final String? address;
+  final DateTime? meetingAt;
+
+  /// Ouverture des disponibilités choisie pour ce match. Absente quand le
+  /// joueur ne peut pas lire le suivi sportif : la fiche s'ouvre alors à J-6.
+  final DateTime? availabilityOpensAt;
+  final String? opponentId;
+  final String status;
+  final String location;
+  final String opponentName;
+  final String matchType;
+  final int? championshipRound;
+  final String? jerseyNote;
+
+  DateTime? get effectiveMeetingAt => kickoffAt == null
+      ? null
+      : resolvedMatchMeetingAt(
+          kickoffAt: kickoffAt!,
+          customMeetingAt: meetingAt,
+        );
+
+  bool get isFriendly => matchType == 'amical';
+  bool get isInternal => matchType == 'entre_nous';
+  bool get isUpcoming => status == 'a_venir';
+  bool get isFinished => status == 'termine' || status == 'archive';
+  bool get isCancelled => status == 'annule';
+  bool get grintaIsHome => location == 'domicile';
+}
+
+/// Une rencontre passée contre l'adversaire (pour l'historique « 5 dernières »).
+class MatchEncounter {
+  const MatchEncounter({
+    required this.grintaScore,
+    required this.opponentScore,
+    this.date,
+    this.id,
+    this.isHistorical = false,
+    this.grintaIsHome,
+  });
+
+  final int grintaScore;
+  final int opponentScore;
+  final DateTime? date;
+
+  /// Vrai si AS Grinta recevait. Absent tant que le backend n'a pas déployé
+  /// la version qui l'expose : le score reste alors écrit AS Grinta en premier.
+  final bool? grintaIsHome;
+
+  /// Score écrit dans l'ordre domicile – extérieur, comme sur la fiche du
+  /// match et dans le calendrier.
+  String get scoreLabel => grintaIsHome == false
+      ? '$opponentScore–$grintaScore'
+      : '$grintaScore–$opponentScore';
+
+  /// Identifiant de la rencontre source. Absent uniquement tant que le backend
+  /// n'a pas encore déployé la version enrichie de l'historique.
+  final String? id;
+
+  /// Vrai pour une rencontre compactée dans historical_match_scores, faux
+  /// pour un match encore présent dans matches.
+  final bool isHistorical;
+}
+
+/// Données de l'onglet « Info » d'un match : heure, adresse (celle de l'équipe
+/// à domicile) et les 5 dernières rencontres contre l'adversaire.
+class MatchInfo {
+  const MatchInfo({
+    required this.kickoffAt,
+    required this.address,
+    this.meetingAt,
+    required this.lastEncounters,
+    this.matchType = 'championnat',
+    this.championshipRound,
+    this.jerseyNote,
+    this.availabilityOpensAt,
+    this.isCancelled = false,
+  });
+
+  final DateTime? kickoffAt;
+  final String? address;
+  final DateTime? meetingAt;
+
+  /// Voir [MatchCore.availabilityOpensAt].
+  final DateTime? availabilityOpensAt;
+  final List<MatchEncounter> lastEncounters;
+  final String matchType;
+  final int? championshipRound;
+  final String? jerseyNote;
+
+  /// Un match annulé n'a plus de fiche : elle renvoie au calendrier.
+  final bool isCancelled;
+
+  DateTime? get effectiveMeetingAt => kickoffAt == null
+      ? null
+      : resolvedMatchMeetingAt(
+          kickoffAt: kickoffAt!,
+          customMeetingAt: meetingAt,
+        );
+
+  bool get isFriendly => matchType == 'amical';
+  bool get isInternal => matchType == 'entre_nous';
+  String get matchTypeLabel {
+    if (isInternal) return 'Match entre nous';
+    if (isFriendly) return 'Match amical';
+    final round = championshipRound;
+    return round == null ? 'Championnat' : 'Championnat · J$round';
+  }
+}
+
+String? _clean(Object? value) {
+  final text = value?.toString().trim();
+  return text == null || text.isEmpty ? null : text;
+}
+
+const _emptyMatchInfo = MatchInfo(
+  kickoffAt: null,
+  address: null,
+  lastEncounters: [],
+);
+
+MatchInfo _infoFromCore(
+  MatchCore core, {
+  List<MatchEncounter> encounters = const [],
+}) {
+  return MatchInfo(
+    kickoffAt: core.kickoffAt,
+    address: core.address,
+    meetingAt: core.meetingAt,
+    lastEncounters: encounters,
+    matchType: core.matchType,
+    championshipRound: core.championshipRound,
+    jerseyNote: core.jerseyNote,
+    availabilityOpensAt: core.availabilityOpensAt,
+    isCancelled: core.isCancelled,
+  );
+}
+
+final matchCoreProvider = FutureProvider.family<MatchCore?, String>((
+  ref,
+  matchId,
+) async {
+  final client = ref.watch(supabaseClientProvider);
+  final match = await client
+      .from('matches')
+      .select(
+        'kickoff_at, match_date, match_time, meeting_at, status, location, address, '
+        'opponent_id, match_type, championship_round, jersey_note, opponents(name, address), '
+        'match_sport_workflows(availability_opens_at)',
+      )
+      .eq('id', matchId)
+      .maybeSingle();
+
+  if (match == null) return null;
+
+  final opponent = match['opponents'] is Map
+      ? Map<String, dynamic>.from(match['opponents'] as Map)
+      : const <String, dynamic>{};
+  final opponentName = _clean(opponent['name']) ?? 'Adversaire';
+  final opponentAddress = _clean(opponent['address']);
+  final location = (match['location']?.toString() ?? 'domicile').trim();
+  final isHome = location == 'domicile';
+  final address = _clean(match['address']) ?? (isHome ? null : opponentAddress);
+
+  final serverKickoff = DateTime.tryParse('${match['kickoff_at'] ?? ''}');
+  final date = match['match_date']?.toString() ?? '';
+  final time = match['match_time']?.toString() ?? '00:00:00';
+  final kickoffAt = serverKickoff ?? DateTime.tryParse('${date}T$time');
+
+  return MatchCore(
+    kickoffAt: kickoffAt,
+    address: address,
+    meetingAt: DateTime.tryParse('${match['meeting_at'] ?? ''}')?.toLocal(),
+    opponentId: _clean(match['opponent_id']),
+    status: (match['status'] ?? '').toString(),
+    location: location,
+    opponentName: opponentName,
+    matchType: (match['match_type'] ?? 'championnat').toString(),
+    championshipRound: (match['championship_round'] as num?)?.toInt(),
+    jerseyNote: _clean(match['jersey_note']),
+    availabilityOpensAt: embeddedAvailabilityOpensAt(
+      match['match_sport_workflows'],
+    ),
+  );
+});
+
+/// Lit `match_sport_workflows(availability_opens_at)` embarqué dans une ligne
+/// de `matches`. Le suivi sportif est réservé aux joueurs du match et aux
+/// admins : pour les autres, il arrive vide et la règle J-6 s'applique.
+DateTime? embeddedAvailabilityOpensAt(Object? workflow) {
+  final row =
+      workflow is List ? (workflow.isEmpty ? null : workflow.first) : workflow;
+  if (row is! Map) return null;
+  return DateTime.tryParse('${row['availability_opens_at'] ?? ''}')?.toLocal();
+}
+
+/// Version légère utilisée par la structure de la fiche (onglets, temporalité,
+/// admin). Elle n'effectue aucune lecture de l'historique des confrontations.
+final matchInfoProvider = FutureProvider.family<MatchInfo, String>((
+  ref,
+  matchId,
+) async {
+  final core = await ref.watch(matchCoreProvider(matchId).future);
+  return core == null ? _emptyMatchInfo : _infoFromCore(core);
+});
+
+/// Version complète chargée uniquement par l'onglet Info.
+final matchDetailedInfoProvider = FutureProvider.family<MatchInfo, String>((
+  ref,
+  matchId,
+) async {
+  final client = ref.watch(supabaseClientProvider);
+  final baseInfo = await ref.watch(matchInfoProvider(matchId).future);
+  final core = await ref.watch(matchCoreProvider(matchId).future);
+  if (core == null) return baseInfo;
+
+  final encounters = <MatchEncounter>[];
+  if (core.opponentId != null && core.opponentId!.isNotEmpty) {
+    final rows = await client.rpc(
+      'get_last_opponent_encounters',
+      params: {'p_match_id': matchId},
+    );
+    for (final row in rows as List) {
+      final map = Map<String, dynamic>.from(row as Map);
+      encounters.add(
+        MatchEncounter(
+          grintaScore: (map['grinta_score'] as num?)?.toInt() ?? 0,
+          opponentScore: (map['opponent_score'] as num?)?.toInt() ?? 0,
+          date: DateTime.tryParse('${map['encounter_date'] ?? ''}')?.toLocal(),
+          id: _clean(map['encounter_id']),
+          isHistorical: map['is_historical'] == true,
+          grintaIsHome: map['is_home'] as bool?,
+        ),
+      );
+    }
+  }
+
+  return MatchInfo(
+    kickoffAt: baseInfo.kickoffAt,
+    address: baseInfo.address,
+    meetingAt: baseInfo.meetingAt,
+    lastEncounters: encounters,
+    matchType: baseInfo.matchType,
+    championshipRound: baseInfo.championshipRound,
+    jerseyNote: baseInfo.jerseyNote,
+    availabilityOpensAt: baseInfo.availabilityOpensAt,
+    isCancelled: baseInfo.isCancelled,
+  );
+});

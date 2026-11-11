@@ -1,0 +1,3 @@
+-- Historical production migration 20260715112443.
+-- Its pristine SQL is archived in supabase/migrations_legacy_production/20260715112443_season_scoring_nx3_order_bonus_direct_total.sql.
+-- Fresh installations are built by the canonical baseline at 20260809234943.

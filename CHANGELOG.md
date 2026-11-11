@@ -1,0 +1,536 @@
+# Changelog
+
+Toutes les évolutions notables d’AS Grinta sont documentées ici.
+
+## Non publié
+
+### Produit
+
+- maillots : les trois maillots proposés pour un match (France, Orange,
+  Bleu) sont désormais des dessins aux couleurs du club, sans logo ni
+  écusson. Ils reprenaient jusqu'ici des photos de maillots de sélections
+  nationales, avec les marques de l'équipementier et des fédérations ;
+- admin : « Voir l'app comme un joueur », dans les Paramètres. Un admin
+  regarde l'application sans ses outils de gestion, exactement comme ses
+  joueurs la reçoivent : fiche du match, onglets Effectif et Compo,
+  calendrier, notifications, liste d'attente en lecture seule… Un bandeau
+  « Vue joueur » reste affiché en haut de chaque écran, avec « Revenir en
+  admin ». Le mode ne change que l'affichage : le serveur envoie les mêmes
+  données à un admin et à un joueur sur ces écrans. Recharger l'application
+  ou changer de compte ramène toujours à la vue admin ;
+- effectif : les joueurs voient l'onglet Effectif d'un match comme les
+  admins, en lecture seule : photo à gauche du prénom, trois par ligne,
+  mêmes colonnes (« Convoqués », « Liste d'attente », « Absents », « Sans
+  réponse »), même ordre et même compteur, le coach compté à part
+  (« Convoqués (14 + coach) »). Ils voyaient jusqu'ici des prénoms sans
+  photo, une colonne « Disponibles » qui contenait en fait les convoqués,
+  le coach compté dans le total (« 15 ») et les convoqués dans l'ordre
+  inverse de celui des admins. Pour un match entre nous, ni liste d'attente
+  ni limite, comme chez les admins. Les photos arrivent une fois la mise à
+  jour de la base de données déployée ; avant, les initiales s'affichent ;
+- liste d'attente : quand un convoqué se désiste après la publication de
+  l'effectif, sa place revient au joueur en attente le plus bas dans la
+  liste, comme le prévoit la règle de l'effectif. C'était jusqu'ici le n°1
+  de la liste, celui qui doit justement rester en attente en premier (cas
+  du match du 9 novembre, où le n°1 de la liste a pris la place laissée par
+  un désistement). Actif une fois la mise à jour de la base de données
+  déployée ;
+- liste d'attente : un convoqué qui s'était désisté puis revient ne fait
+  plus dépasser le nombre de places quand sa place a été reprise par une
+  correction manuelle de l'effectif. Personne n'étant noté comme son
+  remplaçant, personne ne redescendait (pour le match du 9 novembre, le
+  retour du joueur qui s'était désisté aurait donné 15 convoqués pour 14
+  places).
+  C'est désormais le convoqué le plus haut dans la liste d'attente qui
+  repasse en attente, et il en est prévenu. Actif une fois la mise à jour de
+  la base de données déployée ;
+- pronostics : si la connexion coupe pendant l'enregistrement d'un pronostic
+  et que l'application ne peut pas vérifier qu'il est passé, elle le dit
+  (« ton pronostic a peut-être été enregistré ») au lieu d'annoncer une
+  erreur qui poussait à le ressaisir, comme le font déjà les disponibilités
+  et le compte rendu ;
+- effectif : l'effectif d'un match est publié dès la création du match. Il
+  passait jusqu'ici par un « brouillon » invisible, qui durait jusqu'à ce
+  qu'un admin ouvre la page du match (de quelques secondes à 23 minutes
+  cette saison) : pendant ce temps, les joueurs ne voyaient ni l'effectif ni
+  leur statut, aucune notification de convocation ou de liste d'attente ne
+  partait et un désistement ne gardait pas la place du joueur qui revient.
+  Ces règles s'appliquent désormais dès la première réponse. Un report à un
+  autre jour remet toujours les réponses à zéro, sans repasser par un
+  brouillon. Pour un match entre nous, enregistrer l'effectif pour la
+  première fois n'efface plus la composition déjà préparée. Actif une fois
+  la mise à jour de la base de données déployée ;
+- liste d'attente : un joueur qui s'était dit absent puis se dit présent
+  après la publication de l'effectif prend son rang dans la liste d'attente,
+  comme un joueur qui répond pour la première fois. Il tombait jusqu'ici
+  d'office en liste d'attente, même quand des convoqués placés avant lui
+  dans la liste devaient y passer avant lui (cas d'un joueur pour le match
+  du 27 octobre). Si son rang lui donne une place, c'est le convoqué le plus
+  haut dans la liste qui passe en attente, et il en est prévenu. Un convoqué
+  qui s'était désisté puis revient récupère toujours sa place. Actif une
+  fois la mise à jour de la base de données déployée ;
+- composition, « Simuler une composition » : la proposition ne met plus un
+  défenseur central au milieu pendant qu'un vrai milieu reste sur le banc,
+  défaut constaté sur chacun des quatre matchs à onze de la saison. Elle
+  cherche désormais l'équipe entière la plus cohérente au lieu de remplir
+  les postes un par un, et suit une rotation : un joueur qui a commencé
+  remplaçant la dernière fois qu'il a joué dans la saison est titularisé,
+  même s'il a manqué des matchs depuis, sauf si aucun poste qui lui
+  correspond n'est libre. Il reprend alors son vrai poste, et c'est le
+  titulaire habituel de ce poste qui s'assoit : personne n'est casé là où il
+  n'a presque jamais joué. Dans l'éditeur, le compteur banc de ces joueurs
+  est bleu, sur le terrain comme sur le banc. Rejouée sur les matchs de la
+  saison, la simulation retrouve chaque fois au moins dix des onze
+  titulaires réellement alignés, sauf le 12 octobre où elle aurait
+  titularisé un joueur laissé sur le banc ce jour-là. Un invité complète un
+  poste qui resterait vide, sans jamais prendre la place d'un joueur de
+  l'effectif. Le message affiché après la simulation dit qui revient du
+  banc, qui joue hors de son poste habituel, quels postes sont à confirmer
+  faute de matchs joués et lesquels restent vides. La rotation et le
+  compteur bleu ne sont actifs qu'une fois la mise à jour de la base de
+  données déployée ; d'ici là, la simulation fonctionne sans ce critère ;
+- fiche joueur, onglet Carrière : une carte « Évolution » sous le Bilan
+  montre une barre par saison pour la statistique choisie (Matchs,
+  % Victoires, Buts, HDM, Buts / match ; les buts d'abord, les matchs pour
+  un gardien). La meilleure saison est en or, et toutes les saisons à
+  égalité avec elle ; pour une moyenne, il lui faut au moins cinq matchs,
+  comme pour être classé sur une saison. La saison en cours, plus pâle, est
+  signalée. Une saison manquée entre deux autres apparaît vide. Les passes
+  décisives n'y figurent pas : elles ne sont comptées que depuis cette
+  saison. Les saisons archivées sont recalculées match par match. Les buts
+  et hommes du match de trois matchs officiels joués sans score (28 juin
+  2016 contre CG31, 17 mai 2024 contre AS Clinique Pasteur, 4 mai 2026
+  contre FC Boehringer Toulouse), déjà comptés dans les chiffres de carrière
+  sans compter comme matchs joués, sont rangés dans leur saison de la même
+  façon. Les barres reprennent exactement la ligne Carrière affichée, même
+  quand un admin change le poste ou l'écriture du nom d'un joueur dans
+  l'effectif, et se rechargent avec elle (match validé, retour dans
+  l'application) : leur somme retombe toujours sur les chiffres de
+  carrière. La carte n'apparaît qu'à partir de deux saisons, et seulement
+  une fois la mise à jour de la base de données déployée ;
+- administration des profils : rattacher un compte à une deuxième fiche
+  d'archive, alors qu'il en a déjà une, est refusé avec une erreur au lieu
+  de mêler les deux carrières sans retour possible ; il faut alors une
+  correction manuelle. Les buts et hommes du match des matchs sans score
+  suivent le joueur quand son compte est rattaché à sa fiche d'archive ;
+- icône de l'application : le blason sans sa bordure remplit tout le bouton
+  (fond bleu et bandes or jusqu'aux bords, banderole, « 2020 », ballon). La
+  croix occitane est redessinée fidèlement ; sur les téléphones Android qui
+  découpent l'icône en rond, elle est plus petite et rapprochée du centre
+  pour rester entière. L'icône est redessinée proprement, donc plus nette
+  qu'avant. Sur iPhone, une application déjà ajoutée à l'écran d'accueil
+  garde l'ancienne icône tant qu'elle n'est pas retirée puis rajoutée ; sur
+  Android, la nouvelle icône peut mettre un peu de temps à apparaître. L'icône
+  de l'onglet du navigateur ne change pas ;
+- calendrier, vue Défilé : un match annulé ne s'ouvre plus, même une fois sa
+  date passée, et sa carte affiche « Match annulé ». Avant, dès l'heure du
+  match passée, il rejoignait les matchs terminés sans plus rien indiquer que
+  sa couleur, et ouvrait une fiche de match à venir. La mention, déjà présente
+  avant la date sous la forme « Annulé », passe aussi dans un rouge plus
+  lisible. Dans les vues Défilé et Par mois, elle est collée sous l'affiche et
+  la carte est moins haute ;
+- notifications : « Match annulé » ouvre le calendrier, sur la carte du match
+  annulé, au milieu des autres matchs, au lieu de l'onglet Info de sa fiche.
+  Les « Match annulé » déjà reçus, et toute notification sur ce match envoyée
+  avant l'annulation, mènent aussi au calendrier ;
+- fiche du match : quand un admin ouvre les disponibilités avant J-6
+  (« maintenant » ou à une date choisie), les onglets Effectif, Compo et
+  Prono apparaissent dès cette ouverture, au lieu d'attendre J-6 à 12 h. Le
+  prono est accepté à partir du même moment. Une ouverture plus tardive que
+  J-6 ne retarde rien ;
+- notifications : une cloche à côté du trophée ouvre l'écran Notifications,
+  en deux onglets. « Historique » liste toutes les notifications envoyées
+  par le club au joueur, la plus récente en premier, même celles que son
+  téléphone n'a pas affichées (notifications bloquées, appareil désabonné ou
+  sans abonnement) ; glisser une ligne vers la gauche la supprime, sur tous
+  ses appareils. « Paramètres » reprend l'ancien écran des réglages, qui
+  quitte la roue dentée. Un petit chiffre sur la cloche compte les
+  notifications non lues ; il disparaît quand le joueur ouvre l'écran ou
+  fait ce que la notification demandait (répondre à la disponibilité,
+  remplir son prono, voter pour l'Homme du match). L'historique garde
+  90 jours et démarre vide : les notifications envoyées avant cette version
+  n'y figurent pas. Les envois d'essai n'y entrent jamais ;
+- notifications : la cloche n'est plus verte quand le téléphone bloque
+  l'affichage des notifications dans ses réglages. Un bandeau en haut de
+  l'application prévient le joueur quand son appareil ne recevra rien sans
+  qu'il l'ait choisi (affichage bloqué par le téléphone, ou appareil
+  désabonné après une déconnexion) et le réabonne en un geste. Chaque
+  téléphone signale aussi au serveur les notifications qu'il a réellement
+  affichées : un envoi accepté par Apple ou Google mais jamais montré se voit
+  enfin ;
+- fiche joueur : le prénom et le surnom se placent à égale distance de la
+  photo et du badge. Une photo détourée (fond transparent) ne remplit pas
+  son carré : seule la partie visible de la photo compte désormais ;
+- fiche joueur : dans les derniers matchs, le score d'un match nul est en
+  orange, comme une victoire en vert et une défaite en rouge ;
+- compte rendu de match : l'onglet Effectif n'affiche plus de texte
+  d'explication sur le terrain et le banc, et Faits du match n'affiche plus
+  « Maintiens un but pour changer son ordre » (le geste reste possible) ;
+- compte rendu de match : la passe décisive porte le crampon de la
+  composition au lieu de la poignée de main ;
+- Homme du match : la liste de vote affiche, pour chaque joueur, les icônes
+  de la composition (ballon et nombre de buts, puis crampon et nombre de
+  passes décisives) au lieu de « 0 but », « Clean sheet » ou « A
+  encaissé » ; un joueur sans but ni passe n'affiche plus rien. Le crampon
+  de passe décisive a désormais la même taille que le ballon, sur le
+  terrain comme sur la fiche joueur ;
+- Homme du match : la notification d'ouverture du vote annonce le score
+  final (« Fin du match » — « AS Grinta 2 - 1 Positive Vibration » — « Pense
+  à voter pour l'Homme du match. »), équipe à domicile en premier ;
+- notifications : sur iPhone, l'icône de l'application affiche une pastille
+  avec le nombre de notifications non lues, le même que la cloche ;
+- liste d'attente : un joueur est prévenu (« Tu passes en liste
+  d'attente ») dès qu'il entre en liste d'attente, et plus seulement quand
+  il perd une place de convoqué. Cela vaut pour les joueurs déjà en attente
+  à la première publication de l'effectif et pour une réponse « Présent »
+  qui tombe directement en attente. Entrer directement chez les convoqués
+  reste silencieux ; passer de la liste d'attente aux convoqués envoie
+  toujours « Tu es convoqué » ;
+- notifications : quand cet appareil ne reçoit rien (cloche du haut grise),
+  les cloches réglables passent en gris, inactives, avec « Coupées sur cet
+  appareil ». Elles restaient vertes alors que rien n'arrivait ;
+- notifications : l'abonnement de l'appareil est réenregistré à chaque
+  ouverture de l'application. La cloche du haut ne peut plus rester verte
+  pour un téléphone que le serveur ne connaît plus (autre compte connecté
+  sur ce téléphone, appareil remplacé par un plus récent) ;
+- notifications : convocation, liste d'attente, composition, résultat Homme
+  du match, badges, messages libres et tests laissent désormais une trace de
+  livraison par appareil, comme les autres notifications. Un refus d'Apple
+  ou de Google ne passe plus inaperçu ;
+
+- fiche joueur : le surnom s'affiche entre guillemets (« Surnom ») au lieu
+  de « SURNOM Surnom » ; dans « Derniers matchs », le score s'écrit dans
+  l'ordre domicile – extérieur (une victoire 5-0 à l'extérieur devient 0-5)
+  et toucher un match ouvre sa fiche, la flèche retour ramenant à la fiche
+  joueur ;
+- passes décisives : le crampon cerclé blanc est posé sur un disque noir,
+  pour rester lisible sur le terrain et sur les photos ;
+- photos de profil : une photo à fond transparent (joueur détouré) garde sa
+  transparence au lieu de prendre un fond blanc ; elle est alors enregistrée
+  en PNG, les photos ordinaires restant en JPEG ;
+- calendrier : plus d'espace entre deux cartes de match ;
+- Android : glisser depuis le bord gauche de l'écran revient à la page
+  précédente, comme sur iPhone ;
+- fiche joueur : « Derniers matchs » montre les 5 derniers matchs amicaux
+  ou de championnat, même s'ils s'étendent sur la saison précédente ; les
+  matchs « entre nous » n'y figurent plus. Le rang au club sur le % de
+  victoires et les buts par match n'est donné qu'à partir d'un nombre de
+  matchs joués (20 en carrière, 5 sur la saison précédente, 5 sur la saison
+  en cours une fois que l'équipe a joué plus de 5 matchs) ; en dessous, la
+  fiche affiche N/A, et le joueur ne compte pas dans le classement des
+  autres ;
+- notifications : les interrupteurs des notifications réglables (rappel
+  pronostic, vote Homme du match, composition, badge, changement de
+  disponibilité côté admin) deviennent des cloches, vertes quand la
+  notification est activée et grises sinon, comme celle des notifications
+  essentielles ;
+- fiche joueur : l'en-tête affiche le vrai prénom (« François », plus en
+  majuscules), et en dessous « Surnom » suivi du surnom s'il existe, le tout
+  centré entre la photo et le badge. Le badge arboré est réduit à la hauteur
+  de la photo ;
+- liste d'attente : un joueur qui passe des convoqués à la liste d'attente
+  reçoit « Tu passes en liste d'attente », sur le modèle de « Tu es
+  convoqué ». Les deux notifications (convoqué ↔ liste d'attente) deviennent
+  essentielles : elles partent toujours et ne se règlent plus une par une.
+  Seuls le coupe-circuit général et la désactivation complète sur l'appareil
+  les arrêtent ;
+- armoire à badges : un badge mystère déjà gagné par au moins un membre du
+  club n'est plus caché. Il apparaît en noir et blanc, sous cadenas, et
+  s'ouvre comme les autres badges pour lire son nom et sa condition. Le
+  détail d'un badge, dans l'armoire comme sur une fiche joueur, liste les
+  joueurs qui l'ont obtenu ;
+- fiche joueur : « Bilan avec lui » devient « Bilan ». Dans « Derniers
+  matchs », buts, passes décisives et Homme du match reprennent les icônes
+  des compositions (ballon, crampon, couronne) ;
+- compositions : l'emoji 👟 des passes décisives est remplacé par un vrai
+  crampon dessiné (tige blanche, liseré jaune, semelle à crampons), lisible
+  sur le terrain comme sur fond sombre ;
+- fiche joueur : en-tête allégé (photo comme sur les compositions, sans
+  poste ni nombre de matchs) et badge arboré nettement plus grand. Les six
+  statistiques suivent l'ordre Matchs, % Victoires, Buts, Passes D., HDM,
+  Buts / match, chacune avec le rang du joueur au club ; le chiffre passe en
+  or, argent ou bronze pour les trois premiers. Nouveau module « Badges »
+  qui reprend tous les badges gagnés, secrets compris ;
+- statistiques : toucher le nom d'un joueur, dans l'onglet Joueurs comme
+  dans l'onglet Prono, ouvre sa fiche joueur. On y trouve son poste, son
+  nombre de matchs au club, ses chiffres par période (saison, précédente,
+  carrière) avec son rang au club, son bilan victoires/nuls/défaites, sa
+  forme sur les cinq derniers matchs et la liste de ses derniers matchs
+  suivis dans l'application. Ailleurs (classement des pronos dans le
+  Calendrier), les noms ne sont pas cliquables ;
+- liste d'attente : enregistrer l'effectif d'un match ne fige plus que les
+  joueurs qu'un admin a réellement déplacés. Jusqu'ici, chaque enregistrement
+  figeait aussi tous les joueurs déjà disponibles : ceux qui répondaient
+  ensuite se partageaient les seules places restantes, quel que soit leur
+  rang. Le surplus passe désormais en attente selon l'ordre de la liste, même
+  si un joueur déjà convoqué doit céder sa place à une réponse plus tardive.
+  Ce joueur est prévenu par la notification « Tu passes en liste
+  d'attente » ;
+- fiches de match (passées, archivées, à venir, version admin) : plus de
+  barre en haut. L'écusson, le titre « Fiche du match » et le bouton
+  d'actualisation disparaissent ; le bandeau du match se place à droite de la
+  flèche retour et tout le contenu remonte. Noms d'équipes et écusson du
+  bandeau sont plus petits, à la même taille sur toutes les fiches, et un
+  texte trop long passe à la ligne au lieu d'être coupé par « … ». Tirer
+  l'écran vers le bas recharge toujours la fiche ;
+- abonnement au calendrier : ouvert dans un navigateur, le lien affiche une
+  page qui mène à l'abonnement au lieu de proposer « Ajouter tous les
+  événements », une copie unique qui ne se mettait jamais à jour. Pour Apple
+  Calendrier, le lien copié est désormais un lien d'abonnement (webcal) ;
+- abonnement au calendrier sur iPhone : le bouton « Apple Calendrier » ouvre
+  l'abonnement dans la page en cours et tout de suite, avant de copier le
+  lien. Ouvert jusqu'ici dans une nouvelle fenêtre après la copie, il pouvait
+  être bloqué par Safari sans aucun message. Si l'abonnement ne s'affiche
+  pas, le message propose d'ouvrir la page d'abonnement. Outlook s'ouvre
+  depuis le bouton du message, une fois le lien copié. Si l'appareil refuse
+  la copie du lien, un message le dit et mène à la page d'abonnement au lieu
+  de ne rien afficher. Plusieurs appuis rapides n'empilent plus les fenêtres
+  de choix ;
+- tableaux (Statistiques, Prono…) : la flèche de tri disparaît de la colonne
+  sélectionnée, signalée seulement par la couleur de son libellé ;
+- notifications de disponibilité (ouverture, relance, match reporté) : elles
+  ouvrent le calendrier directement sur la carte du match, là où se choisit
+  Présent / Absent, au lieu de l'onglet Effectif de la fiche du match ;
+- badge « Traître » : décerné seulement si l'AS Grinta perd réellement, comme
+  l'annonce sa description (« … et avoir raison »). La règle comptait jusqu'ici
+  tout pronostic de défaite, même faux ; le badge attribué ainsi à tort est
+  retiré ;
+- badge « Triplé Chrono » : décerné automatiquement à qui marque trois buts
+  ou plus dans la même mi-temps (mi-temps notée par le Live, sinon déduite de
+  la minute) ; les matchs déjà validés sont rattrapés ;
+- notifications : chacune ouvre l'écran qu'elle annonce. Convocation,
+  composition en ligne, résultat Homme du match, badges débloqués et
+  changement de disponibilité (admin) ouvraient jusqu'ici l'accueil ;
+- « Francois » devient « François » sur le profil, l'effectif, l'identité du
+  joueur et les statistiques d'archives ; l'identifiant de connexion ne change
+  pas ;
+- Statistiques → Prono : nouvelle colonne « Prono » (pronostics remplis sur
+  les matchs terminés) avant « Bons », et points centrés ;
+- fiche d'un match à venir : « 5 dernières rencontres » devient « Dernières
+  rencontres », et la date de chaque rencontre passe en blanc (Info et
+  Prono), le score et le cadre gardant la couleur du résultat ;
+- Live : seul le coach de la saison pilote. Il arrive directement sur le
+  pilotage, sans la barre « Spectateur | Piloter » ; tous les autres,
+  administrateurs compris, arrivent directement en spectateur. Le serveur
+  refuse la place de pilote à tout autre profil ;
+- compte rendu : un coach qui n'est pas administrateur peut de nouveau le
+  valider après le Live (la validation échouait sur un contrôle réservé aux
+  administrateurs) ;
+- fiche du match : « Faits du match » adopte la présentation des sites de
+  résultats (minute au bord, pastille ⚽ avec le score, buteur puis
+  passeur entre parenthèses en gris, buts adverses en miroir à droite) ;
+- statistiques d'équipe : le graphique « Écart de score » regroupe les écarts
+  par tranches de 3 buts (1-3, 4-6, 7-9, 10 et plus) au lieu de 1 en 1, pour
+  que les larges victoires ne s'entassent plus dans une seule colonne ;
+- écran Badges : retrait des phrases d'explication et des barres de recherche
+  dans les onglets Mystères (Manuel et Automatique) et Communs ;
+- archives : les 15 matchs joués avec Samih qui n'avaient qu'une liste de
+  présents affichent désormais une composition reconstituée (formation des
+  matchs voisins, joueurs à leur poste habituel, postes vides quand l'effectif
+  était incomplet) ;
+- notifications sur Android : la petite icône de la barre d'état montre la
+  silhouette du blason au lieu d'un carré blanc ou noir ;
+- retrait du pari « Buteurs » (pronostic de saison) : saisie, verrouillage des
+  paris, gel de l'effectif, classement Buteurs, bonus d'ordre, titres
+  « meilleur prono joueurs » et « meilleur pronostiqueur global », et leurs
+  badges ;
+- le pronostic de match devient la seule compétition : les trois onglets de
+  classement (Matchs, Buteurs, Global) laissent place à un classement unique.
+- compte rendu d'un match terminé : la liste des buts s'affiche en entier dans
+  la page et le bouton « Valider le compte rendu » redevient atteignable ; il
+  n'y a plus de zone de défilement imbriquée qui coupait la saisie des buteurs
+  et des passeurs.
+- calendrier (« Défilé » et « Par mois ») : chaque rencontre s'affiche sur une
+  ligne « Équipe 1  score – score  Équipe 2 », score (ou « VS ») pile au
+  milieu de la carte, écusson à côté d'AS Grinta ; un nom trop long passe sur
+  plusieurs lignes en police un peu plus petite. « Match entre nous » et le
+  titre des événements sont centrés.
+- calendrier : le score a la même taille que les noms d'équipes, sur la même
+  ligne ; les cartes sont plus aérées (plus d'espace entre les lignes d'une
+  carte et entre deux cartes).
+- calendrier : les noms d'équipes gardent toujours leur taille normale et
+  passent à la ligne s'ils ne tiennent pas ; chaque équipe est à la même
+  distance du score.
+- paramètres : les sous-titres « Déclarer une période d’absence »
+  (Indisponibilité) et « Adversaires, stades et adresses » (Équipes & stades)
+  sont retirés.
+- calendrier : un nom d'équipe sur plusieurs lignes est centré sur lui-même ;
+  le type (Amical, Championnat · J20, Événement…) suit l'heure sur la ligne de
+  la date ; l'icône devant l'adresse est retirée.
+- calendrier : un nom d'équipe trop long est réparti sur des lignes de
+  longueur équilibrée (« TOAC Foot / Loisir 2 » au lieu d'un « 2 » seul en
+  dessous).
+- calendrier : chaque nom d'équipe est centré dans sa moitié de carte (comme
+  les boutons Présent / Absent), l'écusson d'AS Grinta restant côté extérieur.
+- calendrier : nouvelles couleurs (bleu marine championnat, bleu clair amical,
+  violet match entre nous, or événement) ; chaque carte est découpée en trois
+  zones, avec la date et l'adresse dans des bandeaux plus foncés.
+- calendrier : le championnat repasse en bleu (au lieu de bleu marine),
+  l'amical s'éclaircit pour rester distinct, et le score a la même épaisseur
+  visuelle que les noms d'équipes.
+- calendrier « Par mois » : la saison se choisit avec des flèches gauche/droite,
+  comme le mois, au lieu d'un menu déroulant ; nom centré, sans icône ni
+  intitulé « Saison ».
+- calendrier : les matchs amicaux passent au bleu #153D66.
+- paramètres : une carte du compte (photo, nom, identifiant, rôle) remplace
+  la ligne « Profil » et ouvre le profil ; les réglages sont regroupés en
+  « Mon compte » et « Club · admin » (admins seulement), une seule carte par
+  groupe ; « Se déconnecter » est aussi proposé en bas des paramètres, avec
+  la même confirmation que dans le profil.
+
+### Performance
+
+- ouverture : le programme de l'application (1,7 Mo) n'est plus
+  retéléchargé à chaque ouverture. Il reste sur le téléphone jusqu'à la
+  version suivante, dont le programme est préchargé en arrière-plan dès
+  qu'elle est repérée, application ouverte. Dans une simulation sur une 4G
+  correcte, la réouverture passe d'environ 3 s à environ 1 s. La toute
+  première ouverture ne recharge plus la page en plein démarrage ;
+- programme allégé de 19 % (5,86 Mo -> 4,73 Mo ; 1,65 Mo -> 1,39 Mo
+  téléchargés) : traductions de Flutter réduites au français (plus de
+  quatre-vingts langues embarquées), outil de retouche photo, écrans admin
+  et bilan de saison téléchargés à leur première ouverture ;
+- calendrier : « ma dispo » et la cloche des buts de tous les matchs à venir
+  arrivent en une seule requête au lieu de deux par carte (environ 26) ;
+  l'état de la cloche n'est plus redemandé en faisant défiler ;
+- retour dans l'application après une courte absence : seuls le signal de
+  synchronisation et la cloche sont relus, au lieu de tout recharger
+  (calendrier complet, profil, une vingtaine de blocs) ; tout est rechargé
+  après 30 minutes d'absence ;
+- ouverture : le dernier profil confirmé s'affiche sans attendre le
+  serveur, qui le confirme ou le remplace juste après ;
+- fiche d'un match terminé, armoire à trophées, composition admin : les
+  lectures indépendantes partent ensemble au lieu de s'enchaîner (huit
+  requêtes successives sur la fiche d'un match terminé) ;
+- défilement : les barres du haut et du bas ne recalculent plus un flou
+  invisible à chaque image ; l'écusson est décodé à sa taille d'affichage ;
+- cloche des alertes de buts : pour un match dont les alertes ouvrent dans
+  plus de 24,8 jours, l'application relisait l'état de la cloche sans fin
+  (une minuterie trop longue se déclenche immédiatement dans un navigateur).
+  Cette boucle invisible représentait plus de 90 % des requêtes du projet et
+  avait fait dépasser les quotas gratuits de Supabase. L'attente est
+  désormais plafonnée à 12 h ;
+- garde-fous contre une nouvelle surconsommation : l'application espace et
+  signale toute requête identique répétée plus de 60 fois par minute, et un
+  contrôle quotidien sur GitHub alerte par e-mail dès que le volume de
+  requêtes de la production devient anormal. Voir `docs/observability.md` ;
+- l'application ne recharge plus la liste complète des pronostics de
+  l'utilisateur (deux requêtes au serveur) à l'ouverture de Pronos, à chaque
+  actualisation, après chaque pronostic enregistré et à chaque
+  synchronisation : aucun écran ne lisait cette liste ;
+- les tâches planifiées chaque minute (ouverture/fermeture des disponibilités,
+  fin des matchs internes) ne déclenchent plus le signal de synchronisation
+  quand elles n'ont rien à faire : les applications ouvertes ne rechargent
+  plus toutes leurs données à chaque minute ronde. Voir
+  `docs/changes/idle-cron-shared-data-signal.md`.
+
+### Maintenance
+
+- rangement du dépôt, sans changement pour les joueurs : tests classés
+  selon l'arborescence du code (un contrôle l'impose désormais), quatre
+  gros écrans découpés, outil d'extraction de l'historique SportEasy
+  retiré une fois l'import terminé, README de présentation et règles
+  détaillées dans `docs/regles-metier.md`. Les branches sont supprimées
+  automatiquement après fusion, et le workflow manuel « Ménage des
+  branches » retire les anciennes sans rien perdre (voir
+  `docs/repository-protection.md`) ;
+- dépôt passé en privé : les vérifications automatiques consomment désormais
+  un quota mensuel. Elles ne se relancent plus quand seul le titre d'une pull
+  request change, ni quand une modification de `main` ne touche que la
+  documentation ou le verrou de migrations ; les contrôles de dérive de la
+  production passent de quotidiens à hebdomadaires. Aucun changement pour les
+  joueurs.
+- nettoyage du dépôt, sans changement visible pour les joueurs : retrait de
+  fichiers qui ne servaient plus (déclencheurs de CI, marqueur de déploiement,
+  anciens logos et images jamais affichés, deux fonds d'écran encodés jamais
+  chargés, captures et maquettes de l'audit visuel, configuration Replit qui
+  n'est plus utilisée), du code d'anciennes fonctions remplacées (export `.ics` local
+  remplacé par l'abonnement au calendrier, carte des buteurs, section
+  d'administration du module sportif, simulation et terrain de l'ancienne
+  composition interne, interrupteur du module sportif devenu permanent) et de
+  petits accès devenus inutilisés ;
+- retrait de la lecture côté application de la chronologie du direct : les
+  « Faits du match » viennent du compte rendu validé depuis la suppression
+  de leur effacement (migration `20260829000400`). La fonction serveur reste
+  en place pour les anciennes versions de l'application.
+
+## 0.2.2+4 — 2026-07-27
+
+### Sécurité et données
+
+- verrouillage complet des permissions visiteur, compte en attente, joueur et administrateur ;
+- couverture transactionnelle des politiques RLS, des RPC sensibles et des buckets Storage ;
+- export personnel et documentation de confidentialité déployés ;
+- propagation en temps réel des changements de feature flags aux sessions actives.
+
+### Notifications et exploitation
+
+- gestion reproductible de plusieurs appareils et des endpoints partagés ;
+- nettoyage ciblé des abonnements expirés ;
+- relance unique des échecs Web Push temporaires et journalisation du nombre d’essais ;
+- indicateurs agrégés de santé du pipeline de notifications ;
+- retrait du dépôt de l’ancienne fonction `import-match-background`.
+
+### Tests et qualité
+
+- scénario de charge automatisé sur huit saisons, 480 matchs et plus de 46 000 lignes métier ;
+- mesure de la couverture Flutter avec un plancher initial de non-régression à 15 % ;
+- installation verrouillée des dépendances et audit des paquets abandonnés, vulnérables ou retirés ;
+- formatage de tous les fichiers Dart et analyse avec avertissements et informations bloquants.
+
+## 0.2.1+3 — 2026-07-26
+
+### Fiabilité et sécurité
+
+- sécurisation des suppressions de joueurs et de comptes déjà liés à l’historique ;
+- durcissement des fonctions Supabase privilégiées et des politiques RLS internes ;
+- neutralisation des anciennes fonctions de maintenance ;
+- contrôle systématique de la dérive des migrations de production ;
+- diagnostic reproductible des erreurs, tâches planifiées et requêtes coûteuses ;
+- validation binaire, limite de taille et nettoyage des photos téléversées.
+
+### Tests et livraison
+
+- passage obligatoire par les contrôles Flutter et Supabase avant déploiement ;
+- exécution de l’ensemble des tests pgTAP présents dans le dépôt ;
+- diagnostic Web sur mobile, paysage et ordinateur ;
+- test de rechargement PWA hors ligne et d’ouverture d’un lien direct.
+
+### Statistiques et saisons
+
+- restauration des statistiques joueurs et équipe de la saison 2025-2026 ;
+- bascule automatique de la saison actuelle vers « Saison précédente » ;
+- conservation des statistiques historiques sans recréer de joueurs dans l’effectif.
+
+### Interface
+
+- amélioration des écrans Matchs, compositions et listes d’attente ;
+- ajout d’un système de chargement propre à l’application ;
+- mise en évidence de la ligne de l’utilisateur connecté ;
+- bandeau de mise à jour PWA accessible au clavier.
+
+## 0.2.0+2 — 2026-07-14
+
+### Fiabilité
+
+- sécurisation des migrations Supabase et détection de dérive ;
+- couverture des parcours Auth, routeur, administration et pronostics ;
+- tests transactionnels des invariants critiques Supabase ;
+- routeur conservé entre les changements de session.
+
+### Architecture
+
+- suppression d’un ancien écran de pronostics de saison inutilisé ;
+- découpage du hub Pronos en composants spécialisés ;
+- découpage de la page Administration ;
+- centralisation de la configuration de build.
+
+### Interface
+
+- séparation des comptes administratifs entre « Validés » et « En attente de validation » ;
+- renommage de l’onglet « Saison » en « Buteur » ;
+- affichage de la version dans l’écran « Plus ».
+
+## 0.1.0+1
+
+- première version de l’application.

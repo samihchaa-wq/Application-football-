@@ -1,0 +1,422 @@
+import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:as_grinta/features/badges/data/badge_inbox_repository.dart';
+import 'package:as_grinta/features/notifications/data/notification_inbox_repository.dart';
+import 'package:as_grinta/features/notifications/presentation/notifications_page.dart';
+import 'package:as_grinta/features/preferences/data/preferences_repository.dart';
+import 'package:as_grinta/features/preferences/data/push_subscriptions_repository.dart';
+import 'package:as_grinta/features/season_wrapped/data/season_wrapped_repository.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// Le navigateur ne sait ni s'abonner ni se désabonner dans un test : cette
+/// doublure tient l'état de l'abonnement à sa place, et compte les appels
+/// pour qu'un désabonnement rejoué ou oublié se voie.
+class _FakePushSubscriptions implements PushSubscriptionsRepository {
+  _FakePushSubscriptions({
+    required this.subscribed,
+    this.failOnDisable = false,
+  });
+
+  bool subscribed;
+  final bool failOnDisable;
+  int disableCalls = 0;
+  int enableCalls = 0;
+  int resyncCalls = 0;
+
+  @override
+  Future<bool> isSupported() async => true;
+
+  @override
+  Future<bool> resync() async {
+    resyncCalls += 1;
+    return subscribed;
+  }
+
+  @override
+  Future<bool> isSubscribed() async => subscribed;
+
+  @override
+  Future<bool> enable() async {
+    enableCalls += 1;
+    subscribed = true;
+    return true;
+  }
+
+  @override
+  Future<void> disable() async {
+    disableCalls += 1;
+    if (failOnDisable) throw StateError('réseau indisponible');
+    subscribed = false;
+  }
+}
+
+Future<void> _pumpNotifications(
+  WidgetTester tester,
+  _FakePushSubscriptions repository, {
+  bool supported = true,
+}) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        pushSubscriptionsRepositoryProvider.overrideWithValue(repository),
+        // Relit la doublure à chaque invalidation : c'est ce qui prouve que
+        // la carte se met à jour après l'action, et pas seulement que
+        // l'action a été appelée.
+        pushStatusProvider.overrideWith(
+          (ref) async => (
+            supported: supported,
+            subscribed: supported && repository.subscribed,
+          ),
+        ),
+        appPreferencesProvider.overrideWith(
+          (ref) async => const AppPreferences(),
+        ),
+        // Le reste de l'écran est réservé aux administrateurs : le garder
+        // fermé isole la carte des notifications de cet appareil.
+        isAdminViewProvider.overrideWithValue(false),
+        // La barre du haut porte deux boutons qui interrogent le serveur.
+        // Sans ces doublures, le test échouerait pour une raison sans rapport
+        // avec le bouton qu'il vérifie.
+        hasUnseenBadgeProvider.overrideWith((ref) async => false),
+        seasonWrappedStateProvider.overrideWith(
+          (ref) async => const SeasonWrappedState.unavailable(),
+        ),
+        notificationInboxRepositoryProvider.overrideWithValue(
+          _EmptyInbox(),
+        ),
+      ],
+      child: const MaterialApp(
+        home: NotificationsPage(initialTab: NotificationsTab.settings),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+void main() {
+  // Éteindre la cloche retient le choix sur l'appareil.
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  group('cloche des notifications de cet appareil', () {
+    // Les notifications réglables ont aussi leur cloche : on ne regarde que
+    // celle de l'encadré du haut.
+    final essentialCard = find.ancestor(
+      of: find.text('Notifications essentielles'),
+      matching: find.byType(Card),
+    );
+    final activeBell = find.descendant(
+      of: essentialCard,
+      matching: find.byIcon(Icons.notifications_rounded),
+    );
+    final inactiveBell = find.descendant(
+      of: essentialCard,
+      matching: find.byIcon(Icons.notifications_none_rounded),
+    );
+
+    testWidgets('un appareil abonné affiche la cloche active', (tester) async {
+      final repository = _FakePushSubscriptions(subscribed: true);
+      await _pumpNotifications(tester, repository);
+
+      expect(find.text('Notifications essentielles'), findsOneWidget);
+      expect(activeBell, findsOneWidget);
+      expect(inactiveBell, findsNothing);
+    });
+
+    testWidgets(
+      'appuyer sur la cloche active désabonne et la passe en gris',
+      (tester) async {
+        final repository = _FakePushSubscriptions(subscribed: true);
+        await _pumpNotifications(tester, repository);
+
+        await tester.tap(activeBell);
+        await tester.pumpAndSettle();
+
+        expect(repository.disableCalls, 1);
+        expect(repository.subscribed, isFalse);
+        // Choix du joueur : le bandeau du haut ne le contredira pas.
+        expect(await readPushOptOut(), isTrue);
+        expect(
+          find.text('Notifications désactivées sur cet appareil.'),
+          findsOneWidget,
+        );
+        // Sans cette bascule, la cloche resterait verte alors que
+        // l'appareil n'est plus abonné.
+        expect(inactiveBell, findsOneWidget);
+        expect(activeBell, findsNothing);
+      },
+    );
+
+    testWidgets(
+      'un échec de désabonnement est annoncé, pas masqué',
+      (tester) async {
+        final repository = _FakePushSubscriptions(
+          subscribed: true,
+          failOnDisable: true,
+        );
+        await _pumpNotifications(tester, repository);
+
+        await tester.tap(activeBell);
+        await tester.pumpAndSettle();
+
+        expect(repository.disableCalls, 1);
+        expect(repository.subscribed, isTrue);
+        expect(
+          find.text('Impossible de désactiver les notifications.'),
+          findsOneWidget,
+        );
+        // L'appareil est toujours abonné : la cloche ne doit pas prétendre
+        // le contraire.
+        expect(activeBell, findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'appuyer sur la cloche grise abonne et la passe en vert',
+      (tester) async {
+        final repository = _FakePushSubscriptions(subscribed: false);
+        await _pumpNotifications(tester, repository);
+
+        expect(inactiveBell, findsOneWidget);
+        await tester.tap(inactiveBell);
+        await tester.pumpAndSettle();
+
+        expect(repository.enableCalls, 1);
+        expect(activeBell, findsOneWidget);
+        expect(inactiveBell, findsNothing);
+      },
+    );
+  });
+
+  testWidgets(
+    'chaque notification réglable a sa cloche, verte une fois activée',
+    (tester) async {
+      await _pumpNotifications(
+        tester,
+        _FakePushSubscriptions(subscribed: true),
+      );
+
+      for (final title in const [
+        'Rappel pronostic',
+        'Vote Homme du match',
+        'Composition en ligne',
+        'Badge débloqué',
+      ]) {
+        final row = find.ancestor(
+          of: find.text(title),
+          matching: find.byType(Row),
+        );
+        expect(
+          find.descendant(
+            of: row.first,
+            matching: find.byIcon(Icons.notifications_rounded),
+          ),
+          findsOneWidget,
+          reason: title,
+        );
+      }
+      expect(find.byType(Switch), findsNothing);
+    },
+  );
+
+  group('cloches réglables quand cet appareil ne reçoit rien', () {
+    const optionalTitles = [
+      'Rappel pronostic',
+      'Vote Homme du match',
+      'Composition en ligne',
+      'Badge débloqué',
+    ];
+
+    Finder bellRow(String title) =>
+        find.ancestor(of: find.text(title), matching: find.byType(Row)).first;
+
+    IconButton bellOf(WidgetTester tester, String title) =>
+        tester.widget<IconButton>(
+          find.descendant(
+            of: bellRow(title),
+            matching: find.byType(IconButton),
+          ),
+        );
+
+    testWidgets(
+      'appareil désabonné : cloches grises, inactives, et la raison affichée',
+      (tester) async {
+        await _pumpNotifications(
+          tester,
+          _FakePushSubscriptions(subscribed: false),
+        );
+
+        expect(find.text('Coupées sur cet appareil'), findsOneWidget);
+        for (final title in optionalTitles) {
+          // Le réglage du compte reste activé, mais rien n'arrivera ici :
+          // une cloche verte le ferait croire.
+          expect(
+            find.descendant(
+              of: bellRow(title),
+              matching: find.byIcon(Icons.notifications_none_rounded),
+            ),
+            findsOneWidget,
+            reason: title,
+          );
+          expect(bellOf(tester, title).onPressed, isNull, reason: title);
+        }
+      },
+    );
+
+    testWidgets(
+      'réabonner l\'appareil rend aux cloches leur couleur et leur action',
+      (tester) async {
+        final repository = _FakePushSubscriptions(subscribed: false);
+        await _pumpNotifications(tester, repository);
+
+        final essentialCard = find.ancestor(
+          of: find.text('Notifications essentielles'),
+          matching: find.byType(Card),
+        );
+        await tester.tap(
+          find.descendant(
+            of: essentialCard,
+            matching: find.byIcon(Icons.notifications_none_rounded),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Coupées sur cet appareil'), findsNothing);
+        for (final title in optionalTitles) {
+          expect(
+            find.descendant(
+              of: bellRow(title),
+              matching: find.byIcon(Icons.notifications_rounded),
+            ),
+            findsOneWidget,
+            reason: title,
+          );
+          expect(bellOf(tester, title).onPressed, isNotNull, reason: title);
+        }
+      },
+    );
+
+    testWidgets(
+      'appareil incapable de recevoir : cloches grises, raison dite une fois',
+      (tester) async {
+        await _pumpNotifications(
+          tester,
+          _FakePushSubscriptions(subscribed: false),
+          supported: false,
+        );
+
+        // L'encadré du haut le dit déjà : pas de seconde mention.
+        expect(find.text('Indisponibles sur cet appareil'), findsOneWidget);
+        expect(find.text('Coupées sur cet appareil'), findsNothing);
+        for (final title in optionalTitles) {
+          expect(bellOf(tester, title).onPressed, isNull, reason: title);
+        }
+      },
+    );
+  });
+
+  group('coupure générale des notifications (administrateur)', () {
+    late List<bool> pauseCalls;
+
+    Future<void> pumpAdmin(WidgetTester tester) async {
+      pauseCalls = [];
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            setNotificationsPausedProvider.overrideWithValue(
+              (enable) async => pauseCalls.add(enable),
+            ),
+            pushSubscriptionsRepositoryProvider.overrideWithValue(
+              _FakePushSubscriptions(subscribed: true),
+            ),
+            pushStatusProvider.overrideWith(
+              (ref) async => (supported: true, subscribed: true),
+            ),
+            appPreferencesProvider.overrideWith(
+              (ref) async => const AppPreferences(),
+            ),
+            isAdminViewProvider.overrideWithValue(true),
+            adminAvailabilityChangeNotificationProvider.overrideWith(
+              (ref) async => true,
+            ),
+            notificationsPausedProvider.overrideWith((ref) async => false),
+            hasUnseenBadgeProvider.overrideWith((ref) async => false),
+            seasonWrappedStateProvider.overrideWith(
+              (ref) async => const SeasonWrappedState.unavailable(),
+            ),
+            notificationInboxRepositoryProvider.overrideWithValue(
+              _EmptyInbox(),
+            ),
+          ],
+          child: const MaterialApp(
+            home: NotificationsPage(initialTab: NotificationsTab.settings),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> tapKillSwitch(WidgetTester tester) async {
+      // La carte est en bas d'une liste construite à la demande.
+      final title = find.text('Désactiver toutes les notifications');
+      await tester.scrollUntilVisible(
+        title,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.ensureVisible(title);
+      await tester.pumpAndSettle();
+      await tester.tap(title);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('annuler la confirmation ne coupe rien', (tester) async {
+      await pumpAdmin(tester);
+      await tapKillSwitch(tester);
+
+      expect(
+        find.text('Désactiver toutes les notifications ?'),
+        findsOneWidget,
+      );
+      await tester.tap(find.widgetWithText(TextButton, 'Annuler'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Désactiver toutes les notifications ?'), findsNothing);
+      expect(pauseCalls, isEmpty);
+      expect(
+        find.text('Toutes les notifications sont désactivées.'),
+        findsNothing,
+      );
+    });
+
+    testWidgets('confirmer coupe les notifications du club', (tester) async {
+      await pumpAdmin(tester);
+      await tapKillSwitch(tester);
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Tout désactiver'));
+      await tester.pumpAndSettle();
+
+      expect(pauseCalls, [true]);
+      expect(
+        find.text('Toutes les notifications sont désactivées.'),
+        findsOneWidget,
+      );
+    });
+  });
+}
+
+/// Historique vide : l'onglet Historique reste monté derrière les réglages.
+class _EmptyInbox implements NotificationInboxRepository {
+  @override
+  Future<List<NotificationHistoryEntry>> fetchHistory() async => const [];
+
+  @override
+  Future<int> unreadCount() async => 0;
+
+  @override
+  Future<int> markAllRead() async => 0;
+
+  @override
+  Future<void> delete(int id) async {}
+}

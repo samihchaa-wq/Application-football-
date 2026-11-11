@@ -1,0 +1,654 @@
+import 'package:as_grinta/core/utils/app_errors.dart';
+import 'package:as_grinta/features/players/data/roster_repository.dart';
+import 'package:as_grinta/features/sports_management/data/match_kit_photo_overrides.dart';
+import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
+import 'package:as_grinta/core/widgets/grinta_empty_state.dart';
+import 'package:as_grinta/core/widgets/photo_crop_preview.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:as_grinta/core/widgets/grinta_loader.dart';
+
+/// Effectif de la saison. Chaque joueur peut être relié à un compte de
+/// pronostiqueur, sans que cette liaison soit obligatoire.
+class PlayersRegistryPage extends ConsumerWidget {
+  const PlayersRegistryPage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final seasonAsync = ref.watch(openSeasonIdProvider);
+
+    return Scaffold(
+      appBar: GrintaAppBar(title: const Text('Effectif')),
+      body: seasonAsync.when(
+        loading: () => const Center(child: GrintaProgressIndicator()),
+        error: (error, _) => Center(child: Text(humanizeError(error))),
+        data: (seasonId) {
+          if (seasonId == null) {
+            return const Center(
+              child: GrintaEmptyState(
+                icon: Icons.calendar_month_rounded,
+                title: 'Aucune saison ouverte',
+                message: 'Crée une saison dans Administration pour définir '
+                    'ton effectif.',
+              ),
+            );
+          }
+          return _RosterList(seasonId: seasonId);
+        },
+      ),
+    );
+  }
+}
+
+class _RosterList extends ConsumerWidget {
+  const _RosterList({required this.seasonId});
+
+  final String seasonId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final rosterAsync = ref.watch(rosterProvider(seasonId));
+
+    return rosterAsync.when(
+      loading: () => const Center(child: GrintaProgressIndicator()),
+      error: (error, _) => Center(child: Text(humanizeError(error))),
+      data: (players) => RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(rosterProvider(seasonId));
+          await ref.read(rosterProvider(seasonId).future);
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () =>
+                    _showPlayerDialog(context, ref, seasonId: seasonId),
+                icon: const Icon(Icons.person_add_alt_1),
+                label: const Text('Ajouter un joueur à l’effectif'),
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (players.isEmpty)
+              const Card(
+                child: GrintaEmptyState(
+                  icon: Icons.groups_rounded,
+                  title: 'Effectif vide',
+                  message: 'Ajoute ton premier joueur avec le bouton '
+                      'ci-dessus.',
+                  compact: true,
+                ),
+              )
+            else
+              ...players.map(
+                (player) => Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    leading: PlayerAvatar(
+                      photoUrl: player.photoUrl,
+                      name: player.displayName,
+                      lastName: player.lastName,
+                      isGoalkeeper: player.isGoalkeeper,
+                      size: 44,
+                    ),
+                    title: Text(player.displayName),
+                    subtitle: Text(
+                      [
+                        if (player.isCoach) 'Coach',
+                        if (player.isGoalkeeper) 'Gardien',
+                        player.linkedProfileId == null
+                            ? 'Aucun compte lié'
+                            : 'Lié à ${player.linkedProfileLabel ?? 'un compte'}',
+                        // Le nom affiché vient du compte : on rappelle celui de
+                        // la fiche quand il diffère, pour que l'admin retrouve
+                        // le joueur qu'il a saisi.
+                        if (player.displayName != player.rosterName)
+                          'Fiche : ${player.rosterName}',
+                        if (!player.isActive) 'Archivé',
+                      ].join(' · '),
+                    ),
+                    trailing: PopupMenuButton<String>(
+                      onSelected: (action) async {
+                        final repo = ref.read(rosterRepositoryProvider);
+                        try {
+                          if (action == 'edit') {
+                            await _showPlayerDialog(
+                              context,
+                              ref,
+                              seasonId: seasonId,
+                              existing: player,
+                            );
+                            return;
+                          }
+                          if (action == 'photo') {
+                            await _chooseRosterPhoto(
+                              context,
+                              ref,
+                              seasonId: seasonId,
+                              player: player,
+                            );
+                            return;
+                          }
+                          if (action == 'link') {
+                            await _showProfileLinkDialog(
+                              context,
+                              ref,
+                              seasonId: seasonId,
+                              player: player,
+                              roster: players,
+                            );
+                            return;
+                          }
+                          if (action == 'unlink') {
+                            final confirmed = await _confirmUnlink(
+                              context,
+                              player,
+                            );
+                            if (!confirmed) return;
+                            await repo.setProfileLink(
+                              seasonPlayerId: player.id,
+                            );
+                            ref.invalidate(rosterProvider(seasonId));
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Liaison supprimée.'),
+                                ),
+                              );
+                            }
+                            return;
+                          }
+                          if (action == 'delete') {
+                            final confirmed =
+                                await _confirmDelete(context, player);
+                            if (!confirmed) return;
+                            await repo.deletePlayer(player.id);
+                          } else if (action == 'archive') {
+                            await repo.setActive(id: player.id, active: false);
+                          } else if (action == 'restore') {
+                            await repo.setActive(id: player.id, active: true);
+                          }
+                          ref.invalidate(rosterProvider(seasonId));
+                        } catch (error) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(humanizeError(error))),
+                            );
+                          }
+                        }
+                      },
+                      itemBuilder: (_) => [
+                        const PopupMenuItem(
+                          value: 'edit',
+                          child: Text('Modifier le joueur'),
+                        ),
+                        const PopupMenuItem(
+                          value: 'photo',
+                          child: Text('Changer photos'),
+                        ),
+                        PopupMenuItem(
+                          value: 'link',
+                          child: Text(
+                            player.linkedProfileId == null
+                                ? 'Relier à un compte'
+                                : 'Modifier la liaison',
+                          ),
+                        ),
+                        if (player.linkedProfileId != null)
+                          const PopupMenuItem(
+                            value: 'unlink',
+                            child: Text('Supprimer la liaison'),
+                          ),
+                        PopupMenuItem(
+                          value: player.isActive ? 'archive' : 'restore',
+                          child:
+                              Text(player.isActive ? 'Archiver' : 'Réactiver'),
+                        ),
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Text('Supprimer'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Trois emplacements distincts. La France reprend la photo qui existait deja.
+Future<void> _chooseRosterPhoto(
+  BuildContext context,
+  WidgetRef ref, {
+  required String seasonId,
+  required RosterPlayer player,
+}) async {
+  final kit = await showDialog<String>(
+    context: context,
+    builder: (dialogContext) => SimpleDialog(
+      title: Text('Changer photos — ${player.displayName}'),
+      children: [
+        for (final option in [
+          ('france', 'Photo France (par défaut)', player.photoUrl),
+          ('brazil', 'Photo Brésil', player.brazilPhotoUrl),
+          ('netherlands', 'Photo Pays-Bas', player.netherlandsPhotoUrl),
+        ])
+          SimpleDialogOption(
+            onPressed: () => Navigator.of(dialogContext).pop(option.$1),
+            child: Row(
+              children: [
+                PlayerAvatar(
+                  photoUrl: option.$3,
+                  name: player.displayName,
+                  lastName: player.lastName,
+                  size: 52,
+                ),
+                const SizedBox(width: 12),
+                Expanded(child: Text(option.$2)),
+                Icon(option.$3 == null || option.$3!.isEmpty
+                    ? Icons.add_photo_alternate_outlined
+                    : Icons.edit_outlined),
+              ],
+            ),
+          ),
+      ],
+    ),
+  );
+  if (kit == null || !context.mounted) return;
+  await _pickAndUploadRosterPhoto(
+    context,
+    ref,
+    seasonId: seasonId,
+    player: player,
+    kitId: kit,
+  );
+}
+
+Future<void> _pickAndUploadRosterPhoto(
+  BuildContext context,
+  WidgetRef ref, {
+  required String seasonId,
+  required RosterPlayer player,
+  required String kitId,
+}) async {
+  // Pas de compression au moment du choix : elle convertirait un PNG en JPEG
+  // et ferait perdre la transparence avant meme le recadrage.
+  final file = await ImagePicker().pickImage(source: ImageSource.gallery);
+  if (file == null) return;
+  final bytes = await file.readAsBytes();
+  if (!context.mounted) return;
+  // Meme editeur que les photos de profil (deplacer, zoomer, dezoomer).
+  // Il exporte en PNG si l'image a des zones transparentes, sinon en JPEG ;
+  // le format reel est relu depuis le contenu au moment de l'envoi.
+  final cropped = await cropProfilePhoto(context, bytes);
+  if (cropped == null || !context.mounted) return;
+  const extension = 'jpg';
+  try {
+    final repository = ref.read(rosterRepositoryProvider);
+    if (kitId == 'france') {
+      await repository.uploadPlayerPhoto(
+        seasonPlayerId: player.id,
+        linkedProfileId: player.linkedProfileId,
+        bytes: cropped,
+        fileExt: extension,
+      );
+    } else {
+      await repository.uploadPlayerKitPhoto(
+        seasonPlayerId: player.id,
+        kitId: kitId,
+        bytes: cropped,
+        fileExt: extension,
+      );
+    }
+    ref.invalidate(rosterProvider(seasonId));
+    // Toute composition ouverte recupere aussitot la nouvelle variante.
+    ref.invalidate(matchKitPhotoOverridesProvider);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Photo de ${player.displayName} mise à jour.')),
+      );
+    }
+  } catch (error) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(humanizeError(error))),
+      );
+    }
+  }
+}
+
+Future<void> _showProfileLinkDialog(
+  BuildContext context,
+  WidgetRef ref, {
+  required String seasonId,
+  required RosterPlayer player,
+  required List<RosterPlayer> roster,
+}) async {
+  final repo = ref.read(rosterRepositoryProvider);
+  List<LinkableProfile> profiles;
+  try {
+    profiles = await repo.fetchLinkableProfiles();
+  } catch (error) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(humanizeError(error))),
+      );
+    }
+    return;
+  }
+
+  if (!context.mounted) return;
+  final currentIsAvailable = profiles.any(
+    (profile) => profile.id == player.linkedProfileId,
+  );
+  var selectedProfileId =
+      currentIsAvailable ? player.linkedProfileId ?? '' : '';
+  var saving = false;
+  String? error;
+  final linkedPlayerByProfileId = <String, String>{
+    for (final rosterPlayer in roster)
+      if (rosterPlayer.linkedProfileId != null)
+        rosterPlayer.linkedProfileId!: rosterPlayer.displayName,
+  };
+
+  await showDialog<void>(
+    context: context,
+    builder: (dialogContext) => StatefulBuilder(
+      builder: (context, setState) => AlertDialog(
+        title: Text('Relier ${player.displayName}'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Choisis le compte correspondant. Si le '
+                'compte est déjà relié à un autre joueur, la liaison sera '
+                'déplacée vers celui-ci.',
+              ),
+              const SizedBox(height: 16),
+              if (profiles.isEmpty)
+                const Text('Aucun compte actif disponible.')
+              else
+                DropdownButtonFormField<String>(
+                  initialValue: selectedProfileId,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Pronostiqueur',
+                  ),
+                  items: [
+                    const DropdownMenuItem(
+                      value: '',
+                      child: Text('Aucune liaison'),
+                    ),
+                    ...profiles.map((profile) {
+                      final linkedPlayer = linkedPlayerByProfileId[profile.id];
+                      final suffix = linkedPlayer == null ||
+                              linkedPlayer == player.displayName
+                          ? ''
+                          : ' · actuellement lié à $linkedPlayer';
+                      return DropdownMenuItem(
+                        value: profile.id,
+                        child: Text(
+                          '${profile.displayName}$suffix',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }),
+                  ],
+                  onChanged: saving
+                      ? null
+                      : (value) {
+                          setState(() => selectedProfileId = value ?? '');
+                        },
+                ),
+              if (error != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  error!,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: saving ? null : () => Navigator.pop(dialogContext),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: saving || profiles.isEmpty
+                ? null
+                : () async {
+                    setState(() {
+                      saving = true;
+                      error = null;
+                    });
+                    try {
+                      await repo.setProfileLink(
+                        seasonPlayerId: player.id,
+                        profileId: selectedProfileId.isEmpty
+                            ? null
+                            : selectedProfileId,
+                      );
+                      ref.invalidate(rosterProvider(seasonId));
+                      if (dialogContext.mounted) {
+                        Navigator.pop(dialogContext);
+                      }
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              selectedProfileId.isEmpty
+                                  ? 'Liaison supprimée.'
+                                  : 'Liaison enregistrée.',
+                            ),
+                          ),
+                        );
+                      }
+                    } catch (exception) {
+                      setState(() {
+                        saving = false;
+                        error = humanizeError(exception);
+                      });
+                    }
+                  },
+            child: saving
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: GrintaProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('Enregistrer'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Future<bool> _confirmUnlink(
+  BuildContext context,
+  RosterPlayer player,
+) async {
+  return await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Supprimer la liaison ?'),
+          content: Text(
+            '${player.displayName} ne sera plus relié au compte '
+            '${player.linkedProfileLabel ?? 'sélectionné'}. Le joueur et les '
+            'pronostics existants sont conservés.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Annuler'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Supprimer la liaison'),
+            ),
+          ],
+        ),
+      ) ??
+      false;
+}
+
+Future<bool> _confirmDelete(BuildContext context, RosterPlayer player) async {
+  return await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text('Supprimer ${player.displayName} ?'),
+          content: const Text(
+            'Le joueur est retiré définitivement de l’effectif. Ses buts, '
+            'clean sheets et les pronostics de saison le concernant sont '
+            'également supprimés. Pour simplement le sortir sans rien effacer, '
+            'utilise plutôt « Archiver ».',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Annuler'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(dialogContext).colorScheme.error,
+              ),
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Supprimer'),
+            ),
+          ],
+        ),
+      ) ??
+      false;
+}
+
+Future<void> _showPlayerDialog(
+  BuildContext context,
+  WidgetRef ref, {
+  required String seasonId,
+  RosterPlayer? existing,
+}) async {
+  final firstName = TextEditingController(text: existing?.firstName ?? '');
+  var isGoalkeeper = existing?.isGoalkeeper ?? false;
+  var isCoach = existing?.isCoach ?? false;
+  var saving = false;
+  String? error;
+
+  await showDialog<void>(
+    context: context,
+    builder: (dialogContext) => StatefulBuilder(
+      builder: (context, setState) => AlertDialog(
+        title: Text(existing == null ? 'Ajouter un joueur' : 'Modifier'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: firstName,
+                textCapitalization: TextCapitalization.words,
+                decoration: const InputDecoration(labelText: 'Prénom'),
+              ),
+              SwitchListTile.adaptive(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Gardien'),
+                value: isGoalkeeper,
+                onChanged: saving || isCoach
+                    ? null
+                    : (value) => setState(() => isGoalkeeper = value),
+              ),
+              SwitchListTile.adaptive(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Coach'),
+                // Depuis le 15 septembre 2026, le coach est un membre comme
+                // les autres : il répond et apparaît dans l'effectif. Il reste
+                // seulement hors composition, liste d'attente et statistiques
+                // joueurs.
+                subtitle: const Text(
+                  'Se déclare présent/absent, pronostique et vote comme les autres. '
+                  'Reste hors composition et liste d’attente.',
+                ),
+                value: isCoach,
+                onChanged: saving
+                    ? null
+                    : (value) => setState(() {
+                          isCoach = value;
+                          if (value) isGoalkeeper = false;
+                        }),
+              ),
+              if (error != null)
+                Text(
+                  error!,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: saving ? null : () => Navigator.pop(dialogContext),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: saving
+                ? null
+                : () async {
+                    setState(() {
+                      saving = true;
+                      error = null;
+                    });
+                    try {
+                      final repo = ref.read(rosterRepositoryProvider);
+                      if (existing == null) {
+                        await repo.addPlayer(
+                          seasonId: seasonId,
+                          firstName: firstName.text,
+                          isGoalkeeper: isGoalkeeper,
+                          isCoach: isCoach,
+                        );
+                      } else {
+                        await repo.updatePlayer(
+                          id: existing.id,
+                          firstName: firstName.text,
+                          isGoalkeeper: isGoalkeeper,
+                          isCoach: isCoach,
+                        );
+                      }
+                      ref.invalidate(rosterProvider(seasonId));
+                      if (dialogContext.mounted) Navigator.pop(dialogContext);
+                    } catch (exception) {
+                      setState(() {
+                        saving = false;
+                        error = humanizeError(exception);
+                      });
+                    }
+                  },
+            child: saving
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: GrintaProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('Enregistrer'),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  firstName.dispose();
+}

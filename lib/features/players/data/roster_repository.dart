@@ -1,0 +1,407 @@
+import 'dart:typed_data';
+
+import 'package:as_grinta/core/providers/supabase_provider.dart';
+import 'package:as_grinta/core/utils/name_validation.dart';
+import 'package:as_grinta/core/storage/image_mime.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+class RosterPlayer {
+  const RosterPlayer({
+    required this.id,
+    required this.firstName,
+    required this.lastName,
+    required this.isGoalkeeper,
+    required this.isCoach,
+    required this.isActive,
+    required this.linkedProfileId,
+    required this.linkedProfileName,
+    required this.linkedProfileUsername,
+    this.linkedProfileSurnom,
+    this.photoUrl,
+    this.brazilPhotoUrl,
+    this.netherlandsPhotoUrl,
+  });
+
+  final String id;
+  final String firstName;
+  final String lastName;
+  final bool isGoalkeeper;
+  final bool isCoach;
+  final bool isActive;
+  final String? linkedProfileId;
+  final String? linkedProfileName;
+  final String? linkedProfileUsername;
+  final String? linkedProfileSurnom;
+  final String? photoUrl;
+  final String? brazilPhotoUrl;
+  final String? netherlandsPhotoUrl;
+
+  /// Le nom saisi dans l'effectif, indépendamment du compte rattaché.
+  String get rosterName {
+    final first = capitalizePersonName(firstName);
+    if (first.isNotEmpty) return first;
+    final last = capitalizePersonName(lastName);
+    return last.isEmpty ? 'Joueur' : last;
+  }
+
+  /// Même priorité que côté serveur : le joueur rattaché à un compte s'appelle
+  /// comme il l'a décidé sur ce compte, pas comme l'admin l'a saisi dans
+  /// l'effectif.
+  String get displayName {
+    final surnom = capitalizePersonName(linkedProfileSurnom ?? '');
+    if (surnom.isNotEmpty) return surnom;
+    final accountFirstName = capitalizePersonName(linkedProfileName ?? '');
+    if (accountFirstName.isNotEmpty) return accountFirstName;
+    return rosterName;
+  }
+
+  String get fullName => '$firstName $lastName'.trim();
+
+  String? get linkedProfileLabel {
+    final name = linkedProfileName?.trim() ?? '';
+    if (name.isNotEmpty) return name;
+    final username = linkedProfileUsername?.trim() ?? '';
+    return username.isEmpty ? null : username;
+  }
+}
+
+class LinkableProfile {
+  const LinkableProfile({
+    required this.id,
+    required this.firstName,
+    required this.lastName,
+    required this.surnom,
+    required this.username,
+  });
+
+  final String id;
+  final String firstName;
+  final String lastName;
+  final String surnom;
+  final String username;
+
+  String get displayName {
+    final nickname = capitalizePersonName(surnom);
+    if (nickname.isNotEmpty) return nickname;
+    final first = capitalizePersonName(firstName);
+    if (first.isNotEmpty) return first;
+    final full = capitalizePersonName('$firstName $lastName');
+    if (full.isNotEmpty) return full;
+    final login = username.trim();
+    return login.isEmpty ? 'Compte sans nom' : login;
+  }
+}
+
+class RosterRepository {
+  RosterRepository(this._client);
+
+  final SupabaseClient _client;
+
+  Future<String?> openSeasonId() async {
+    final row = await _client
+        .from('seasons')
+        .select('id')
+        .eq('status', 'open')
+        .maybeSingle();
+    return row?['id']?.toString();
+  }
+
+  Future<List<RosterPlayer>> fetchRoster(String seasonId) async {
+    final rows = await _client.from('season_players').select('''
+      id,
+      first_name,
+      last_name,
+      is_goalkeeper,
+      is_coach,
+      is_active,
+      profile_id,
+      photo_url,
+      season_player_kit_photos(brazil_url, netherlands_url),
+      profiles!season_players_profile_id_fkey(
+        id,
+        first_name,
+        surnom,
+        status,
+        photo_url
+      )
+    ''').eq('season_id', seasonId);
+    final players = (rows as List).map((row) {
+      final map = Map<String, dynamic>.from(row);
+      final kitRaw = map['season_player_kit_photos'];
+      final kit = kitRaw is Map ? Map<String, dynamic>.from(kitRaw) : null;
+      final profileRaw = map['profiles'];
+      final profile =
+          profileRaw is Map ? Map<String, dynamic>.from(profileRaw) : null;
+      final profilePhoto = profile?['photo_url']?.toString();
+      final seasonPhoto = map['photo_url']?.toString();
+      final photo = (profilePhoto != null && profilePhoto.trim().isNotEmpty)
+          ? profilePhoto
+          : (seasonPhoto != null && seasonPhoto.trim().isNotEmpty)
+              ? seasonPhoto
+              : null;
+      return RosterPlayer(
+        id: map['id'].toString(),
+        firstName: (map['first_name'] ?? '').toString(),
+        lastName: (map['last_name'] ?? '').toString(),
+        isGoalkeeper: map['is_goalkeeper'] == true,
+        isCoach: map['is_coach'] == true,
+        isActive: map['is_active'] != false,
+        linkedProfileId: map['profile_id']?.toString(),
+        linkedProfileName: profile?['first_name']?.toString(),
+        linkedProfileUsername: null,
+        linkedProfileSurnom: profile?['surnom']?.toString(),
+        photoUrl: photo,
+        brazilPhotoUrl: kit?['brazil_url']?.toString(),
+        netherlandsPhotoUrl: kit?['netherlands_url']?.toString(),
+      );
+    }).toList();
+    players.sort(
+      (a, b) =>
+          a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()),
+    );
+    return players;
+  }
+
+  Future<List<LinkableProfile>> fetchLinkableProfiles() async {
+    final rows = await _client
+        .from('profiles')
+        .select('id,first_name,surnom,status')
+        .eq('status', 'active')
+        .neq('id', '00000000-0000-0000-0000-000000000001')
+        .order('first_name');
+    return (rows as List)
+        .map((row) => Map<String, dynamic>.from(row))
+        .map(
+          (row) => LinkableProfile(
+            id: row['id'].toString(),
+            firstName: (row['first_name'] ?? '').toString(),
+            lastName: '',
+            surnom: (row['surnom'] ?? '').toString(),
+            username: '',
+          ),
+        )
+        .toList();
+  }
+
+  Future<void> setProfileLink({
+    required String seasonPlayerId,
+    String? profileId,
+  }) async {
+    final result = await _client.rpc(
+      'staff_set_season_player_profile',
+      params: {
+        'p_season_player_id': seasonPlayerId,
+        'p_profile_id': profileId,
+      },
+    );
+    if (result != true) {
+      throw StateError('La liaison n’a pas pu être enregistrée.');
+    }
+  }
+
+  Future<void> addPlayer({
+    required String seasonId,
+    required String firstName,
+    required bool isGoalkeeper,
+    bool isCoach = false,
+  }) async {
+    final f = firstName.trim();
+    if (f.isEmpty) {
+      throw ArgumentError('Le prénom est obligatoire.');
+    }
+    final maxRows = await _client
+        .from('season_players')
+        .select('position')
+        .eq('season_id', seasonId)
+        .order('position', ascending: false)
+        .limit(1);
+    final maxPos = (maxRows as List).isEmpty
+        ? 0
+        : ((maxRows.first['position'] as num?)?.toInt() ?? 0);
+    await _client.from('season_players').insert({
+      'season_id': seasonId,
+      'first_name': f,
+      'last_name': '',
+      'is_goalkeeper': isGoalkeeper,
+      'is_coach': isCoach,
+      'is_active': true,
+      'position': maxPos + 1,
+    });
+  }
+
+  Future<void> updatePlayer({
+    required String id,
+    required String firstName,
+    required bool isGoalkeeper,
+    bool isCoach = false,
+  }) async {
+    final f = firstName.trim();
+    if (f.isEmpty) {
+      throw ArgumentError('Le prénom est obligatoire.');
+    }
+    final updated = await _client
+        .from('season_players')
+        .update({
+          'first_name': f,
+          'is_goalkeeper': isGoalkeeper,
+          'is_coach': isCoach,
+        })
+        .eq('id', id)
+        .select('id')
+        .maybeSingle();
+    if (updated == null) {
+      throw StateError('Le joueur n’a pas pu être modifié.');
+    }
+  }
+
+  /// Téléverse la photo d'un joueur de l'effectif.
+  ///
+  /// La photo du compte passe partout avant celle de l'effectif : pour un
+  /// joueur rattaché à un compte, on remplace donc la photo du compte, sinon
+  /// la nouvelle photo resterait invisible.
+  Future<void> uploadPlayerPhoto({
+    required String seasonPlayerId,
+    String? linkedProfileId,
+    required Uint8List bytes,
+    required String fileExt,
+  }) async {
+    final image = validateImageUpload(bytes, fileExt: fileExt);
+    final stamp = DateTime.now().millisecondsSinceEpoch;
+    final bucket = _client.storage.from('profile-photos');
+    final profileId = linkedProfileId?.trim() ?? '';
+    if (profileId.isNotEmpty) {
+      final path = '$profileId/avatar_$stamp.${image.extension}';
+      await bucket.uploadBinary(
+        path,
+        bytes,
+        fileOptions: FileOptions(contentType: image.mimeType, upsert: false),
+      );
+      try {
+        // L'ancienne photo du compte est supprimée côté serveur (trigger sur
+        // profiles.photo_url).
+        final updated = await _client
+            .from('profiles')
+            .update({'photo_url': path})
+            .eq('id', profileId)
+            .select('id')
+            .maybeSingle();
+        if (updated == null) {
+          throw StateError('La photo du joueur n’a pas pu être enregistrée.');
+        }
+      } catch (_) {
+        await bucket.remove([path]);
+        rethrow;
+      }
+      return;
+    }
+    final path = 'season/$seasonPlayerId/avatar_$stamp.${image.extension}';
+    await bucket.uploadBinary(
+      path,
+      bytes,
+      fileOptions: FileOptions(
+        contentType: image.mimeType,
+        upsert: false,
+      ),
+    );
+    try {
+      // L'ancienne photo est supprimée du stockage côté serveur (trigger sur
+      // season_players.photo_url). Le bucket étant privé, on enregistre le
+      // chemin relatif : PlayerAvatar le resigne à l'affichage.
+      final updated = await _client
+          .from('season_players')
+          .update({'photo_url': path})
+          .eq('id', seasonPlayerId)
+          .select('id')
+          .maybeSingle();
+      if (updated == null) {
+        throw StateError('La photo du joueur n’a pas pu être enregistrée.');
+      }
+    } catch (_) {
+      await bucket.remove([path]);
+      rethrow;
+    }
+  }
+
+  /// Charge une photo alternative de la composition sans modifier la photo
+  /// France (qui reste le portrait du profil ou de l'effectif).
+  Future<void> uploadPlayerKitPhoto({
+    required String seasonPlayerId,
+    required String kitId,
+    required Uint8List bytes,
+    required String fileExt,
+  }) async {
+    if (kitId != 'brazil' && kitId != 'netherlands') {
+      throw ArgumentError.value(kitId, 'kitId', 'Maillot inconnu');
+    }
+    final image = validateImageUpload(bytes, fileExt: fileExt);
+    final stamp = DateTime.now().microsecondsSinceEpoch;
+    final path = 'kits/$seasonPlayerId/${kitId}_$stamp.${image.extension}';
+    final table = _client.from('season_player_kit_photos');
+    final existing = await table
+        .select('brazil_url,netherlands_url')
+        .eq('season_player_id', seasonPlayerId)
+        .maybeSingle();
+    final bucket = _client.storage.from('profile-photos');
+    await bucket.uploadBinary(
+      path,
+      bytes,
+      fileOptions: FileOptions(contentType: image.mimeType, upsert: false),
+    );
+    try {
+      final updated = await table
+          .upsert({
+            'season_player_id': seasonPlayerId,
+            'brazil_url': kitId == 'brazil' ? path : existing?['brazil_url'],
+            'netherlands_url':
+                kitId == 'netherlands' ? path : existing?['netherlands_url'],
+            'updated_at': DateTime.now().toUtc().toIso8601String(),
+          }, onConflict: 'season_player_id')
+          .select('season_player_id')
+          .maybeSingle();
+      if (updated == null) {
+        throw StateError('La photo du maillot n’a pas pu être enregistrée.');
+      }
+    } catch (_) {
+      await bucket.remove([path]);
+      rethrow;
+    }
+  }
+
+  Future<void> setActive({required String id, required bool active}) async {
+    final updated = await _client
+        .from('season_players')
+        .update({'is_active': active})
+        .eq('id', id)
+        .select('id')
+        .maybeSingle();
+    if (updated == null) {
+      throw StateError('Le statut du joueur n’a pas pu être modifié.');
+    }
+  }
+
+  Future<void> deletePlayer(String id) async {
+    final deleted = await _client
+        .from('season_players')
+        .delete()
+        .eq('id', id)
+        .select('id')
+        .maybeSingle();
+    if (deleted == null) {
+      throw StateError('Le joueur n’a pas pu être supprimé.');
+    }
+  }
+}
+
+final rosterRepositoryProvider = Provider<RosterRepository>((ref) {
+  return RosterRepository(ref.watch(supabaseClientProvider));
+});
+
+final openSeasonIdProvider = FutureProvider<String?>((ref) {
+  return ref.watch(rosterRepositoryProvider).openSeasonId();
+});
+
+final rosterProvider =
+    FutureProvider.family<List<RosterPlayer>, String>((ref, seasonId) {
+  return ref.watch(rosterRepositoryProvider).fetchRoster(seasonId);
+});
