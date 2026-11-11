@@ -100,6 +100,32 @@ void main() {
     expect(find.textContaining('Connecte-toi, puis'), findsOneWidget);
   });
 
+  testWidgets('l’adresse e-mail facultative est transmise ou refusée',
+      (tester) async {
+    await pumpPage(tester, code: 'ABCDEFGH');
+    await fillIdentity(tester);
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Adresse e-mail (facultatif)'),
+      'pas-une-adresse',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Créer mon compte'));
+    await tester.pump();
+    expect(
+        find.textContaining('adresse e-mail n’est pas valide'), findsOneWidget);
+    expect(repository.joined, isNull);
+    ScaffoldMessenger.of(tester.element(find.byType(AuthRegisterPage)))
+        .clearSnackBars();
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Adresse e-mail (facultatif)'),
+      'karim@example.com',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Créer mon compte'));
+    await tester.pumpAndSettle();
+    expect(repository.lastEmail, 'karim@example.com');
+  });
+
   testWidgets('le refus du serveur est affiché tel quel', (tester) async {
     repository.failure = StateError('Code d’invitation inconnu.');
     await pumpPage(tester, code: 'ABCDEFGH');
@@ -115,6 +141,7 @@ void main() {
 class _FakeClubRepository implements ClubRepository {
   String? joined;
   String? created;
+  String? lastEmail;
   StateError? failure;
 
   @override
@@ -123,9 +150,11 @@ class _FakeClubRepository implements ClubRepository {
     required String firstName,
     required String lastName,
     required String password,
+    String? email,
   }) async {
     if (failure != null) throw failure!;
     joined = inviteCode;
+    lastEmail = email;
     return const ClubRegistration(
       username: 'karimb',
       clubName: 'FC Tests',
@@ -140,6 +169,7 @@ class _FakeClubRepository implements ClubRepository {
     required String firstName,
     required String lastName,
     required String password,
+    String? email,
   }) async {
     if (failure != null) throw failure!;
     created = clubName;

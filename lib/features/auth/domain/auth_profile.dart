@@ -32,6 +32,8 @@ class AuthProfile {
     required this.mustChangePassword,
     this.createdAt,
     this.updatedAt,
+    this.contactEmail,
+    this.pendingContactEmail,
   });
 
   final String? id;
@@ -47,6 +49,12 @@ class AuthProfile {
   final bool mustChangePassword;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+
+  /// Adresse e-mail confirmée du compte, s'il y en a une.
+  final String? contactEmail;
+
+  /// Adresse saisie mais dont le lien de confirmation n'a pas encore été ouvert.
+  final String? pendingContactEmail;
 
   bool get isPending => status == 'pending';
 
@@ -89,6 +97,13 @@ class AuthProfile {
       mustChangePassword: json['must_change_password'] == true,
       createdAt: DateTime.tryParse('${json['created_at'] ?? ''}'),
       updatedAt: DateTime.tryParse('${json['updated_at'] ?? ''}'),
+      contactEmail: _nonEmpty(json['contact_email']),
+      pendingContactEmail: _nonEmpty(json['pending_contact_email']),
     );
   }
+}
+
+String? _nonEmpty(Object? value) {
+  final text = value?.toString().trim() ?? '';
+  return text.isEmpty ? null : text;
 }

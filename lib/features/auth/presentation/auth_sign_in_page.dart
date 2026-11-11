@@ -1,6 +1,7 @@
 import 'package:as_grinta/core/widgets/grinta_auth_surface.dart';
 import 'package:as_grinta/core/widgets/grinta_loader.dart';
 import 'package:as_grinta/core/widgets/grinta_status_banner.dart';
+import 'package:as_grinta/features/auth/data/account_email_repository.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -44,20 +45,7 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
   Future<void> _forgotPassword() async {
     await showDialog<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Mot de passe oublié'),
-        content: const Text(
-          'Demande à un administrateur du club de réinitialiser ton mot '
-          'de passe depuis l’application. Il te communiquera un lien à '
-          'ouvrir pour choisir directement ton nouveau mot de passe.',
-        ),
-        actions: [
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Compris'),
-          ),
-        ],
-      ),
+      builder: (_) => const ForgotPasswordDialog(),
     );
   }
 
@@ -164,4 +152,103 @@ String signInErrorDetail(String error) {
     return error.substring(repeated.length);
   }
   return error;
+}
+
+/// Mot de passe oublié : un lien est envoyé à l'adresse e-mail confirmée du
+/// compte. La réponse est la même que l'adresse soit connue ou non.
+class ForgotPasswordDialog extends ConsumerStatefulWidget {
+  const ForgotPasswordDialog({super.key});
+
+  @override
+  ConsumerState<ForgotPasswordDialog> createState() =>
+      _ForgotPasswordDialogState();
+}
+
+class _ForgotPasswordDialogState extends ConsumerState<ForgotPasswordDialog> {
+  final _controller = TextEditingController();
+  bool _sending = false;
+  bool _sent = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _send() async {
+    final email = _controller.text.trim();
+    if (!looksLikeEmail(email)) {
+      setState(() => _error = 'Saisis une adresse e-mail valide.');
+      return;
+    }
+    setState(() {
+      _sending = true;
+      _error = null;
+    });
+    try {
+      await ref
+          .read(accountEmailRepositoryProvider)
+          .requestPasswordReset(email);
+      if (mounted) setState(() => _sent = true);
+    } catch (error) {
+      if (mounted) {
+        setState(() => _error = '$error'.replaceFirst('Bad state: ', ''));
+      }
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Mot de passe oublié'),
+      content: _sent
+          ? const Text(
+              'Si cette adresse est confirmée sur un compte, un lien vient '
+              'd’être envoyé. Il est valable peu de temps.',
+            )
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Saisis l’adresse e-mail confirmée sur ton compte : tu '
+                  'recevras un lien pour choisir un nouveau mot de passe. '
+                  'Sans adresse confirmée, demande à un administrateur du '
+                  'club de réinitialiser ton mot de passe.',
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _controller,
+                  keyboardType: TextInputType.emailAddress,
+                  autofillHints: const [AutofillHints.email],
+                  decoration: InputDecoration(
+                    labelText: 'Adresse e-mail',
+                    errorText: _error,
+                  ),
+                  onSubmitted: (_) => _send(),
+                ),
+              ],
+            ),
+      actions: [
+        if (_sent)
+          FilledButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Compris'),
+          )
+        else ...[
+          TextButton(
+            onPressed: _sending ? null : () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: _sending ? null : _send,
+            child: Text(_sending ? 'Envoi…' : 'Envoyer le lien'),
+          ),
+        ],
+      ],
+    );
+  }
 }

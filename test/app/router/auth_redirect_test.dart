@@ -48,6 +48,19 @@ void main() {
       );
     });
 
+    test('lets the e-mail confirmation link open while signed out', () {
+      const state = AuthState(isLoading: false);
+
+      expect(
+        resolveAuthRedirect(
+          authState: state,
+          uri: Uri.parse('/auth/confirm-email?token=abc'),
+          matchedLocation: '/auth/confirm-email',
+        ),
+        isNull,
+      );
+    });
+
     test('carries the recovery destination through the loading route', () {
       const loading = AuthState(isLoading: true);
 

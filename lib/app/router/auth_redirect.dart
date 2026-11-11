@@ -14,6 +14,11 @@ String? resolveAuthRedirect({
 }) {
   final location = matchedLocation;
 
+  // Le lien de confirmation d'adresse e-mail s'ouvre connecté ou non, depuis
+  // n'importe quel appareil : la page ne demande aucune session, le lien porte
+  // lui-même la preuve.
+  if (location == '/auth/confirm-email') return null;
+
   if (authState.isLoading) {
     // Pendant une tentative de connexion, conserver l'écran monté. Le faire
     // transiter par /auth/loading détruit son listener Riverpod : l'erreur
@@ -161,7 +166,8 @@ String? _preservableDestination(Uri uri, String location) {
 
   final isRecoveryRoute = location == '/auth/new-password' &&
       uri.queryParameters['recovery'] == '1';
-  final isSignedOutAuthRoute = location == '/auth/register';
+  final isSignedOutAuthRoute =
+      location == '/auth/register' || location == '/auth/confirm-email';
   if (location.startsWith('/auth') &&
       !isRecoveryRoute &&
       !isSignedOutAuthRoute) {

@@ -49,6 +49,7 @@ def main() -> int:
         "manage-user": True,
         "claim-account": True,
         "register-account": False,
+        "account-email": False,
         "send-push": False,
         "send-prediction-reminders": True,
         "calendar-feed": False,
@@ -168,6 +169,56 @@ def main() -> int:
         '"consume_registration_rate_limit"',
         "admin.auth.admin.createUser",
         "register-account doit limiter le débit avant la création Auth",
+    )
+
+    # Les deux exemplaires de l'aide d'envoi d'e-mails doivent rester identiques.
+    require(
+        function_file("account-email", "account_email.ts")
+        == function_file("register-account", "account_email.ts"),
+        "account_email.ts doit être identique dans account-email et register-account",
+    )
+
+    account_email = source("account-email")
+    for marker in (
+        'req.method !== "POST"',
+        "MAX_BODY_BYTES = 2_048",
+        "RequestBodyTooLargeError",
+        "req.body.getReader()",
+        '"consume_email_rate_limit"',
+        '"confirm_contact_email"',
+        '"request_contact_email"',
+        '"profile_for_recovery_email"',
+        "callerClient.auth.getUser(",
+        "readMailConfig()",
+    ):
+        require(marker in account_email, f"account-email: garde absente: {marker}")
+    require(
+        "body = await req.json()" not in account_email,
+        "account-email ne doit pas lire le corps sans borne",
+    )
+    # La demande de lien ne doit jamais partir avant le plafond de débit, ni
+    # pour un compte non authentifié (confirmation).
+    require_in_order(
+        account_email,
+        'action === "request-confirmation"',
+        "callerClient.auth.getUser(",
+        "account-email: la confirmation doit exiger un compte connecté",
+    )
+    require_in_order(
+        account_email,
+        '"consume_email_rate_limit"',
+        '"profile_for_recovery_email"',
+        "account-email doit limiter le débit avant de chercher un compte",
+    )
+    # La réponse à une demande de récupération ne doit pas dépendre de
+    # l'existence du compte.
+    require(
+        account_email.count("return jsonResponse({ sent: true });") >= 2,
+        "account-email doit répondre pareil que l'adresse existe ou non",
+    )
+    require(
+        "Deno.env.get(\"MAIL_API_KEY\")" in function_file("account-email", "account_email.ts"),
+        "la clé du service d'e-mail doit venir de l'environnement",
     )
 
     push = source("send-push")
