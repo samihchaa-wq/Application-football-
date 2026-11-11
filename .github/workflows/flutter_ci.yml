@@ -328,7 +328,7 @@ jobs:
           set -o pipefail
           flutter build web \
             --release \
-            --base-href "/AS-Grinta/" \
+            --base-href "/Application-football-/" \
             --pwa-strategy=none \
             --no-web-resources-cdn \
             --dart-define-from-file=config/production.json \
