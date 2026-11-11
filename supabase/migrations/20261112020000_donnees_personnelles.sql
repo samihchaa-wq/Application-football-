@@ -20,6 +20,48 @@ comment on column public.profiles.terms_version is
 comment on column public.profiles.age_confirmation is
   '15_or_more : a déclaré avoir 15 ans ou plus ; parental_consent : moins de 15 ans avec accord d''un parent.';
 
+-- Le garde des champs sensibles du profil laisse passer ces trois colonnes
+-- quand le membre modifie son propre profil.
+CREATE OR REPLACE FUNCTION "public"."guard_sensitive_profile_fields"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO ''
+    AS $$
+declare
+  actor_id uuid := (select private.uid());
+  old_protected jsonb;
+  new_protected jsonb;
+  editable constant text[] := array[
+    'first_name','last_name','surnom','photo_url','updated_at',
+    'notify_prediction_open','notify_prediction_reminders','notify_match_reminders',
+    'notify_motm_vote','notify_convocation','notify_composition','notify_badges',
+    'password_set','must_change_password',
+    -- Consentement : écrit seulement par public.accept_terms (aucun droit
+    -- de modification directe de ces colonnes pour authenticated).
+    'terms_version','terms_accepted_at','age_confirmation'
+  ];
+begin
+  if actor_id is null then
+    return new;
+  end if;
+  if public.is_match_staff() then
+    return new;
+  end if;
+  if actor_id is distinct from old.id then
+    raise exception 'Un utilisateur ne peut modifier que son propre profil.'
+      using errcode = '42501';
+  end if;
+
+  old_protected := to_jsonb(old) - editable;
+  new_protected := to_jsonb(new) - editable;
+
+  if new_protected is distinct from old_protected then
+    raise exception 'Certaines informations du profil ne peuvent être changées que par un administrateur.'
+      using errcode = '42501';
+  end if;
+  return new;
+end;
+$$;
+
 -- Acceptation (ou nouvelle acceptation après un changement des textes) par
 -- le membre connecté.
 create function public.accept_terms(p_version text, p_age_confirmation text)

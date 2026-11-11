@@ -36,11 +36,19 @@ select lives_ok(
   $$select public.accept_terms('2026-11-12', 'parental_consent')$$,
   'un membre accepte les conditions avec l''accord d''un parent'
 );
+reset role;
 select is(
   (select terms_version || '/' || age_confirmation from public.profiles
    where id = '5c000000-0000-0000-0000-00000000000a'),
   '2026-11-12/parental_consent',
   'la version acceptée et la déclaration d''âge sont enregistrées'
+);
+set local role authenticated;
+select throws_ok(
+  $$update public.profiles set age_confirmation = '15_or_more'
+    where id = '5c000000-0000-0000-0000-00000000000a'$$,
+  '42501', null,
+  'un membre ne modifie pas sa déclaration d''âge sans passer par l''acceptation'
 );
 select throws_ok(
   $$select public.accept_terms('2026-11-12', 'moins_de_15')$$,
