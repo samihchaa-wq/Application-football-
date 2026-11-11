@@ -4,6 +4,7 @@ import 'package:as_grinta/core/utils/name_validation.dart';
 import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
 import 'package:as_grinta/core/widgets/grinta_loader.dart';
 import 'package:as_grinta/core/widgets/photo_crop_preview.dart';
+import 'package:as_grinta/features/auth/data/account_email_repository.dart';
 import 'package:as_grinta/features/auth/domain/auth_profile.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
@@ -227,6 +228,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 label: const Text('Changer le mot de passe'),
               ),
               SizedBox(height: compact ? 6 : 8),
+              OutlinedButton.icon(
+                onPressed: busy ? null : () => _editEmail(context, profile),
+                icon: const Icon(Icons.mail_outline_rounded),
+                label: Text(_emailLabel(profile)),
+              ),
+              SizedBox(height: compact ? 6 : 8),
               FilledButton.icon(
                 onPressed: busy ? null : _saveProfile,
                 icon: busy
@@ -345,6 +352,26 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         .showSnackBar(SnackBar(content: Text(error ?? 'Profil enregistré.')));
   }
 
+  String _emailLabel(AuthProfile? profile) {
+    if (profile?.contactEmail != null) {
+      return 'E-mail : ${profile!.contactEmail}';
+    }
+    if (profile?.pendingContactEmail != null) {
+      return 'E-mail à confirmer : ${profile!.pendingContactEmail}';
+    }
+    return 'Ajouter une adresse e-mail';
+  }
+
+  Future<void> _editEmail(BuildContext context, AuthProfile? profile) async {
+    await showDialog<void>(
+      context: context,
+      builder: (_) => ContactEmailDialog(
+        confirmedEmail: profile?.contactEmail,
+        pendingEmail: profile?.pendingContactEmail,
+      ),
+    );
+  }
+
   Future<void> _changePassword(BuildContext context) async {
     final passwordController = TextEditingController();
     final confirmationController = TextEditingController();
@@ -461,6 +488,116 @@ class _ProfileMetaChip extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Ajouter ou changer l'adresse e-mail du compte. Elle ne sert à retrouver le
+/// compte qu'une fois confirmée par le lien envoyé.
+class ContactEmailDialog extends ConsumerStatefulWidget {
+  const ContactEmailDialog({super.key, this.confirmedEmail, this.pendingEmail});
+
+  final String? confirmedEmail;
+  final String? pendingEmail;
+
+  @override
+  ConsumerState<ContactEmailDialog> createState() => _ContactEmailDialogState();
+}
+
+class _ContactEmailDialogState extends ConsumerState<ContactEmailDialog> {
+  late final TextEditingController _controller;
+  bool _sending = false;
+  bool _sent = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(
+      text: widget.pendingEmail ?? widget.confirmedEmail ?? '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _send() async {
+    final email = _controller.text.trim();
+    if (!looksLikeEmail(email)) {
+      setState(() => _error = 'Saisis une adresse e-mail valide.');
+      return;
+    }
+    setState(() {
+      _sending = true;
+      _error = null;
+    });
+    try {
+      await ref.read(accountEmailRepositoryProvider).requestConfirmation(email);
+      if (mounted) setState(() => _sent = true);
+    } catch (error) {
+      if (mounted) {
+        setState(() => _error = '$error'.replaceFirst('Bad state: ', ''));
+      }
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final confirmed = widget.confirmedEmail;
+    return AlertDialog(
+      title: const Text('Adresse e-mail'),
+      content: _sent
+          ? const Text(
+              'Un lien de confirmation vient d’être envoyé. Ouvre-le pour '
+              'valider ton adresse : elle ne sera utilisable qu’ensuite.',
+            )
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  confirmed != null
+                      ? 'Adresse confirmée : $confirmed. Tu peux la '
+                          'remplacer ; l’ancienne reste active jusqu’à la '
+                          'confirmation de la nouvelle.'
+                      : 'Ajoute une adresse pour pouvoir retrouver ton '
+                          'compte si tu perds ton mot de passe. Un lien de '
+                          'confirmation te sera envoyé.',
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _controller,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    labelText: 'Adresse e-mail',
+                    errorText: _error,
+                  ),
+                  onSubmitted: (_) => _send(),
+                ),
+              ],
+            ),
+      actions: [
+        if (_sent)
+          FilledButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Compris'),
+          )
+        else ...[
+          TextButton(
+            onPressed: _sending ? null : () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: _sending ? null : _send,
+            child: Text(_sending ? 'Envoi…' : 'Envoyer le lien'),
+          ),
+        ],
+      ],
     );
   }
 }

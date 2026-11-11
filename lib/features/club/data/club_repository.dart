@@ -96,6 +96,7 @@ class ClubRegistration {
     required this.username,
     required this.clubName,
     required this.isActive,
+    this.emailConfirmationSent = false,
   });
 
   /// Identifiant de connexion généré par le serveur.
@@ -105,6 +106,9 @@ class ClubRegistration {
   /// Vrai pour le créateur d'un club : son compte est utilisable tout de
   /// suite. Faux pour un membre qui rejoint : il attend la validation.
   final bool isActive;
+
+  /// Vrai si un e-mail de confirmation a été envoyé à l'adresse indiquée.
+  final bool emailConfirmationSent;
 }
 
 class ClubRepository {
@@ -166,6 +170,7 @@ class ClubRepository {
     required String firstName,
     required String lastName,
     required String password,
+    String? email,
   }) {
     return _register({
       'mode': 'join',
@@ -173,6 +178,7 @@ class ClubRepository {
       'firstName': firstName.trim(),
       'lastName': lastName.trim(),
       'password': password,
+      if (email != null && email.trim().isNotEmpty) 'email': email.trim(),
     }, password);
   }
 
@@ -183,6 +189,7 @@ class ClubRepository {
     required String firstName,
     required String lastName,
     required String password,
+    String? email,
   }) {
     return _register({
       'mode': 'create',
@@ -192,6 +199,7 @@ class ClubRepository {
       'firstName': firstName.trim(),
       'lastName': lastName.trim(),
       'password': password,
+      if (email != null && email.trim().isNotEmpty) 'email': email.trim(),
     }, password);
   }
 
@@ -221,6 +229,7 @@ class ClubRepository {
       username: username,
       clubName: (data as Map)['clubName'] as String? ?? '',
       isActive: data['status'] == 'active',
+      emailConfirmationSent: data['emailConfirmationSent'] == true,
     );
   }
 }

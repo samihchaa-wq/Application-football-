@@ -1,4 +1,5 @@
 import 'package:as_grinta/core/security/password_policy.dart';
+import 'package:as_grinta/features/auth/data/account_email_repository.dart';
 import 'package:as_grinta/core/utils/name_validation.dart';
 import 'package:as_grinta/core/widgets/grinta_adaptive_form.dart';
 import 'package:as_grinta/core/widgets/grinta_auth_surface.dart';
@@ -33,6 +34,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
   final _clubShortNameController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
   bool _obscurePassword = true;
@@ -55,6 +57,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
     _clubShortNameController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
     super.dispose();
@@ -97,6 +100,11 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
       _showError('Le prénom et le nom ne doivent contenir que des lettres.');
       return;
     }
+    final email = _emailController.text.trim();
+    if (email.isNotEmpty && !looksLikeEmail(email)) {
+      _showError('Cette adresse e-mail n’est pas valide.');
+      return;
+    }
     final passwordError = PasswordPolicy.validate(password);
     if (passwordError != null) {
       _showError(passwordError);
@@ -117,12 +125,14 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
               firstName: firstName,
               lastName: lastName,
               password: password,
+              email: email,
             )
           : await repository.joinClub(
               inviteCode: inviteCode,
               firstName: firstName,
               lastName: lastName,
               password: password,
+              email: email,
             );
       final username = registration.username;
       if (!mounted) return;
@@ -160,6 +170,13 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                     : 'Ton compte chez ${registration.clubName} restera en '
                         'attente jusqu’à sa validation par un admin.',
               ),
+              if (registration.emailConfirmationSent) ...[
+                const SizedBox(height: 12),
+                const Text(
+                  'Un e-mail de confirmation vient d’être envoyé : ouvre le '
+                  'lien qu’il contient pour valider ton adresse.',
+                ),
+              ],
             ],
           ),
           actions: [
@@ -277,6 +294,20 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            autofillHints: const [AutofillHints.email],
+            decoration: const InputDecoration(
+              labelText: 'Adresse e-mail (facultatif)',
+              helperText: 'Sert à retrouver ton compte si tu perds ton mot '
+                  'de passe. Un lien de confirmation te sera envoyé.',
+              helperMaxLines: 2,
+              prefixIcon: Icon(Icons.mail_outline),
+            ),
           ),
           const SizedBox(height: 16),
           // Un AutofillGroup dédié + un seul champ marqué "newPassword" :
