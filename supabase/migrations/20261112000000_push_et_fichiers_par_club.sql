@@ -109,18 +109,9 @@ create policy club_files_isolation on storage.objects
   using ((select private.storage_object_in_current_club(bucket_id, owner_id)))
   with check ((select private.storage_object_in_current_club(bucket_id, owner_id)));
 
--- Les fonctions serveur aussi ne touchent qu'aux fichiers de leur club.
-drop policy club_scope_files on storage.objects;
-create policy club_scope_files on storage.objects
-  for all to club_scope
-  using (
-    bucket_id in ('profile-photos', 'badge-images', 'app-assets')
-    and private.storage_object_in_current_club(bucket_id, owner_id)
-  )
-  with check (
-    bucket_id in ('profile-photos', 'badge-images', 'app-assets')
-    and private.storage_object_in_current_club(bucket_id, owner_id)
-  );
+-- Les fonctions serveur (club_scope) gardent leur règle d'origine : elles ne
+-- suppriment que des fichiers dont elles connaissent le chemin exact, tiré
+-- d'une ligne de leur propre club (photo remplacée, badge modifié).
 
 -- ---------------------------------------------------------------------------
 -- 3. Fichiers : quota par club
