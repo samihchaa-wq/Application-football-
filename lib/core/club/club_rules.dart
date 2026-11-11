@@ -16,6 +16,17 @@ abstract final class ClubRules {
     predictionCloseMinutesKey: 15,
   };
 
+  static bool _liveEnabled = true;
+
+  /// Faux quand l'administrateur a désactivé le mode live du club.
+  static bool get liveEnabled => _liveEnabled;
+
+  static void setLiveEnabled(bool value) {
+    if (value == _liveEnabled) return;
+    _liveEnabled = value;
+    _revision.value += 1;
+  }
+
   static final ValueNotifier<int> _revision = ValueNotifier<int>(0);
   static Map<String, int> _values = Map.of(defaults);
 
@@ -40,5 +51,8 @@ abstract final class ClubRules {
     _revision.value += 1;
   }
 
-  static void reset() => set(const {});
+  static void reset() {
+    set(const {});
+    setLiveEnabled(true);
+  }
 }

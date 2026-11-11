@@ -1,5 +1,6 @@
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/utils/app_errors.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/match_live/data/match_live_notification_repository.dart';
 import 'package:as_grinta/features/preferences/data/push_subscriptions_repository.dart';
 import 'package:flutter/material.dart';
@@ -78,6 +79,9 @@ class _MatchLiveNotificationBellState
 
   @override
   Widget build(BuildContext context) {
+    if (!ref.watch(clubModuleEnabledProvider(ClubModule.liveMode))) {
+      return const SizedBox.shrink();
+    }
     final subscribed = widget.subscribed;
     return NotificationBellButton(
       active: subscribed,
