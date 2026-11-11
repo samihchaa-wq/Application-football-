@@ -1,6 +1,7 @@
 import 'package:as_grinta/app/shell/module_navigation.dart';
 import 'package:as_grinta/app/shell/player_preview_banner.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -166,6 +167,10 @@ class _AppShellState extends ConsumerState<AppShell>
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        // Statistiques désactivées : il ne reste qu'un onglet, donc plus de
+        // barre de navigation.
+        final statsEnabled =
+            ref.watch(clubModuleEnabledProvider(ClubModule.statistics));
         final useRail = constraints.maxWidth >= 840;
         final extendRail = constraints.maxWidth >= 1180;
         final content = Theme(data: moduleTheme, child: widget.navigationShell);
@@ -181,16 +186,18 @@ class _AppShellState extends ConsumerState<AppShell>
                   child: useRail
                       ? Row(
                           children: [
-                            _DesktopNavigation(
-                              selectedIndex: _selectedIndex,
-                              extended: extendRail,
-                              onSelected: _selectDestination,
-                            ),
-                            VerticalDivider(
-                              width: 1,
-                              thickness: 1,
-                              color: AppTheme.outline.withValues(alpha: .28),
-                            ),
+                            if (statsEnabled) ...[
+                              _DesktopNavigation(
+                                selectedIndex: _selectedIndex,
+                                extended: extendRail,
+                                onSelected: _selectDestination,
+                              ),
+                              VerticalDivider(
+                                width: 1,
+                                thickness: 1,
+                                color: AppTheme.outline.withValues(alpha: .28),
+                              ),
+                            ],
                             Expanded(child: content),
                           ],
                         )
@@ -199,7 +206,7 @@ class _AppShellState extends ConsumerState<AppShell>
               ],
             ),
           ),
-          bottomNavigationBar: useRail
+          bottomNavigationBar: useRail || !statsEnabled
               ? null
               : ClipRRect(
                   borderRadius: const BorderRadius.vertical(
