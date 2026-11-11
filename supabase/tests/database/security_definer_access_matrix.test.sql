@@ -115,6 +115,8 @@ insert into reviewed_open_definers (fonction, motif) values
    'ne renvoie qu’un booléen de configuration, aucune donnée personnelle'),
   ('private.profile_badge_stars(uuid)',
    'agrégats de badges uniquement ; contrepartie interne de public.profile_badge_metrics'),
+  ('private.current_club_id()',
+   'ne renvoie que l’identifiant du club du demandeur lui-meme ; socle du cloisonnement entre clubs'),
   ('private.featured_badge_display_values(uuid)',
    'ne renvoie que le chiffre des badges arborés, déjà affiché à tout le club ; utilisée par public.featured_badges()');
 
