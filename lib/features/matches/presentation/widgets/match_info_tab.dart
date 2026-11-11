@@ -1,6 +1,7 @@
 import 'package:as_grinta/core/theme/app_spacing.dart';
 import 'package:as_grinta/core/utils/app_formats.dart';
 import 'package:as_grinta/core/widgets/match_fixture.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/matches/data/match_info_repository.dart';
 import 'package:as_grinta/features/matches/domain/jersey_option.dart';
 import 'package:as_grinta/features/matches/presentation/match_encounter_route.dart';
@@ -105,7 +106,10 @@ class MatchInfoTab extends ConsumerWidget {
                 // adresse est renseignée : sinon la carte affichait la météo
                 // d'un lieu par défaut (généralement Toulouse), sans rapport
                 // avec le match — trompeur.
-                if (info.kickoffAt != null && info.address != null)
+                // Le club peut aussi avoir désactivé la météo.
+                if (info.kickoffAt != null &&
+                    info.address != null &&
+                    ref.watch(clubModuleEnabledProvider(ClubModule.weather)))
                   MatchWeatherCard(
                     matchId: matchId,
                     kickoffAt: info.kickoffAt!,

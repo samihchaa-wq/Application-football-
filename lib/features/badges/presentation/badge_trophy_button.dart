@@ -1,5 +1,6 @@
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/features/badges/data/badge_inbox_repository.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +10,10 @@ class BadgeTrophyButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Le club peut avoir désactivé les badges : le bouton disparaît alors.
+    if (!ref.watch(clubModuleEnabledProvider(ClubModule.badges))) {
+      return const SizedBox.shrink();
+    }
     final hasUnseen = ref.watch(hasUnseenBadgeProvider).valueOrNull ?? false;
 
     return IconButton(

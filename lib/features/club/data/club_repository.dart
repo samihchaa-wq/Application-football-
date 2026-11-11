@@ -44,6 +44,52 @@ final RegExp inviteCodePattern = RegExp(r'^[A-Z2-9]{8}$');
 String normalizeInviteCode(String input) =>
     input.toUpperCase().replaceAll(RegExp(r'[\s-]'), '');
 
+/// Une fonctionnalité que l'administrateur peut activer ou non pour son club.
+enum ClubModule {
+  badges(
+    'badges',
+    'Badges',
+    'Récompenses débloquées par les joueurs et leur armoire à badges.',
+  ),
+  seasonWrapped(
+    'season_wrapped',
+    'Bilan de fin de saison',
+    'Le récapitulatif personnel proposé à chaque joueur en fin de saison.',
+  ),
+  weather(
+    'weather',
+    'Météo du match',
+    'La météo prévue au coup d’envoi, sur la fiche du match.',
+  );
+
+  const ClubModule(this.key, this.label, this.description);
+
+  /// Nom de la fonctionnalité côté serveur.
+  final String key;
+  final String label;
+  final String description;
+}
+
+/// État des fonctionnalités du club. Une fonctionnalité inconnue ou non
+/// renseignée est considérée comme activée : rien ne disparaît par erreur.
+class ClubModules {
+  const ClubModules(this._enabled);
+
+  const ClubModules.allEnabled() : _enabled = const {};
+
+  factory ClubModules.fromJson(Object? json) {
+    if (json is! Map) return const ClubModules.allEnabled();
+    return ClubModules({
+      for (final entry in json.entries)
+        if (entry.value is bool) '${entry.key}': entry.value as bool,
+    });
+  }
+
+  final Map<String, bool> _enabled;
+
+  bool isEnabled(ClubModule module) => _enabled[module.key] ?? true;
+}
+
 /// Résultat d'une inscription.
 class ClubRegistration {
   const ClubRegistration({
@@ -83,6 +129,35 @@ class ClubRepository {
       throw StateError('Le code n’a pas pu être renouvelé.');
     }
     return result;
+  }
+
+  /// Change le nom et le nom court du club. Réservé aux administrateurs.
+  Future<Club> updateIdentity({
+    required String name,
+    required String shortName,
+  }) async {
+    final result = await _client.rpc(
+      'admin_update_club_identity',
+      params: {'p_name': name.trim(), 'p_short_name': shortName.trim()},
+    );
+    if (result is! Map) throw StateError('Le club n’a pas pu être modifié.');
+    return Club.fromJson(Map<String, dynamic>.from(result));
+  }
+
+  /// Les fonctionnalités activées pour le club du compte connecté.
+  Future<ClubModules> fetchModules() async {
+    return ClubModules.fromJson(await _client.rpc('get_club_modules'));
+  }
+
+  /// Active ou désactive une fonctionnalité. Réservé aux administrateurs.
+  Future<ClubModules> setModule(ClubModule module,
+      {required bool enabled}) async {
+    return ClubModules.fromJson(
+      await _client.rpc(
+        'admin_set_club_module',
+        params: {'p_key': module.key, 'p_enabled': enabled},
+      ),
+    );
   }
 
   /// Crée un compte dans un club existant, à partir de son code d'invitation.
@@ -152,4 +227,21 @@ class ClubRepository {
 
 final clubRepositoryProvider = Provider<ClubRepository>((ref) {
   return ClubRepository(ref.watch(supabaseClientProvider));
+});
+
+/// Le club du compte connecté.
+final myClubProvider = FutureProvider.autoDispose<Club>((ref) {
+  return ref.watch(clubRepositoryProvider).fetchMyClub();
+});
+
+/// Les fonctionnalités du club. Tant que la réponse n'est pas arrivée, ou si
+/// elle échoue, les écrans se comportent comme si tout était activé.
+final clubModulesProvider = FutureProvider<ClubModules>((ref) {
+  return ref.watch(clubRepositoryProvider).fetchModules();
+});
+
+/// Vrai si [module] est activé pour le club (ou pas encore connu).
+final clubModuleEnabledProvider =
+    Provider.family<bool, ClubModule>((ref, module) {
+  return ref.watch(clubModulesProvider).valueOrNull?.isEnabled(module) ?? true;
 });
