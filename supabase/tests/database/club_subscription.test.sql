@@ -21,7 +21,7 @@ select is(
 );
 
 insert into auth.users (id, email, raw_user_meta_data, raw_app_meta_data)
-select '4c000000-0000-0000-0000-00000000000' || label, 'sub-' || label || '@example.invalid',
+select ('4c000000-0000-0000-0000-00000000000' || label)::uuid, 'sub-' || label || '@example.invalid',
   jsonb_build_object('first_name', 'Admin', 'last_name', upper(label)),
   jsonb_build_object('club_id', id)
 from test_clubs;
