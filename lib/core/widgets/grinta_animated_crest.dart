@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:flutter/material.dart';
 
 /// Écusson du club animé, réservé aux écrans d'attente qui disposent de place.
@@ -58,8 +59,8 @@ class _GrintaAnimatedCrestState extends State<GrintaAnimatedCrest>
 
   @override
   Widget build(BuildContext context) {
-    final crest = Image.asset(
-      'assets/images/club_crest.webp',
+    final crest = Image(
+      image: ClubIdentity.crestImage,
       width: widget.width,
       fit: BoxFit.contain,
       filterQuality: FilterQuality.high,

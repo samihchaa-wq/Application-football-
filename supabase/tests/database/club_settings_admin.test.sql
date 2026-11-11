@@ -77,6 +77,22 @@ select throws_ok(
   '22023', null,
   'une couleur invalide est refusée'
 );
+select is(
+  public.admin_set_club_logo(
+    'club-logos/' || (select id::text from public.clubs) || '/logo.png'
+  ) ->> 'logo_path',
+  'club-logos/' || (select id::text from public.clubs) || '/logo.png',
+  'l’administrateur enregistre le logo de son club'
+);
+select throws_ok(
+  $$select public.admin_set_club_logo('club-logos/00000000-0000-0000-0000-000000000000/logo.png')$$,
+  '22023', null,
+  'un chemin de logo d’un autre club est refusé'
+);
+select is(
+  public.admin_set_club_logo(null) ->> 'logo_path', null,
+  'le logo peut être retiré'
+);
 reset role;
 
 -- Simple membre du club A
@@ -95,6 +111,11 @@ select throws_ok(
   $$select public.admin_update_club_identity('Piraté', 'PIR')$$,
   '42501', null,
   'un simple membre ne peut pas renommer le club'
+);
+select throws_ok(
+  $$select public.admin_set_club_logo(null)$$,
+  '42501', null,
+  'un simple membre ne peut pas changer le logo'
 );
 select throws_ok(
   $$select public.admin_update_club_colors('#000000', '#FFFFFF')$$,

@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/club/club_rules.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/features/admin/presentation/club_settings_page.dart';
@@ -17,6 +18,7 @@ void main() {
     ClubRules.reset();
   });
   tearDown(() {
+    ClubIdentity.reset();
     ClubRules.reset();
     AppTheme.resetClubColors();
   });
@@ -174,6 +176,25 @@ void main() {
     expect(ClubRules.predictionCloseBeforeKickoff, const Duration(minutes: 16));
   });
 
+  testWidgets('retirer le logo rétablit l’écusson neutre', (tester) async {
+    repository.club = Club(
+      id: repository.club.id,
+      name: repository.club.name,
+      shortName: repository.club.shortName,
+      inviteCode: repository.club.inviteCode,
+      logoPath: 'club-logos/club-1/1.png',
+    );
+    await pumpPage(tester);
+
+    await tester.ensureVisible(find.byKey(const Key('club-logo-remove')));
+    await tester.tap(find.byKey(const Key('club-logo-remove')));
+    await tester.pumpAndSettle();
+
+    expect(repository.club.logoPath, isNull);
+    expect(ClubIdentity.logoUrl, isNull);
+    expect(find.byKey(const Key('club-logo-remove')), findsNothing);
+  });
+
   testWidgets('choisir une couleur l’enregistre et habille l’application',
       (tester) async {
     await pumpPage(tester);
@@ -282,6 +303,23 @@ class _FakeClubRepository implements ClubRepository {
       inviteCode: club.inviteCode,
       primaryColor: primary,
       secondaryColor: secondary,
+    );
+    return club;
+  }
+
+  @override
+  String? logoUrl(Club club) =>
+      club.logoPath == null ? null : 'https://exemple.test/${club.logoPath}';
+
+  @override
+  Future<Club> removeLogo() async {
+    club = Club(
+      id: club.id,
+      name: club.name,
+      shortName: club.shortName,
+      inviteCode: club.inviteCode,
+      primaryColor: club.primaryColor,
+      secondaryColor: club.secondaryColor,
     );
     return club;
   }

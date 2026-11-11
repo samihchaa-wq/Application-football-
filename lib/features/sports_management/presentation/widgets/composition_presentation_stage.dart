@@ -264,8 +264,8 @@ class _StageLayer extends StatelessWidget {
             offset: Offset(0, 14 * (1 - crest)),
             child: Transform.scale(
               scale: 0.92 + 0.08 * crest,
-              child: Image.asset(
-                'assets/images/club_crest.webp',
+              child: Image(
+                image: ClubIdentity.crestImage,
                 width: 84,
                 filterQuality: FilterQuality.medium,
               ),
@@ -375,7 +375,7 @@ class _StageLayer extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Image.asset('assets/images/club_crest.webp', width: 22),
+        Image(image: ClubIdentity.crestImage, width: 22),
         const SizedBox(width: 8),
         Column(
           mainAxisSize: MainAxisSize.min,

@@ -7,6 +7,7 @@ import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/club/presentation/club_identity_sync.dart';
 import 'package:as_grinta/features/club/presentation/club_rules_sync.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -32,6 +33,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   bool _savingIdentity = false;
   bool _renewingCode = false;
   bool _savingColors = false;
+  bool _savingLogo = false;
 
   /// Choix proposés : des teintes franches, lisibles une fois ajustées au
   /// fond sombre de l'application.
@@ -125,6 +127,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           inviteCode: club.inviteCode,
           primaryColor: club.primaryColor ?? previous?.primaryColor,
           secondaryColor: club.secondaryColor ?? previous?.secondaryColor,
+          logoPath: previous?.logoPath,
         );
       });
       ref.invalidate(myClubProvider);
@@ -199,6 +202,58 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     );
   }
 
+  void _adoptClub(Club club) {
+    setState(() => _club = club);
+    ref.invalidate(myClubProvider);
+    ClubIdentity.setLogoUrl(ref.read(clubRepositoryProvider).logoUrl(club));
+  }
+
+  Future<void> _pickLogo() async {
+    final club = _club;
+    if (club == null || _savingLogo) return;
+    final file = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1024,
+      maxHeight: 1024,
+    );
+    if (file == null || !mounted) return;
+    setState(() => _savingLogo = true);
+    try {
+      final bytes = await file.readAsBytes();
+      final name = file.name;
+      final ext = name.contains('.') ? name.split('.').last : 'png';
+      final updated = await ref
+          .read(clubRepositoryProvider)
+          .uploadLogo(bytes, ext, club.id);
+      if (!mounted) return;
+      _adoptClub(updated);
+      _showMessage('Logo enregistré.');
+    } catch (_) {
+      if (mounted) {
+        _showMessage(
+          'Le logo n’a pas pu être envoyé (image JPEG, PNG ou WebP, 5 Mo max).',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _savingLogo = false);
+    }
+  }
+
+  Future<void> _removeLogo() async {
+    if (_savingLogo) return;
+    setState(() => _savingLogo = true);
+    try {
+      final updated = await ref.read(clubRepositoryProvider).removeLogo();
+      if (!mounted) return;
+      _adoptClub(updated);
+      _showMessage('Logo retiré.');
+    } catch (_) {
+      if (mounted) _showMessage('Le logo n’a pas pu être retiré.');
+    } finally {
+      if (mounted) setState(() => _savingLogo = false);
+    }
+  }
+
   Future<void> _copyInviteLink() async {
     final club = _club;
     if (club == null) return;
@@ -246,6 +301,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
             inviteCode: code,
             primaryColor: club.primaryColor,
             secondaryColor: club.secondaryColor,
+            logoPath: club.logoPath,
           );
         });
       }
@@ -410,6 +466,41 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
             onPressed: _savingIdentity ? null : _saveIdentity,
             child: Text(_savingIdentity ? 'Enregistrement…' : 'Enregistrer'),
           ),
+        ),
+        const SizedBox(height: 28),
+        Text('Logo du club', style: theme.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        const Text(
+          'Ton écusson remplace l’écusson neutre dans toute l’application. '
+          'Image JPEG, PNG ou WebP, de préférence carrée avec un fond '
+          'transparent.',
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Image(image: ClubIdentity.crestImage, width: 56, height: 56),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 8,
+                children: [
+                  FilledButton.tonalIcon(
+                    key: const Key('club-logo-pick'),
+                    onPressed: _savingLogo ? null : _pickLogo,
+                    icon: const Icon(Icons.image_outlined, size: 18),
+                    label: Text(_savingLogo ? 'Envoi…' : 'Choisir un logo'),
+                  ),
+                  if (club.logoPath != null)
+                    OutlinedButton(
+                      key: const Key('club-logo-remove'),
+                      onPressed: _savingLogo ? null : _removeLogo,
+                      child: const Text('Retirer'),
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 28),
         Text('Couleurs du club', style: theme.textTheme.titleMedium),
