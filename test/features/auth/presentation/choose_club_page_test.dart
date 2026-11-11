@@ -3,6 +3,7 @@ import 'package:as_grinta/features/auth/domain/auth_profile.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
 import 'package:as_grinta/features/auth/presentation/choose_club_page.dart';
 import 'package:as_grinta/features/club/data/club_repository.dart';
+import 'package:as_grinta/features/legal/domain/legal_documents.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -20,6 +21,8 @@ class _FakeClubRepository implements ClubRepository {
     String? clubShortName,
     required String firstName,
     required String lastName,
+    required String acceptedTermsVersion,
+    required AgeConfirmation ageConfirmation,
   }) async {
     if (failure != null) throw failure!;
     claimed = {
@@ -28,6 +31,8 @@ class _FakeClubRepository implements ClubRepository {
       'club': clubName,
       'first': firstName,
       'last': lastName,
+      'terms': acceptedTermsVersion,
+      'age': ageConfirmation,
     };
     return const ClubRegistration(
       username: 'fabr',
@@ -92,6 +97,12 @@ void main() {
     );
   }
 
+  Future<void> acceptConsent(WidgetTester tester) async {
+    await tester.tap(find.byKey(const Key('register-age-15-or-more')));
+    await tester.tap(find.byKey(const Key('register-accept-terms')));
+    await tester.pump();
+  }
+
   testWidgets('le nom connu de Facebook est prérempli', (tester) async {
     await pumpPage(tester);
 
@@ -115,11 +126,14 @@ void main() {
       find.byKey(const Key('choose-club-code')),
       'abcd-efgh',
     );
+    await acceptConsent(tester);
     await tester.tap(find.text('Rejoindre le club'));
     await tester.pumpAndSettle();
 
     expect(clubs.claimed?['create'], false);
     expect(clubs.claimed?['code'], 'ABCDEFGH');
+    expect(clubs.claimed?['terms'], legalVersion);
+    expect(clubs.claimed?['age'], AgeConfirmation.fifteenOrMore);
     expect(auth.refreshes, 1);
   });
 
@@ -131,6 +145,7 @@ void main() {
       find.byKey(const Key('choose-club-name')),
       'FC Villeneuve',
     );
+    await acceptConsent(tester);
     await tester.tap(find.widgetWithText(FilledButton, 'Créer mon club'));
     await tester.pumpAndSettle();
 
@@ -146,10 +161,24 @@ void main() {
       find.byKey(const Key('choose-club-code')),
       'ABCDEFGH',
     );
+    await acceptConsent(tester);
     await tester.tap(find.text('Rejoindre le club'));
     await tester.pumpAndSettle();
 
     expect(find.text('Code d’invitation inconnu.'), findsOneWidget);
     expect(auth.refreshes, 0);
+  });
+
+  testWidgets('sans consentement, rien n’est envoyé', (tester) async {
+    await pumpPage(tester);
+    await tester.enterText(
+      find.byKey(const Key('choose-club-code')),
+      'ABCDEFGH',
+    );
+    await tester.tap(find.text('Rejoindre le club'));
+    await tester.pump();
+
+    expect(find.text('Indique si tu as 15 ans ou plus.'), findsOneWidget);
+    expect(clubs.claimed, isNull);
   });
 }

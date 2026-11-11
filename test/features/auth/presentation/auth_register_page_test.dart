@@ -158,7 +158,8 @@ void main() {
     await tester.tap(submit);
     await tester.pumpAndSettle();
     expect(repository.joined, 'ABCDEFGH');
-    expect(repository.lastConsent, (legalVersion, AgeConfirmation.fifteenOrMore));
+    expect(
+        repository.lastConsent, (legalVersion, AgeConfirmation.fifteenOrMore));
   });
 
   testWidgets('le refus du serveur est affiché tel quel', (tester) async {

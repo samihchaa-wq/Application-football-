@@ -309,6 +309,8 @@ class ClubRepository {
     String? clubShortName,
     required String firstName,
     required String lastName,
+    required String acceptedTermsVersion,
+    required AgeConfirmation ageConfirmation,
   }) async {
     final FunctionResponse response;
     try {
@@ -322,6 +324,8 @@ class ClubRepository {
             'clubShortName': clubShortName!.trim(),
           'firstName': firstName.trim(),
           'lastName': lastName.trim(),
+          'acceptedTermsVersion': acceptedTermsVersion,
+          'ageConfirmation': ageConfirmation.serverValue,
         },
       );
     } on FunctionsHttpException catch (error) {
