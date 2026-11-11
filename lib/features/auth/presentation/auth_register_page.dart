@@ -186,7 +186,8 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
   Widget build(BuildContext context) {
     return GrintaAuthSurface(
       maxWidth: 760,
-      title: _mode == RegisterMode.create ? 'Créer mon club' : 'Créer mon compte',
+      title:
+          _mode == RegisterMode.create ? 'Créer mon club' : 'Créer mon compte',
       subtitle: _mode == RegisterMode.create
           ? 'Tu deviens l’administrateur du club et tu invites tes joueurs.'
           : 'Le compte sera accessible après validation par un admin du club.',
