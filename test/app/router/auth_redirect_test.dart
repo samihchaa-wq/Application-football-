@@ -86,6 +86,22 @@ void main() {
       );
     });
 
+    test('lets the legal texts open signed out, loading or signed in', () {
+      for (final state in const [
+        AuthState(isLoading: false),
+        AuthState(isLoading: true),
+      ]) {
+        expect(
+          resolveAuthRedirect(
+            authState: state,
+            uri: Uri.parse('/legal/cgu'),
+            matchedLocation: '/legal/cgu',
+          ),
+          isNull,
+        );
+      }
+    });
+
     test('carries the recovery destination through the loading route', () {
       const loading = AuthState(isLoading: true);
 

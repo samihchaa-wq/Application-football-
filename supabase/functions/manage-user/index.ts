@@ -124,6 +124,65 @@ Deno.serve(async (req: Request) => {
       .select("role,status,club_id")
       .eq("id", userData.user.id)
       .single();
+
+    // Suppression de son propre compte (droit à l'effacement du RGPD) :
+    // ouverte à tout membre, sans passer par un administrateur.
+    const peekedBody = await req.clone().json().catch(() => ({}));
+    if (String(peekedBody?.action ?? "") === "delete-self") {
+      const selfClubId = String(callerProfile?.club_id ?? "");
+      if (profileError || !selfClubId) {
+        return jsonResponse({ error: "Compte introuvable." }, 404);
+      }
+      const scoped = createClient(supabaseUrl, serviceRoleKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+        global: { headers: { "x-club-id": selfClubId } },
+      });
+      const selfId = userData.user.id;
+
+      // Le dernier administrateur d'un club qui a d'autres membres doit
+      // d'abord nommer un autre administrateur : sinon plus personne ne
+      // pourrait gérer le club.
+      if (callerProfile.role === "admin" && callerProfile.status === "active") {
+        const { count: adminCount, error: adminError } = await scoped
+          .from("profiles")
+          .select("id", { count: "exact", head: true })
+          .eq("role", "admin")
+          .eq("status", "active")
+          .eq("club_id", selfClubId);
+        if (adminError) throw adminError;
+        const { count: memberCount, error: memberError } = await scoped
+          .from("profiles")
+          .select("id", { count: "exact", head: true })
+          .eq("club_id", selfClubId)
+          .neq("id", selfId);
+        if (memberError) throw memberError;
+        if ((adminCount ?? 0) <= 1 && (memberCount ?? 0) > 0) {
+          return jsonResponse(
+            {
+              error:
+                "Tu es le seul administrateur du club : nomme un autre administrateur avant de supprimer ton compte.",
+            },
+            409,
+          );
+        }
+      }
+
+      const { error: prepareError } = await scoped.rpc(
+        "prepare_profile_for_hard_deletion",
+        { p_profile_id: selfId },
+      );
+      if (prepareError) throw prepareError;
+      const { error: authDeleteError } = await scoped.auth.admin.deleteUser(
+        selfId,
+        false,
+      );
+      if (authDeleteError && !isUserNotFound(authDeleteError)) {
+        throw authDeleteError;
+      }
+      await deleteProfileWithRetry(scoped, selfId);
+      return jsonResponse({ deleted: true });
+    }
+
     if (
       profileError ||
       String(callerProfile?.role) !== "admin" ||

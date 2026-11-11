@@ -19,6 +19,10 @@ String? resolveAuthRedirect({
   // lui-même la preuve.
   if (location == '/auth/confirm-email') return null;
 
+  // Les textes légaux se lisent connecté ou non : on doit pouvoir les
+  // consulter avant de créer un compte.
+  if (location.startsWith('/legal/')) return null;
+
   if (authState.isLoading) {
     // Pendant une tentative de connexion, conserver l'écran monté. Le faire
     // transiter par /auth/loading détruit son listener Riverpod : l'erreur

@@ -1,5 +1,6 @@
 import 'package:as_grinta/features/auth/presentation/auth_register_page.dart';
 import 'package:as_grinta/features/club/data/club_repository.dart';
+import 'package:as_grinta/features/legal/domain/legal_documents.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,7 +24,17 @@ void main() {
     );
   }
 
-  Future<void> fillIdentity(WidgetTester tester) async {
+  Future<void> giveConsent(WidgetTester tester) async {
+    final age = find.byKey(const Key('register-age-15-or-more'));
+    await tester.ensureVisible(age);
+    await tester.tap(age);
+    final terms = find.byKey(const Key('register-accept-terms'));
+    await tester.ensureVisible(terms);
+    await tester.tap(terms);
+    await tester.pump();
+  }
+
+  Future<void> fillIdentity(WidgetTester tester, {bool consent = true}) async {
     await tester.enterText(find.widgetWithText(TextField, 'Prénom'), 'Karim');
     await tester.enterText(find.widgetWithText(TextField, 'Nom'), 'Benali');
     await tester.enterText(
@@ -34,6 +45,7 @@ void main() {
       find.widgetWithText(TextField, 'Confirme ton mot de passe'),
       _password,
     );
+    if (consent) await giveConsent(tester);
   }
 
   testWidgets('le code reçu par le lien est déjà rempli', (tester) async {
@@ -126,6 +138,29 @@ void main() {
     expect(repository.lastEmail, 'karim@example.com');
   });
 
+  testWidgets('l’inscription exige l’âge et l’acceptation des conditions',
+      (tester) async {
+    await pumpPage(tester, code: 'ABCDEFGH');
+    await fillIdentity(tester, consent: false);
+
+    final submit = find.widgetWithText(FilledButton, 'Créer mon compte');
+    await tester.ensureVisible(submit);
+    await tester.tap(submit);
+    await tester.pump();
+    expect(find.textContaining('15 ans ou plus'), findsWidgets);
+    expect(repository.joined, isNull);
+    ScaffoldMessenger.of(tester.element(find.byType(AuthRegisterPage)))
+        .clearSnackBars();
+    await tester.pumpAndSettle();
+
+    await giveConsent(tester);
+    await tester.ensureVisible(submit);
+    await tester.tap(submit);
+    await tester.pumpAndSettle();
+    expect(repository.joined, 'ABCDEFGH');
+    expect(repository.lastConsent, (legalVersion, AgeConfirmation.fifteenOrMore));
+  });
+
   testWidgets('le refus du serveur est affiché tel quel', (tester) async {
     repository.failure = StateError('Code d’invitation inconnu.');
     await pumpPage(tester, code: 'ABCDEFGH');
@@ -142,6 +177,7 @@ class _FakeClubRepository implements ClubRepository {
   String? joined;
   String? created;
   String? lastEmail;
+  (String, AgeConfirmation)? lastConsent;
   StateError? failure;
 
   @override
@@ -150,10 +186,13 @@ class _FakeClubRepository implements ClubRepository {
     required String firstName,
     required String lastName,
     required String password,
+    required String acceptedTermsVersion,
+    required AgeConfirmation ageConfirmation,
     String? email,
   }) async {
     if (failure != null) throw failure!;
     joined = inviteCode;
+    lastConsent = (acceptedTermsVersion, ageConfirmation);
     lastEmail = email;
     return const ClubRegistration(
       username: 'karimb',
@@ -169,6 +208,8 @@ class _FakeClubRepository implements ClubRepository {
     required String firstName,
     required String lastName,
     required String password,
+    required String acceptedTermsVersion,
+    required AgeConfirmation ageConfirmation,
     String? email,
   }) async {
     if (failure != null) throw failure!;

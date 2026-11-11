@@ -142,6 +142,17 @@ class ClubRule {
   final int value;
 }
 
+/// Déclaration d'âge faite à l'inscription. En France, un mineur de moins de
+/// 15 ans ne peut s'inscrire qu'avec l'accord d'un parent.
+enum AgeConfirmation {
+  fifteenOrMore('15_or_more'),
+  parentalConsent('parental_consent');
+
+  const AgeConfirmation(this.serverValue);
+
+  final String serverValue;
+}
+
 /// Résultat d'une inscription.
 class ClubRegistration {
   const ClubRegistration({
@@ -248,10 +259,14 @@ class ClubRepository {
     required String firstName,
     required String lastName,
     required String password,
+    required String acceptedTermsVersion,
+    required AgeConfirmation ageConfirmation,
     String? email,
   }) {
     return _register({
       'mode': 'join',
+      'acceptedTermsVersion': acceptedTermsVersion,
+      'ageConfirmation': ageConfirmation.serverValue,
       'inviteCode': normalizeInviteCode(inviteCode),
       'firstName': firstName.trim(),
       'lastName': lastName.trim(),
@@ -267,10 +282,14 @@ class ClubRepository {
     required String firstName,
     required String lastName,
     required String password,
+    required String acceptedTermsVersion,
+    required AgeConfirmation ageConfirmation,
     String? email,
   }) {
     return _register({
       'mode': 'create',
+      'acceptedTermsVersion': acceptedTermsVersion,
+      'ageConfirmation': ageConfirmation.serverValue,
       'clubName': clubName.trim(),
       if (clubShortName != null && clubShortName.trim().isNotEmpty)
         'clubShortName': clubShortName.trim(),
