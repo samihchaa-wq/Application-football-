@@ -91,7 +91,7 @@ lues en Europe/Paris.
 
 Les postes de référence utilisés par la simulation de composition ne sont saisis nulle part : ils sont **déduits des compositions réellement alignées**, et suivent donc l’évolution des joueurs.
 
-- Le socle est `lib/features/sports_management/domain/player_position_profiles.dart`, produit par `tool/derive_position_profiles.py` depuis l’archive du club, qui couvre les compositions jusqu’au 21 mai 2026.
+- Le socle est `lib/features/sports_management/domain/player_position_profiles.dart`, vide dans la version multi-clubs : les postes se construisent à partir des compositions alignées dans l’application.
 - Les matchs joués depuis viennent s’y ajouter au chargement de l’écran, via `admin_get_player_position_history`. Un joueur qui change durablement de poste voit son profil basculer sans redéploiement ; une recrue absente de l’archive s’en construit un à partir de ses seuls matchs.
 - Les deux sources utilisent la même pondération par récence, ancrée sur la même saison de référence, ce qui permet de les additionner directement.
 - Tout est indexé sur l’identité canonique `players.id`, stable d’une saison à l’autre et insensible aux changements de nom.
