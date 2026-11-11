@@ -38,7 +38,7 @@ select ok(
     pg_get_functiondef('private.match_motm_closes_at(uuid)'::regprocedure)
   ) > 0
   and position(
-    'interval ''24 hours''' in
+    'motm_window_hours' in
     pg_get_functiondef('private.match_motm_closes_at(uuid)'::regprocedure)
   ) > 0
   and position(
@@ -49,7 +49,7 @@ select ok(
     'v_opens_at + interval ''24 hours''' in
     pg_get_functiondef('private.ensure_match_motm_election(uuid)'::regprocedure)
   ) = 0,
-  'la fermeture HDM est fixée à vingt-quatre heures après le coup d’envoi prévu'
+  'la fermeture HDM suit la durée réglée par le club (24 h par défaut) après le coup d’envoi prévu'
 );
 
 select ok(

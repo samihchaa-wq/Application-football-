@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_rules.dart';
 import 'package:as_grinta/features/admin/presentation/club_settings_page.dart';
 import 'package:as_grinta/features/badges/data/badge_inbox_repository.dart';
 import 'package:as_grinta/features/badges/presentation/badge_trophy_button.dart';
@@ -10,7 +11,11 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   late _FakeClubRepository repository;
 
-  setUp(() => repository = _FakeClubRepository());
+  setUp(() {
+    repository = _FakeClubRepository();
+    ClubRules.reset();
+  });
+  tearDown(ClubRules.reset);
 
   Future<void> pumpPage(WidgetTester tester) async {
     tester.view.physicalSize = const Size(900, 2400);
@@ -145,6 +150,26 @@ void main() {
     expect(find.byType(IconButton), findsNothing);
   });
 
+  testWidgets('la page affiche les règles du club et enregistre un changement',
+      (tester) async {
+    await pumpPage(tester);
+
+    expect(find.text('Règles du club'), findsOneWidget);
+    expect(find.text('Fermeture des pronostics'), findsOneWidget);
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('club-rule-prediction_close_minutes-plus')),
+    );
+    await tester.tap(
+      find.byKey(const ValueKey('club-rule-prediction_close_minutes-plus')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(repository.ruleValues['prediction_close_minutes'], 16);
+    expect(find.text('16 min'), findsOneWidget);
+    expect(ClubRules.predictionCloseBeforeKickoff, const Duration(minutes: 16));
+  });
+
   testWidgets('le bouton des badges reste visible par défaut', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -170,6 +195,31 @@ class _FakeClubRepository implements ClubRepository {
   );
   final Map<String, bool> modules = {};
   int identityUpdates = 0;
+  final Map<String, int> ruleValues = {'prediction_close_minutes': 15};
+
+  List<ClubRule> _rules() => [
+        for (final entry in ruleValues.entries)
+          ClubRule(
+            key: entry.key,
+            label: 'Fermeture des pronostics',
+            description: 'Minutes avant le coup d’envoi.',
+            unit: 'min',
+            group: 'Pronostics',
+            defaultValue: 15,
+            min: 0,
+            max: 240,
+            value: entry.value,
+          ),
+      ];
+
+  @override
+  Future<List<ClubRule>> fetchRules() async => _rules();
+
+  @override
+  Future<List<ClubRule>> setRule(String key, int? value) async {
+    ruleValues[key] = value ?? 15;
+    return _rules();
+  }
 
   @override
   Future<Club> fetchMyClub() async => club;

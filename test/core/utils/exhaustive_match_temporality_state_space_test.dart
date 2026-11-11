@@ -97,7 +97,7 @@ void main() {
                     kickoffLocal.year,
                     kickoffLocal.month,
                     kickoffLocal.day,
-                  ).subtract(const Duration(days: kMatchOpensDaysBefore));
+                  ).subtract(Duration(days: kMatchOpensDaysBefore));
                   expect(
                     DateTime.utc(
                         openLocal.year, openLocal.month, openLocal.day),

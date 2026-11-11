@@ -8,6 +8,7 @@ import 'package:as_grinta/features/matches/presentation/match_encounter_route.da
 import 'package:as_grinta/features/matches/presentation/widgets/match_result_score_chip.dart';
 import 'package:as_grinta/features/notifications/data/notification_inbox_repository.dart';
 import 'package:as_grinta/features/predictions/data/predictions_repository.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -46,6 +47,10 @@ class _InlineMatchPredictionCardState
 
   @override
   Widget build(BuildContext context) {
+    // Pronostics désactivés par l'administrateur du club : rien n'est affiché.
+    if (!ref.watch(clubModuleEnabledProvider(ClubModule.predictions))) {
+      return const SizedBox.shrink();
+    }
     final prediction = ref.watch(inlineMatchPredictionProvider(widget.matchId));
     final details = ref.watch(matchDetailsProvider(widget.matchId));
 

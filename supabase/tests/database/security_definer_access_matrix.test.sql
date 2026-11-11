@@ -105,6 +105,8 @@ insert into reviewed_open_definers (fonction, motif) values
    'délègue à private.sync_match_sport_workflow_v2, qui exige admin'),
   ('private.get_public_feature_flags()',
    'ne renvoie que le drapeau sports_management, aucune donnée personnelle'),
+  ('private.club_rule(text)',
+   'ne renvoie qu’un nombre de réglage du club courant (ou son défaut), sans donnée personnelle'),
   ('private.can_manage_badges()',
    'garde elle-meme : exige service_role ou un administrateur actif du club et ne renvoie qu’un booléen'),
   ('private.is_active_profile()',

@@ -149,6 +149,9 @@ begin
 
     if v_id is not null
        and v_id <> 'b6200000-0000-0000-0000-000000000001'::uuid then
+      -- L'ouverture d'une saison y place les membres actifs : on les retire
+      -- avant de supprimer la saison d'essai.
+      delete from public.season_players where season_id = v_id;
       delete from public.seasons where id = v_id;
     end if;
   end loop;
