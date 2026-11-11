@@ -9,6 +9,7 @@ import 'package:as_grinta/features/badges/presentation/name_with_badges.dart';
 import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
 import 'package:as_grinta/features/sports_management/data/match_sport_report_repository.dart';
 import 'package:as_grinta/features/match_live/presentation/widgets/match_faits_du_match_card.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/matches/data/match_details_repository.dart';
 import 'package:as_grinta/features/matches/presentation/widgets/completed_match_composition_card.dart';
 import 'package:as_grinta/features/sports_management/data/match_availability_board_repository.dart';
@@ -60,6 +61,10 @@ class MatchDetailsPage extends ConsumerWidget {
     final currentProfileId = ref.watch(
       authControllerProvider.select((state) => state.profile?.id),
     );
+    final predictionsEnabled =
+        ref.watch(clubModuleEnabledProvider(ClubModule.predictions));
+    final motmEnabled =
+        ref.watch(clubModuleEnabledProvider(ClubModule.manOfTheMatch));
 
     // Composition et faits du match sont des blocs de la liste qui ne
     // restent construits que tant qu'ils sont proches de l'écran. Sans
@@ -133,7 +138,7 @@ class MatchDetailsPage extends ConsumerWidget {
                 );
               }
 
-              final vote = sportsEnabled
+              final vote = sportsEnabled && motmEnabled
                   ? ref.watch(sportMotmVoteProvider(matchId)).valueOrNull
                   : null;
               final motmActionLabel =
@@ -187,7 +192,7 @@ class MatchDetailsPage extends ConsumerWidget {
                   ),
                   if (vote != null && vote.isClosed && vote.winners.isNotEmpty)
                     _MotmVotesCard(matchId: matchId, vote: vote),
-                  if (details.predictions.isNotEmpty) ...[
+                  if (predictionsEnabled && details.predictions.isNotEmpty) ...[
                     const SizedBox(height: 16),
                     _PredictionsTable(
                       matchId: matchId,

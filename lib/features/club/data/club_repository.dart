@@ -46,6 +46,21 @@ String normalizeInviteCode(String input) =>
 
 /// Une fonctionnalité que l'administrateur peut activer ou non pour son club.
 enum ClubModule {
+  predictions(
+    'predictions',
+    'Pronostics et classement',
+    'Les pronostics des membres avant chaque match et leur classement.',
+  ),
+  statistics(
+    'statistics',
+    'Statistiques',
+    'L’onglet Statistiques : classements, stats de l’équipe et des joueurs.',
+  ),
+  manOfTheMatch(
+    'man_of_the_match',
+    'Homme du match',
+    'Le vote de l’homme du match après chaque rencontre.',
+  ),
   badges(
     'badges',
     'Badges',
