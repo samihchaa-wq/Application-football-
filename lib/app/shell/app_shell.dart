@@ -1,6 +1,8 @@
 import 'package:as_grinta/app/shell/module_navigation.dart';
 import 'package:as_grinta/app/shell/player_preview_banner.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
+import 'package:as_grinta/features/club/data/club_subscription.dart';
+import 'package:as_grinta/features/club/presentation/club_suspended_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -138,6 +140,11 @@ class _AppShellState extends ConsumerState<AppShell>
 
   @override
   Widget build(BuildContext context) {
+    // Club suspendu par l'éditeur : un écran d'explication remplace l'appli.
+    if (ref.watch(myClubAccessProvider).valueOrNull == 'suspended') {
+      return const ClubSuspendedPage();
+    }
+
     // Une vraie arrivée sur Calendrier continue à recentrer sur l'élément
     // pertinent. Seul le simple pop d'une fiche de match issue du calendrier
     // conserve la position exacte afin de pouvoir parcourir plusieurs anciens

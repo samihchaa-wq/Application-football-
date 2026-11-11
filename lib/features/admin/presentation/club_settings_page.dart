@@ -2,6 +2,7 @@ import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
 import 'package:as_grinta/core/widgets/grinta_loader.dart';
+import 'package:as_grinta/features/admin/presentation/club_subscription_section.dart';
 import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -276,6 +277,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
             ),
           ],
         ),
+        const SizedBox(height: 28),
+        const ClubSubscriptionSection(),
         const SizedBox(height: 28),
         Text('Fonctionnalités', style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
