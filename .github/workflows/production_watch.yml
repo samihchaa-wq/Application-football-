@@ -1,0 +1,64 @@
+name: Production watch
+
+# Surveillance de la base en ligne, gratuite : toutes les heures, une requête
+# vérifie que les tâches planifiées et les notifications fonctionnent. En cas
+# de problème, le contrôle échoue et GitHub envoie un e-mail au propriétaire
+# du dépôt.
+#
+# Inactif tant que le secret PRODUCTION_DB_URL n'existe pas (aucune base en
+# ligne pour l'instant). Voir docs/exploitation.md.
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      DB_URL: ${{ secrets.PRODUCTION_DB_URL }}
+    steps:
+      - name: Skip when no production database is configured
+        if: env.DB_URL == ''
+        run: >-
+          echo "::notice::Pas encore de base en ligne : surveillance inactive."
+
+      - name: Check scheduled jobs and notifications
+        if: env.DB_URL != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get install -y -qq postgresql-client >/dev/null 2>&1 || true
+          report=$(psql "$DB_URL" -At -F ' | ' -v ON_ERROR_STOP=1 <<'SQL'
+          select 'tâches en échec (1 h)', count(*) from cron.job_run_details
+            where status = 'failed' and start_time > now() - interval '1 hour'
+          union all
+          select 'notifications en échec (1 h)', count(*) from public.push_delivery_log
+            where not success and created_at > now() - interval '1 hour'
+          union all
+          select 'notifications envoyées (1 h)', count(*) from public.push_delivery_log
+            where success and created_at > now() - interval '1 hour'
+          union all
+          select 'clubs actifs', count(*) from public.clubs where status = 'active'
+          union all
+          select 'taille de la base (Mo)', pg_database_size(current_database()) / 1048576;
+          SQL
+          )
+          echo "$report"
+          echo "$report" >> "$GITHUB_STEP_SUMMARY"
+          failed_jobs=$(echo "$report" | awk -F ' \\| ' '/tâches en échec/ {print $2}')
+          failed_push=$(echo "$report" | awk -F ' \\| ' '/notifications en échec/ {print $2}')
+          sent_push=$(echo "$report" | awk -F ' \\| ' '/notifications envoyées/ {print $2}')
+          if [ "${failed_jobs:-0}" -gt 5 ]; then
+            echo "::error::${failed_jobs} tâches planifiées en échec sur la dernière heure."
+            exit 1
+          fi
+          # Plus de la moitié des notifications en échec : l'envoi est cassé.
+          if [ "${failed_push:-0}" -gt 20 ] && [ "${failed_push:-0}" -gt "${sent_push:-0}" ]; then
+            echo "::error::La majorité des notifications échouent (${failed_push} échecs, ${sent_push} réussites)."
+            exit 1
+          fi

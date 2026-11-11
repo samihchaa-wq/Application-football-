@@ -15,6 +15,7 @@ import 'package:as_grinta/features/auth/presentation/auth_loading_page.dart';
 import 'package:as_grinta/features/auth/presentation/auth_register_page.dart';
 import 'package:as_grinta/features/auth/presentation/choose_club_page.dart';
 import 'package:as_grinta/features/auth/presentation/confirm_email_page.dart';
+import 'package:as_grinta/features/auth/presentation/legal_document_page.dart';
 import 'package:as_grinta/features/auth/presentation/auth_sign_in_page.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
 import 'package:as_grinta/features/auth/presentation/forced_password_change_page.dart';
@@ -360,6 +361,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (_, state) => ConfirmEmailPage(
           token: state.uri.queryParameters['token'],
         ),
+      ),
+      GoRoute(
+        path: '/legal/:slug',
+        builder: (_, state) =>
+            LegalDocumentPage(slug: state.pathParameters['slug'] ?? ''),
       ),
       GoRoute(
         path: '/auth/new-password',

@@ -1,4 +1,5 @@
 import {
+  clubIdFromRequest,
   readBoundedJson,
   RequestBodyTooLargeError,
   safeNotificationUrl,
@@ -112,5 +113,23 @@ Deno.test("ramène à l'accueil toute adresse de notification douteuse", () => {
     ]
   ) {
     assertEquals(safeNotificationUrl(value), ".", `accepté à tort : ${value}`);
+  }
+});
+
+Deno.test("lit le club transmis par la base", () => {
+  const clubId = "8F14E45F-CEEA-4C3B-9D6A-1B2C3D4E5F60";
+  const req = new Request("https://example.test", {
+    method: "POST",
+    headers: { "x-club-id": ` ${clubId} ` },
+  });
+  assertEquals(clubIdFromRequest(req), clubId.toLowerCase());
+});
+
+Deno.test("refuse un envoi sans club ou avec un club mal formé", () => {
+  for (const value of [null, "", "club-a", "1' or '1'='1"]) {
+    const headers = new Headers();
+    if (value !== null) headers.set("x-club-id", value);
+    const req = new Request("https://example.test", { method: "POST", headers });
+    assertEquals(clubIdFromRequest(req), null, `valeur ${value}`);
   }
 });

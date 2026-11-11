@@ -259,10 +259,12 @@ select isnt(
 -- Bugs 6 et 19 — nettoyage du stockage
 -- ---------------------------------------------------------------------------
 
-insert into storage.objects (bucket_id, name)
+-- Un fichier appartient au club de son déposant (owner_id) : les fichiers de
+-- test ont donc un déposant, comme ceux déposés par l'application.
+insert into storage.objects (bucket_id, name, owner_id)
 values
-  ('profile-photos', '40000000-0000-0000-0000-000000000002/avatar_1.jpg'),
-  ('profile-photos', '40000000-0000-0000-0000-000000000002/avatar_2.jpg');
+  ('profile-photos', '40000000-0000-0000-0000-000000000002/avatar_1.jpg', '40000000-0000-0000-0000-000000000002'),
+  ('profile-photos', '40000000-0000-0000-0000-000000000002/avatar_2.jpg', '40000000-0000-0000-0000-000000000002');
 
 -- Un membre ordinaire doit pouvoir enregistrer sa propre photo : sans cela,
 -- l'envoi resterait refusé par guard_sensitive_profile_fields même la CSP
@@ -311,8 +313,9 @@ values (
   'https://example.invalid/storage/v1/object/public/badge-images/audit_v1.png'
 );
 
-insert into storage.objects (bucket_id, name)
-values ('badge-images', 'audit_v1.png'), ('badge-images', 'audit_v2.png');
+insert into storage.objects (bucket_id, name, owner_id)
+values ('badge-images', 'audit_v1.png', '40000000-0000-0000-0000-000000000001'),
+       ('badge-images', 'audit_v2.png', '40000000-0000-0000-0000-000000000001');
 
 update public.badges
 set image_url =

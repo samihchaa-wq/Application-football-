@@ -3,6 +3,7 @@ import 'package:as_grinta/features/admin/presentation/club_settings_page.dart';
 import 'package:as_grinta/features/badges/data/badge_inbox_repository.dart';
 import 'package:as_grinta/features/badges/presentation/badge_trophy_button.dart';
 import 'package:as_grinta/features/club/data/club_repository.dart';
+import 'package:as_grinta/features/club/data/club_subscription.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -25,6 +26,24 @@ void main() {
         overrides: [
           clubRepositoryProvider.overrideWithValue(repository),
           hasUnseenBadgeProvider.overrideWith((ref) => false),
+          clubSubscriptionProvider.overrideWith(
+            (ref) async => const ClubSubscription(
+              state: ClubSubscriptionState.trialEnding,
+              trialEndsAt: null,
+              trialDaysLeft: 5,
+              currentPeriodEnd: null,
+              billablePlayers: 24,
+              pricePerPlayerCents: 1000,
+              basePriceCents: 0,
+              yearlyAmountCents: 24000,
+            ),
+          ),
+          clubStorageUsageProvider.overrideWith(
+            (ref) async => const ClubStorageUsage(
+              usedBytes: 50 * 1024 * 1024,
+              quotaBytes: 200 * 1024 * 1024,
+            ),
+          ),
         ],
         child: const MaterialApp(home: ClubSettingsPage()),
       ),
@@ -41,6 +60,16 @@ void main() {
     for (final module in ClubModule.values) {
       expect(find.text(module.label), findsOneWidget);
     }
+  });
+
+  testWidgets('l’admin voit son essai, ses joueurs facturés et son espace',
+      (tester) async {
+    await pumpPage(tester);
+
+    expect(find.text('Essai gratuit : encore 5 jours'), findsOneWidget);
+    expect(find.textContaining('24 joueurs'), findsOneWidget);
+    expect(find.text('Total annuel : 240\u00a0€'), findsOneWidget);
+    expect(find.text('50\u00a0Mo utilisés sur 200\u00a0Mo.'), findsOneWidget);
   });
 
   testWidgets('désactiver une fonctionnalité l’enregistre côté serveur',

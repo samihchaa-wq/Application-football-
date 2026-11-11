@@ -7,6 +7,7 @@ import 'package:as_grinta/core/widgets/photo_crop_preview.dart';
 import 'package:as_grinta/features/auth/data/account_email_repository.dart';
 import 'package:as_grinta/features/auth/domain/auth_profile.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:as_grinta/features/profile/presentation/my_data_section.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -283,6 +284,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   ),
                 ),
               ],
+              const SizedBox(height: 24),
+              const MyDataSection(),
             ],
           );
         },

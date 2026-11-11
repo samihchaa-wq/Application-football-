@@ -1,0 +1,59 @@
+name: Production backup
+
+# Copie hebdomadaire de la base en ligne, chiffrée, gardée 90 jours dans
+# GitHub. Complète la sauvegarde quotidienne de Supabase (7 jours) : en cas
+# de suppression du projet Supabase ou d'erreur découverte tard, une copie
+# existe ailleurs.
+#
+# Le dépôt étant public, la copie est chiffrée avec BACKUP_PASSPHRASE avant
+# d'être déposée : sans cette phrase secrète, le fichier est illisible.
+# Inactif tant que PRODUCTION_DB_URL et BACKUP_PASSPHRASE n'existent pas.
+on:
+  schedule:
+    - cron: '23 2 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DB_URL: ${{ secrets.PRODUCTION_DB_URL }}
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+    steps:
+      - name: Skip when no production database is configured
+        if: env.DB_URL == '' || env.BACKUP_PASSPHRASE == ''
+        run: >-
+          echo "::notice::Pas encore de base en ligne ou de phrase secrète : sauvegarde inactive."
+
+      - name: Setup Supabase CLI
+        if: env.DB_URL != '' && env.BACKUP_PASSPHRASE != ''
+        uses: supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf # v2
+        with:
+          version: 2.111.0
+
+      - name: Dump and encrypt
+        if: env.DB_URL != '' && env.BACKUP_PASSPHRASE != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          stamp=$(date -u +%Y-%m-%d)
+          supabase db dump --db-url "$DB_URL" -f "roles.sql" --role-only
+          supabase db dump --db-url "$DB_URL" -f "schema.sql"
+          supabase db dump --db-url "$DB_URL" -f "data.sql" --use-copy --data-only
+          tar czf "backup-$stamp.tar.gz" roles.sql schema.sql data.sql
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$BACKUP_PASSPHRASE" \
+            --symmetric --cipher-algo AES256 -o "backup-$stamp.tar.gz.gpg" "backup-$stamp.tar.gz"
+          rm -f roles.sql schema.sql data.sql "backup-$stamp.tar.gz"
+          ls -lh "backup-$stamp.tar.gz.gpg"
+
+      - name: Keep the encrypted backup
+        if: env.DB_URL != '' && env.BACKUP_PASSPHRASE != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: production-backup
+          path: backup-*.tar.gz.gpg
+          retention-days: 90

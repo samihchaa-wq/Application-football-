@@ -3,7 +3,9 @@ import 'package:as_grinta/core/widgets/grinta_loader.dart';
 import 'package:as_grinta/features/auth/presentation/auth_register_page.dart'
     show RegisterMode;
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:as_grinta/features/auth/presentation/consent_fields.dart';
 import 'package:as_grinta/features/club/data/club_repository.dart';
+import 'package:as_grinta/features/legal/domain/legal_documents.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -23,6 +25,8 @@ class _ChooseClubPageState extends ConsumerState<ChooseClubPage> {
   final _clubNameController = TextEditingController();
   final _clubShortNameController = TextEditingController();
   RegisterMode _mode = RegisterMode.join;
+  AgeConfirmation? _ageConfirmation;
+  bool _acceptedTerms = false;
   bool _submitting = false;
   String? _error;
 
@@ -62,6 +66,11 @@ class _ChooseClubPageState extends ConsumerState<ChooseClubPage> {
       problem = 'Le nom du club doit compter entre 2 et 80 caractères.';
     } else if (create && shortName.length > 12) {
       problem = 'Le nom court ne doit pas dépasser 12 caractères.';
+    } else if (_ageConfirmation == null) {
+      problem = 'Indique si tu as 15 ans ou plus.';
+    } else if (!_acceptedTerms) {
+      problem = 'Accepte les conditions d’utilisation et la politique de '
+          'confidentialité pour continuer.';
     }
     if (problem != null) {
       setState(() => _error = problem);
@@ -80,6 +89,8 @@ class _ChooseClubPageState extends ConsumerState<ChooseClubPage> {
             clubShortName: shortName,
             firstName: firstName,
             lastName: lastName,
+            acceptedTermsVersion: legalVersion,
+            ageConfirmation: _ageConfirmation!,
           );
       // Le profil existe maintenant : le routeur fait entrer dans le club, ou
       // sur l'écran d'attente quand un admin doit valider le compte.
@@ -173,6 +184,14 @@ class _ChooseClubPageState extends ConsumerState<ChooseClubPage> {
               labelText: 'Nom',
               prefixIcon: Icon(Icons.badge_outlined),
             ),
+          ),
+          const SizedBox(height: 16),
+          ConsentFields(
+            ageConfirmation: _ageConfirmation,
+            acceptedTerms: _acceptedTerms,
+            enabled: !_submitting,
+            onAgeChanged: (value) => setState(() => _ageConfirmation = value),
+            onTermsChanged: (value) => setState(() => _acceptedTerms = value),
           ),
           if (_error != null) ...[
             const SizedBox(height: 16),

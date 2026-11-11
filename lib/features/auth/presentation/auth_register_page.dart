@@ -4,7 +4,9 @@ import 'package:as_grinta/core/utils/name_validation.dart';
 import 'package:as_grinta/core/widgets/grinta_adaptive_form.dart';
 import 'package:as_grinta/core/widgets/grinta_auth_surface.dart';
 import 'package:as_grinta/core/widgets/grinta_loader.dart';
+import 'package:as_grinta/features/auth/presentation/consent_fields.dart';
 import 'package:as_grinta/features/club/data/club_repository.dart';
+import 'package:as_grinta/features/legal/domain/legal_documents.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -39,6 +41,8 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
   final _confirmController = TextEditingController();
   bool _obscurePassword = true;
   bool _submitting = false;
+  bool _acceptedTerms = false;
+  AgeConfirmation? _ageConfirmation;
   RegisterMode _mode = RegisterMode.join;
 
   @override
@@ -115,6 +119,19 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
       return;
     }
 
+    final ageConfirmation = _ageConfirmation;
+    if (ageConfirmation == null) {
+      _showError('Indique si tu as 15 ans ou plus.');
+      return;
+    }
+    if (!_acceptedTerms) {
+      _showError(
+        'Accepte les conditions d’utilisation et la politique de '
+        'confidentialité pour créer ton compte.',
+      );
+      return;
+    }
+
     setState(() => _submitting = true);
     try {
       final repository = ref.read(clubRepositoryProvider);
@@ -125,6 +142,8 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
               firstName: firstName,
               lastName: lastName,
               password: password,
+              acceptedTermsVersion: legalVersion,
+              ageConfirmation: ageConfirmation,
               email: email,
             )
           : await repository.joinClub(
@@ -132,6 +151,8 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
               firstName: firstName,
               lastName: lastName,
               password: password,
+              acceptedTermsVersion: legalVersion,
+              ageConfirmation: ageConfirmation,
               email: email,
             );
       final username = registration.username;
@@ -357,6 +378,14 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 16),
+          ConsentFields(
+            ageConfirmation: _ageConfirmation,
+            acceptedTerms: _acceptedTerms,
+            enabled: !_submitting,
+            onAgeChanged: (value) => setState(() => _ageConfirmation = value),
+            onTermsChanged: (value) => setState(() => _acceptedTerms = value),
           ),
           const SizedBox(height: 24),
           FilledButton.icon(

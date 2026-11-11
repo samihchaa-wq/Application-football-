@@ -14,6 +14,7 @@ import {
   sendMail,
   sha256Hex,
 } from "./account_email.ts";
+import { parseConsent } from "./consent.ts";
 import { validatePassword } from "./password_policy.ts";
 
 const USERNAME_DOMAIN = Deno.env.get("USERNAME_DOMAIN")?.trim() ||
@@ -160,6 +161,16 @@ Deno.serve(async (req: Request) => {
   if (contactEmail && !isValidEmail(contactEmail)) {
     return jsonResponse({ error: "Adresse e-mail invalide." }, 400);
   }
+  const consent = parseConsent(body);
+  if (!consent) {
+    return jsonResponse(
+      {
+        error:
+          "Accepte les conditions d’utilisation et indique ton âge pour créer ton compte.",
+      },
+      400,
+    );
+  }
   const passwordError = validatePassword(password);
   if (passwordError) {
     return jsonResponse({ error: passwordError }, 400);
@@ -281,7 +292,13 @@ Deno.serve(async (req: Request) => {
 
     const { error: updateError } = await scoped
       .from("profiles")
-      .update({ username, updated_at: new Date().toISOString() })
+      .update({
+        username,
+        terms_version: consent.termsVersion,
+        terms_accepted_at: new Date().toISOString(),
+        age_confirmation: consent.ageConfirmation,
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", newUserId)
       .eq("club_id", club.id);
     if (updateError) throw updateError;

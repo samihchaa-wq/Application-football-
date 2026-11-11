@@ -194,6 +194,7 @@ select is(
         'private.prediction_reminder_cron_config',
         'private.sport_waitlist_engine_activation',
         'private.client_incident_log',
+        'private.platform_operators',
         'private.email_confirmations',
         'private.email_attempts'
       )
@@ -238,6 +239,13 @@ select is(
         'confirm_contact_email(text)',
         'profile_for_recovery_email(text)',
         'handle_new_auth_user()',
+        -- Console de l'éditeur, réservée aux comptes de private.platform_operators.
+        'platform_list_clubs()',
+        'platform_update_club(uuid,text,text,timestamp with time zone,timestamp with time zone,integer,integer,bigint,text)',
+        'platform_health()',
+        'private.is_platform_operator()',
+        -- État du club lisible même quand il est suspendu.
+        'get_my_club_access()',
         -- Aide posée par l'amorce des tests, absente d'une vraie base.
         'private.ci_direct_player_identity_default()'
       )

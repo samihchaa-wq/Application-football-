@@ -3,6 +3,7 @@
 // Le club n'est jamais choisi par le client autrement que par un code valide.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2.95.0";
+import { parseConsent } from "./consent.ts";
 
 const INVITE_CODE_PATTERN = /^[A-Z2-9]{8}$/;
 const MAX_BODY_BYTES = 4_096;
@@ -137,6 +138,16 @@ Deno.serve(async (req: Request) => {
     /[\u0000-\u001f\u007f]/.test(firstName + lastName)
   ) {
     return jsonResponse({ error: "Prénom ou nom invalide." }, 400);
+  }
+  const consent = parseConsent(body);
+  if (!consent) {
+    return jsonResponse(
+      {
+        error:
+          "Accepte les conditions d’utilisation et indique ton âge pour continuer.",
+      },
+      400,
+    );
   }
   if (mode === "join" && !INVITE_CODE_PATTERN.test(inviteCode)) {
     return jsonResponse(
@@ -283,7 +294,13 @@ Deno.serve(async (req: Request) => {
 
     const { error: updateError } = await scoped
       .from("profiles")
-      .update({ username, updated_at: new Date().toISOString() })
+      .update({
+        username,
+        terms_version: consent.termsVersion,
+        terms_accepted_at: new Date().toISOString(),
+        age_confirmation: consent.ageConfirmation,
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", userId)
       .eq("club_id", club.id);
     if (updateError) throw updateError;
