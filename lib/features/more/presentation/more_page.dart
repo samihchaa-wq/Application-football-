@@ -99,6 +99,11 @@ class MorePage extends ConsumerWidget {
                   },
                 ),
                 _SettingsTile(
+                  icon: Icons.tune_rounded,
+                  title: 'Réglages du club',
+                  onTap: () => context.push('/admin/club'),
+                ),
+                _SettingsTile(
                   icon: Icons.admin_panel_settings_outlined,
                   title: 'Administration',
                   onTap: () => context.push('/admin'),

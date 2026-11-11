@@ -1,3 +1,4 @@
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/season_wrapped/data/season_wrapped_repository.dart';
 import 'package:as_grinta/features/season_wrapped/presentation/season_wrapped_button.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +14,10 @@ class SeasonWrappedEntryButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Le club peut avoir désactivé le bilan de fin de saison.
+    if (!ref.watch(clubModuleEnabledProvider(ClubModule.seasonWrapped))) {
+      return const SizedBox.shrink();
+    }
     final available =
         ref.watch(seasonWrappedStateProvider).valueOrNull?.available ?? false;
     if (!available) return const SizedBox.shrink();

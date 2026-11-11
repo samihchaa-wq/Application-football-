@@ -83,10 +83,10 @@ void main() {
   testWidgets('an admin sees the account card and both setting groups', (
     tester,
   ) async {
-    // Écran de téléphone : avec le groupe « Aperçu », la page dépasse la
-    // petite fenêtre de test par défaut.
+    // Grand écran de téléphone : avec le groupe « Aperçu » et les réglages
+    // du club, la page dépasse la petite fenêtre de test par défaut.
     tester.view
-      ..physicalSize = const Size(1170, 2532)
+      ..physicalSize = const Size(1170, 3000)
       ..devicePixelRatio = 3;
     addTearDown(tester.view.reset);
     await _pumpMorePage(tester, profile: _admin, sportsEnabled: true);
@@ -104,6 +104,7 @@ void main() {
       'Indisponibilité',
       'Liste d’attente',
       'Équipes & stades',
+      'Réglages du club',
       'Administration',
       'Se déconnecter',
     ]) {

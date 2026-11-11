@@ -4,6 +4,7 @@ import 'package:as_grinta/app/router/auth_redirect.dart';
 import 'package:as_grinta/app/router/deferred_route_page.dart';
 import 'package:as_grinta/app/router/initial_app_location.dart';
 import 'package:as_grinta/app/shell/app_shell.dart';
+import 'package:as_grinta/features/admin/presentation/club_settings_page.dart';
 import 'package:as_grinta/features/admin/presentation/admin_menu_page.dart'
     deferred as admin_menu;
 import 'package:as_grinta/features/admin/presentation/admin_notification_page.dart'
@@ -240,6 +241,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   load: admin_notification.loadLibrary,
                   builder: (_) => admin_notification.AdminNotificationPage(),
                 ),
+              ),
+              GoRoute(
+                path: '/admin/club',
+                builder: (_, __) => const ClubSettingsPage(),
               ),
               GoRoute(path: '/more', builder: (_, __) => const MorePage()),
               GoRoute(
