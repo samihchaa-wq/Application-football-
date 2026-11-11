@@ -10,8 +10,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:as_grinta/core/widgets/grinta_loader.dart';
 
-/// Effectif de la saison. Chaque joueur peut être relié à un compte de
-/// pronostiqueur, sans que cette liaison soit obligatoire.
+/// Effectif de la saison. Les membres du club y arrivent d'eux-mêmes quand
+/// leur compte est validé ; on n'ajoute ici à la main que les joueurs qui n'ont
+/// pas (encore) de compte.
 class PlayersRegistryPage extends ConsumerWidget {
   const PlayersRegistryPage({super.key});
 
@@ -69,7 +70,7 @@ class _RosterList extends ConsumerWidget {
                 onPressed: () =>
                     _showPlayerDialog(context, ref, seasonId: seasonId),
                 icon: const Icon(Icons.person_add_alt_1),
-                label: const Text('Ajouter un joueur à l’effectif'),
+                label: const Text('Ajouter un joueur sans compte'),
               ),
             ),
             const SizedBox(height: 12),
@@ -78,8 +79,9 @@ class _RosterList extends ConsumerWidget {
                 child: GrintaEmptyState(
                   icon: Icons.groups_rounded,
                   title: 'Effectif vide',
-                  message: 'Ajoute ton premier joueur avec le bouton '
-                      'ci-dessus.',
+                  message: 'Les membres validés apparaissent ici tout seuls. '
+                      'Ajoute avec le bouton ci-dessus un joueur qui n’a pas '
+                      'encore de compte.',
                   compact: true,
                 ),
               )
