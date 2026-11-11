@@ -17,6 +17,7 @@ import {
   unreadCounts,
 } from "./history.ts";
 import {
+  clubIdFromRequest,
   readBoundedJson,
   RequestBodyTooLargeError,
   safeNotificationUrl,
@@ -226,8 +227,16 @@ Deno.serve(async (req: Request) => {
     return new Response("configuration indisponible", { status: 500 });
   }
 
+  // Plusieurs clubs partagent la base : chaque lecture et écriture de cet
+  // envoi est bornée au club transmis par la base (voir private.http_post).
+  const clubId = clubIdFromRequest(req);
+  if (!clubId) {
+    return new Response("x-club-id requis", { status: 400 });
+  }
+
   const supabase = createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { "x-club-id": clubId } },
   });
 
   const { data: config, error: configError } = await supabase.rpc(

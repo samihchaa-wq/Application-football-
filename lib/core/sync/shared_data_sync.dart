@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:as_grinta/core/club/current_club.dart';
 import 'package:as_grinta/core/logging/app_logger.dart';
 import 'package:as_grinta/core/providers/supabase_provider.dart';
 import 'package:as_grinta/features/admin/data/admin_repository.dart';
@@ -132,10 +133,23 @@ class SharedDataSyncRepository {
   final SupabaseClient _client;
 
   Stream<SharedDataChangeSignal> watchChanges() {
+    final clubId = currentClubIdOf(_client);
+    if (clubId == null) {
+      return _client
+          .from('shared_data_change_signals')
+          .stream(primaryKey: ['key'])
+          .eq('key', 'global')
+          .where((rows) => rows.isNotEmpty)
+          .map((rows) => SharedDataChangeSignal.fromRow(rows.first));
+    }
+    // Filtré par club côté serveur : le téléphone n'écoute que son club.
     return _client
         .from('shared_data_change_signals')
-        .stream(primaryKey: ['key'])
-        .eq('key', 'global')
+        .stream(primaryKey: ['club_id', 'key'])
+        .eq('club_id', clubId)
+        .map(
+          (rows) => rows.where((row) => row['key'] == 'global').toList(),
+        )
         .where((rows) => rows.isNotEmpty)
         .map((rows) => SharedDataChangeSignal.fromRow(rows.first));
   }

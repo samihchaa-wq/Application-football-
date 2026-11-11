@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/current_club.dart';
 import 'package:as_grinta/core/logging/app_logger.dart';
 import 'package:as_grinta/core/providers/supabase_provider.dart';
 import 'package:as_grinta/features/feature_flags/domain/feature_flags.dart';
@@ -50,10 +51,24 @@ class SupabaseFeatureFlagsRepository implements FeatureFlagsRepository {
 
   @override
   Stream<FeatureFlagChangeSignal> watchSportsManagementChanges() {
+    final clubId = currentClubIdOf(_client);
+    if (clubId == null) {
+      return _client
+          .from('feature_flag_change_signals')
+          .stream(primaryKey: ['key'])
+          .eq('key', 'sports_management')
+          .where((rows) => rows.isNotEmpty)
+          .map((rows) => FeatureFlagChangeSignal.fromRow(rows.first));
+    }
+    // Filtré par club côté serveur : le téléphone n'écoute que son club.
     return _client
         .from('feature_flag_change_signals')
-        .stream(primaryKey: ['key'])
-        .eq('key', 'sports_management')
+        .stream(primaryKey: ['club_id', 'key'])
+        .eq('club_id', clubId)
+        .map(
+          (rows) =>
+              rows.where((row) => row['key'] == 'sports_management').toList(),
+        )
         .where((rows) => rows.isNotEmpty)
         .map((rows) => FeatureFlagChangeSignal.fromRow(rows.first));
   }

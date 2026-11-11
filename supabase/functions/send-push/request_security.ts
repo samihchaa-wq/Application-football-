@@ -89,3 +89,16 @@ export function safeNotificationUrl(value: unknown): string {
   }
   return route;
 }
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Club concerné par l'envoi, transmis par la base dans l'en-tête `x-club-id`.
+ * Sans lui, la base ne sait pas quel club lire et ne renvoie aucun
+ * destinataire : la requête est refusée plutôt que de « réussir » à vide.
+ */
+export function clubIdFromRequest(req: Request): string | null {
+  const value = req.headers.get("x-club-id")?.trim() ?? "";
+  return UUID_PATTERN.test(value) ? value.toLowerCase() : null;
+}
