@@ -3,7 +3,7 @@
 /// d'illustrations). La valeur stockée en base (`jersey_note`) est
 /// simplement l'identifiant du maillot choisi.
 enum JerseyOption {
-  france('france', 'assets/images/jerseys/jersey_france.png', 'France'),
+  france('france', 'assets/images/jerseys/jersey_france.png', 'Blanc'),
   orange('orange', 'assets/images/jerseys/jersey_orange.png', 'Orange'),
   blue('blue', 'assets/images/jerseys/jersey_blue.png', 'Bleu');
 
