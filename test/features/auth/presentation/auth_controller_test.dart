@@ -337,6 +337,16 @@ Future<void> _flushAsync() async {
 }
 
 class _FakeAuthRepository implements AuthRepository {
+  @override
+  bool get currentUserHasNoClub => false;
+
+  @override
+  Future<void> signInWithFacebook() async {}
+
+  @override
+  ({String firstName, String lastName}) get suggestedNames =>
+      (firstName: '', lastName: '');
+
   _FakeAuthRepository({
     required List<Object?> fetchResults,
     this.signInError,

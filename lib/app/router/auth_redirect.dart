@@ -28,6 +28,12 @@ String? resolveAuthRedirect({
     return _loadingRedirect(uri, location);
   }
 
+  // Connecté par Facebook mais sans club : seule l'étape « rejoindre ou créer
+  // un club » est accessible.
+  if (authState.needsClub) {
+    return location == '/auth/choose-club' ? null : '/auth/choose-club';
+  }
+
   // Un compte nouvellement inscrit garde sa session mais reste uniquement sur
   // l'écran d'attente. Dès que le profil passe active, le refresh du routeur
   // le fait entrer normalement dans l'application.
