@@ -609,7 +609,7 @@ class _InProgressTile extends StatelessWidget {
                               value: badge.progress ?? 0,
                               minHeight: 6,
                               backgroundColor: AppTheme.surfaceHigh,
-                              valueColor: const AlwaysStoppedAnimation(
+                              valueColor: AlwaysStoppedAnimation(
                                 AppTheme.primaryBright,
                               ),
                             ),

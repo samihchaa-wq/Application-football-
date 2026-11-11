@@ -1,4 +1,5 @@
 import 'package:as_grinta/core/club/club_rules.dart';
+import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/features/admin/presentation/club_settings_page.dart';
 import 'package:as_grinta/features/badges/data/badge_inbox_repository.dart';
 import 'package:as_grinta/features/badges/presentation/badge_trophy_button.dart';
@@ -15,7 +16,10 @@ void main() {
     repository = _FakeClubRepository();
     ClubRules.reset();
   });
-  tearDown(ClubRules.reset);
+  tearDown(() {
+    ClubRules.reset();
+    AppTheme.resetClubColors();
+  });
 
   Future<void> pumpPage(WidgetTester tester) async {
     tester.view.physicalSize = const Size(900, 2400);
@@ -170,6 +174,21 @@ void main() {
     expect(ClubRules.predictionCloseBeforeKickoff, const Duration(minutes: 16));
   });
 
+  testWidgets('choisir une couleur l’enregistre et habille l’application',
+      (tester) async {
+    await pumpPage(tester);
+    expect(AppTheme.primary, AppTheme.defaultPrimary);
+
+    await tester.tap(find.byKey(const ValueKey('club-color-primary-#D62828')));
+    await tester.pumpAndSettle();
+
+    expect(repository.club.primaryColor, '#D62828');
+    expect(AppTheme.primary, isNot(AppTheme.defaultPrimary));
+    // La teinte choisie est conservée (rouge), la clarté est ajustée.
+    final hue = HSLColor.fromColor(AppTheme.primary).hue;
+    expect(hue < 20 || hue > 340, isTrue);
+  });
+
   testWidgets('le bouton des badges reste visible par défaut', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -247,6 +266,22 @@ class _FakeClubRepository implements ClubRepository {
       name: name,
       shortName: shortName,
       inviteCode: club.inviteCode,
+    );
+    return club;
+  }
+
+  @override
+  Future<Club> updateColors({
+    required String primary,
+    required String secondary,
+  }) async {
+    club = Club(
+      id: club.id,
+      name: club.name,
+      shortName: club.shortName,
+      inviteCode: club.inviteCode,
+      primaryColor: primary,
+      secondaryColor: secondary,
     );
     return club;
   }

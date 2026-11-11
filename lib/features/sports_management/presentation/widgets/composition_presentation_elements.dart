@@ -441,10 +441,10 @@ class _GoldRule extends StatelessWidget {
         borderRadius: BorderRadius.circular(height / 2),
         gradient: LinearGradient(
           colors: height > 1
-              ? const [Color(0x00FBE80C), AppTheme.accent, Color(0x00FBE80C)]
+              ? [Color(0x00FBE80C), AppTheme.accent, Color(0x00FBE80C)]
               : flipped
-                  ? const [AppTheme.accent, Color(0x00FBE80C)]
-                  : const [Color(0x00FBE80C), AppTheme.accent],
+                  ? [AppTheme.accent, Color(0x00FBE80C)]
+                  : [Color(0x00FBE80C), AppTheme.accent],
         ),
       ),
     );

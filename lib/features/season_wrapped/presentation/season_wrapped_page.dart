@@ -354,7 +354,7 @@ class _WrappedStoryState extends ConsumerState<_WrappedStory>
                   sheet.stats.map((stat) => stat.label).join(' · '),
                   style: WrappedType.body(AppTheme.textFaint, size: 12),
                 ),
-                trailing: const Icon(
+                trailing: Icon(
                   Icons.ios_share,
                   color: AppTheme.accent,
                   size: 20,

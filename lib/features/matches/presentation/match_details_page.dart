@@ -837,7 +837,7 @@ class _X2Badge extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppTheme.accent.withValues(alpha: .55)),
       ),
-      child: const Text(
+      child: Text(
         '×2',
         style: TextStyle(
           color: AppTheme.accent,

@@ -38,6 +38,8 @@ class _AsGrintaAppState extends ConsumerState<AsGrintaApp>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Nouvelles couleurs de club : le thème est recalculé.
+    AppTheme.colorsRevision.addListener(_onClubColorsChanged);
     // Session restaurée au lancement ou nouvelle connexion : l'abonnement
     // aux notifications de cet appareil est recollé au compte connecté.
     ref.listenManual<bool>(
@@ -77,8 +79,13 @@ class _AsGrintaAppState extends ConsumerState<AsGrintaApp>
     }
   }
 
+  void _onClubColorsChanged() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
+    AppTheme.colorsRevision.removeListener(_onClubColorsChanged);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -234,11 +241,13 @@ class _AsGrintaAppState extends ConsumerState<AsGrintaApp>
                       listenable: Listenable.merge([
                         ClubIdentity.revision,
                         ClubRules.revision,
+                        AppTheme.colorsRevision,
                       ]),
                       builder: (context, _) => KeyedSubtree(
                         key: ValueKey(
                           'club-identity-${ClubIdentity.revision.value}-'
-                          '${ClubRules.revision.value}',
+                          '${ClubRules.revision.value}-'
+                          '${AppTheme.colorsRevision.value}',
                         ),
                         child: child ?? const SizedBox.shrink(),
                       ),

@@ -12,6 +12,8 @@ class Club {
     required this.name,
     required this.shortName,
     required this.inviteCode,
+    this.primaryColor,
+    this.secondaryColor,
   });
 
   factory Club.fromJson(Map<String, dynamic> json) => Club(
@@ -19,12 +21,18 @@ class Club {
         name: json['name'] as String? ?? '',
         shortName: json['short_name'] as String? ?? '',
         inviteCode: json['invite_code'] as String? ?? '',
+        primaryColor: json['primary_color'] as String?,
+        secondaryColor: json['secondary_color'] as String?,
       );
 
   final String id;
   final String name;
   final String shortName;
   final String inviteCode;
+
+  /// Couleurs du club au format « #RRGGBB » (null : couleurs par défaut).
+  final String? primaryColor;
+  final String? secondaryColor;
 
   /// Lien d'inscription à partager : il ouvre la page d'inscription avec le
   /// code du club déjà rempli.
@@ -189,7 +197,7 @@ class ClubRepository {
   Future<Club> fetchMyClub() async {
     final row = await _client
         .from('clubs')
-        .select('id,name,short_name,invite_code')
+        .select('id,name,short_name,invite_code,primary_color,secondary_color')
         .single();
     return Club.fromJson(row);
   }
@@ -213,6 +221,20 @@ class ClubRepository {
       params: {'p_name': name.trim(), 'p_short_name': shortName.trim()},
     );
     if (result is! Map) throw StateError('Le club n’a pas pu être modifié.');
+    return Club.fromJson(Map<String, dynamic>.from(result));
+  }
+
+  /// Change les deux couleurs du club (« #RRGGBB »). Réservé aux
+  /// administrateurs.
+  Future<Club> updateColors({
+    required String primary,
+    required String secondary,
+  }) async {
+    final result = await _client.rpc(
+      'admin_update_club_colors',
+      params: {'p_primary': primary, 'p_secondary': secondary},
+    );
+    if (result is! Map) throw StateError('Les couleurs n’ont pas pu changer.');
     return Club.fromJson(Map<String, dynamic>.from(result));
   }
 

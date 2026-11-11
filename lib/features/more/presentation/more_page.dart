@@ -63,7 +63,7 @@ class MorePage extends ConsumerWidget {
               children: [
                 SwitchListTile.adaptive(
                   key: const ValueKey('player-preview-switch'),
-                  secondary: const Icon(
+                  secondary: Icon(
                     Icons.visibility_outlined,
                     color: AppTheme.primaryBright,
                   ),

@@ -354,7 +354,7 @@ class _MinuteFieldState extends State<_MinuteField> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: AppTheme.accent, width: 1.5),
+              borderSide: BorderSide(color: AppTheme.accent, width: 1.5),
             ),
             disabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
