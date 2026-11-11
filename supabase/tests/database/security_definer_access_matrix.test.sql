@@ -118,7 +118,11 @@ insert into reviewed_open_definers (fonction, motif) values
   ('private.current_club_id()',
    'ne renvoie que l’identifiant du club du demandeur lui-meme ; socle du cloisonnement entre clubs'),
   ('private.featured_badge_display_values(uuid)',
-   'ne renvoie que le chiffre des badges arborés, déjà affiché à tout le club ; utilisée par public.featured_badges()');
+   'ne renvoie que le chiffre des badges arborés, déjà affiché à tout le club ; utilisée par public.featured_badges()'),
+  ('get_my_club_access()',
+   'ne renvoie que le statut du club du demandeur (actif ou suspendu), pour lui expliquer une suspension'),
+  ('private.is_platform_operator()',
+   'garde elle-meme : vérifie que le demandeur est l’éditeur et ne renvoie qu’un booléen');
 
 create temporary view open_definers as
   select p.oid::regprocedure::text as fonction
