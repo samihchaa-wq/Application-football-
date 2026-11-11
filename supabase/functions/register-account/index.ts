@@ -1,10 +1,14 @@
-// Inscription publique via le lien partagé dans la conversation du club.
-// Le compte reste en attente de validation par l'administrateur.
+// Inscription publique. Deux parcours :
+// - rejoindre un club avec son code d'invitation : le compte reste en attente
+//   de validation par un administrateur du club ;
+// - créer un club : le demandeur en devient le premier administrateur.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2.95.0";
 import { validatePassword } from "./password_policy.ts";
 
-const USERNAME_DOMAIN = "pronos.as-grinta.local";
+const USERNAME_DOMAIN = Deno.env.get("USERNAME_DOMAIN")?.trim() ||
+  "comptes.club-app.local";
+const INVITE_CODE_PATTERN = /^[A-Z2-9]{8}$/;
 const MAX_BODY_BYTES = 4_096;
 
 const corsHeaders = {
@@ -117,6 +121,13 @@ Deno.serve(async (req: Request) => {
   const firstName = String(body.firstName ?? "").trim();
   const lastName = String(body.lastName ?? "").trim();
   const password = String(body.password ?? "");
+  const mode = body.mode === "create" ? "create" : "join";
+  const inviteCode = String(body.inviteCode ?? "")
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]/g, "");
+  const clubName = String(body.clubName ?? "").trim().replace(/\s+/g, " ");
+  const clubShortName = String(body.clubShortName ?? "").trim();
 
   // Les requêtes manifestement invalides ne consomment pas le quota partagé.
   if (
@@ -127,6 +138,21 @@ Deno.serve(async (req: Request) => {
     /[\u0000-\u001f\u007f]/.test(firstName + lastName)
   ) {
     return jsonResponse({ error: "Prénom ou nom invalide." }, 400);
+  }
+  if (mode === "join" && !INVITE_CODE_PATTERN.test(inviteCode)) {
+    return jsonResponse(
+      { error: "Code d’invitation invalide. Demande-le à ton club." },
+      400,
+    );
+  }
+  if (
+    mode === "create" &&
+    (clubName.length < 2 ||
+      clubName.length > 80 ||
+      clubShortName.length > 12 ||
+      /[\u0000-\u001f\u007f]/.test(clubName + clubShortName))
+  ) {
+    return jsonResponse({ error: "Nom du club invalide." }, 400);
   }
   const passwordError = validatePassword(password);
   if (passwordError) {
@@ -140,6 +166,7 @@ Deno.serve(async (req: Request) => {
   }
 
   let newUserId: string | null = null;
+  let createdClubId: string | null = null;
   let admin: ReturnType<typeof createClient> | null = null;
 
   try {
@@ -167,6 +194,36 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // Le club est fixé ici, côté serveur : jamais choisi par le client
+    // autrement que par un code d'invitation valide.
+    let club: { id: string; name: string };
+    if (mode === "create") {
+      const { data: createdClub, error: clubError } = await admin.rpc(
+        "create_club",
+        {
+          p_name: clubName,
+          p_short_name: clubShortName || null,
+        },
+      );
+      if (clubError) throw clubError;
+      club = { id: createdClub.id, name: createdClub.name };
+      createdClubId = club.id;
+    } else {
+      const { data: found, error: lookupError } = await admin.rpc(
+        "club_for_invite_code",
+        { p_code: inviteCode },
+      );
+      if (lookupError) throw lookupError;
+      const match = Array.isArray(found) ? found[0] : null;
+      if (!match) {
+        return jsonResponse(
+          { error: "Code d’invitation inconnu. Vérifie-le avec ton club." },
+          404,
+        );
+      }
+      club = { id: match.id, name: match.name };
+    }
+
     const base = `${normalizedFirst}${normalizedInitial}`.slice(0, 27);
     let username = "";
     for (let suffix = 1; suffix <= 20; suffix++) {
@@ -183,6 +240,10 @@ Deno.serve(async (req: Request) => {
       }
     }
     if (!username) {
+      if (createdClubId) {
+        await admin.rpc("discard_empty_club", { p_club_id: createdClubId });
+        createdClubId = null;
+      }
       return jsonResponse(
         { error: "Impossible de générer un identifiant disponible." },
         409,
@@ -198,18 +259,40 @@ Deno.serve(async (req: Request) => {
           first_name: firstName,
           last_name: lastName,
         },
+        // Lu par le déclencheur d'inscription ; non modifiable par le compte.
+        app_metadata: { club_id: club.id },
       });
     if (createError) throw createError;
     newUserId = created.user?.id ?? null;
     if (!newUserId) throw new Error("Account creation returned no user id");
 
-    const { error: updateError } = await admin
+    // Les automatismes de la base rangent ce qu'ils écrivent dans le club
+    // annoncé par cet en-tête, que seule la clé de service peut fournir.
+    const scoped = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { "x-club-id": club.id } },
+    });
+
+    const { error: updateError } = await scoped
       .from("profiles")
       .update({ username, updated_at: new Date().toISOString() })
-      .eq("id", newUserId);
+      .eq("id", newUserId)
+      .eq("club_id", club.id);
     if (updateError) throw updateError;
 
-    return jsonResponse({ username });
+    if (mode === "create") {
+      const { error: founderError } = await scoped.rpc("promote_club_founder", {
+        p_club_id: club.id,
+        p_profile_id: newUserId,
+      });
+      if (founderError) throw founderError;
+    }
+
+    return jsonResponse({
+      username,
+      clubName: club.name,
+      status: mode === "create" ? "active" : "pending",
+    });
   } catch (error) {
     console.error("register-account failure", error);
 
@@ -220,6 +303,15 @@ Deno.serve(async (req: Request) => {
       );
       if (cleanupError) {
         console.error("register-account cleanup failure", cleanupError);
+      }
+    }
+    if (createdClubId && admin) {
+      const { error: clubCleanupError } = await admin.rpc(
+        "discard_empty_club",
+        { p_club_id: createdClubId },
+      );
+      if (clubCleanupError) {
+        console.error("register-account club cleanup failure", clubCleanupError);
       }
     }
 

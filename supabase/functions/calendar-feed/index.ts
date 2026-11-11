@@ -34,6 +34,15 @@ function sequenceFor(value: string | null | undefined): number {
   return Number.isFinite(ms) ? Math.max(0, Math.floor(ms / 1000)) : 0;
 }
 
+// Nom du club propriétaire du match, joint à chaque ligne lue.
+function clubNameOf(row: Record<string, unknown>): string {
+  const club = row.clubs;
+  const name = club && typeof club === "object"
+    ? String((club as Record<string, unknown>).name ?? "").trim()
+    : "";
+  return name || "Mon club";
+}
+
 function summaryFor(row: Record<string, unknown>): string {
   const opponentRaw = row.opponents;
   const opponent = opponentRaw && typeof opponentRaw === "object"
@@ -41,17 +50,19 @@ function summaryFor(row: Record<string, unknown>): string {
     : String(row.opponent_name ?? "").trim();
   const matchType = String(row.match_type ?? "championnat");
   const location = String(row.location ?? "");
-  if (matchType === "entre_nous") return "AS Grinta — Match entre nous";
+  if (matchType === "entre_nous") return `${clubNameOf(row)} — Match entre nous`;
   const other = opponent || "Adversaire";
-  return location === "domicile" ? `AS Grinta - ${other}` : `${other} - AS Grinta`;
+  const club = clubNameOf(row);
+  return location === "domicile" ? `${club} - ${other}` : `${other} - ${club}`;
 }
 
 function descriptionFor(row: Record<string, unknown>): string {
   const matchType = String(row.match_type ?? "championnat");
-  if (matchType === "entre_nous") return "AS Grinta — Match entre nous";
-  if (matchType === "amical") return "AS Grinta — Match amical";
+  const club = clubNameOf(row);
+  if (matchType === "entre_nous") return `${club} — Match entre nous`;
+  if (matchType === "amical") return `${club} — Match amical`;
   const round = row.championship_round;
-  return round == null ? "AS Grinta — Championnat" : `AS Grinta — Championnat · J${round}`;
+  return round == null ? `${club} — Championnat` : `${club} — Championnat · J${round}`;
 }
 
 // Un match annulé ne produit aucun événement : il disparaît du flux, et
@@ -122,7 +133,7 @@ Deno.serve(async (req: Request) => {
 
   const { data: subscription, error: subscriptionError } = await admin
     .from("calendar_subscriptions")
-    .select("profile_id, profiles!inner(status)")
+    .select("profile_id, club_id, profiles!inner(status), clubs!inner(name)")
     .eq("token", token)
     .eq("profiles.status", "active")
     .maybeSingle();
@@ -149,7 +160,10 @@ Deno.serve(async (req: Request) => {
   // relu ici.
   const matchesResult = await admin
     .from("matches")
-    .select("id,kickoff_at,planned_duration_minutes,status,location,address,match_type,championship_round,created_at,updated_at,opponents(name),seasons!inner(name,status)")
+    .select("id,kickoff_at,planned_duration_minutes,status,location,address,match_type,championship_round,created_at,updated_at,opponents(name),seasons!inner(name,status),clubs!inner(name)")
+    // La clé de service voit tous les clubs : le flux est borné ici au club
+    // de l'abonné.
+    .eq("club_id", subscription.club_id)
     .eq("seasons.status", "open")
     .order("kickoff_at", { ascending: true });
 
@@ -161,10 +175,12 @@ Deno.serve(async (req: Request) => {
   const now = new Date();
   let ics = "BEGIN:VCALENDAR\r\n";
   ics += "VERSION:2.0\r\n";
-  ics += "PRODID:-//AS Grinta//Calendrier dynamique//FR\r\n";
+  ics += "PRODID:-//Club//Calendrier dynamique//FR\r\n";
   ics += "CALSCALE:GREGORIAN\r\n";
   ics += "METHOD:PUBLISH\r\n";
-  ics += foldLine("X-WR-CALNAME:AS Grinta");
+  ics += foldLine(
+    `X-WR-CALNAME:${clubNameOf(subscription as Record<string, unknown>)}`,
+  );
   ics += "REFRESH-INTERVAL;VALUE=DURATION:PT15M\r\n";
   ics += "X-PUBLISHED-TTL:PT15M\r\n";
 
@@ -175,7 +191,7 @@ Deno.serve(async (req: Request) => {
 
   const headers = {
     "Content-Type": "text/calendar; charset=utf-8",
-    "Content-Disposition": "inline; filename=\"as-grinta.ics\"",
+    "Content-Disposition": "inline; filename=\"calendrier-club.ics\"",
     "Cache-Control": "no-cache, no-store, must-revalidate",
     "ETag": `W/\"${sequenceFor(now.toISOString())}\"`,
   };

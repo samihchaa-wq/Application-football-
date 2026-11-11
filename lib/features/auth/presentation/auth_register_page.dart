@@ -3,28 +3,56 @@ import 'package:as_grinta/core/utils/name_validation.dart';
 import 'package:as_grinta/core/widgets/grinta_adaptive_form.dart';
 import 'package:as_grinta/core/widgets/grinta_auth_surface.dart';
 import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/auth/data/auth_repository.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+/// Les deux façons de s'inscrire.
+enum RegisterMode {
+  /// Rejoindre un club existant avec son code d'invitation.
+  join,
+
+  /// Créer un nouveau club et en devenir l'administrateur.
+  create,
+}
+
 class AuthRegisterPage extends ConsumerStatefulWidget {
-  const AuthRegisterPage({super.key});
+  const AuthRegisterPage({super.key, this.initialInviteCode});
+
+  /// Code d'invitation reçu par le lien partagé, déjà rempli à l'ouverture.
+  final String? initialInviteCode;
 
   @override
   ConsumerState<AuthRegisterPage> createState() => _AuthRegisterPageState();
 }
 
 class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
+  final _inviteCodeController = TextEditingController();
+  final _clubNameController = TextEditingController();
+  final _clubShortNameController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
   bool _obscurePassword = true;
   bool _submitting = false;
+  RegisterMode _mode = RegisterMode.join;
+
+  @override
+  void initState() {
+    super.initState();
+    final code = widget.initialInviteCode;
+    if (code != null && code.trim().isNotEmpty) {
+      _inviteCodeController.text = normalizeInviteCode(code);
+    }
+  }
 
   @override
   void dispose() {
+    _inviteCodeController.dispose();
+    _clubNameController.dispose();
+    _clubShortNameController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
     _passwordController.dispose();
@@ -41,7 +69,26 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
     final firstName = _firstNameController.text.trim();
     final lastName = _lastNameController.text.trim();
     final password = _passwordController.text;
+    final inviteCode = normalizeInviteCode(_inviteCodeController.text);
+    final clubName = _clubNameController.text.trim();
+    final clubShortName = _clubShortNameController.text.trim();
 
+    if (_mode == RegisterMode.join && !inviteCodePattern.hasMatch(inviteCode)) {
+      _showError(
+        'Saisis le code d’invitation de ton club : 8 lettres ou chiffres.',
+      );
+      return;
+    }
+    if (_mode == RegisterMode.create) {
+      if (clubName.length < 2 || clubName.length > 80) {
+        _showError('Le nom du club doit compter entre 2 et 80 caractères.');
+        return;
+      }
+      if (clubShortName.length > 12) {
+        _showError('Le nom court ne doit pas dépasser 12 caractères.');
+        return;
+      }
+    }
     if (firstName.isEmpty || lastName.isEmpty) {
       _showError('Renseigne ton prénom et ton nom.');
       return;
@@ -62,17 +109,32 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
 
     setState(() => _submitting = true);
     try {
-      final username = await ref.read(authRepositoryProvider).registerAccount(
-            firstName: firstName,
-            lastName: lastName,
-            password: password,
-          );
+      final repository = ref.read(clubRepositoryProvider);
+      final registration = _mode == RegisterMode.create
+          ? await repository.createClub(
+              clubName: clubName,
+              clubShortName: clubShortName,
+              firstName: firstName,
+              lastName: lastName,
+              password: password,
+            )
+          : await repository.joinClub(
+              inviteCode: inviteCode,
+              firstName: firstName,
+              lastName: lastName,
+              password: password,
+            );
+      final username = registration.username;
       if (!mounted) return;
       await showDialog<void>(
         context: context,
         barrierDismissible: false,
         builder: (dialogContext) => AlertDialog(
-          title: const Text('Compte créé'),
+          title: Text(
+            registration.isActive
+                ? 'Club créé : ${registration.clubName}'
+                : 'Compte créé',
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,9 +152,13 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                 ),
               ),
               const SizedBox(height: 12),
-              const Text(
-                'Ton compte restera en attente jusqu’à sa validation par '
-                'un admin.',
+              Text(
+                registration.isActive
+                    ? 'Tu es l’administrateur du club. Connecte-toi, puis '
+                        'partage le lien d’inscription depuis le menu '
+                        'Administration pour inviter tes joueurs.'
+                    : 'Ton compte chez ${registration.clubName} restera en '
+                        'attente jusqu’à sa validation par un admin.',
               ),
             ],
           ),
@@ -120,11 +186,74 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
   Widget build(BuildContext context) {
     return GrintaAuthSurface(
       maxWidth: 760,
-      title: 'Créer mon compte',
-      subtitle: 'Le compte sera accessible après validation par un admin.',
+      title:
+          _mode == RegisterMode.create ? 'Créer mon club' : 'Créer mon compte',
+      subtitle: _mode == RegisterMode.create
+          ? 'Tu deviens l’administrateur du club et tu invites tes joueurs.'
+          : 'Le compte sera accessible après validation par un admin du club.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          SegmentedButton<RegisterMode>(
+            segments: const [
+              ButtonSegment(
+                value: RegisterMode.join,
+                icon: Icon(Icons.group_add_outlined),
+                label: Text('Rejoindre un club'),
+              ),
+              ButtonSegment(
+                value: RegisterMode.create,
+                icon: Icon(Icons.add_business_outlined),
+                label: Text('Créer un club'),
+              ),
+            ],
+            selected: {_mode},
+            showSelectedIcon: false,
+            onSelectionChanged: _submitting
+                ? null
+                : (selection) => setState(() => _mode = selection.first),
+          ),
+          const SizedBox(height: 20),
+          if (_mode == RegisterMode.join)
+            TextField(
+              key: const Key('register-invite-code'),
+              controller: _inviteCodeController,
+              textInputAction: TextInputAction.next,
+              textCapitalization: TextCapitalization.characters,
+              autocorrect: false,
+              decoration: const InputDecoration(
+                labelText: 'Code d’invitation du club',
+                helperText: 'Donné par l’administrateur de ton club.',
+                prefixIcon: Icon(Icons.key_outlined),
+              ),
+            )
+          else
+            GrintaAdaptiveForm(
+              children: [
+                TextField(
+                  key: const Key('register-club-name'),
+                  controller: _clubNameController,
+                  textInputAction: TextInputAction.next,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: const InputDecoration(
+                    labelText: 'Nom du club',
+                    prefixIcon: Icon(Icons.shield_outlined),
+                  ),
+                ),
+                TextField(
+                  key: const Key('register-club-short-name'),
+                  controller: _clubShortNameController,
+                  textInputAction: TextInputAction.next,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: const InputDecoration(
+                    labelText: 'Nom court (facultatif)',
+                    helperText: 'Affiché sur les scores. Ex. : FCV',
+                    prefixIcon: Icon(Icons.short_text),
+                  ),
+                ),
+              ],
+            ),
+          const SizedBox(height: 16),
           GrintaAdaptiveForm(
             children: [
               TextField(
@@ -208,8 +337,13 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                     child: GrintaProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.sports_soccer),
-            label:
-                Text(_submitting ? 'Création en cours…' : 'Créer mon compte'),
+            label: Text(
+              _submitting
+                  ? 'Création en cours…'
+                  : _mode == RegisterMode.create
+                      ? 'Créer mon club'
+                      : 'Créer mon compte',
+            ),
           ),
           const SizedBox(height: 12),
           TextButton(
