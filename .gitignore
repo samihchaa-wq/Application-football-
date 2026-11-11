@@ -24,3 +24,7 @@ ios/Flutter/flutter_export_environment.sh
 
 # Cookies de session d'outils locaux : ne jamais les versionner
 cookies.txt
+
+# État local de la CLI Supabase : ne jamais le versionner
+supabase/.temp/
+supabase/.branches/
