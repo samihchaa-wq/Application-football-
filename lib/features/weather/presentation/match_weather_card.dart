@@ -128,7 +128,7 @@ class _WeatherBody extends StatelessWidget {
                         _weatherLabel(weather.weatherCode),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppTheme.primaryBright,
                           fontSize: 12.5,
                           fontWeight: FontWeight.w400,

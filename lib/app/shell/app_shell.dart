@@ -275,7 +275,7 @@ class _DesktopNavigation extends StatelessWidget {
               color: AppTheme.primaryBright.withValues(alpha: .22),
             ),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.sports_soccer_rounded,
             color: AppTheme.primaryBright,
           ),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class _GrintaPageTransitionsBuilder extends PageTransitionsBuilder {
@@ -32,9 +33,64 @@ abstract final class AppTheme {
   // repris comme fil conducteur : `primary` en porte l'identité pour les boutons
   // et actions, `primaryBright` en donne une déclinaison claire, lisible sur le
   // fond bleu nuit, pour les liens, icônes et bordures de champ actif.
-  static const Color primary = Color(0xFF1A4AC0);
-  static const Color primaryBright = Color(0xFF6E93F6);
-  static const Color accent = Color(0xFFFBE80C);
+  //
+  // Ces trois couleurs suivent les couleurs choisies par le club (voir
+  // [applyClubColors]) ; les valeurs par défaut sont celles d'origine.
+  static const Color defaultPrimary = Color(0xFF1A4AC0);
+  static const Color defaultPrimaryBright = Color(0xFF6E93F6);
+  static const Color defaultAccent = Color(0xFFFBE80C);
+
+  static Color _primary = defaultPrimary;
+  static Color _primaryBright = defaultPrimaryBright;
+  static Color _accent = defaultAccent;
+
+  static Color get primary => _primary;
+  static Color get primaryBright => _primaryBright;
+  static Color get accent => _accent;
+
+  static final ValueNotifier<int> _colorsRevision = ValueNotifier<int>(0);
+
+  /// Change à chaque nouvelle couleur de club : l'application se redessine.
+  static ValueListenable<int> get colorsRevision => _colorsRevision;
+
+  /// Applique les couleurs du club. La couleur principale teinte les boutons
+  /// et les liens, la seconde les mises en avant. Leur clarté est ramenée
+  /// dans une plage lisible sur le fond sombre de l'application : un club
+  /// aux couleurs très foncées ou très pâles garde une interface lisible.
+  static void applyClubColors({Color? primary, Color? secondary}) {
+    final nextPrimary =
+        primary == null ? defaultPrimary : _withLightness(primary, .36, .50);
+    final nextBright = primary == null
+        ? defaultPrimaryBright
+        : _withLightness(primary, .66, .76);
+    final nextAccent =
+        secondary == null ? defaultAccent : _withLightness(secondary, .52, 1);
+    if (nextPrimary == _primary &&
+        nextBright == _primaryBright &&
+        nextAccent == _accent) {
+      return;
+    }
+    _primary = nextPrimary;
+    _primaryBright = nextBright;
+    _accent = nextAccent;
+    _colorsRevision.value += 1;
+  }
+
+  static void resetClubColors() => applyClubColors();
+
+  static Color _withLightness(Color color, double min, double max) {
+    final hsl = HSLColor.fromColor(color.withValues(alpha: 1));
+    return hsl.withLightness(hsl.lightness.clamp(min, max)).toColor();
+  }
+
+  /// « #1F6FEB » → couleur ; null si le texte n'est pas une couleur valide.
+  static Color? parseHex(String? hex) {
+    if (hex == null) return null;
+    final match = RegExp(r'^#([0-9A-Fa-f]{6})$').firstMatch(hex.trim());
+    if (match == null) return null;
+    return Color(0xFF000000 | int.parse(match.group(1)!, radix: 16));
+  }
+
   static const Color reward = Color(0xFFFFD84A);
   static const Color success = Color(0xFF48C98B);
   static const Color warning = Color(0xFFF0A34A);
@@ -85,7 +141,7 @@ abstract final class AppTheme {
       );
 
   static ThemeData get dark {
-    const scheme = ColorScheme.dark(
+    final scheme = ColorScheme.dark(
       primary: primary,
       onPrimary: Colors.white,
       primaryContainer: surfaceHero,
@@ -298,7 +354,7 @@ abstract final class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMd),
-          borderSide: const BorderSide(color: primaryBright, width: 1.4),
+          borderSide: BorderSide(color: primaryBright, width: 1.4),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMd),
@@ -388,13 +444,13 @@ abstract final class AppTheme {
           borderRadius: BorderRadius.circular(radiusMd),
         ),
       ),
-      progressIndicatorTheme: const ProgressIndicatorThemeData(
+      progressIndicatorTheme: ProgressIndicatorThemeData(
         color: accent,
         circularTrackColor: surfaceHigh,
         linearTrackColor: surfaceHigh,
         linearMinHeight: 4,
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primary,
         foregroundColor: Colors.white,
         elevation: 1,

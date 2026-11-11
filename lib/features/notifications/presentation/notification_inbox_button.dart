@@ -40,7 +40,7 @@ class NotificationInboxButton extends ConsumerWidget {
             clipBehavior: Clip.none,
             alignment: Alignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.notifications_outlined,
                 size: 26,
                 color: AppTheme.primaryBright,

@@ -67,6 +67,16 @@ select throws_ok(
   '22023', null,
   'un nom de club trop court est refusé'
 );
+select is(
+  public.admin_update_club_colors('#aa0000', '#FFFFFF') ->> 'primary_color',
+  '#AA0000',
+  'l’administrateur choisit les couleurs de son club'
+);
+select throws_ok(
+  $$select public.admin_update_club_colors('rouge', '#FFFFFF')$$,
+  '22023', null,
+  'une couleur invalide est refusée'
+);
 reset role;
 
 -- Simple membre du club A
@@ -86,6 +96,15 @@ select throws_ok(
   '42501', null,
   'un simple membre ne peut pas renommer le club'
 );
+select throws_ok(
+  $$select public.admin_update_club_colors('#000000', '#FFFFFF')$$,
+  '42501', null,
+  'un simple membre ne peut pas changer les couleurs'
+);
+select is(
+  (select primary_color from public.clubs), '#AA0000',
+  'un membre voit les couleurs choisies par son administrateur'
+);
 reset role;
 
 -- Administrateur du club B : rien n'a changé chez lui.
@@ -98,6 +117,10 @@ select is(
 select is(
   (select name from public.clubs), 'Club Réglages B',
   'le renommage d’un club ne touche pas un autre club'
+);
+select isnt(
+  (select primary_color from public.clubs), '#AA0000',
+  'les couleurs d’un club ne touchent pas un autre club'
 );
 reset role;
 

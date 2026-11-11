@@ -277,7 +277,7 @@ class _StageLayer extends StatelessWidget {
           opacity: kick,
           child: Transform.translate(
             offset: Offset(0, 8 * (1 - kick)),
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _GoldRule(width: 34),
@@ -315,7 +315,7 @@ class _StageLayer extends StatelessWidget {
         Container(
           width: 240 * rule,
           height: 1,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [Color(0x00FBE80C), AppTheme.accent, Color(0x00FBE80C)],
             ),
@@ -334,7 +334,7 @@ class _StageLayer extends StatelessWidget {
                       children: [
                         for (final (index, part) in firstLine.indexed) ...[
                           if (index > 0)
-                            const TextSpan(
+                            TextSpan(
                               text: '  /  ',
                               style: TextStyle(color: AppTheme.accent),
                             ),
@@ -377,7 +377,7 @@ class _StageLayer extends StatelessWidget {
       children: [
         Image.asset('assets/images/club_crest.webp', width: 22),
         const SizedBox(width: 8),
-        const Column(
+        Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -503,7 +503,7 @@ class _StageLayer extends StatelessWidget {
                             offset: Offset(0, 10 * (1 - labelIn)),
                             child: Text(
                               line.label.toUpperCase(),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontFamily: 'Oswald',
                                 fontWeight: FontWeight.w400,
                                 fontSize: 23,
@@ -569,7 +569,7 @@ class _StageLayer extends StatelessWidget {
             child: Text(
               line.kind.labelFor(line.people.length).toUpperCase(),
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Oswald',
                 fontWeight: FontWeight.w400,
                 fontSize: 11,

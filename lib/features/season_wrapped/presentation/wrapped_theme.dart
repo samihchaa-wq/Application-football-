@@ -47,10 +47,10 @@ class WrappedSkin {
 
   static const WrappedSkin night = WrappedSkin(
     background: [Color(0xFF061A32), AppTheme.background],
-    figure: AppTheme.accent,
+    figure: AppTheme.defaultAccent,
     text: AppTheme.textPrimary,
     muted: AppTheme.textFaint,
-    badge: AppTheme.accent,
+    badge: AppTheme.defaultAccent,
     badgeText: AppTheme.background,
     motif: WrappedMotif.halftone,
     motifColor: Color(0x22FBE80C),
@@ -61,7 +61,7 @@ class WrappedSkin {
     figure: AppTheme.textPrimary,
     text: AppTheme.textPrimary,
     muted: Color(0xFFB9CBE4),
-    badge: AppTheme.accent,
+    badge: AppTheme.defaultAccent,
     badgeText: AppTheme.background,
     motif: WrappedMotif.stripes,
     motifColor: Color(0x1AFFFFFF),
@@ -70,12 +70,12 @@ class WrappedSkin {
   /// L'inversion : fond jaune, encre bleu nuit. Réservée aux écrans qu'on
   /// veut faire claquer.
   static const WrappedSkin flash = WrappedSkin(
-    background: [AppTheme.accent, Color(0xFFF5C400)],
+    background: [AppTheme.defaultAccent, Color(0xFFF5C400)],
     figure: AppTheme.background,
     text: AppTheme.background,
     muted: Color(0xCC041224),
     badge: AppTheme.background,
-    badgeText: AppTheme.accent,
+    badgeText: AppTheme.defaultAccent,
     motif: WrappedMotif.rays,
     motifColor: Color(0x0F041224),
   );

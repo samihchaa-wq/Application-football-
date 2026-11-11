@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:as_grinta/core/club/club_identity.dart';
+import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
 import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,15 +22,25 @@ final clubIdentitySyncProvider = Provider<void>((ref) {
       if (disposed) return;
       if (!authenticated) {
         ClubIdentity.reset();
+        AppTheme.resetClubColors();
         return;
       }
       try {
         final club = await ref.read(clubRepositoryProvider).fetchMyClub();
         if (disposed) return;
         ClubIdentity.set(name: club.name, shortName: club.shortName);
+        applyClubColors(club);
       } catch (_) {
         // Le libellé neutre reste affiché ; la prochaine connexion réessaie.
       }
     }),
   );
 });
+
+/// Habille l'application aux couleurs du club.
+void applyClubColors(Club club) {
+  AppTheme.applyClubColors(
+    primary: AppTheme.parseHex(club.primaryColor),
+    secondary: AppTheme.parseHex(club.secondaryColor),
+  );
+}

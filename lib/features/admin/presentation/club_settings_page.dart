@@ -3,6 +3,7 @@ import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
 import 'package:as_grinta/core/widgets/grinta_loader.dart';
 import 'package:as_grinta/features/club/data/club_repository.dart';
+import 'package:as_grinta/features/club/presentation/club_identity_sync.dart';
 import 'package:as_grinta/features/club/presentation/club_rules_sync.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -29,6 +30,24 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   bool _loading = true;
   bool _savingIdentity = false;
   bool _renewingCode = false;
+  bool _savingColors = false;
+
+  /// Choix proposés : des teintes franches, lisibles une fois ajustées au
+  /// fond sombre de l'application.
+  static const _palette = <String>[
+    '#1A4AC0',
+    '#1F6FEB',
+    '#0E9F9A',
+    '#168A52',
+    '#7CB518',
+    '#FBE80C',
+    '#F5A300',
+    '#E8590C',
+    '#D62828',
+    '#C2185B',
+    '#7B2CBF',
+    '#FFFFFF',
+  ];
   final Set<ClubModule> _pendingModules = {};
 
   @override
@@ -96,7 +115,17 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           .read(clubRepositoryProvider)
           .updateIdentity(name: name, shortName: shortName);
       if (!mounted) return;
-      setState(() => _club = club);
+      final previous = _club;
+      setState(() {
+        _club = Club(
+          id: club.id,
+          name: club.name,
+          shortName: club.shortName,
+          inviteCode: club.inviteCode,
+          primaryColor: club.primaryColor ?? previous?.primaryColor,
+          secondaryColor: club.secondaryColor ?? previous?.secondaryColor,
+        );
+      });
       ref.invalidate(myClubProvider);
       ClubIdentity.set(name: club.name, shortName: club.shortName);
       _showMessage('Nom du club enregistré.');
@@ -105,6 +134,68 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     } finally {
       if (mounted) setState(() => _savingIdentity = false);
     }
+  }
+
+  Future<void> _setColors({String? primary, String? secondary}) async {
+    final club = _club;
+    if (club == null || _savingColors) return;
+    setState(() => _savingColors = true);
+    try {
+      final updated = await ref.read(clubRepositoryProvider).updateColors(
+            primary: primary ?? club.primaryColor ?? '#1A4AC0',
+            secondary: secondary ?? club.secondaryColor ?? '#FBE80C',
+          );
+      if (!mounted) return;
+      setState(() => _club = updated);
+      ref.invalidate(myClubProvider);
+      applyClubColors(updated);
+    } catch (_) {
+      if (mounted) _showMessage('Les couleurs n’ont pas pu être enregistrées.');
+    } finally {
+      if (mounted) setState(() => _savingColors = false);
+    }
+  }
+
+  Widget _colorRow(String label, String keyPrefix, String? current,
+      void Function(String hex) onPick) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            for (final hex in _palette)
+              Semantics(
+                button: true,
+                selected: current?.toUpperCase() == hex,
+                label: '$label $hex',
+                child: InkWell(
+                  key: ValueKey('$keyPrefix-$hex'),
+                  customBorder: const CircleBorder(),
+                  onTap: _savingColors ? null : () => onPick(hex),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppTheme.parseHex(hex),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: current?.toUpperCase() == hex
+                            ? AppTheme.textPrimary
+                            : AppTheme.outline,
+                        width: current?.toUpperCase() == hex ? 3 : 1,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
   }
 
   Future<void> _copyInviteLink() async {
@@ -152,6 +243,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
             name: club.name,
             shortName: club.shortName,
             inviteCode: code,
+            primaryColor: club.primaryColor,
+            secondaryColor: club.secondaryColor,
           );
         });
       }
@@ -318,6 +411,26 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           ),
         ),
         const SizedBox(height: 28),
+        Text('Couleurs du club', style: theme.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        const Text(
+          'L’application s’habille à ces couleurs pour tous les membres.',
+        ),
+        const SizedBox(height: 12),
+        _colorRow(
+          'Couleur principale',
+          'club-color-primary',
+          club.primaryColor,
+          (hex) => _setColors(primary: hex),
+        ),
+        const SizedBox(height: 14),
+        _colorRow(
+          'Couleur secondaire',
+          'club-color-secondary',
+          club.secondaryColor,
+          (hex) => _setColors(secondary: hex),
+        ),
+        const SizedBox(height: 28),
         Text('Inviter des joueurs', style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
         const Text(
@@ -327,7 +440,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
         const SizedBox(height: 12),
         Row(
           children: [
-            const Icon(Icons.key_outlined, color: AppTheme.primaryBright),
+            Icon(Icons.key_outlined, color: AppTheme.primaryBright),
             const SizedBox(width: 12),
             SelectableText(
               club.inviteCode,

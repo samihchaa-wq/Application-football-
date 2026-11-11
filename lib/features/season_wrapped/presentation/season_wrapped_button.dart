@@ -45,7 +45,7 @@ class SeasonWrappedButton extends ConsumerWidget {
           clipBehavior: Clip.none,
           alignment: Alignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.auto_awesome_rounded,
               size: 21,
               color: AppTheme.accent,
