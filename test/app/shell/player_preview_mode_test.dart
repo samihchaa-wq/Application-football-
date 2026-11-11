@@ -76,8 +76,7 @@ void main() {
   });
 
   test('la gestion des badges disparaît aussi en aperçu', () {
-    final (container, _) =
-        containerFor(profile(badgeAdminProfileIds.first, AuthRole.admin));
+    final (container, _) = containerFor(profile('admin', AuthRole.admin));
     expect(container.read(canManageBadgesProvider), isTrue);
 
     container.read(playerPreviewProvider.notifier).state = true;

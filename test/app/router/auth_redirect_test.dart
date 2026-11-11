@@ -379,12 +379,12 @@ void main() {
       }
     });
 
-    test('blocks badge administration for other administrators', () {
+    test('blocks badge administration for a simple member', () {
       const state = AuthState(
         isLoading: false,
         isAuthenticated: true,
         hasSession: true,
-        profile: _adminProfile,
+        profile: _userProfile,
       );
 
       expect(
@@ -393,16 +393,16 @@ void main() {
           uri: Uri.parse('/admin/badges'),
           matchedLocation: '/admin/badges',
         ),
-        '/armoire',
+        '/matches',
       );
     });
 
-    test('allows badge administration for an authorized administrator', () {
+    test('allows badge administration for any club administrator', () {
       const state = AuthState(
         isLoading: false,
         isAuthenticated: true,
         hasSession: true,
-        profile: _badgeAdminProfile,
+        profile: _adminProfile,
       );
 
       expect(
@@ -451,16 +451,6 @@ const _adminProfile = AuthProfile(
   id: 'admin',
   firstName: 'Admin',
   lastName: 'One',
-  role: AuthRole.admin,
-  isGoalkeeper: false,
-  isActive: true,
-  mustChangePassword: false,
-);
-
-const _badgeAdminProfile = AuthProfile(
-  id: '89f24276-dac0-4046-87a3-6c28e48fef3a',
-  firstName: 'Badge',
-  lastName: 'Admin',
   role: AuthRole.admin,
   isGoalkeeper: false,
   isActive: true,

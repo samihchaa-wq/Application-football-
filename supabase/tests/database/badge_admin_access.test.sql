@@ -88,6 +88,47 @@ select set_config(
 );
 set local role authenticated;
 
+select lives_ok(
+  $$select public.staff_create_badge(
+    'badge_access_other_admin_test',
+    'Badge other admin',
+    '🏅',
+    '',
+    null,
+    '#F97316'
+  )$$,
+  'tout administrateur du club peut créer un badge'
+);
+
+select lives_ok(
+  $$select public.staff_update_badge_text(
+    'badge_access_other_admin_test',
+    'Nom modifié',
+    ''
+  )$$,
+  'tout administrateur du club peut renommer un badge'
+);
+
+reset role;
+
+-- Un simple joueur n'a aucun droit de gestion.
+insert into auth.users(id, email, raw_user_meta_data)
+values (
+  'ba6e0000-0000-0000-0000-000000000002',
+  'badge-player@example.invalid',
+  '{"first_name":"Badge","last_name":"Player"}'::jsonb
+);
+update public.profiles
+set status = 'active', updated_at = now()
+where id = 'ba6e0000-0000-0000-0000-000000000002';
+
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"ba6e0000-0000-0000-0000-000000000002","role":"authenticated","aud":"authenticated"}',
+  true
+);
+set local role authenticated;
+
 select throws_ok(
   $$select public.staff_create_badge(
     'badge_access_denied_test',
@@ -98,7 +139,7 @@ select throws_ok(
     '#F97316'
   )$$,
   '42501',
-  'un autre administrateur ne peut pas créer de badge'
+  'un joueur ne peut pas créer de badge'
 );
 
 select throws_ok(
@@ -108,7 +149,7 @@ select throws_ok(
     ''
   )$$,
   '42501',
-  'un autre administrateur ne peut pas renommer un badge'
+  'un joueur ne peut pas renommer un badge'
 );
 
 select throws_ok(
@@ -118,12 +159,12 @@ select throws_ok(
       'ba6e1000-0000-0000-0000-000000000001',
       'badge-images',
       'forbidden.webp',
-      'ba6e0000-0000-0000-0000-000000000001',
-      'ba6e0000-0000-0000-0000-000000000001',
+      'ba6e0000-0000-0000-0000-000000000002',
+      'ba6e0000-0000-0000-0000-000000000002',
       '{"mimetype":"image/webp"}'::jsonb
     )$$,
   '42501',
-  'un autre administrateur ne peut pas téléverser une image de badge'
+  'un joueur ne peut pas téléverser une image de badge'
 );
 
 reset role;
