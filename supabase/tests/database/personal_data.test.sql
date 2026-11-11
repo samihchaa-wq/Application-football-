@@ -11,7 +11,7 @@ insert into test_clubs
 select 'b', (public.create_club('Club Données Bravo', 'DBRAVO', null, null, null, null)).id;
 
 insert into auth.users (id, email, raw_user_meta_data, raw_app_meta_data)
-select '5c000000-0000-0000-0000-00000000000' || label, 'data-' || label || '@example.invalid',
+select ('5c000000-0000-0000-0000-00000000000' || label)::uuid, 'data-' || label || '@example.invalid',
   jsonb_build_object('first_name', 'Membre', 'last_name', upper(label)),
   jsonb_build_object('club_id', id)
 from test_clubs;
