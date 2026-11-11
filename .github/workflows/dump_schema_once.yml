@@ -9,7 +9,7 @@ on:
     branches: ['tool/dump-schema']
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   dump:
@@ -64,3 +64,18 @@ jobs:
             out
             supabase-start.log
           if-no-files-found: warn
+
+      - name: Push dump to an output branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp supabase-start.log out/ || true
+          tmp=$(mktemp -d)
+          cp -r out "$tmp/out"
+          git checkout --orphan tool/dump-output
+          git rm -rfq . || true
+          git clean -fdxq
+          cp -r "$tmp/out" ./dump
+          git add dump
+          git -c user.name="github-actions" -c user.email="actions@users.noreply.github.com" commit -qm "Export de structure"
+          git push -f origin tool/dump-output
