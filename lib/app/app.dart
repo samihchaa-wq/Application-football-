@@ -128,6 +128,7 @@ class _AsGrintaAppState extends ConsumerState<AsGrintaApp>
     ref.watch(clubIdentitySyncProvider);
     // Idem pour les règles horaires du club.
     ref.watch(clubRulesSyncProvider);
+    ref.watch(clubLiveModeSyncProvider);
 
     ref.listen<bool>(
       authControllerProvider.select((state) => state.isAuthenticated),

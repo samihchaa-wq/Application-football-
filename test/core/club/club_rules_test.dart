@@ -39,4 +39,16 @@ void main() {
     ClubRules.set({ClubRules.featuresOpenDaysKey: 5});
     expect(ClubRules.revision.value, before + 1);
   });
+
+  test('mode live désactivé : le live ne s’ouvre jamais', () {
+    final kickoff = DateTime.utc(2026, 12, 20, 15);
+    final during = DateTime.utc(2026, 12, 20, 15, 30);
+    expect(isMatchLiveTooEarly(kickoff, now: during), isFalse);
+
+    ClubRules.setLiveEnabled(false);
+    expect(isMatchLiveTooEarly(kickoff, now: during), isTrue);
+
+    ClubRules.reset();
+    expect(isMatchLiveTooEarly(kickoff, now: during), isFalse);
+  });
 }

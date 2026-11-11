@@ -17,9 +17,11 @@ part 'admin_profiles_section_v2.dart';
 part 'admin_profile_actions.dart';
 part 'admin_profile_dialogs.dart';
 
-enum _AdminSection { users, roster, season }
+/// « Membres » réunit ce qui était séparé : les comptes de l'application et
+/// l'effectif de la saison. Un membre est une seule et même personne.
+enum _AdminSection { members, season }
 
-enum _UsersSection { validated, pending }
+enum _UsersSection { validated, pending, roster }
 
 class AdminPage extends ConsumerStatefulWidget {
   const AdminPage({super.key});
@@ -29,7 +31,7 @@ class AdminPage extends ConsumerStatefulWidget {
 }
 
 class _AdminPageState extends ConsumerState<AdminPage> {
-  _AdminSection _section = _AdminSection.users;
+  _AdminSection _section = _AdminSection.members;
   _UsersSection _usersSection = _UsersSection.validated;
 
   @override
@@ -45,14 +47,36 @@ class _AdminPageState extends ConsumerState<AdminPage> {
               onSelected: (value) => setState(() => _section = value),
             ),
           ),
+          if (_section == _AdminSection.members)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+              child: _SegmentedBar<_UsersSection>(
+                selected: _usersSection,
+                onSelected: (value) => setState(() => _usersSection = value),
+                items: [
+                  const (_UsersSection.validated, 'Comptes'),
+                  (_UsersSection.pending, _pendingLabel()),
+                  const (_UsersSection.roster, 'Effectif'),
+                ],
+              ),
+            ),
           Expanded(child: _buildSelectedSection()),
         ],
       ),
     );
   }
 
+  /// « En attente (2) » quand des comptes attendent une validation.
+  String _pendingLabel() {
+    final dashboard = ref.watch(adminDashboardProvider).valueOrNull;
+    if (dashboard == null) return 'En attente';
+    final count = groupAdminProfiles(dashboard.profiles).pending.length;
+    return count == 0 ? 'En attente' : 'En attente ($count)';
+  }
+
   Widget _buildSelectedSection() {
-    if (_section == _AdminSection.roster) {
+    if (_section == _AdminSection.members &&
+        _usersSection == _UsersSection.roster) {
       return const _EmbeddedPlayersRegistry();
     }
 
@@ -76,14 +100,16 @@ class _AdminPageState extends ConsumerState<AdminPage> {
           return _SeasonSection(
             dashboard: dashboard,
             onSeasonCreated: () {
-              setState(() => _section = _AdminSection.roster);
+              setState(() {
+                _section = _AdminSection.members;
+                _usersSection = _UsersSection.roster;
+              });
             },
           );
         }
         return _UsersAdminSection(
           dashboard: dashboard,
           selected: _usersSection,
-          onSelected: (value) => setState(() => _usersSection = value),
         );
       },
     );
@@ -102,8 +128,7 @@ class _AdminSegmentedBar extends StatelessWidget {
       selected: selected,
       onSelected: onSelected,
       items: const [
-        (_AdminSection.users, 'Utilisateurs'),
-        (_AdminSection.roster, 'Effectif'),
+        (_AdminSection.members, 'Membres'),
         (_AdminSection.season, 'Saison'),
       ],
     );
@@ -114,12 +139,10 @@ class _UsersAdminSection extends ConsumerWidget {
   const _UsersAdminSection({
     required this.dashboard,
     required this.selected,
-    required this.onSelected,
   });
 
   final AdminDashboardData dashboard;
   final _UsersSection selected;
-  final ValueChanged<_UsersSection> onSelected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -174,15 +197,6 @@ class _UsersAdminSection extends ConsumerWidget {
               icon: const Icon(Icons.link, size: 18),
               label: const Text('Lien d’inscription'),
             ),
-          ),
-          const SizedBox(height: 14),
-          _SegmentedBar<_UsersSection>(
-            selected: selected,
-            onSelected: onSelected,
-            items: const [
-              (_UsersSection.validated, 'Validés'),
-              (_UsersSection.pending, 'En attente'),
-            ],
           ),
           const SizedBox(height: 14),
           if (profiles.isEmpty)

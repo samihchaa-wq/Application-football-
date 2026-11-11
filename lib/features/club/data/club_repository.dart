@@ -61,6 +61,11 @@ enum ClubModule {
     'Homme du match',
     'Le vote de l’homme du match après chaque rencontre.',
   ),
+  liveMode(
+    'live_mode',
+    'Mode live',
+    'Le suivi du match en direct (score, buteurs) et les alertes de but.',
+  ),
   badges(
     'badges',
     'Badges',
