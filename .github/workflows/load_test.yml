@@ -14,7 +14,7 @@ on:
     inputs:
       clubs:
         description: Nombre de clubs fictifs
-        default: '500'
+        default: '200'
       members:
         description: Membres par club
         default: '30'
@@ -61,7 +61,7 @@ jobs:
         timeout-minutes: 35
         shell: bash
         env:
-          CLUBS: ${{ inputs.clubs || '500' }}
+          CLUBS: ${{ inputs.clubs || '200' }}
           MEMBERS: ${{ inputs.members || '30' }}
           CLIENTS: ${{ inputs.clients || '50' }}
         run: |
