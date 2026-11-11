@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/widgets/collapsible_section_card.dart';
 import 'package:as_grinta/features/matches/data/match_info_repository.dart';
 import 'package:as_grinta/features/sports_management/data/match_sport_report_repository.dart';
@@ -99,10 +100,10 @@ class MatchFaitsDuMatchCard extends ConsumerWidget {
 
   String _scorerLabel(MatchGoalAction goal) {
     if (!goal.isAsGrinta) {
-      return goal.isOwnGoal ? 'CSC AS Grinta' : 'But adverse';
+      return goal.isOwnGoal ? 'CSC ${ClubIdentity.name}' : 'But adverse';
     }
     if (goal.isOwnGoal) return 'CSC adverse';
-    return goal.scorerName ?? 'But AS Grinta';
+    return goal.scorerName ?? 'But ${ClubIdentity.name}';
   }
 }
 

@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/utils/app_errors.dart';
 import 'package:as_grinta/core/widgets/collapsible_section_card.dart';
@@ -148,11 +149,11 @@ class MatchDetailsPage extends ConsumerWidget {
                     bottomSpacing: 0,
                     header: MatchDetailHeaderCard(
                       homeName: details.location == 'domicile'
-                          ? 'AS Grinta'
+                          ? ClubIdentity.name
                           : details.opponentName,
                       awayName: details.location == 'domicile'
                           ? details.opponentName
-                          : 'AS Grinta',
+                          : ClubIdentity.name,
                       grintaIsHome: details.location == 'domicile',
                       homeScore: details.location == 'domicile'
                           ? details.scoreGrinta ?? 0
@@ -343,8 +344,8 @@ class _UpcomingHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final home = details.location == 'domicile';
     return MatchDetailHeaderCard(
-      homeName: home ? 'AS Grinta' : details.opponentName,
-      awayName: home ? details.opponentName : 'AS Grinta',
+      homeName: home ? ClubIdentity.name : details.opponentName,
+      awayName: home ? details.opponentName : ClubIdentity.name,
       grintaIsHome: home,
       kickoffAt: details.kickoffAt,
       matchType: details.matchType,

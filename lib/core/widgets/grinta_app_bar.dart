@@ -67,7 +67,7 @@ class GrintaClubHomeButton extends StatelessWidget {
           child: Align(
             alignment: Alignment.centerLeft,
             child: Image.asset(
-              'assets/images/as_grinta_logo.webp',
+              'assets/images/club_crest.webp',
               height: 42,
               // Décodé à la taille affichée plutôt qu'en 680 × 741 px.
               cacheHeight: (42 * MediaQuery.devicePixelRatioOf(context)).ceil(),

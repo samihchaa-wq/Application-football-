@@ -178,7 +178,7 @@ void main() {
       () {
         expect(shell, contains("aria-live', 'polite'"));
         expect(shell, contains("role', 'status'"));
-        expect(shell, contains('Mise à jour d’AS Grinta…'));
+        expect(shell, contains('Mise à jour de l’application…'));
         expect(
           shell,
           contains('Mise à jour prête — automatique à la prochaine ouverture'),

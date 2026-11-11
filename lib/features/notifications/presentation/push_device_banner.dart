@@ -49,7 +49,7 @@ class _PushDeviceBannerState extends ConsumerState<PushDeviceBanner> {
     if (!mounted || alert != PushDeviceAlert.blocked) return;
     _say(
       'Toujours bloquées : ouvre les réglages du téléphone, rubrique '
-      'Notifications, et autorise ASG.',
+      'Notifications, et autorise l’application.',
     );
   }
 

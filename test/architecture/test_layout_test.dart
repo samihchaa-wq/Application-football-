@@ -24,6 +24,9 @@ void main() {
 
     for (final path in files) {
       final segments = path.split('/')..removeAt(0); // « test »
+      // Réglage commun que Flutter ne lit qu'à la racine : ce n'est pas un
+      // test.
+      if (path == 'test/flutter_test_config.dart') continue;
       if (segments.length == 1) {
         offenders.add('$path : à la racine de test/');
         continue;

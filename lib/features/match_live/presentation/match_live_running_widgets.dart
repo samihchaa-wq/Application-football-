@@ -48,8 +48,8 @@ class _LiveHeaderBar extends ConsumerWidget {
 
     _LiveScore team(bool grinta, {bool wide = false}) => _LiveScore(
           wide: wide,
-          shortName: grinta ? 'ASG' : _shortName(opponentName),
-          fullName: grinta ? 'AS Grinta' : opponentName,
+          shortName: grinta ? ClubIdentity.shortName : _shortName(opponentName),
+          fullName: grinta ? ClubIdentity.name : opponentName,
           score: grinta ? session.scoreAsGrinta : session.scoreAdverse,
           canEdit: canEdit,
           onIncrement: () =>
@@ -748,8 +748,8 @@ class _MatchLiveSpectatorViewState
     final lineup = bundle.lineup;
 
     _LiveScore team(bool grinta) => _LiveScore(
-          shortName: grinta ? 'ASG' : _shortName(opponentName),
-          fullName: grinta ? 'AS Grinta' : opponentName,
+          shortName: grinta ? ClubIdentity.shortName : _shortName(opponentName),
+          fullName: grinta ? ClubIdentity.name : opponentName,
           score: grinta ? session.scoreAsGrinta : session.scoreAdverse,
           canEdit: false,
           wide: true,

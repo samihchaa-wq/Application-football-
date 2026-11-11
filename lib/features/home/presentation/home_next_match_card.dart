@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/theme/app_spacing.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/theme/calendar_card_palette.dart';
@@ -32,8 +33,8 @@ class HomeNextMatchCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final opponent = match.opponentName ?? 'Adversaire';
-    final homeName = match.isHome ? 'AS Grinta' : opponent;
-    final awayName = match.isHome ? opponent : 'AS Grinta';
+    final homeName = match.isHome ? ClubIdentity.name : opponent;
+    final awayName = match.isHome ? opponent : ClubIdentity.name;
     final cardSurface = CalendarCardPalette.matchSurface(match.matchType);
     final cardBorder = CalendarCardPalette.matchBorder(match.matchType);
     final canHaveGoalAlerts = !match.isInternal &&

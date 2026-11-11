@@ -502,7 +502,7 @@ class _MatchFormPageState extends ConsumerState<MatchFormPage> {
                     title: const Text('Garder cette adresse pour cette équipe'),
                     subtitle: Text(
                       _isHome
-                          ? 'Met à jour le terrain par défaut d’AS Grinta.'
+                          ? 'Met à jour le terrain par défaut du club.'
                           : 'Met à jour le terrain par défaut de l’adversaire.',
                     ),
                     controlAffinity: ListTileControlAffinity.leading,

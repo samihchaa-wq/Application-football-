@@ -46,7 +46,7 @@ class CalendarScoreline extends StatelessWidget {
   /// et n'est jamais coupé par « … ».
   final bool limitNameLines;
 
-  static const String crestAsset = 'assets/images/as_grinta_logo.webp';
+  static const String crestAsset = 'assets/images/club_crest.webp';
 
   /// Taille habituelle de l'écusson, celle des cartes du calendrier.
   static const double regularCrestSize = 32;

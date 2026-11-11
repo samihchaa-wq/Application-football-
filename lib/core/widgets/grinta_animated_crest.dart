@@ -9,7 +9,7 @@ class GrintaAnimatedCrest extends StatefulWidget {
   const GrintaAnimatedCrest({
     super.key,
     this.width = 240,
-    this.semanticLabel = 'AS Grinta',
+    this.semanticLabel = 'Écusson du club',
   });
 
   final double width;
@@ -59,7 +59,7 @@ class _GrintaAnimatedCrestState extends State<GrintaAnimatedCrest>
   @override
   Widget build(BuildContext context) {
     final crest = Image.asset(
-      'assets/images/as_grinta_logo.webp',
+      'assets/images/club_crest.webp',
       width: widget.width,
       fit: BoxFit.contain,
       filterQuality: FilterQuality.high,

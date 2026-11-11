@@ -63,7 +63,7 @@ class _AuthLoadingPageState extends ConsumerState<AuthLoadingPage> {
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      'Ta session est toujours active. AS Grinta n’arrive pas '
+                      'Ta session est toujours active. L’application n’arrive pas '
                       'à charger ton profil pour le moment. Tu peux réessayer '
                       'sans ressaisir ton mot de passe.',
                       textAlign: TextAlign.center,

@@ -1,12 +1,12 @@
 {
-  "name": "ASG",
-  "short_name": "ASG",
+  "name": "Club",
+  "short_name": "Club",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
   "background_color": "#041224",
   "theme_color": "#041224",
-  "description": "AS La Grinta — l'application officielle du club",
+  "description": "L'application de ton club de football",
   "orientation": "portrait-primary",
   "prefer_related_applications": false,
   "icons": [

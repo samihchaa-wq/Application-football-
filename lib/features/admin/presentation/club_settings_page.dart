@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
 import 'package:as_grinta/core/widgets/grinta_loader.dart';
@@ -92,6 +93,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       if (!mounted) return;
       setState(() => _club = club);
       ref.invalidate(myClubProvider);
+      ClubIdentity.set(name: club.name, shortName: club.shortName);
       _showMessage('Nom du club enregistré.');
     } catch (_) {
       if (mounted) _showMessage('Le nom du club n’a pas pu être enregistré.');

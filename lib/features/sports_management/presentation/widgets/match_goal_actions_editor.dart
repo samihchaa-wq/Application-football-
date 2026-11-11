@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/widgets/match_contribution_icons.dart';
 import 'package:as_grinta/features/match_live/presentation/widgets/match_live_scorer_picker_dialog.dart';
@@ -129,7 +130,7 @@ class _GoalActionCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    goal.isAsGrinta ? 'AS Grinta' : opponentName,
+                    goal.isAsGrinta ? ClubIdentity.name : opponentName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -186,7 +187,8 @@ class _GoalActionCard extends StatelessWidget {
     return _AttributionTile(
       icon: const _TileIcon(Icons.flag_rounded),
       label: 'Origine du but',
-      value: goal.isOwnGoal ? 'CSC AS Grinta' : 'But de $opponentName',
+      value:
+          goal.isOwnGoal ? 'CSC ${ClubIdentity.name}' : 'But de $opponentName',
       muted: false,
       enabled: editable,
       onTap: () => _pickOpponentOrigin(context),
@@ -263,7 +265,7 @@ class _GoalActionCard extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.shield_moon_outlined),
-              title: const Text('CSC AS Grinta'),
+              title: Text('CSC ${ClubIdentity.name}'),
               subtitle: const Text(
                 'Un de nos joueurs a marqué contre son camp.',
               ),

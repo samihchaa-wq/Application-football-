@@ -8,7 +8,7 @@ class GrintaStartupProgressBar extends StatelessWidget {
   const GrintaStartupProgressBar({
     super.key,
     this.width = 132,
-    this.semanticLabel = 'Démarrage d’AS Grinta',
+    this.semanticLabel = 'Démarrage de l’application',
   });
 
   final double width;

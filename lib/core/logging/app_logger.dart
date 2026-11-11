@@ -81,7 +81,7 @@ abstract final class AppLogger {
     final date = '${instant.year}${two(instant.month)}${two(instant.day)}';
     final time =
         '${two(instant.hour)}${two(instant.minute)}${two(instant.second)}';
-    return 'ASG-$date-$time-${three(_sequence)}';
+    return 'REF-$date-$time-${three(_sequence)}';
   }
 
   /// Normalise un nom d'opération pour qu'il reste inoffensif en journal.

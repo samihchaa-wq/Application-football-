@@ -35,7 +35,7 @@
       targetUrl.searchParams.set(deploymentMarker, freshVersion);
       updateNavigationInProgress = true;
       if (window.asGrintaUpdate) {
-        window.asGrintaUpdate.showStatus('Mise à jour d’AS Grinta…', false);
+        window.asGrintaUpdate.showStatus('Mise à jour de l’application…', false);
       }
       window.location.replace(targetUrl.toString());
       return true;
@@ -175,7 +175,7 @@
       if (!this._worker || this._activationRequested) return;
       this._activationRequested = true;
       if (document.visibilityState === 'visible') {
-        this.showStatus('Mise à jour d’AS Grinta…', false);
+        this.showStatus('Mise à jour de l’application…', false);
       }
       this._worker.postMessage({ type: 'SKIP_WAITING' });
     },

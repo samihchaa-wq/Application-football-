@@ -1,6 +1,7 @@
+import 'dart:io';
+
 import 'package:as_grinta/features/season_wrapped/data/season_wrapped_repository.dart';
 import 'package:as_grinta/features/season_wrapped/data/wrapped_music.dart';
-import 'package:flutter/services.dart';
 import 'package:as_grinta/features/season_wrapped/presentation/wrapped_theme.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -52,13 +53,16 @@ void main() {
   // fichier renomme couperait la musique sans que personne le remarque.
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('la piste du bilan est bien embarquee', () async {
-    final data = await rootBundle.load('assets/${WrappedMusic.assetPath}');
+  test('la piste du bilan, si elle est fournie, reste légère', () {
+    // La piste d'origine n'était pas libre de droits : elle a été retirée et
+    // le bilan s'ouvre sans musique. Quand une piste libre sera déposée, elle
+    // devra rester sous deux mégaoctets, sinon l'ouverture du bilan traîne
+    // sur un réseau lent.
+    final track = File('assets/${WrappedMusic.assetPath}');
+    if (!track.existsSync()) return;
 
-    expect(data.lengthInBytes, greaterThan(0));
-    // Au-dela de deux megaoctets, l'ouverture du bilan traine sur un reseau
-    // lent : la piste doit rester courte et compressee.
-    expect(data.lengthInBytes, lessThan(2 * 1024 * 1024));
+    expect(track.lengthSync(), greaterThan(0));
+    expect(track.lengthSync(), lessThan(2 * 1024 * 1024));
   });
   test('la répartition des postes est lue et ordonnée', () {
     final wrapped = SeasonWrapped.fromJson(_payload());

@@ -298,7 +298,7 @@ class _Hero extends ConsumerWidget {
             child: Opacity(
               opacity: .09,
               child: Image.asset(
-                'assets/images/as_grinta_logo.webp',
+                'assets/images/club_crest.webp',
                 fit: BoxFit.contain,
               ),
             ),

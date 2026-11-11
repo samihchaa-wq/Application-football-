@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/utils/app_errors.dart';
 import 'package:as_grinta/core/widgets/grinta_loader.dart';
 import 'package:as_grinta/core/widgets/match_detail_header_card.dart';
@@ -123,8 +124,8 @@ class _HistoricalMatchHeaderSection extends ConsumerWidget {
 
   Widget _historicalHeader(HistoricalMatchResult match) {
     return MatchDetailHeaderCard(
-      homeName: match.isHome ? 'AS Grinta' : match.opponentName,
-      awayName: match.isHome ? match.opponentName : 'AS Grinta',
+      homeName: match.isHome ? ClubIdentity.name : match.opponentName,
+      awayName: match.isHome ? match.opponentName : ClubIdentity.name,
       grintaIsHome: match.isHome,
       homeScore: match.isHome ? match.grintaScore : match.opponentScore,
       awayScore: match.isHome ? match.opponentScore : match.grintaScore,

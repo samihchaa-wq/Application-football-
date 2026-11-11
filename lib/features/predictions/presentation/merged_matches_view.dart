@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'dart:async';
 
 import 'package:as_grinta/app/shell/module_navigation.dart';
@@ -687,8 +688,8 @@ class _UpcomingMatchCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final opponent = match.opponentName ?? 'Adversaire';
-    final homeName = match.isHome ? 'AS Grinta' : opponent;
-    final awayName = match.isHome ? opponent : 'AS Grinta';
+    final homeName = match.isHome ? ClubIdentity.name : opponent;
+    final awayName = match.isHome ? opponent : ClubIdentity.name;
     final now = DateTime.now();
     final availability = ref.watch(myMatchAvailabilityProvider(match.id));
     final serverAvailability = availability.valueOrNull;
