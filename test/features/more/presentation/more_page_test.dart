@@ -261,6 +261,16 @@ void main() {
 }
 
 class _FakeAuthRepository implements AuthRepository {
+  @override
+  bool get currentUserHasNoClub => false;
+
+  @override
+  Future<void> signInWithFacebook() async {}
+
+  @override
+  ({String firstName, String lastName}) get suggestedNames =>
+      (firstName: '', lastName: '');
+
   _FakeAuthRepository(this.profile);
 
   final AuthProfile profile;

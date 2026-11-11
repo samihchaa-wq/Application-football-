@@ -135,6 +135,42 @@ class AuthRepository {
     }
   }
 
+  /// Vrai quand la personne est connectée mais que son compte n'est rattaché à
+  /// aucun club (le club n'est inscrit que par le serveur).
+  bool get currentUserHasNoClub {
+    final user = _client.auth.currentUser;
+    if (user == null) return false;
+    final clubId = user.appMetadata['club_id'];
+    return clubId == null || '$clubId'.isEmpty;
+  }
+
+  Future<void> signInWithFacebook() async {
+    final redirect = AppConfig.publicAppUrl.trim();
+    await _client.auth.signInWithOAuth(
+      OAuthProvider.facebook,
+      redirectTo: redirect.isEmpty ? null : redirect,
+      scopes: 'email,public_profile',
+    );
+  }
+
+  /// Prénom et nom connus de Facebook (peuvent être vides).
+  ({String firstName, String lastName}) get suggestedNames {
+    final metadata = _client.auth.currentUser?.userMetadata ?? const {};
+    String text(String key) => '${metadata[key] ?? ''}'.trim();
+    var first = text('first_name');
+    var last = text('last_name');
+    if (first.isEmpty && last.isEmpty) {
+      final full =
+          text('full_name').isNotEmpty ? text('full_name') : text('name');
+      final parts = full.split(RegExp(r'\s+')).where((p) => p.isNotEmpty);
+      if (parts.isNotEmpty) {
+        first = parts.first;
+        last = parts.skip(1).join(' ');
+      }
+    }
+    return (firstName: first, lastName: last);
+  }
+
   /// Crée un compte via l'inscription publique (prénom + nom, sans e-mail).
   /// Retourne l'identifiant généré par le serveur, à communiquer au joueur.
   Future<String> registerAccount({

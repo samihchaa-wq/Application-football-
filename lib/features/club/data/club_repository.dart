@@ -203,6 +203,51 @@ class ClubRepository {
     }, password);
   }
 
+  /// Rattache le compte connecté (sans club) à un club : rejoindre avec un
+  /// code d'invitation, ou en créer un.
+  Future<ClubRegistration> claimClub({
+    required bool create,
+    String? inviteCode,
+    String? clubName,
+    String? clubShortName,
+    required String firstName,
+    required String lastName,
+  }) async {
+    final FunctionResponse response;
+    try {
+      response = await _client.functions.invoke(
+        'claim-club',
+        body: {
+          'mode': create ? 'create' : 'join',
+          if (!create) 'inviteCode': normalizeInviteCode(inviteCode ?? ''),
+          if (create) 'clubName': (clubName ?? '').trim(),
+          if (create && (clubShortName ?? '').trim().isNotEmpty)
+            'clubShortName': clubShortName!.trim(),
+          'firstName': firstName.trim(),
+          'lastName': lastName.trim(),
+        },
+      );
+    } on FunctionsHttpException catch (error) {
+      throw functionHttpError(
+        error,
+        fallback: 'Le rattachement au club a échoué.',
+      );
+    }
+    final data = response.data;
+    if (response.status != 200 || data is! Map || data['username'] == null) {
+      final message = data is Map ? data['error'] as String? : null;
+      throw StateError(message ?? 'Le rattachement au club a échoué.');
+    }
+    // Le club vient d'être inscrit dans le compte : on renouvelle la session
+    // pour que l'application le voie.
+    await _client.auth.refreshSession();
+    return ClubRegistration(
+      username: data['username'] as String,
+      clubName: data['clubName'] as String? ?? '',
+      isActive: data['status'] == 'active',
+    );
+  }
+
   Future<ClubRegistration> _register(
     Map<String, dynamic> body,
     String password,

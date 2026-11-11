@@ -82,6 +82,16 @@ class _FakePushRepository implements PushSubscriptionsRepository {
 }
 
 class _FakeAuthRepository implements AuthRepository {
+  @override
+  bool get currentUserHasNoClub => false;
+
+  @override
+  Future<void> signInWithFacebook() async {}
+
+  @override
+  ({String firstName, String lastName}) get suggestedNames =>
+      (firstName: '', lastName: '');
+
   _FakeAuthRepository(this.events);
 
   final List<String> events;

@@ -13,6 +13,7 @@ import 'package:as_grinta/features/admin/presentation/admin_page.dart'
     deferred as admin_administration;
 import 'package:as_grinta/features/auth/presentation/auth_loading_page.dart';
 import 'package:as_grinta/features/auth/presentation/auth_register_page.dart';
+import 'package:as_grinta/features/auth/presentation/choose_club_page.dart';
 import 'package:as_grinta/features/auth/presentation/confirm_email_page.dart';
 import 'package:as_grinta/features/auth/presentation/auth_sign_in_page.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
@@ -349,6 +350,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (_, state) => AuthRegisterPage(
           initialInviteCode: state.uri.queryParameters['code'],
         ),
+      ),
+      GoRoute(
+        path: '/auth/choose-club',
+        builder: (_, __) => const ChooseClubPage(),
       ),
       GoRoute(
         path: '/auth/confirm-email',

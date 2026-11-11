@@ -264,7 +264,7 @@ select ok(
       and policyname = 'badge_images_admin_insert'
       and with_check ~ 'private\.can_manage_badges'
   ),
-  'l’écriture des badges reste réservée aux gestionnaires de badges autorisés'
+  'l’écriture des badges reste réservée aux gestionnaires de badges (administrateurs du club)'
 );
 
 select * from finish();
