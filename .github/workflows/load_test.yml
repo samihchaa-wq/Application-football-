@@ -1,0 +1,81 @@
+name: Load test (hundreds of clubs)
+
+# Test de charge sur une base Supabase éphémère : des centaines de clubs
+# fictifs, lectures et saisies de score simultanées, tâches planifiées,
+# cloisonnement entre clubs. Ne se connecte jamais à une base réelle.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/tests/load/**'
+      - '.github/workflows/load_test.yml'
+  workflow_dispatch:
+    inputs:
+      clubs:
+        description: Nombre de clubs fictifs
+        default: '500'
+      members:
+        description: Membres par club
+        default: '30'
+      clients:
+        description: Connexions simultanées
+        default: '50'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: load-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf # v2
+        with:
+          version: 2.111.0
+
+      - name: Start isolated Supabase database
+        shell: bash
+        run: |
+          set -o pipefail
+          supabase start -x studio,imgproxy,logflare,vector,supavisor,edge-runtime,mailpit,postgres-meta 2>&1 | tail -5
+
+      - name: Install pgbench
+        shell: bash
+        run: |
+          if ! command -v pgbench >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client >/dev/null
+          fi
+          pgbench --version
+
+      - name: Run load test
+        shell: bash
+        env:
+          CLUBS: ${{ inputs.clubs || '500' }}
+          MEMBERS: ${{ inputs.members || '30' }}
+          CLIENTS: ${{ inputs.clients || '50' }}
+        run: |
+          set -o pipefail
+          supabase/tests/load/run.sh "$CLUBS" "$MEMBERS" 20 "$CLIENTS" 60 2>&1 | tee load-test.log
+          {
+            echo '```'
+            cat load-test.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: load-test-report
+          path: load-test.log
+          if-no-files-found: ignore

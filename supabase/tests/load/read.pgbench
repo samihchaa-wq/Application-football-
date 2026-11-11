@@ -1,0 +1,12 @@
+-- Un membre ouvre l'appli un dimanche : profil, réglages du club, compteur de
+-- notifications, prochains matchs, état du Live en cours.
+\set n random(1, :users)
+BEGIN;
+SELECT loadtest.act_as(:n);
+SELECT public.get_my_profile();
+SELECT public.get_public_feature_flags();
+SELECT public.get_club_modules();
+SELECT public.get_my_unread_notification_count();
+SELECT id, match_date, status FROM public.matches WHERE status = 'a_venir' ORDER BY match_date LIMIT 5;
+SELECT public.get_match_live_state((SELECT live_match_id FROM loadtest.users WHERE n = :n));
+COMMIT;

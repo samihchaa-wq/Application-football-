@@ -1,0 +1,9 @@
+-- Saisie d'un but dans le Live par le pilote de chaque club, en même temps.
+\set c random(1, :clubs)
+BEGIN;
+SELECT loadtest.act_as_admin(:c);
+SELECT public.coach_adjust_match_live_score(
+  (SELECT live_match_id FROM loadtest.clubs WHERE n = :c),
+  'them', 1, NULL, gen_random_uuid()
+);
+COMMIT;
