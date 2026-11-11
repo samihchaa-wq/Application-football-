@@ -26,7 +26,8 @@ jobs:
     steps:
       - name: Skip when no production database is configured
         if: env.DB_URL == '' || env.BACKUP_PASSPHRASE == ''
-        run: echo "::notice::Pas encore de base en ligne ou de phrase secrète : sauvegarde inactive."
+        run: >-
+          echo "::notice::Pas encore de base en ligne ou de phrase secrète : sauvegarde inactive."
 
       - name: Setup Supabase CLI
         if: env.DB_URL != '' && env.BACKUP_PASSPHRASE != ''

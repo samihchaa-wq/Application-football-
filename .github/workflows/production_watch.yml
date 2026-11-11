@@ -24,7 +24,8 @@ jobs:
     steps:
       - name: Skip when no production database is configured
         if: env.DB_URL == ''
-        run: echo "::notice::Pas encore de base en ligne : surveillance inactive."
+        run: >-
+          echo "::notice::Pas encore de base en ligne : surveillance inactive."
 
       - name: Check scheduled jobs and notifications
         if: env.DB_URL != ''
