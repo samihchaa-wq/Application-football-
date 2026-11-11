@@ -48,6 +48,31 @@ void main() {
       );
     });
 
+    test('keeps a signed-in account without a club on the club step', () {
+      const state = AuthState(
+        isLoading: false,
+        hasSession: true,
+        needsClub: true,
+      );
+
+      expect(
+        resolveAuthRedirect(
+          authState: state,
+          uri: Uri.parse('/matches'),
+          matchedLocation: '/matches',
+        ),
+        '/auth/choose-club',
+      );
+      expect(
+        resolveAuthRedirect(
+          authState: state,
+          uri: Uri.parse('/auth/choose-club'),
+          matchedLocation: '/auth/choose-club',
+        ),
+        isNull,
+      );
+    });
+
     test('lets the e-mail confirmation link open while signed out', () {
       const state = AuthState(isLoading: false);
 

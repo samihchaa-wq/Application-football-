@@ -16,6 +16,9 @@ verify_jwt = false
 [functions.account-email]
 verify_jwt = false
 
+[functions.claim-club]
+verify_jwt = true
+
 [functions.send-push]
 verify_jwt = false
 
@@ -24,3 +27,11 @@ verify_jwt = true
 
 [functions.calendar-feed]
 verify_jwt = false
+# Connexion par Facebook : désactivée tant que l'application Facebook n'est pas
+# créée. Sur une base en ligne, ce réglage se fait dans le tableau de bord
+# Supabase (Authentication > Providers > Facebook) avec l'identifiant et le
+# secret de l'application Facebook.
+[auth.external.facebook]
+enabled = false
+client_id = "env(FACEBOOK_APP_ID)"
+secret = "env(FACEBOOK_APP_SECRET)"

@@ -34,6 +34,7 @@ class AuthState {
     this.isSaving = false,
     this.isAuthenticated = false,
     this.hasSession = false,
+    this.needsClub = false,
     this.profile,
     this.error,
   });
@@ -49,6 +50,10 @@ class AuthState {
   final bool isSaving;
   final bool isAuthenticated;
   final bool hasSession;
+
+  /// Connecté (par Facebook, par exemple) mais rattaché à aucun club : la
+  /// personne doit encore rejoindre un club ou en créer un.
+  final bool needsClub;
   final AuthProfile? profile;
   final String? error;
 
@@ -61,6 +66,7 @@ class AuthState {
     bool? isSaving,
     bool? isAuthenticated,
     bool? hasSession,
+    bool? needsClub,
     AuthProfile? profile,
     String? error,
     bool clearError = false,
@@ -71,6 +77,7 @@ class AuthState {
       isSaving: isSaving ?? this.isSaving,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       hasSession: hasSession ?? this.hasSession,
+      needsClub: needsClub ?? this.needsClub,
       profile: clearProfile ? null : (profile ?? this.profile),
       error: clearError ? null : (error ?? this.error),
     );
@@ -216,6 +223,21 @@ class AuthController extends StateNotifier<AuthState> {
       _loadingFallback?.cancel();
 
       final hasSession = _repository.hasSession;
+      if (profile == null && hasSession && _repository.currentUserHasNoClub) {
+        // Compte créé par Facebook : il n'a pas encore de club, donc pas de
+        // profil. Ce n'est pas une panne.
+        _profileFromCache = false;
+        unawaited(_profileCache?.remember(null));
+        state = state.copyWith(
+          isLoading: false,
+          isAuthenticated: false,
+          hasSession: true,
+          needsClub: true,
+          clearProfile: true,
+          clearError: true,
+        );
+        return;
+      }
       if (profile == null && hasSession) {
         // Un profil seulement lu sur l'appareil n'autorise rien : sans
         // confirmation du serveur, retour au comportement d'origine.
@@ -239,6 +261,7 @@ class AuthController extends StateNotifier<AuthState> {
         isLoading: false,
         isAuthenticated: profile != null && profile.isActive,
         hasSession: hasSession,
+        needsClub: false,
         profile: profile,
         clearProfile: profile == null,
         clearError: true,
@@ -318,6 +341,24 @@ class AuthController extends StateNotifier<AuthState> {
       );
     }
   }
+
+  /// Ouvre la connexion Facebook. Sur le web, la page quitte l'application
+  /// puis y revient une fois la connexion faite.
+  Future<void> signInWithFacebook() async {
+    state = state.copyWith(clearError: true);
+    try {
+      await _repository.signInWithFacebook();
+    } catch (error, stackTrace) {
+      AppLogger.error('auth.facebook_sign_in', error, stackTrace);
+      state = state.copyWith(
+        error: 'La connexion avec Facebook n’a pas pu démarrer.',
+      );
+    }
+  }
+
+  /// Prénom et nom proposés par Facebook, pour préremplir l'inscription.
+  ({String firstName, String lastName}) get suggestedNames =>
+      _repository.suggestedNames;
 
   Future<bool> updatePassword(String password) async {
     state = state.copyWith(isSaving: true, clearError: true);

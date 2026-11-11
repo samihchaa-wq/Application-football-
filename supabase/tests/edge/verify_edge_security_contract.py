@@ -50,6 +50,7 @@ def main() -> int:
         "claim-account": True,
         "register-account": False,
         "account-email": False,
+        "claim-club": True,
         "send-push": False,
         "send-prediction-reminders": True,
         "calendar-feed": False,
@@ -219,6 +220,37 @@ def main() -> int:
     require(
         "Deno.env.get(\"MAIL_API_KEY\")" in function_file("account-email", "account_email.ts"),
         "la clé du service d'e-mail doit venir de l'environnement",
+    )
+
+    claim_club = source("claim-club")
+    for marker in (
+        'req.method !== "POST"',
+        "MAX_BODY_BYTES = 4_096",
+        "req.body.getReader()",
+        "callerClient.auth.getUser(accessToken)",
+        '"consume_registration_rate_limit"',
+        '"club_for_invite_code"',
+        '"promote_club_founder"',
+        "app_metadata: { club_id: club.id }",
+    ):
+        require(marker in claim_club, f"claim-club: garde absente: {marker}")
+    require(
+        "user_metadata: { club_id" not in claim_club,
+        "claim-club ne doit jamais écrire le club dans les métadonnées modifiables",
+    )
+    # Le compte doit être identifié avant toute écriture, et un compte qui a
+    # déjà un profil ne doit pas pouvoir changer de club.
+    require_in_order(
+        claim_club,
+        "callerClient.auth.getUser(accessToken)",
+        '"consume_registration_rate_limit"',
+        "claim-club doit identifier le compte avant tout le reste",
+    )
+    require_in_order(
+        claim_club,
+        "Ce compte appartient déjà à un club.",
+        "app_metadata: { club_id: club.id }",
+        "claim-club doit refuser un compte déjà rattaché avant d'écrire le club",
     )
 
     push = source("send-push")

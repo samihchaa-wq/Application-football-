@@ -119,6 +119,16 @@ class _AdminAuthController extends AuthController {
 }
 
 class _FakeAuthRepository implements AuthRepository {
+  @override
+  bool get currentUserHasNoClub => false;
+
+  @override
+  Future<void> signInWithFacebook() async {}
+
+  @override
+  ({String firstName, String lastName}) get suggestedNames =>
+      (firstName: '', lastName: '');
+
   final StreamController<supabase.AuthState> _events =
       StreamController<supabase.AuthState>.broadcast();
 

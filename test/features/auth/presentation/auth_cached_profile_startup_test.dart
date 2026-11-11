@@ -135,6 +135,16 @@ Future<void> _flush() async {
 }
 
 class _Repository implements AuthRepository {
+  @override
+  bool get currentUserHasNoClub => false;
+
+  @override
+  Future<void> signInWithFacebook() async {}
+
+  @override
+  ({String firstName, String lastName}) get suggestedNames =>
+      (firstName: '', lastName: '');
+
   _Repository(this._serverProfile);
 
   final Future<AuthProfile?> _serverProfile;
