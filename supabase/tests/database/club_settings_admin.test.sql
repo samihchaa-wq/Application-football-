@@ -109,7 +109,7 @@ select throws_ok(
   'une adresse de plus de 200 caractères est refusée'
 );
 select throws_ok(
-  $$select public.admin_set_club_home_address(E'Rue\\nVille')$$,
+  $$select public.admin_set_club_home_address(E'Rue\nVille')$$,
   '22023', null,
   'une adresse multiligne est refusée'
 );
