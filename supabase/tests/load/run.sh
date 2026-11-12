@@ -12,6 +12,13 @@ DB_URL="${DB_URL:-postgresql://postgres:postgres@127.0.0.1:54322/postgres}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 USERS=$((CLUBS * MEMBERS))
 
+# Refuser toute base distante : ce script charge des milliers de données fictives.
+# La base de test Supabase est locale (port 54322 par défaut).
+if [[ ! "$DB_URL" =~ ^postgres(ql)?://[^@/]+@(127\.0\.0\.1|localhost|\[::1\]):[0-9]+/[^/?#]+$ ]]; then
+  echo "Refus : le test de charge exige une base PostgreSQL sur localhost." >&2
+  exit 2
+fi
+
 echo "## Test de charge : ${CLUBS} clubs, ${USERS} comptes, ${CLIENTS} connexions simultanées"
 echo
 
