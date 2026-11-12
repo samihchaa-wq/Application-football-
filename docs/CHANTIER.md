@@ -57,29 +57,34 @@ Les consignes opérationnelles sont désormais tracées **dans les issues et dan
 
 **Attention :** la publication de commentaires GitHub ne réveille pas automatiquement les discussions ChatGPT des fils. Ils consulteront ces consignes lorsqu'ils seront relancés. Le suivi programmé du fil 00 contrôle les preuves, pas le travail autonome en arrière-plan.
 
-## Exécution automatisée des missions (12/11/2026)
+## Exécution automatisée des missions (mise à jour du 12/11/2026)
 
-**Statut : cinq tâches programmées actives créées et confirmées.** Le compte impose un maximum de cinq tâches actives ; quatre exécutants couvrent les neuf domaines, et le fil 00 assure le pilotage. Ces tâches sont **distinctes des neuf conversations du projet** : elles ne peuvent pas réveiller ces conversations.
+**Cinq tâches actives, horaires 24 h/24 et 7 j/7.** Quatre exécutants spécialisés couvrent les neuf missions ; l'agent M00 coordonne. Une exécution n'est pas une session persistante et peut être retardée, échouer ou ne rien produire d'utile ; ne pas compter les déclenchements comme des livrables.
 
-| Agent actif | Missions couvertes | Fréquence (Europe/Paris) | Périmètre |
+| Agent actif | Missions couvertes | Déclenchement (Europe/Paris) | Périmètre |
 |---|---|---|---|
-| Chef M00 — Chantier Application football | 00 | Horaire | Supervision, priorisation, distribution via GitHub, revue PR et blocages |
-| Exécutant Produit M01-M02 | 01, 02 | Quotidien vers 06 h | Inventaire et petits lots multiclubs |
-| Exécutant QA M03-M09 | 03, 09 | Quotidien vers 07 h | Tests, monitoring, sauvegarde et support |
-| Exécutant Sécurité M04-M07 | 04, 07 | Quotidien vers 08 h | RLS, confidentialité, droits, RGPD, juridique |
-| Exécutant Marché M05-M06-M08 | 05, 06, 08 | Quotidien vers 09 h | Identité, prix hypothétiques et parcours pilotes |
+| Exécutant Produit M01-M02 | 01, 02 | Chaque heure à **:05** | Inventaire, revue PR et petites adaptations multiclubs |
+| Exécutant QA M03-M09 | 03, 09 | Chaque heure à **:17** | Tests, monitoring, sauvegarde et support |
+| Exécutant Sécurité M04-M07 | 04, 07 | Chaque heure à **:29** | RLS, confidentialité, droits, RGPD et juridique |
+| Exécutant Marché M05-M06-M08 | 05, 06, 08 | Chaque heure à **:41** | Identité, modèles commerciaux et parcours pilotes |
+| Chef M00 — Chantier Application football | 00 | Chaque heure à **:53** | Contrôle, arbitrages, priorisation et distribution via GitHub |
+
+### Rapports au propriétaire
+
+- **Deux synthèses concises par jour**, aux passages vers **10 h 53** et **20 h 53** (heure de Paris), selon la disponibilité du service.
+- Contenu : progression **prouvée** (liens vers PR/issues), blocages, étapes suivantes et décisions en attente.
+- Pour chaque arbitrage important : **QCM A/B/C** en langage simple, conséquences et choix recommandé ; **aucune décision présumée**. L'absence de réponse vaut absence d'autorisation.
+- En dehors des synthèses : pas de rapports horaires répétés ; notifier uniquement une urgence P0 véritablement nouvelle ou un blocage qui nécessite un arbitrage rapide.
 
 ### Contrat de travail automatisé
 
-1. À chaque passage, lire la documentation commune, les issues et PR de sa compétence, sélectionner une **action sûre et utile** plutôt que republier le même rapport.
-2. Les livrables doivent se retrouver dans GitHub : commentaire pertinent sur une issue/PR, branche + PR de code ciblée, test non perturbateur ou documentation. Les tâches sont autonomes **au moment de leur exécution programmée** ; rien ne garantit qu'un test ou un correctif réussisse.
-3. **Les agents ne fusionnent pas leurs PR**, ne changent pas la production, n'engagent pas de frais, et ne créent pas de données client. Ils attendent l'approbation du propriétaire pour les opérations sensibles.
-4. Chaque agent a ses fichiers/branches propres. Éviter les PR concurrentes sur les mêmes fichiers, particulièrement `docs/HANDOFF.md` et `docs/CHANTIER.md` ; ce dernier est maintenu par M00.
-5. Le chef 00 vérifie l'avancement GitHub, détecte les conflits, répartit les priorités par issues/commentaires, vérifie les preuves de tests et signale seulement les décisions demandant arbitrage.
-6. Tant que les passages n'ont pas eu lieu, considérer le système comme **configuré, pas encore éprouvé**. L'accès effectif à GitHub/Supabase et la capacité des tâches à produire des PR doivent être confirmés par leurs premiers résultats horodatés.
-7. En cas d'échec d'accès, de conflit, de dépense, de migration ou de déploiement requis, ne pas contourner le contrôle : documenter le blocage et demander l'accord.
-
-**Important :** le fonctionnement « tout seul » couvre le travail répétable et autorisé par ces tâches. Il ne remplace pas des agents de développement persistants ni les décisions humaines sur le lancement commercial, la sécurité et la production.
+1. À chaque passage, consulter la documentation commune, les issues et PR de sa compétence, sélectionner une **action sûre et utile** sans créer artificiellement du travail.
+2. Les livrables sont traçables sur GitHub : avis utile, branche + PR ciblée, tests non perturbateurs ou documentation. Le succès d'un déclenchement ne prouve pas qu'une correction est valide.
+3. **Jamais de fusion**, de changement sur `main`, de production, de base commerciale, de dépenses ou de contact avec les clients sans accord explicite ; jamais de modification du dépôt original AS Grinta ni de Carte soirée.
+4. Eviter les PR concurrentes sur les mêmes fichiers. `docs/CHANTIER.md` est piloté par M00 ; `docs/HANDOFF.md` exige réconciliation de branches.
+5. M00 vérifie le statut GitHub, distribue les priorités via issues/commentaires et demande au propriétaire les décisions sensibles sous forme QCM.
+6. Les tâches ChatGPT programmées sont distinctes des neuf conversations et **ne réveillent pas celles-ci**. Des limites d'exécution, de quota ou d'outillage peuvent interrompre le fonctionnement ; confirmer chaque résultat.
+7. **Capacité théorique maximale : 120 déclenchements par jour**, pas 120 modifications garanties. Réduire la cadence si les passages se chevauchent ou produisent du bruit plutôt que des résultats.
 
 ## Circuit de transmission entre les fils
 
