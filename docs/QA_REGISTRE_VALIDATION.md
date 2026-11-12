@@ -137,3 +137,15 @@ Modèle de fiche d'exécution :
 - **Déploiement** : PR #24 ouvre un **pilote de test contrôlé**, pas une validation de vente. Ne pas qualifier le pilote de commercialisation ouverte.
 
 **Bilan initial :** 374 fichiers Flutter/SQL/Python, 7 tests Deno, tests CI effectivement verts, 59,11 % de couverture de lignes Flutter, une charge locale encourageante mais un harnais faillible. La base commerciale est active et vide ; l'exploitation n'est pas encore démontrée.
+
+## 7. Avancement QA-01 — synchronisation avec le fil 00 (12/11/2026)
+
+Le tableau de pilotage `docs/CHANTIER.md` est proposé par la PR #29. Le fil 03 lui transmet ses preuves sans modifier son fichier de travail afin de ne pas créer de conflit de branches.
+
+- **Correctif proposé en PR #33** : `supabase/tests/load/run.sh` n'utilise plus `|| true` après `pgbench` et laisse remonter les erreurs de lecture/écriture par `set -o pipefail`.
+- **Sécurité du banc de test** : refus des URL PostgreSQL non locales **avant** toute commande `psql` susceptible de créer des données fictives. Ne jamais exécuter les seeds de charge sur la base commerciale.
+- **Non-régression exécutée** : sur une copie locale du script et de la suite Python, `bash -n` sans erreur et **5/5 tests réussis**, avec binaires fictifs, sans connexion réseau ni base de données : succès lecture/écriture, échec lecture, échec écriture, sortie filtrée et refus d'une URL distante.
+- **Non encore validé** : résultats de GitHub Actions sur le SHA définitif de PR #33 et nouvelle charge intégrale. La correction reste en brouillon et **non fusionnée** ; aucune validation finale n'est revendiquée.
+- **Suivi** : issue #27, PR #33 ; vérifier tous les contrôles avant revue/fusion par le propriétaire selon `docs/CHANTIER.md`.
+
+**Dépendances QA inter-missions :** fil 09 PR #31 (surveillance et restauration, cf. QA-02/issue #28), fil 08 PR #30 (parcours pilotes), fil 01 PR #25 (inventaire), fil 02 (corrections métier), fil 00 PR #29 (pilotage). L'ensemble des scénarios réels reste bloqué jusqu'à un environnement autorisé. Les décisions nécessaires au propriétaire demeurent la création/utilisation de comptes fictifs sur la base commerciale et l'autorisation de mise en ligne à des fins de tests ; aucune opération n'est présumée autorisée.
