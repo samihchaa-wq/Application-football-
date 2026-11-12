@@ -11,6 +11,7 @@ import 'package:as_grinta/core/widgets/grinta_skeleton.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
 import 'package:as_grinta/features/badges/presentation/badge_display_scope.dart';
 import 'package:as_grinta/features/badges/presentation/name_with_badges.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/players/presentation/player_card_link.dart';
 import 'package:as_grinta/features/predictions/presentation/pronos_hub_page.dart';
 import 'package:as_grinta/features/statistics/data/statistics_repository.dart';
@@ -50,7 +51,13 @@ class _StatsHubPageState extends ConsumerState<StatsHubPage> {
         _resetGeneration++;
       });
     });
-    final hasPeriod = _section != _StatsSection.rankings;
+    // Pronostics coupés par le club : l'onglet de leur classement disparaît.
+    final predictionsEnabled =
+        ref.watch(clubModuleEnabledProvider(ClubModule.predictions));
+    final section = !predictionsEnabled && _section == _StatsSection.rankings
+        ? _StatsSection.players
+        : _section;
+    final hasPeriod = section != _StatsSection.rankings;
     return Scaffold(
       appBar: GrintaAppBar(
         title: const Text('Statistiques'),
@@ -77,21 +84,22 @@ class _StatsHubPageState extends ConsumerState<StatsHubPage> {
                   child: SegmentedButton<_StatsSection>(
                     expandedInsets: EdgeInsets.zero,
                     showSelectedIcon: false,
-                    segments: const [
-                      ButtonSegment(
+                    segments: [
+                      const ButtonSegment(
                         value: _StatsSection.players,
                         label: Text('Joueurs'),
                       ),
-                      ButtonSegment(
+                      const ButtonSegment(
                         value: _StatsSection.team,
                         label: Text('Équipe'),
                       ),
-                      ButtonSegment(
-                        value: _StatsSection.rankings,
-                        label: Text('Prono'),
-                      ),
+                      if (predictionsEnabled)
+                        const ButtonSegment(
+                          value: _StatsSection.rankings,
+                          label: Text('Prono'),
+                        ),
                     ],
-                    selected: {_section},
+                    selected: {section},
                     onSelectionChanged: (value) {
                       setState(() => _section = value.first);
                     },
@@ -121,7 +129,7 @@ class _StatsHubPageState extends ConsumerState<StatsHubPage> {
                 ),
               Expanded(
                 key: ValueKey<int>(_resetGeneration),
-                child: switch (_section) {
+                child: switch (section) {
                   _StatsSection.rankings => const RankingsPanel(),
                   _StatsSection.players => _PlayersPanel(period: _period),
                   _StatsSection.team => TeamStatisticsPanel(period: _period),

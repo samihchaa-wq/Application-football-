@@ -9,7 +9,7 @@ const APP_SHELL = [
   'index.html',
   'build_version.js',
   'app_shell.js',
-  'club_crest.webp',
+  'lucarne_logo.webp',
   'flutter_bootstrap.js',
   'manifest.json',
   'favicon.png',

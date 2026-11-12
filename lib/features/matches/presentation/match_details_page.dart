@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_rules.dart';
 import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/utils/app_errors.dart';
@@ -268,7 +269,8 @@ class _PostgameAdminActions extends ConsumerWidget {
 
     final validatedAt = details.resultValidatedAt;
     if (validatedAt == null) return const SizedBox.shrink();
-    final anchor = validatedAt.add(const Duration(hours: 24));
+    // Délai de correction réglé par le club (24 h par défaut).
+    final anchor = validatedAt.add(ClubRules.correctionWindow);
 
     if (!sportsEnabled) return _actions(context, anchor);
 
