@@ -1,6 +1,6 @@
 # Données personnelles et conservation
 
-Ce document décrit le comportement technique actuel de AS Grinta. Il ne remplace pas les obligations juridiques du responsable du club.
+Ce document décrit le comportement technique actuel de l’application. Il ne remplace pas les obligations juridiques du club (responsable du traitement) ni de l’éditeur (sous-traitant) : voir `docs/legal/README.md`.
 
 ## Données rattachées à un compte
 
@@ -20,9 +20,9 @@ Les mots de passe ne sont pas stockés dans les tables applicatives. L’authent
 
 ## Consultation, correction et demandes personnelles
 
-L’application ne propose actuellement **aucune RPC d’export personnel automatique**. L’ancien `export_my_personal_data()` a été retiré de la surface publique.
+Depuis son profil (section « Mes données »), chaque membre peut télécharger ses données (`public.export_my_data()`, fichier JSON sans les secrets de notification) et supprimer son compte (fonction `manage-user`).
 
-L’application ne contient plus de page **Données personnelles** : elle n’était accessible depuis aucun écran et a été retirée. Un membre qui souhaite consulter, corriger ou faire supprimer une donnée le concernant s’adresse donc directement à un administrateur du club. Une demande doit être traitée en vérifiant séparément les données de compte et les faits sportifs historiques.
+Pour une correction ou une anonymisation des faits sportifs historiques, le membre s’adresse à un administrateur du club ou à l’éditeur. Une demande doit être traitée en vérifiant séparément les données de compte et les faits sportifs historiques.
 
 ## Suppression d’un compte
 

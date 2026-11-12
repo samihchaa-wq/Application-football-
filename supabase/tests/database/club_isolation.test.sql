@@ -233,6 +233,7 @@ select is(
         'create_club(text,text,text,text,text,uuid)',
         'club_for_invite_code(text)',
         'promote_club_founder(uuid,uuid)',
+        'found_club(uuid,uuid,text)',
         'discard_empty_club(uuid)',
         'consume_email_rate_limit(text,text)',
         'request_contact_email(uuid,text,text)',
