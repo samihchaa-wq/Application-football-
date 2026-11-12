@@ -4,6 +4,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2.95.0";
 import { parseConsent } from "./consent.ts";
+import { usernameCandidates } from "./username_candidates.ts";
 
 const INVITE_CODE_PATTERN = /^[A-Z2-9]{8}$/;
 const MAX_BODY_BYTES = 4_096;
@@ -249,10 +250,9 @@ Deno.serve(async (req: Request) => {
       club = { id: match.id, name: match.name };
     }
 
-    const base = `${normalizedFirst}${normalizedInitial}`.slice(0, 27);
+    const base = `${normalizedFirst}${normalizedInitial}`;
     let username = "";
-    for (let suffix = 1; suffix <= 20; suffix++) {
-      const candidate = suffix === 1 ? base : `${base}${suffix}`;
+    for (const candidate of usernameCandidates(base)) {
       const { data: existing, error: existsError } = await admin
         .from("profiles")
         .select("id")
