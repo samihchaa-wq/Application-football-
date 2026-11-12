@@ -2,6 +2,9 @@ import 'dart:async';
 import 'dart:js_interop';
 import 'dart:ui_web' as ui_web;
 
+import 'package:as_grinta/core/theme/app_theme.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/stadium_club_colors_web.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/stadium_poster.dart';
 import 'package:flutter/widgets.dart';
 import 'package:web/web.dart' as web;
 
@@ -20,6 +23,11 @@ import 'package:web/web.dart' as web;
 ///
 /// Tant qu'elle ne joue pas, c'est l'image fixe du stade qu'on voit, jamais un
 /// rectangle noir. [StadiumVideo.onStatus] dit ce qui s'est passé.
+///
+/// Le stade est repeint aux couleurs du club ([StadiumRecolor]) : la vidéo
+/// d'origine reste la source, mais c'est sa copie repeinte qu'on voit. Sans
+/// repeinte possible, la vidéo et l'image fixe sont montrées atténuées, sans
+/// les couleurs d'un autre club.
 class StadiumVideo extends StatefulWidget {
   const StadiumVideo({
     super.key,
@@ -92,7 +100,9 @@ web.HTMLVideoElement _newVideoElement() {
     ..height = '100%'
     ..objectFit = 'cover'
     ..pointerEvents = 'none'
-    ..backgroundColor = 'transparent';
+    ..backgroundColor = 'transparent'
+    // Atténuée : on ne la voit qu'en secours, sous la toile repeinte.
+    ..filter = 'saturate($kNeutralStadiumSaturation)';
   return video;
 }
 
@@ -101,6 +111,12 @@ class _StadiumVideoState extends State<StadiumVideo> {
 
   final String _viewType = 'as-grinta-stade-${_views++}';
   late final web.HTMLVideoElement _video;
+  late final web.HTMLDivElement _frame;
+  StadiumRecolor? _recolor;
+  final web.HTMLImageElement _posterImage = web.HTMLImageElement();
+  bool _posterDrawn = false;
+  double _drawnAt = -1;
+  int? _animationFrame;
   final _subscriptions = <StreamSubscription<web.Event>>[];
   final Stopwatch _clock = Stopwatch()..start();
   Timer? _giveUp;
@@ -119,7 +135,30 @@ class _StadiumVideoState extends State<StadiumVideo> {
     _video = _primed ?? _newVideoElement();
     final unlocked = _primed != null;
     _primed = null;
-    _video.poster = ui_web.assetManager.getAssetUrl(widget.poster);
+    // Pas d'image fixe dans la balise : elle montrerait les couleurs
+    // d'origine. L'image fixe atténuée est dessous, côté Flutter, et sa copie
+    // repeinte est dessinée sur la toile dès qu'elle est chargée.
+    _video.removeAttribute('poster');
+    _frame = web.HTMLDivElement();
+    _frame.style
+      ..position = 'relative'
+      ..width = '100%'
+      ..height = '100%'
+      ..pointerEvents = 'none';
+    _frame.append(_video);
+    _recolor = StadiumRecolor.create(
+      primary: AppTheme.primary,
+      secondary: AppTheme.accent,
+    );
+    final recolor = _recolor;
+    if (recolor != null) {
+      _frame.append(recolor.canvas);
+      _posterImage.src = ui_web.assetManager.getAssetUrl(widget.poster);
+      _animationFrame = web.window.requestAnimationFrame(_paint.toJS);
+      _log('repeinte aux couleurs du club');
+    } else {
+      _log('repeinte impossible, vidéo atténuée');
+    }
     _subscriptions
       ..add(_video.onCanPlay.listen((_) {
         // Arrivée en retard : elle se recale sur la présentation.
@@ -145,7 +184,7 @@ class _StadiumVideoState extends State<StadiumVideo> {
       }));
     ui_web.platformViewRegistry.registerViewFactory(
       _viewType,
-      (int _) => _video,
+      (int _) => _frame,
     );
     _log(unlocked ? 'débloquée par l’appui' : 'sans appui préalable');
     unawaited(_loadSource());
@@ -154,6 +193,39 @@ class _StadiumVideoState extends State<StadiumVideo> {
       _status();
       _report();
     });
+  }
+
+  /// Redessine la toile à chaque nouvelle image de la vidéo, ou l'image fixe
+  /// tant que la vidéo n'a rien montré.
+  void _paint(double _) {
+    final recolor = _recolor;
+    if (!mounted || recolor == null) return;
+    final videoShown = _video.readyState >= 2 &&
+        _video.videoWidth > 0 &&
+        (_played || _video.currentTime > 0);
+    var ok = true;
+    if (videoShown) {
+      if (_video.currentTime != _drawnAt) {
+        _drawnAt = _video.currentTime;
+        ok = recolor.draw(_video, _video.videoWidth, _video.videoHeight);
+      }
+    } else if (!_posterDrawn &&
+        _posterImage.complete &&
+        _posterImage.naturalWidth > 0) {
+      ok = _posterDrawn = recolor.draw(
+        _posterImage,
+        _posterImage.naturalWidth,
+        _posterImage.naturalHeight,
+      );
+    }
+    if (!ok) {
+      // La toile a échoué en route : on la retire, la vidéo atténuée reste.
+      recolor.canvas.remove();
+      _recolor = null;
+      _log('repeinte interrompue, vidéo atténuée');
+      return;
+    }
+    _animationFrame = web.window.requestAnimationFrame(_paint.toJS);
   }
 
   void _log(String event) {
@@ -278,6 +350,11 @@ class _StadiumVideoState extends State<StadiumVideo> {
   @override
   void dispose() {
     _giveUp?.cancel();
+    final animationFrame = _animationFrame;
+    if (animationFrame != null) {
+      web.window.cancelAnimationFrame(animationFrame);
+    }
+    _recolor = null;
     for (final subscription in _subscriptions) {
       unawaited(subscription.cancel());
     }
@@ -295,7 +372,7 @@ class _StadiumVideoState extends State<StadiumVideo> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        Image.asset(widget.poster, fit: BoxFit.cover, gaplessPlayback: true),
+        NeutralStadiumPoster(asset: widget.poster),
         HtmlElementView(
           viewType: _viewType,
           onPlatformViewCreated: _onAttached,

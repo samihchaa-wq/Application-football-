@@ -14,7 +14,7 @@ import {
   sendMail,
   sha256Hex,
 } from "./account_email.ts";
-import { parseConsent } from "./consent.ts";
+import { parseClubContractVersion, parseConsent } from "./consent.ts";
 import { isDuplicateError, reserveUsername } from "./username.ts";
 import { validatePassword } from "./password_policy.ts";
 
@@ -167,7 +167,17 @@ Deno.serve(async (req: Request) => {
     return jsonResponse(
       {
         error:
-          "Accepte les conditions d’utilisation et indique ton âge pour créer ton compte.",
+          "Accepte les conditions d’utilisation et indique ton âge pour créer ton compte. Si la page est ancienne, recharge-la.",
+      },
+      400,
+    );
+  }
+  const clubContractVersion = parseClubContractVersion(body);
+  if (mode === "create" && !clubContractVersion) {
+    return jsonResponse(
+      {
+        error:
+          "Pour créer le club, accepte les conditions d’abonnement et l’accord sur les données. Si la page est ancienne, recharge-la.",
       },
       400,
     );
@@ -311,9 +321,14 @@ Deno.serve(async (req: Request) => {
     if (updateError) throw updateError;
 
     if (mode === "create") {
-      const { error: founderError } = await scoped.rpc("promote_club_founder", {
+      // Promotion du créateur et preuve d'acceptation du contrat du club, en
+      // une seule transaction (public.found_club) : si la preuve ne peut pas
+      // être enregistrée, rien n'est fait, et le club vide est supprimé
+      // plus bas par discard_empty_club.
+      const { error: founderError } = await scoped.rpc("found_club", {
         p_club_id: club.id,
         p_profile_id: newUserId,
+        p_contract_version: clubContractVersion,
       });
       if (founderError) throw founderError;
     }

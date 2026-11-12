@@ -42,6 +42,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
   bool _obscurePassword = true;
   bool _submitting = false;
   bool _acceptedTerms = false;
+  bool _acceptedClubContract = false;
   AgeConfirmation? _ageConfirmation;
   RegisterMode _mode = RegisterMode.join;
 
@@ -131,6 +132,13 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
       );
       return;
     }
+    if (_mode == RegisterMode.create && !_acceptedClubContract) {
+      _showError(
+        'Pour créer le club, confirme que tu peux l’engager et accepte les '
+        'conditions d’abonnement et l’accord sur les données.',
+      );
+      return;
+    }
 
     setState(() => _submitting = true);
     try {
@@ -143,6 +151,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
               lastName: lastName,
               password: password,
               acceptedTermsVersion: legalVersion,
+              acceptedClubContractVersion: clubContractVersion,
               ageConfirmation: ageConfirmation,
               email: email,
             )
@@ -386,6 +395,10 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
             enabled: !_submitting,
             onAgeChanged: (value) => setState(() => _ageConfirmation = value),
             onTermsChanged: (value) => setState(() => _acceptedTerms = value),
+            showClubContract: _mode == RegisterMode.create,
+            acceptedClubContract: _acceptedClubContract,
+            onClubContractChanged: (value) =>
+                setState(() => _acceptedClubContract = value),
           ),
           const SizedBox(height: 24),
           FilledButton.icon(

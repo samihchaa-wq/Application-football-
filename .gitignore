@@ -28,3 +28,7 @@ cookies.txt
 # État local de la CLI Supabase : ne jamais le versionner
 supabase/.temp/
 supabase/.branches/
+
+# Python
+__pycache__/
+*.pyc
