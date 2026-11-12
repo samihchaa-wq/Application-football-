@@ -287,6 +287,29 @@ class ClubRepository {
     return Club.fromJson(Map<String, dynamic>.from(result));
   }
 
+  /// Terrain à domicile du club connecté, sans accès aux autres clubs (RLS).
+  Future<String?> fetchHomeAddress() async {
+    final row = await _client
+        .from('club_settings')
+        .select('home_address')
+        .maybeSingle();
+    final address = row?['home_address']?.toString().trim();
+    return address == null || address.isEmpty ? null : address;
+  }
+
+  /// Enregistre ou efface le terrain par défaut du club. Admin uniquement ;
+  /// le RPC vérifie le rôle et contraint l'écriture au club courant.
+  Future<String?> updateHomeAddress(String? address) async {
+    final result = await _client.rpc(
+      'admin_set_club_home_address',
+      params: {'p_address': address},
+    );
+    if (result != null && result is! String) {
+      throw StateError('L’adresse du terrain n’a pas pu être enregistrée.');
+    }
+    return result as String?;
+  }
+
   /// Les fonctionnalités activées pour le club du compte connecté.
   Future<ClubModules> fetchModules() async {
     return ClubModules.fromJson(await _client.rpc('get_club_modules'));
