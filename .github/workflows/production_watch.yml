@@ -35,6 +35,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Un copier-coller depuis un téléphone ajoute souvent un retour à la
+          # ligne invisible à la fin du secret : on retire tout blanc.
+          DB_URL="$(printf '%s' "$DB_URL" | tr -d '[:space:]')"
           sudo apt-get install -y -qq postgresql-client >/dev/null 2>&1 || true
           report=$(psql "$DB_URL" -At -F ' | ' -v ON_ERROR_STOP=1 <<'SQL'
           select 'tâches en échec (1 h)', count(*) from cron.job_run_details

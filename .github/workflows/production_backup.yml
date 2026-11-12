@@ -56,6 +56,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Retire un éventuel retour à la ligne invisible collé avec le secret.
+          DB_URL="$(printf '%s' "$DB_URL" | tr -d '[:space:]')"
           stamp=$(date -u +%Y-%m-%d)
           supabase db dump --db-url "$DB_URL" -f "roles.sql" --role-only
           supabase db dump --db-url "$DB_URL" -f "schema.sql"
