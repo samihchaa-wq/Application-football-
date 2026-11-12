@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:as_grinta/core/config/app_config.dart';
 import 'package:as_grinta/core/providers/supabase_provider.dart';
 import 'package:as_grinta/core/security/password_policy.dart';
+import 'package:as_grinta/core/storage/account_local_data.dart';
 import 'package:as_grinta/core/storage/image_mime.dart';
 import 'package:as_grinta/core/storage/profile_photo_urls.dart';
 import 'package:as_grinta/core/utils/app_errors.dart';
@@ -226,6 +227,8 @@ class AuthRepository {
     // Les URLs signées des photos appartiennent au compte qui se déconnecte :
     // elles ne doivent pas survivre à la session suivante.
     await ProfilePhotoUrlCache.instance.clear();
+    // Calendrier, historique et événements gardés pour ce compte.
+    await AccountLocalData.clear();
     await _client.auth.signOut();
   }
 
