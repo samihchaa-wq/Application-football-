@@ -1,0 +1,79 @@
+name: "Supabase commercial : mise en route"
+
+# Lancement manuel uniquement (onglet Actions > ce workflow > Run workflow).
+# Cible la SEULE base commerciale ; refuse AS Grinta et Carte soirée.
+# Prérequis : secret GitHub SUPABASE_ACCESS_TOKEN (Supabase > Account >
+# Access Tokens).
+on:
+  workflow_dispatch:
+    inputs:
+      migrations:
+        description: 'Appliquer les migrations en attente'
+        type: boolean
+        default: true
+      vault:
+        description: 'Créer les secrets manquants du coffre (notifications)'
+        type: boolean
+        default: true
+      functions:
+        description: 'Déployer les fonctions serveur et leurs réglages'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: commercial-supabase-setup
+  cancel-in-progress: false
+
+env:
+  SUPABASE_PROJECT_REF: jvxkhgdopslctpcjrhzw
+  SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Refuse any personal project
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SUPABASE_PROJECT_REF" = jvxkhgdopslctpcjrhzw
+          test -n "$SUPABASE_ACCESS_TOKEN" || {
+            echo '::error::Ajouter le secret GitHub SUPABASE_ACCESS_TOKEN.'
+            exit 1
+          }
+          python3 tool/check_commercial_deploy.py
+
+      - name: Apply pending migrations
+        if: inputs.migrations
+        run: python3 tool/commercial_supabase_setup.py migrations
+
+      - name: Create missing vault secrets
+        if: inputs.vault
+        run: |
+          python3 -m pip install --quiet 'cryptography==44.0.0'
+          python3 tool/commercial_supabase_setup.py vault
+
+      - name: Setup Supabase CLI
+        if: inputs.functions
+        uses: supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf # v2
+        with:
+          version: 2.111.0
+
+      - name: Deploy Edge Functions and their settings
+        if: inputs.functions
+        shell: bash
+        run: |
+          set -euo pipefail
+          app_url=$(jq -r .PUBLIC_APP_URL config/production.json)
+          domain=$(jq -r .USERNAME_DOMAIN config/production.json)
+          supabase secrets set --project-ref "$SUPABASE_PROJECT_REF" \
+            "PUBLIC_APP_URL=$app_url" "USERNAME_DOMAIN=$domain"
+          supabase functions deploy --project-ref "$SUPABASE_PROJECT_REF" --use-api
+          supabase functions list --project-ref "$SUPABASE_PROJECT_REF"

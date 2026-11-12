@@ -45,10 +45,13 @@ mettre à jour à chaque étape importante.
 ## Reste à faire, par priorité
 
 ### Bloquant pour un club test
-1. Déployer les Edge Functions sur la base commerciale et déclarer leurs
-   secrets (voir `docs/exploitation.md`, « Mise en route »).
-2. Générer des clés VAPID propres à l'appli commerciale, les mettre dans
-   Vault (`push_vapid_public`, `push_vapid_private`) avec `push_internal_token`.
+1-2. Fonctions serveur, secrets du coffre (`project_url`,
+   `push_internal_token`, clés VAPID générées automatiquement) et migrations
+   en attente : workflow GitHub **« Supabase commercial : mise en route »**
+   (`.github/workflows/commercial_supabase_setup.yml`, lancement manuel).
+   Prérequis côté Samih : secret GitHub `SUPABASE_ACCESS_TOKEN` (Supabase >
+   Account > Access Tokens). Les assistants ne peuvent pas écrire de secret
+   eux-mêmes. Le workflow refuse tout autre projet que la base commerciale.
 3. Réglages Auth dans Supabase (action de Samih dans le tableau de bord) :
    URL du site `https://samihchaa-wq.github.io/Application-football-/`, URLs
    de redirection, service d'envoi d'e-mails.
