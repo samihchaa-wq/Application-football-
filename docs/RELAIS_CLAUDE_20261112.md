@@ -32,7 +32,7 @@ Merci de reprendre la suite du chantier **Lucarne**, version commerciale et mult
 - [#47](https://github.com/samihchaa-wq/Application-football-/pull/47) : **fusion M00 à 14 h 18 Paris**, commit de merge-squash `a80ac7d25e379a8a06dbbffa23c269f85ba5f9d1`, après cinq contrôles verts sur la version exacte : modules désactivés, notifications, frontières d'effectif. Ce n'est **pas** une preuve de recette réelle multiclub distante.
 - [#48](https://github.com/samihchaa-wq/Application-football-/pull/48) : trois modes de liste d'attente, saisie des matchs historiques.
 - [#49](https://github.com/samihchaa-wq/Application-football-/pull/49) : textes juridiques et consentement du club, à personnaliser et faire relire.
-- [#51](https://github.com/samihchaa-wq/Application-football-/pull/51) : nom Lucarne et couleurs du stade. Les PR #23 et antérieures ont aussi été intégrées.
+- [#51](https://github.com/samihchaa-wq/Application-football-/pull/51) : nom Lucarne et couleurs du stade.\n- [#52](https://github.com/samihchaa-wq/Application-football-/pull/52) : logo Lucarne et licence Oswald, fusion M00 après CI verte. Les PR #23 et antérieures ont aussi été intégrées.
 - **Aucune publication ni migration distante causée par la fusion #47.**
 
 ## 4. PR ouvertes — travail immédiat
@@ -46,11 +46,10 @@ Merci de reprendre la suite du chantier **Lucarne**, version commerciale et mult
 - **Risques à tester :** transition compte A → B sans maillots A visibles, échec réseau, administrateur de club suspendu, vote renommé et notifications positives/négatives par club ; calendrier iCalendar conservant les UID (report, annulation, ancien abonné), exécution Edge sans secret réel.
 - La PR #50 peut comporter des migrations à horodatage **antérieur** aux SQL déjà présents sur main ; vérifier et réordonner en fonction de l'état du registre, sans réécrire les migrations appliquées.
 
-### [#52 — logo/icônes Lucarne](https://github.com/samihchaa-wq/Application-football-/pull/52)
-- **Statut contrôlé : ouverte et `mergeable=true` après #47.** Dernier HEAD après correction documentaire : `50644c068e0eef5874a086e08f8fadf1b3a30fd8`. CI Flutter était encore en cours au dernier contrôle ; ne pas fusionner avant verdict.
-- **Correction M00 déjà commitée** dans `claude/project-thread-2ha3zk` : ajout du fichier `docs/branding/lucarne/OFL-Oswald.txt` (licence officielle du dépôt Google Fonts, copyright Oswald Project Authors 2016) et ajout de la notice de provenance/redistribution dans `docs/branding/lucarne/README.md`.
-- Avant fusion : vérifier les contrôles du HEAD exact, la licence, l'origine du logo fourni par le propriétaire, et noter que les tests PWA réels (mise à jour d'application installée, icônes, cache, Android/iOS) **ne sont pas réalisés**. La disponibilité du nom « Lucarne » comme marque n'est pas vérifiée.
-- Cette correction documentaire ne change pas les logos ni les binaires de police ; elle ne vaut pas avis juridique complet.
+### [#52 — logo/icônes Lucarne : FUSIONNÉE le 12/11 vers 16 h 10](https://github.com/samihchaa-wq/Application-football-/pull/52)
+- **État vérifié : fusion squash dans `main` à `a77dfb6cd3cd7d62ec51cfdcf7a3b14471563665`.** Les trois checks `Flutter CI`, `Runtime diagnostic` et `Web release shell contract` ont tous terminé avec `success` sur le HEAD exact `50644c068e0eef5874a086e08f8fadf1b3a30fd8`.
+- **Correction M00 intégrée** : ajout de `docs/branding/lucarne/OFL-Oswald.txt` (licence officielle de Google Fonts, copyright Oswald Project Authors 2016) et de la notice de provenance/redistribution dans `docs/branding/lucarne/README.md`.
+- **Toujours non validé** : disponibilité « Lucarne » en tant que marque, contrôle juridique de l'origine du logo et tests PWA réels (mise à jour d'application installée, icônes, cache, Android/iOS). Cette fusion de code **ne publie pas le site** et ne déclenche aucune migration distante.
 
 ### Autres PR
 - [#40](https://github.com/samihchaa-wq/Application-football-/pull/40) : terrain à domicile, brouillon ; migration `20261112060000` maintenant antérieure aux `130000`/`200000`/`210000` de main. **Ne pas fusionner en l'état** ; recaler horodatage après contrôle des SQL déjà appliqués et reprendre main. Consigne [GitHub](https://github.com/samihchaa-wq/Application-football-/pull/40#issuecomment-6827320907).
@@ -80,7 +79,7 @@ Merci de reprendre la suite du chantier **Lucarne**, version commerciale et mult
 
 **P0 sécurité et fiabilité** : vérifier registre des migrations et absence de fuite interclubs ; ne pas exécuter d'anciens SQL destructifs ; résoudre les risques de RPC/admin/backup.
 
-**P1 intégration produit** : reprendre #50 sur main après #47, résoudre les conflits et CI, corriger si nécessaire les cas A→B ; finir la revue #52 et fusionner seulement si les contrôles actuels sont au vert ; préparer #40 puis #43 dans le bon ordre.
+**P1 intégration produit** : reprendre #50 sur main après #47 **et #52**, résoudre les conflits et CI, corriger si nécessaire les cas A→B ; pour #52 déjà fusionnée, prévoir les essais PWA Android/iOS avant mise en ligne ; préparer #40 puis #43 dans le bon ordre.
 
 **P2 lancement** : essais pilotes A/B, configuration Auth, documents juridiques, hébergeur de vente, paiement, support, contrôle du cache PWA et notifications Android/iOS.
 
