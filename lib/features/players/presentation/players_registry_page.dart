@@ -802,8 +802,6 @@ class RosterPlayerMenu extends ConsumerWidget {
   }
 }
 
-
-
 /// Expose les actions d'origine depuis l'Administration reprise d'AS Grinta.
 /// Elles réutilisent les mêmes dialogues et contrôles du dépôt commercial.
 Future<void> showRosterPlayerDialog(
@@ -811,7 +809,8 @@ Future<void> showRosterPlayerDialog(
   WidgetRef ref, {
   required String seasonId,
   RosterPlayer? existing,
-}) => _showPlayerDialog(
+}) =>
+    _showPlayerDialog(
       context,
       ref,
       seasonId: seasonId,
@@ -823,10 +822,10 @@ Future<void> chooseRosterPhoto(
   WidgetRef ref, {
   required String seasonId,
   required RosterPlayer player,
-}) => _chooseRosterPhoto(
+}) =>
+    _chooseRosterPhoto(
       context,
       ref,
       seasonId: seasonId,
       player: player,
     );
-
