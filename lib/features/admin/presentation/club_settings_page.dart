@@ -148,7 +148,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   Future<void> _saveHomeAddress() async {
     final address = _homeAddressController.text.trim();
     if (address.length > 200 || address.contains(RegExp(r'[\r\n\t]'))) {
-      _showMessage('L’adresse doit tenir sur une ligne (200 caractères maximum).');
+      _showMessage(
+          'L’adresse doit tenir sur une ligne (200 caractères maximum).');
       return;
     }
     setState(() => _savingHomeAddress = true);
@@ -162,7 +163,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           ? 'Adresse du terrain effacée.'
           : 'Adresse du terrain enregistrée.');
     } catch (_) {
-      if (mounted) _showMessage('L’adresse du terrain n’a pas pu être enregistrée.');
+      if (mounted)
+        _showMessage('L’adresse du terrain n’a pas pu être enregistrée.');
     } finally {
       if (mounted) setState(() => _savingHomeAddress = false);
     }
@@ -520,7 +522,9 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           child: FilledButton(
             key: const Key('club-settings-save-home-address'),
             onPressed: _savingHomeAddress ? null : _saveHomeAddress,
-            child: Text(_savingHomeAddress ? 'Enregistrement…' : 'Enregistrer l’adresse'),
+            child: Text(_savingHomeAddress
+                ? 'Enregistrement…'
+                : 'Enregistrer l’adresse'),
           ),
         ),
         const SizedBox(height: 28),
