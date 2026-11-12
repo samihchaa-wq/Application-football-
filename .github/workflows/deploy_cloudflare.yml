@@ -5,7 +5,9 @@ name: Publier l'appli commerciale sur Cloudflare Pages
 # « Publier l'appli commerciale sur Cloudflare Pages » > Run workflow.
 #
 # Prérequis (une seule fois, voir docs/MISE_EN_LIGNE.md) :
-# - secrets  CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
+# - secret   CLOUDFLARE_API_TOKEN (droit « Cloudflare Pages : Modifier »)
+# - l'ID du compte Cloudflare (non secret) est inscrit ci-dessous par défaut ;
+#   le secret ou la variable CLOUDFLARE_ACCOUNT_ID le remplace si besoin.
 # - variables facultatives : CLOUDFLARE_PAGES_PROJECT (défaut : lucarne) et
 #   COMMERCIAL_APP_URL (défaut : l'adresse *.pages.dev que Cloudflare attribue
 #   au projet ; à renseigner avec le domaine propre une fois relié).
@@ -41,7 +43,7 @@ jobs:
       - name: Vérifier les réglages Cloudflare
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID || '3eac3b573d991d43901ec78c94c3dd53' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -68,7 +70,7 @@ jobs:
       - name: Préparer le projet Cloudflare Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID || '3eac3b573d991d43901ec78c94c3dd53' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -220,7 +222,7 @@ jobs:
       - name: Publier sur Cloudflare Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID || '3eac3b573d991d43901ec78c94c3dd53' }}
         shell: bash
         run: |
           set -euo pipefail

@@ -47,7 +47,9 @@ dossier juridique).
 3. GitHub > dépôt Application-football- > Settings > Secrets and variables >
    Actions :
    - Onglet **Secrets** > New repository secret :
-     `CLOUDFLARE_API_TOKEN` = le jeton ; `CLOUDFLARE_ACCOUNT_ID` = l'ID de compte.
+     `CLOUDFLARE_API_TOKEN` = le jeton. L'ID de compte Cloudflare actuel est
+     déjà inscrit dans le workflow ; `CLOUDFLARE_ACCOUNT_ID` n'est utile que
+     pour changer de compte.
    - Aucune variable à créer à ce stade : le projet s'appelle `lucarne` par
      défaut et l'adresse `*.pages.dev` attribuée par Cloudflare est lue
      automatiquement (variables facultatives `CLOUDFLARE_PAGES_PROJECT` et
