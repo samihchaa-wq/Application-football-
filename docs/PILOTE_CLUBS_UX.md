@@ -7,11 +7,11 @@
 
 ## 0. Sources examinées et constat vérifié
 
-- Dépôt commercial \`samihchaa-wq/Application-football-\`, branche \`main\` ; \`docs/HANDOFF.md\`, \`docs/COMMERCIAL_LAUNCH_CHECKLIST.md\`, \`README.md\`, \`AGENTS.md\`.
-- Audit fonctionnel du fil 1 : **PR #25 ouverte** au moment du constat, \`docs/AUDIT_FONCTIONNALITES.md\` consulté sur \`claude/project-thread-isgvly\` (pas encore dans \`main\`). **Ne pas substituer ce document à l'audit du fil 1.**
+- Dépôt commercial `samihchaa-wq/Application-football-`, branche `main` ; `docs/HANDOFF.md`, `docs/COMMERCIAL_LAUNCH_CHECKLIST.md`, `README.md`, `AGENTS.md`.
+- Audit fonctionnel du fil 1 : **PR #25 ouverte** au moment du constat, `docs/AUDIT_FONCTIONNALITES.md` consulté sur `claude/project-thread-isgvly` (pas encore dans `main`). **Ne pas substituer ce document à l'audit du fil 1.**
 - Publication d'essai à deux clubs fictifs : **PR #24 ouverte** (pas fusionnée), donc ne pas considérer GitHub Pages comme publiquement utilisable du seul fait du code de la PR.
-- Lecture de code : \`lib/features/auth/presentation/auth_register_page.dart\`, \`choose_club_page.dart\`, \`auth_sign_in_page.dart\`, \`lib/app/router/auth_redirect.dart\`, \`lib/features/admin/presentation/admin_page.dart\`, \`admin_season_section.dart\`, \`club_settings_page.dart\`, \`lib/features/matches/presentation/calendar_entry_form_page.dart\`, \`match_form_page.dart\`, \`lib/features/club/data/club_repository.dart\`.
-- Supabase **commercial uniquement** (\`jvxkhgdopslctpcjrhzw\`) : lecture de la structure et requêtes \`SELECT\` agrégées. Le 12/11/2026 : **0 club, 0 profil, 0 saison, 0 joueur, 0 match, 0 abonnement** ; les tables publiques observées ont RLS activée. Dernière migration enregistrée : \`20261112050000\`. **8 Edge Functions au statut ACTIVE**, dont \`register-account\`, \`claim-club\`, \`claim-account\`, \`send-push\`. \`ACTIVE\` ne prouve ni la configuration Auth/SMTP/VAPID ni le fonctionnement bout en bout.
+- Lecture de code : `lib/features/auth/presentation/auth_register_page.dart`, `choose_club_page.dart`, `auth_sign_in_page.dart`, `lib/app/router/auth_redirect.dart`, `lib/features/admin/presentation/admin_page.dart`, `admin_season_section.dart`, `club_settings_page.dart`, `lib/features/matches/presentation/calendar_entry_form_page.dart`, `match_form_page.dart`, `lib/features/club/data/club_repository.dart`.
+- Supabase **commercial uniquement** (`jvxkhgdopslctpcjrhzw`) : lecture de la structure et requêtes `SELECT` agrégées. Le 12/11/2026 : **0 club, 0 profil, 0 saison, 0 joueur, 0 match, 0 abonnement** ; les tables publiques observées ont RLS activée. Dernière migration enregistrée : `20261112050000`. **8 Edge Functions au statut ACTIVE**, dont `register-account`, `claim-club`, `claim-account`, `send-push`. `ACTIVE` ne prouve ni la configuration Auth/SMTP/VAPID ni le fonctionnement bout en bout.
 - **Aucune création de compte, aucun envoi d'e-mail ou de notification, aucun test de navigation réelle, aucune modification SQL, aucune mesure UX réelle.** Les validations techniques restent aux fils 3 et 4.
 
 ## 1. Choix recommandé pour la phase pilote
@@ -49,21 +49,21 @@ Aucune porte n'est réputée franchie à la rédaction du présent plan.
 
 | N° | Action attendue côté administrateur ou joueur | Éléments déjà repérés dans le code | Risque UX / question d'observation |
 | --- | --- | --- | --- |
-| 01 | Découvrir l'URL commerciale et comprendre l'offre | Page de connexion \`/auth/sign-in\` avec lien « Créer mon compte » | Comprend-on qu'on peut **créer un club**, pas seulement rejoindre un club ? Lien légal et identité commerciale clairs ? |
-| 02 | Choisir « Créer un club » | \`/auth/register\` : onglets « Rejoindre un club » / « Créer un club » | L'onglet par défaut ou le vocabulaire créent-ils une hésitation ? |
-| 03 | Renseigner nom, nom court, prénom, nom, mot de passe et consentements ; e-mail facultatif | \`auth_register_page.dart\` ; validation de code d'invitation pour un membre | Longueur perçue, erreurs, accessibilité ; récupération du compte si e-mail absent |
-| 04 | Lire, conserver son identifiant, puis se connecter | Boîte de dialogue après création ; retour \`/auth/sign-in\` ; identifiant + mot de passe | L'identifiant est-il compris/conservé ? Reconnexion sur un deuxième téléphone ? |
+| 01 | Découvrir l'URL commerciale et comprendre l'offre | Page de connexion `/auth/sign-in` avec lien « Créer mon compte » | Comprend-on qu'on peut **créer un club**, pas seulement rejoindre un club ? Lien légal et identité commerciale clairs ? |
+| 02 | Choisir « Créer un club » | `/auth/register` : onglets « Rejoindre un club » / « Créer un club » | L'onglet par défaut ou le vocabulaire créent-ils une hésitation ? |
+| 03 | Renseigner nom, nom court, prénom, nom, mot de passe et consentements ; e-mail facultatif | `auth_register_page.dart` ; validation de code d'invitation pour un membre | Longueur perçue, erreurs, accessibilité ; récupération du compte si e-mail absent |
+| 04 | Lire, conserver son identifiant, puis se connecter | Boîte de dialogue après création ; retour `/auth/sign-in` ; identifiant + mot de passe | L'identifiant est-il compris/conservé ? Reconnexion sur un deuxième téléphone ? |
 | 05 | Arriver sur un club **vide** | Club créé et créateur admin ; pas de contenu AS Grinta dans la base | L'absence de matchs, joueurs et stats est-elle bien expliquée ? Y a-t-il un « premier pas » clair ? |
-| 06 | Personnaliser identité et modules | \`/admin/club\` : nom, logo, couleurs, code/lien, modules, règles | Découvre-t-on les réglages ? Comprend-on les paramètres sans jargon ? |
+| 06 | Personnaliser identité et modules | `/admin/club` : nom, logo, couleurs, code/lien, modules, règles | Découvre-t-on les réglages ? Comprend-on les paramètres sans jargon ? |
 | 07 | Créer la saison | Administration → onglet Saison → « Créer une saison » | Où trouver ce bouton ? La valeur proposée de saison est-elle pertinente ? |
 | 08 | Créer/compléter l'effectif et inviter les joueurs | Administration → Membres/Effectif ; bouton « Lien d'inscription » ; code de 8 caractères | Ordre « créer saison » / « inviter » compris ? Lien ouvert correctement dans les messageries ? |
 | 09 | Faire accepter les comptes | Joueur s'inscrit avec code ; état « en attente » ; onglet Admin → En attente | Admin voit-il l'attente ? Joueur comprend-il qui doit valider et quoi faire ? |
-| 10 | Programmer le premier match | \`CalendarEntryFormPage\` : saison ouverte requise, adversaire, date, heure, lieu, convocations ; type championnat/amical/entre nous | L'adversaire doit être créé ; cotes calculées ; champs et options peuvent sembler nombreux pour un premier match |
-| 11 | Consulter et rejoindre la rencontre | Calendrier \`/matches\` et fiche match ; disponibilité et modules activés | Le match est-il immédiatement visible ? Sait-on où répondre à sa disponibilité ? |
-| 12 | Recevoir informations et rappels | Notifications, préférences personnelles, agenda \`.ics\` | PWA installée ? Autorisations Android/iOS ? En cas de push absent, autre moyen fiable de consulter ? |
+| 10 | Programmer le premier match | `CalendarEntryFormPage` : saison ouverte requise, adversaire, date, heure, lieu, convocations ; type championnat/amical/entre nous | L'adversaire doit être créé ; cotes calculées ; champs et options peuvent sembler nombreux pour un premier match |
+| 11 | Consulter et rejoindre la rencontre | Calendrier `/matches` et fiche match ; disponibilité et modules activés | Le match est-il immédiatement visible ? Sait-on où répondre à sa disponibilité ? |
+| 12 | Recevoir informations et rappels | Notifications, préférences personnelles, agenda `.ics` | PWA installée ? Autorisations Android/iOS ? En cas de push absent, autre moyen fiable de consulter ? |
 | 13 | Après la rencontre : renseigner et valider | Modules Live / compte rendu / statistiques selon activation | L'admin comprend-il comment clôturer le match sans assistance ? |
 
-**Deux parcours alternatifs à tester :** inscription via lien direct avec code prérempli ; authentification Facebook puis écran \`/auth/choose-club\` pour rattacher un compte sans club (**uniquement si le fournisseur OAuth est réellement configuré**). Ne pas laisser le bouton Facebook visible au pilote si l'authentification correspondante n'est pas opérationnelle sans message adapté.
+**Deux parcours alternatifs à tester :** inscription via lien direct avec code prérempli ; authentification Facebook puis écran `/auth/choose-club` pour rattacher un compte sans club (**uniquement si le fournisseur OAuth est réellement configuré**). Ne pas laisser le bouton Facebook visible au pilote si l'authentification correspondante n'est pas opérationnelle sans message adapté.
 
 ### 2.1 Frictions prioritaires à faire remonter aux autres fils
 
@@ -194,7 +194,7 @@ Avec **3 clubs, les pourcentages sont très incertains**. Les chiffres orientent
 
 ## 7. Rapport de validation avant commercialisation (trame obligatoire)
 
-### Rapport — \`PILOT-REVIEW-AAAA-MM-JJ\`
+### Rapport — `PILOT-REVIEW-AAAA-MM-JJ`
 
 - **Version/commit GitHub :** [à renseigner] ; **environnement :** [à renseigner].
 - **Clubs participants :** [codes uniquement] ; effectif, nombre d'admins et formats de jeu ; **accords et base juridique vérifiés :** [oui/non].
