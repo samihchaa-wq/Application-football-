@@ -50,7 +50,7 @@ Map<String, PlayerPositionProfile> realignPlayerPositionProfiles({
 ///
 /// Les compositions « entre nous » affichent le surnom quand il existe,
 /// sinon le prénom. Leur regroupement papier indexe ensuite les profils par ce
-/// libellé. Sans ce raccord, un profil archivé sous « Luka Brunel » ne peut
+/// libellé. Sans ce raccord, un profil archivé sous « Luka Barral » ne peut
 /// pas être retrouvé quand la composition affiche « Lulu ».
 ///
 /// L'identité canonique reste la seule clé de rapprochement :

@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 RosterPlayer _player({
   String firstName = 'Stéphane',
-  String lastName = 'Fernandez',
+  String lastName = 'Ferreira',
   String? profileId,
   String? profileFirstName,
   String? surnom,
@@ -52,16 +52,16 @@ void main() {
 
     test('sans prénom nulle part, on retombe sur le nom', () {
       final player = _player(firstName: '');
-      expect(player.displayName, 'Fernandez');
+      expect(player.displayName, 'Ferreira');
     });
   });
 
   group('Nom affiché d’un compte à relier', () {
     test('le surnom passe devant le prénom officiel', () {
       const profile = LinkableProfile(
-        id: 'julien-vignard',
+        id: 'julien-vasseur',
         firstName: 'Julien',
-        lastName: 'Vignard',
+        lastName: 'Vasseur',
         surnom: 'julio',
         username: 'julienv',
       );
@@ -71,9 +71,9 @@ void main() {
 
     test('le prénom officiel est capitalisé sans surnom', () {
       const profile = LinkableProfile(
-        id: 'romain-spigolon',
+        id: 'romain-serrano',
         firstName: 'romain',
-        lastName: 'Spigolon',
+        lastName: 'Serrano',
         surnom: '',
         username: 'romains2',
       );

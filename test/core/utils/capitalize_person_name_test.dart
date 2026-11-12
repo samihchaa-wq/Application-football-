@@ -39,7 +39,7 @@ void main() {
     // match archivé : elles doivent rester d'accord sur le même cas réel.
     test('firstNameOf isole le premier mot', () {
       expect(firstNameOf('Xavier Grossin'), 'Xavier');
-      expect(firstNameOf('  Milan   Couzin  '), 'Milan');
+      expect(firstNameOf('  Milan   Collet  '), 'Milan');
       expect(firstNameOf('Solo'), 'Solo');
       expect(firstNameOf(''), '');
     });

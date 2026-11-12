@@ -19,7 +19,7 @@ void main() {
       'formation': '4-1-4-1',
       'field_players': [
         {
-          'name': 'Milan Couzin',
+          'name': 'Milan Collet',
           'position_label': 'Avant-centre',
           'x_pct': 50.0,
           'y_pct': 5.0,
@@ -27,13 +27,13 @@ void main() {
         },
         vacantSlot('Poste laissé vide'),
       ],
-      'bench_players': ['Poste laissé vide', 'Julio Vignard'],
-      'present_names': ['Poste laissé vide', 'Milan Couzin'],
+      'bench_players': ['Poste laissé vide', 'Julio Vasseur'],
+      'present_names': ['Poste laissé vide', 'Milan Collet'],
       'scorers': [
-        {'name': 'Milan Couzin', 'goals': 3},
+        {'name': 'Milan Collet', 'goals': 3},
         {'name': 'Poste laissé vide', 'goals': 1},
       ],
-      'motm_names': ['Poste laissé vide', 'Milan Couzin'],
+      'motm_names': ['Poste laissé vide', 'Milan Collet'],
       'photo_urls': {'Poste laissé vide': 'photo.jpg'},
     });
 
@@ -64,7 +64,7 @@ void main() {
         'field_players': [
           vacantSlot(variant),
           {
-            'name': 'Milan Couzin',
+            'name': 'Milan Collet',
             'position_label': 'Avant-centre',
             'x_pct': 50.0,
             'y_pct': 5.0,
@@ -123,7 +123,7 @@ void main() {
         vacantSlot('Poste laissé vide'),
         vacantSlot('Poste laissé vide'),
       ],
-      'present_names': ['Milan Couzin'],
+      'present_names': ['Milan Collet'],
     });
 
     expect(detail.hasComposition, isFalse);

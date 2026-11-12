@@ -26,10 +26,10 @@ void main() {
   test('un match archivé sans composition garde la photo de chaque joueur', () {
     final detail = historicalMatchDetailFromRow(
       _archiveRow(
-        presentNames: ['Olivier Millet', 'Xavier Inconnu'],
-        photoUrls: const {'Olivier Millet': ' photos/poulain.jpg '},
+        presentNames: ['Olivier Moreau', 'Xavier Inconnu'],
+        photoUrls: const {'Olivier Moreau': ' photos/poulain.jpg '},
         identities: const {
-          'Olivier Millet': {'name': 'Poulain', 'last_initial': 'M'},
+          'Olivier Moreau': {'name': 'Poulain', 'last_initial': 'M'},
         },
       ),
     );

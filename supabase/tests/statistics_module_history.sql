@@ -24,7 +24,7 @@ begin
   select goals into milan_goals
   from public.v_statistics_players
   where period_key = 'previous'
-    and player_name = 'Milan Couzin';
+    and player_name = 'Milan Collet';
 
   select clean_sheets into samih_previous_clean_sheets
   from public.v_statistics_players
