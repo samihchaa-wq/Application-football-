@@ -163,8 +163,9 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           ? 'Adresse du terrain effacée.'
           : 'Adresse du terrain enregistrée.');
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         _showMessage('L’adresse du terrain n’a pas pu être enregistrée.');
+      }
     } finally {
       if (mounted) setState(() => _savingHomeAddress = false);
     }
