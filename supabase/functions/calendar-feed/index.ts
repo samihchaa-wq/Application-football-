@@ -104,7 +104,11 @@ function eventLines(row: Record<string, unknown>): string {
 // Google, Outlook) qui relisent le flux : eux continuent de recevoir l'ICS.
 // Le navigateur est renvoyé vers la page d'abonnement de l'app, Supabase ne
 // servant pas de HTML depuis ses fonctions (réécrit en text/plain).
-const SUBSCRIBE_PAGE_URL = "https://samihchaa-wq.github.io/AS-Grinta/abonnement-calendrier.html";
+// L'adresse publique de l'app commerciale (PUBLIC_APP_URL) fait foi ; jamais
+// le site d'AS Grinta, qui recevrait sinon le lien privé d'agenda du joueur.
+const PUBLIC_APP_URL = (Deno.env.get("PUBLIC_APP_URL")?.trim() ||
+  "https://samihchaa-wq.github.io/Application-football-/").replace(/\/*$/, "/");
+const SUBSCRIBE_PAGE_URL = `${PUBLIC_APP_URL}abonnement-calendrier.html`;
 
 function isBrowserNavigation(req: Request): boolean {
   return req.headers.get("sec-fetch-mode")?.toLowerCase() === "navigate";

@@ -223,6 +223,50 @@ select ok(
   public.save_match_prediction('50000000-0000-0000-0000-000000000003', 1, 0),
   'réactivés, les pronostics sont de nouveau acceptés'
 );
+
+-- Mode live désactivé par le club : le serveur refuse d'ouvrir un live,
+-- d'y ajouter un événement ou d'abonner un joueur aux alertes de but.
+reset role;
+select ok(
+  (
+    select count(*) = 3
+    from pg_trigger
+    where tgname = 'guard_live_mode_module'
+      and not tgisinternal
+      and tgrelid in (
+        'public.match_live_sessions'::regclass,
+        'public.match_live_events'::regclass,
+        'public.match_live_notification_subscriptions'::regclass
+      )
+  ),
+  'le blocage du mode live couvre sessions, événements et alertes'
+);
+insert into private.app_feature_flags (key, enabled, config, updated_at)
+values ('live_mode', false, '{}'::jsonb, now())
+on conflict (club_id, key) do update set enabled = false;
+select throws_ok(
+  $$insert into public.match_live_notification_subscriptions (match_id, profile_id)
+    values ('50000000-0000-0000-0000-000000000003',
+            '10000000-0000-0000-0000-000000000002')$$,
+  '42501',
+  'Le mode live est désactivé pour ce club.',
+  'un club qui a désactivé le mode live n’abonne plus aux alertes de but'
+);
+update private.app_feature_flags set enabled = true where key = 'live_mode';
+select lives_ok(
+  $$insert into public.match_live_notification_subscriptions (match_id, profile_id)
+    values ('50000000-0000-0000-0000-000000000003',
+            '10000000-0000-0000-0000-000000000002')$$,
+  'réactivé, le mode live accepte de nouveau les abonnements'
+);
+delete from public.match_live_notification_subscriptions
+where match_id = '50000000-0000-0000-0000-000000000003';
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-0000-0000-000000000002","role":"authenticated","aud":"authenticated"}',
+  true
+);
+set local role authenticated;
 reset role;
 select set_config(
   'request.jwt.claims',

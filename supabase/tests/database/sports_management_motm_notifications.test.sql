@@ -246,6 +246,20 @@ select like(
   'la notification ouvre directement l’écran de vote'
 );
 
+select is(
+  public.internal_push_dispatch(
+    'motm_open',
+    current_setting('test.motm_push_match')::uuid
+  ) #>> '{payload,body}',
+  (
+    select club.name
+    from public.matches match
+    join public.clubs club on club.id = match.club_id
+    where match.id = current_setting('test.motm_push_match')::uuid
+  ) || E' 1 - 0 Push FC\nPense à voter pour l’Homme du match.',
+  'la notification affiche le nom du club du match, jamais « AS Grinta »'
+);
+
 update public.profiles
 set notify_motm_vote = false,
     updated_at = now()

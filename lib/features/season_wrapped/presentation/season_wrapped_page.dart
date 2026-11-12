@@ -274,7 +274,7 @@ class _WrappedStoryState extends ConsumerState<_WrappedStory>
     try {
       final image = await _capture();
       if (image == null) throw StateError('capture vide');
-      final name = 'as-grinta-${widget.wrapped.seasonName}.png';
+      final name = 'bilan-${widget.wrapped.seasonName}.png';
       await Share.shareXFiles(
         [XFile.fromData(image, mimeType: 'image/png', name: name)],
         fileNameOverrides: [name],

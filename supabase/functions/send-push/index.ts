@@ -3,9 +3,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.95.0";
 import webpush from "npm:web-push@3.6.7";
 
-// Sujet VAPID propre au service commercial (jamais AS Grinta).
-const VAPID_SUBJECT = Deno.env.get("PUBLIC_APP_URL")?.trim() ||
-  "https://samihchaa-wq.github.io/Application-football-/";
 import { optionalMatchId, targetedDeliveryLogKind } from "./delivery_log.ts";
 import {
   executePushDelivery,
@@ -28,6 +25,10 @@ import {
   secretsEqual,
 } from "./request_security.ts";
 import { refreshMatchWeather } from "./weather_refresh.ts";
+
+// Sujet VAPID propre au service commercial (jamais AS Grinta).
+const VAPID_SUBJECT = Deno.env.get("PUBLIC_APP_URL")?.trim() ||
+  "https://samihchaa-wq.github.io/Application-football-/";
 
 type SubscriptionRow = {
   profile_id?: string;

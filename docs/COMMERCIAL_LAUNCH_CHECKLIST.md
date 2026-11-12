@@ -8,12 +8,19 @@ doivent rester **totalement séparés** : aucun client commercial ne se connecte
 
 ## Ce qui existe déjà
 
-- Socle Supabase SQL neuf, 17 migrations dans `supabase/migrations/`.
+- Socle Supabase SQL neuf, migrations dans `supabase/migrations/`.
 - Clubs, codes d'invitation, administrateurs, règles et modules par club.
 - Cloisonnement SQL et Storage à tester en environnement réel, Edge Functions.
 - Logo et couleurs personnalisés ; système d'essai de 30 jours.
 - Tests Flutter/Supabase et charge locale sur plusieurs centaines de clubs.
-- Aucune base Supabase commerciale branchée dans `config/production.json`.
+- Base Supabase commerciale créée le 12/11/2026 : projet `application-football`
+  (`jvxkhgdopslctpcjrhzw`), organisation Pro, région Paris. Les migrations
+  jusqu'à `20261112040000` y sont appliquées (sans seed) et enregistrées dans
+  `supabase_migrations.schema_migrations`. `config/production.json` pointe
+  vers elle (URL et clé **publique** uniquement).
+- Reste dans cette base un schéma technique `install_tmp` (copie des fichiers
+  de migration utilisée pour l'installation), inaccessible à l'application.
+  À supprimer depuis l'éditeur SQL : `drop schema install_tmp cascade;`.
 - Déploiement GitHub Pages **désactivé** dans
   `.github/workflows-disabled/deploy_pages.yml`.
 - Paiements Stripe **non intégrés** : la gestion d'abonnement est encore manuelle.
