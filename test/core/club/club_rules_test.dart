@@ -32,6 +32,12 @@ void main() {
     expect(matchFeaturesOpenAt(kickoff), DateTime.utc(2026, 12, 17, 17));
   });
 
+  test('le délai de correction du résultat suit la règle du club', () {
+    expect(ClubRules.correctionWindow, const Duration(hours: 24));
+    ClubRules.set({ClubRules.correctionWindowHoursKey: 72});
+    expect(ClubRules.correctionWindow, const Duration(hours: 72));
+  });
+
   test('un changement incrémente la révision, une valeur identique non', () {
     final before = ClubRules.revision.value;
     ClubRules.set({ClubRules.featuresOpenDaysKey: 6});

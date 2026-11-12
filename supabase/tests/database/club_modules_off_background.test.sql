@@ -162,5 +162,23 @@ select is(
   'aucun rappel de pronostic pour un club qui a coupé les pronostics'
 );
 
+-- ---------------------------------------------------------------------------
+-- 5. Effectif figé à la même heure que l'ouverture du live (règle du club)
+-- ---------------------------------------------------------------------------
+select ok(
+  not exists (
+    select 1
+    from unnest(array[
+      'private.publish_match_effectif'::regproc,
+      'private.rebalance_upcoming_waitlist_matches'::regproc,
+      'private.recompute_match_convocations_internal'::regproc,
+      'public.admin_remove_match_guest'::regproc
+    ]) as fn(oid)
+    where position('interval ''15 minutes''' in pg_get_functiondef(fn.oid)) > 0
+       or position('match_prediction_closes_at' in pg_get_functiondef(fn.oid)) = 0
+  ),
+  'l’effectif et la liste d’attente se figent à l’heure réglée par le club, plus à T-15 en dur'
+);
+
 select * from finish();
 rollback;
