@@ -420,42 +420,30 @@ begin
         get stacked diagnostics v_state = returned_sqlstate, v_message = message_text;
         perform pg_temp.sim_note(v_club.label, v_number, 'clôture du vote', v_state, v_message);
       end;
+
+      -- Calendrier de la saison : le match terminé recule dans le passé (un
+      -- match par semaine) avec toutes ses dates. Le délai de correction de
+      -- 24 h est ainsi écoulé, comme en fin de saison réelle, et la date du
+      -- jour est libre pour le match suivant (un seul match par jour et par club).
+      set local session_replication_role = replica;
+      v_kickoff := v_kickoff - make_interval(days => 7 * (11 - v_number));
+      update public.matches
+      set kickoff_at = v_kickoff,
+          match_date = (v_kickoff at time zone 'Europe/Paris')::date,
+          match_time = (v_kickoff at time zone 'Europe/Paris')::time,
+          result_validated_at = result_validated_at - make_interval(days => 7 * (11 - v_number))
+      where id = v_match;
+      update public.match_sport_finalizations
+      set validated_at = validated_at - make_interval(days => 7 * (11 - v_number))
+      where match_id = v_match;
+      update public.match_sport_motm_elections
+      set opens_at = opens_at - make_interval(days => 7 * (11 - v_number)),
+          closes_at = closes_at - make_interval(days => 7 * (11 - v_number)),
+          closed_at = closed_at - make_interval(days => 7 * (11 - v_number))
+      where match_id = v_match;
+      set local session_replication_role = origin;
     end loop;
   end loop;
-end;
-$$;
-
--- Calendrier de la saison : chaque match recule d'une semaine par rang, avec
--- toutes ses dates (coup d'envoi, validation, vote). Les délais de
--- correction de 24 h sont ainsi écoulés, comme en fin de saison réelle.
-do $$
-begin
-  set local session_replication_role = replica;
-  create temporary table sim_shift on commit drop as
-  select match.id as match_id,
-         make_interval(days => 7 * (11 - row_number() over (
-           partition by match.season_id order by match.kickoff_at
-         )::integer)) as delta
-  from public.matches match
-  where match.season_id in (select season_id from sim_clubs);
-
-  update public.matches match
-  set kickoff_at = match.kickoff_at - shift.delta,
-      match_date = ((match.kickoff_at - shift.delta) at time zone 'Europe/Paris')::date,
-      match_time = ((match.kickoff_at - shift.delta) at time zone 'Europe/Paris')::time,
-      result_validated_at = match.result_validated_at - shift.delta
-  from sim_shift shift where shift.match_id = match.id;
-
-  update public.match_sport_finalizations finalization
-  set validated_at = finalization.validated_at - shift.delta
-  from sim_shift shift where shift.match_id = finalization.match_id;
-
-  update public.match_sport_motm_elections election
-  set opens_at = election.opens_at - shift.delta,
-      closes_at = election.closes_at - shift.delta,
-      closed_at = election.closed_at - shift.delta
-  from sim_shift shift where shift.match_id = election.match_id;
-  set local session_replication_role = origin;
 end;
 $$;
 
