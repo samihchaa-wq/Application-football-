@@ -199,7 +199,7 @@ void main() {
 
       for (final title in const [
         'Rappel pronostic',
-        'Vote Homme du match',
+        'Vote de l’Étoile du match',
         'Composition en ligne',
         'Badge débloqué',
       ]) {
@@ -223,7 +223,7 @@ void main() {
   group('cloches réglables quand cet appareil ne reçoit rien', () {
     const optionalTitles = [
       'Rappel pronostic',
-      'Vote Homme du match',
+      'Vote de l’Étoile du match',
       'Composition en ligne',
       'Badge débloqué',
     ];

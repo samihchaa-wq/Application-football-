@@ -20,7 +20,7 @@ void main() {
     expect(players.map((player) => player.name).toList(), ['Alban', 'Milan']);
   });
 
-  test('l’Homme du match est repéré dans l’effectif de secours', () {
+  test('l’Étoile du match est repéré dans l’effectif de secours', () {
     const detail = HistoricalMatchDetail(
       formation: null,
       fieldPlayers: [],

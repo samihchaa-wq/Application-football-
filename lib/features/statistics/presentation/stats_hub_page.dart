@@ -389,7 +389,7 @@ class _PlayersScrollableHeader extends StatelessWidget {
           valueCell('B', _PlayerStatCol.goals),
           if (showsAssists) valueCell('PD', _PlayerStatCol.assists),
           valueCell('CS', _PlayerStatCol.cleanSheets),
-          valueCell('HDM', _PlayerStatCol.hdm),
+          valueCell('ÉTM', _PlayerStatCol.hdm),
           valueCell('G', _PlayerStatCol.wins),
           valueCell('N', _PlayerStatCol.draws),
           valueCell('P', _PlayerStatCol.losses),

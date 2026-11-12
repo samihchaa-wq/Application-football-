@@ -165,7 +165,7 @@ void main() {
               awayScore: 0,
               finished: true,
               kickoffAt: DateTime(2026, 8, 27, 21),
-              motmActionLabel: 'Voter pour l’Homme du match',
+              motmActionLabel: 'Voter pour l’Étoile du match',
               onMotmTap: () => tapped = true,
             ),
           ),
@@ -173,7 +173,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Voter pour l’Homme du match'));
+    await tester.tap(find.text('Voter pour l’Étoile du match'));
     expect(tapped, isTrue);
   });
 }

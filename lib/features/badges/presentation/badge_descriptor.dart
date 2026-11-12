@@ -4,7 +4,7 @@
 class BadgeDescriptor {
   const BadgeDescriptor(this.label, [this.period]);
 
-  /// Le critère : `BUTS`, `MATCHS`, `TRIPLÉ`, `BALLON D’OR`…
+  /// Le critère : `BUTS`, `MATCHS`, `TRIPLÉ`, `MACHINE À BUTS`…
   final String label;
 
   /// La temporalité : `SAISON`, `CARRIÈRE`… `null` quand le critère se suffit
@@ -57,7 +57,7 @@ String _rawDescriptorFor({
     case 'clean_sheets':
       return 'CLEAN SHEETS · CARRIÈRE';
     case 'mvp':
-      return 'HDM · CARRIÈRE';
+      return 'ÉTOILES · CARRIÈRE';
     case 'max_match_goals':
       if (code == 'max_match_goals__3') return 'TRIPLÉ';
       if (code == 'max_match_goals__4') return 'QUADRUPLÉ';
@@ -67,17 +67,17 @@ String _rawDescriptorFor({
       if (code == 'max_match_assists__3') return 'TRIPLE PASSE';
       return 'EXPLOIT PASSEUR';
     case 'bet_against_grinta':
-      return 'TRAÎTRE';
+      return 'AVOCAT DU DIABLE';
     case 'title_most_present':
-      return 'MONSIEUR PRÉSENT · SAISON';
+      return 'FIDÈLE AU POSTE · SAISON';
     case 'title_top_scorer':
-      return 'SOULIER D’OR · SAISON';
+      return 'MACHINE À BUTS · SAISON';
     case 'title_top_assists':
-      return 'PASSE D’OR · SAISON';
+      return 'BAGUETTE MAGIQUE · SAISON';
     case 'title_best_winrate':
-      return 'MONSIEUR VICTOIRE · SAISON';
+      return 'PORTE-BONHEUR · SAISON';
     case 'title_mvp_king':
-      return 'BALLON D’OR · SAISON';
+      return 'ÉTOILE · SAISON';
     case 'title_best_pred_match':
       return 'LE VISIONNAIRE · SAISON';
   }
@@ -85,15 +85,15 @@ String _rawDescriptorFor({
     case 'exploit_remplace_gardien':
       return 'GARDIEN D’UN SOIR';
     case 'exploit_penalty_provoque':
-      return 'LE BOUCHER';
+      return 'PENALTY CONCÉDÉ';
     case 'exploit_penalty_subi':
-      return 'LE PLONGEUR';
+      return 'PENALTY OBTENU';
     case 'exploit_but_vainqueur_tardif':
-      return 'CLUTCH';
+      return 'BUTEUR DÉCISIF';
     case 'exploit_csc':
-      return 'LA BOULETTE';
+      return 'CONTRE SON CAMP';
     case 'role_president':
-      return 'EL PRESIDENTE';
+      return 'PRÉSIDENCE';
     case 'role_coach':
       return 'COACH';
     case 'role_goalkeeper':

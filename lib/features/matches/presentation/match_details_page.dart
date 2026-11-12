@@ -144,8 +144,8 @@ class MatchDetailsPage extends ConsumerWidget {
               final motmActionLabel =
                   vote != null && vote.isOpen && vote.isEligibleVoter
                       ? (vote.hasVoted
-                          ? 'Vote Homme du match enregistré'
-                          : 'Voter pour l’Homme du match')
+                          ? 'Vote de l’Étoile du match enregistré'
+                          : 'Voter pour l’Étoile du match')
                       : null;
               return MatchSheetListView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
@@ -619,7 +619,7 @@ class _CompletedCompositionCard extends ConsumerWidget {
   }
 }
 
-/// Classement du vote Homme du match, affiché seulement une fois le scrutin
+/// Classement du vote de l’Étoile du match, affiché seulement une fois le scrutin
 /// clos et le vainqueur révélé. Seuls les joueurs ayant reçu au moins une
 /// voix apparaissent ; les ex æquo partagent le même rang.
 ///
@@ -699,7 +699,7 @@ class _MotmVotesCard extends ConsumerWidget {
       padding: const EdgeInsets.only(top: 16),
       child: CollapsibleSectionCard(
         storageKey: 'match-$matchId-votes-hdm',
-        title: 'Votes Homme du match',
+        title: 'Votes de l’Étoile du match',
         childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 12),
         children: rows,
       ),

@@ -201,7 +201,7 @@ class _OptionalNotificationsCard extends ConsumerWidget {
                     ),
                   ),
                   _BellToggleTile(
-                    title: 'Vote Homme du match',
+                    title: 'Vote de l’Étoile du match',
                     value: preferences.motmVoteNotifications,
                     onChanged: (value) => _update(
                       context,
@@ -459,9 +459,10 @@ const _testNotificationOptions = <_TestNotificationOption>[
   _TestNotificationOption('match_cancelled', 'Match annulé'),
   _TestNotificationOption('match_rescheduled_date', 'Match reporté'),
   _TestNotificationOption('match_rescheduled_time', 'Horaire modifié'),
-  _TestNotificationOption('motm_open', 'Vote Homme du match'),
-  _TestNotificationOption('motm_result_general', 'Résultat Homme du match'),
-  _TestNotificationOption('motm_result_winner', 'Élu Homme du match'),
+  _TestNotificationOption('motm_open', 'Vote de l’Étoile du match'),
+  _TestNotificationOption(
+      'motm_result_general', 'Résultat de l’Étoile du match'),
+  _TestNotificationOption('motm_result_winner', 'Tu es l’Étoile du match'),
   _TestNotificationOption('badge_unlocked', 'Badge débloqué'),
   _TestNotificationOption('badges_unlocked', 'Plusieurs badges débloqués'),
   _TestNotificationOption(
