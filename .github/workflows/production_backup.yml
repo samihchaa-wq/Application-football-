@@ -40,6 +40,9 @@ jobs:
         if: env.DB_URL != '' && env.BACKUP_PASSPHRASE != ''
         shell: bash
         run: |
+          # Même règle que l'étape de chiffrement : blancs de début et de fin
+          # retirés (retour à la ligne collé depuis un téléphone).
+          BACKUP_PASSPHRASE="$(printf '%s' "$BACKUP_PASSPHRASE" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | tr -d '\r\n')"
           if [ "${#BACKUP_PASSPHRASE}" -lt 32 ]; then
             echo "::error::BACKUP_PASSPHRASE doit faire au moins 32 caractères."
             exit 1
@@ -58,6 +61,9 @@ jobs:
           set -euo pipefail
           # Retire un éventuel retour à la ligne invisible collé avec le secret.
           DB_URL="$(printf '%s' "$DB_URL" | tr -d '[:space:]')"
+          # Blancs de début et de fin retirés de la phrase secrète : pour
+          # déchiffrer, taper la phrase telle qu'écrite, sans retour à la ligne.
+          BACKUP_PASSPHRASE="$(printf '%s' "$BACKUP_PASSPHRASE" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | tr -d '\r\n')"
           stamp=$(date -u +%Y-%m-%d)
           supabase db dump --db-url "$DB_URL" -f "roles.sql" --role-only
           supabase db dump --db-url "$DB_URL" -f "schema.sql"
