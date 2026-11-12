@@ -275,30 +275,35 @@ begin
         perform public.admin_publish_match_convocations(v_match, 'Simulation');
 
         v_field := 0;
-        select jsonb_agg(entry order by sort_order) into v_entries from (
+        select jsonb_agg(
+          jsonb_build_object(
+            'participant_id', ranked.participant_id,
+            'zone', ranked.zone,
+            'x', case when ranked.zone = 'field'
+                      then round((0.05 + 0.08 * (ranked.sort_order % 12))::numeric, 2) end,
+            'y', case when ranked.zone = 'field'
+                      then round((0.15 + 0.06 * (ranked.sort_order % 12))::numeric, 2) end,
+            'slot_label', ranked.slot_label,
+            'sort_order', ranked.sort_order
+          ) order by ranked.sort_order
+        ) into v_entries
+        from (
           select
-            row_number() over (order by player.position) as sort_order,
-            jsonb_build_object(
-              'participant_id', participant.id,
-              'zone', case
-                when participant.convocation_status::text <> 'convoked' then 'not_selected'
-                when row_number() over (
-                  partition by participant.convocation_status::text = 'convoked'
-                  order by player.position
-                ) <= 11 then 'field'
-                else 'bench'
-              end,
-              'x', case when participant.convocation_status::text = 'convoked'
-                        then round((0.05 + 0.08 * (row_number() over (order by player.position) % 12))::numeric, 2) end,
-              'y', case when participant.convocation_status::text = 'convoked'
-                        then round((0.15 + 0.06 * (row_number() over (order by player.position) % 12))::numeric, 2) end,
-              'slot_label', player.position::text,
-              'sort_order', row_number() over (order by player.position)
-            ) as entry
+            participant.id as participant_id,
+            row_number() over (order by player.position, player.id) as sort_order,
+            case
+              when participant.convocation_status::text <> 'convoked' then 'not_selected'
+              when row_number() over (
+                partition by participant.convocation_status::text = 'convoked'
+                order by player.position, player.id
+              ) <= 11 then 'field'
+              else 'bench'
+            end as zone,
+            player.position::text as slot_label
           from public.match_sport_participants participant
           join public.season_players player on player.id = participant.season_player_id
           where participant.match_id = v_match and participant.is_eligible
-        ) entries;
+        ) ranked;
 
         perform public.admin_save_match_composition(v_match, '4-4-2', v_entries, false, 'Simulation');
         perform public.admin_publish_match_composition(v_match, false, 'Simulation');
