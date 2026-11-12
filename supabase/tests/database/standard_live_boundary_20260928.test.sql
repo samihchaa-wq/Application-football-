@@ -54,9 +54,12 @@ select ok(
   'publier la composition utilise la frontière commune'
 );
 
+-- Depuis 20261112095000, la frontière suit la règle du club
+-- « Fermeture des pronostics » (15 minutes par défaut) au lieu de T-15 écrit
+-- en dur.
 select ok(
   position(
-    '15 minutes' in
+    'prediction_close_minutes' in
     pg_get_functiondef(
       'public.admin_remove_match_guest(uuid,uuid,text)'::regprocedure
     )
@@ -67,7 +70,7 @@ select ok(
       'public.admin_remove_match_guest(uuid,uuid,text)'::regprocedure
     )
   ) = 0,
-  'retirer un invité revient lui aussi à T-15 sans exception'
+  'retirer un invité suit la même frontière réglable, sans exception'
 );
 
 select * from finish();
