@@ -1,7 +1,7 @@
 # Mission 05 — Audit d'identité visuelle et UX (avant toute création de marque)
 
 **Date :** 12 novembre 2026  
-**État :** audit statique initial documenté, **non validé en rendu réel**.  
+**État :** audit de code et **inspection visuelle des fichiers image sources** documentés ; **interface applicative non validée en rendu réel**.  
 **Périmètre :** dépôt commercial `samihchaa-wq/Application-football-`, branche `main` au début de l'étude ; original `AS-Grinta` consulté **en lecture seule** pour comparaison des ressources.  
 **Coordination :** chef de projet fil 00, tableau [CHANTIER.md](CHANTIER.md) en PR [#29](https://github.com/samihchaa-wq/Application-football-/pull/29) ; décisions fonctionnelles fil 01 dans [PR #25](https://github.com/samihchaa-wq/Application-football-/pull/25). Ce document ne valide aucun nom, logo ni changement de thème.
 
@@ -24,8 +24,8 @@ Lecture de :
 - `lib/features/season_wrapped/presentation/wrapped_theme.dart`, `wrapped_motion.dart`, `lib/features/sports_management/presentation/widgets/composition_presentation.dart` ;
 - `web/index.html`, `web/manifest.json`, `web/favicon.svg`, répertoires `web/icons/`, `assets/`, `docs/branding/`, `pubspec.yaml`.
 
-**Preuves acquises :** présence et branchement des composants dans les sources, valeurs des constantes, chemins des ressources, comparaison des SHA GitHub.  
-**Non vérifié :** captures/rendu final, facilité de navigation de vrais joueurs, contraste mesuré sur chaque couleur, performances sur mobiles, compatibilité visuelle PWA installée, licences et autorisations des vidéos/illustrations. Aucun `flutter test`, `flutter analyze` ni test navigateur n'a été exécuté pour cette étude documentaire.
+**Preuves acquises :** présence et branchement des composants dans les sources, valeurs des constantes, chemins des ressources, comparaison des SHA GitHub ; **visualisation directe des fichiers** `assets/images/club_crest.webp`, `web/club_crest.webp`, `web/favicon.png`, `web/icons/Icon-192.png`, `Icon-512.png`, `Icon-maskable-512.png`, `assets/composition/stade.jpg`, des trois PNG de maillots et, en comparaison, de l'icône, du blason et de l'affiche de stade du dépôt original (lecture seule).  
+**Non vérifié :** captures/rendu final de l'**application en fonctionnement**, facilité de navigation de vrais joueurs, contraste mesuré sur chaque couleur, performances sur mobiles, compatibilité PWA installée, licences et autorisations des vidéos/illustrations. Aucun `flutter test`, `flutter analyze` ni test navigateur n'a été exécuté pour cette étude documentaire.
 
 ## 3. Design existant à préserver : chiffres et principes
 
@@ -51,7 +51,7 @@ Le classement porte sur **l'expérience ou la ressource décrite**, pas nécessa
 | --- | --- | --- | --- | --- |
 | VIS-01 | Calendrier, cartes et retours dans l'historique | **Conserver exactement** | `app_shell.dart`, `matches_page.dart` ; recentrage et navigation déjà travaillés | Non-régression |
 | VIS-02 | Barre supérieure, onglets, composants de formulaires, états d'erreur et vides | **Conserver exactement** | `grinta_app_bar.dart`, `grinta_secondary_tabs.dart`, `grinta_adaptive_form.dart`, `grinta_status_banner.dart`, `grinta_empty_state.dart` | Réutiliser les composants partagés |
-| VIS-03 | Présentation de composition et stade animé | **Conserver exactement** pour la grammaire visuelle | `composition_presentation.dart`, vidéos et affiche de stade dans `assets/composition/` | Ne pas modifier les séquences sans besoin validé ; droits média à instruire |
+| VIS-03 | Présentation de composition et stade animé | **Conserver exactement** pour la grammaire visuelle | `composition_presentation.dart`, vidéos et affiche de stade dans `assets/composition/` | Ne pas modifier les séquences sans besoin validé ; examiner les marques visuelles et droits média |
 | VIS-04 | Mécanique badges, socles, étoiles et armoire | **Conserver exactement** | `badge_emblem.dart`, `badge_emblem_body.dart`, `armoire_page.dart` | Aucun nouveau style de badge sans comparaison visuelle |
 | VIS-05 | Libellés de badges, trophées et récompenses | **Adapter légèrement** | `badge_descriptor.dart` comprend des critères et des libellés anciens dont `bet_against_grinta` / « TRAÎTRE » | Tester compatibilité avec tous clubs ; décider des libellés et conventions avec fil 01 |
 | VIS-06 | Bilan de saison : scènes, typographie, rythme | **Conserver exactement** dans son principe | `wrapped_theme.dart`, `wrapped_motion.dart`, `wrapped_slides.dart` | Maintenir le spectacle, le son facultatif et la réduction des animations |
@@ -59,14 +59,14 @@ Le classement porte sur **l'expérience ou la ressource décrite**, pas nécessa
 | VIS-08 | Nom, nom court, écusson et deux couleurs du club | **Conserver** la personnalisation, **adapter légèrement** ses limites | `ClubIdentity`, `club_identity_sync.dart`, `club_settings_page.dart` ; palette de 12 couleurs | Contraste, repli, retour aux valeurs par défaut, synchronisation et rendu |
 | VIS-09 | Écran de connexion commun | **Adapter légèrement** | `GrintaAuthSurface` insère `Image.asset('assets/images/club_crest.webp')` en dur | Clarifier marque plateforme avant choix du club et écusson club après sélection |
 | VIS-10 | Splash HTML pré-Flutter et chargement | **Adapter légèrement** | `web/index.html` référence `club_crest.webp`, conserve respiration/reflet/progression | Préserver animation et performances ; changer seulement le symbole une fois validé |
-| VIS-11 | Trois maillots de match | **Adapter légèrement** | `jersey_option.dart` : blanc, orange, bleu ; fichiers `assets/images/jerseys/` | Ne pas perdre l'illustration ; critères de personnalisation selon fil 01/02 |
+| VIS-11 | Trois maillots de match | **Adapter légèrement** | Visuels PNG inspectés : bleu à manches jaunes, orange à accents noirs, blanc à accents bleus | Préserver le dessin, mais vérifier si les combinaisons de clubs sont modifiables avec fil 01/02 |
 | VIS-12 | Nom de produit visible (Flutter, navigateur, PWA) | **Remplacer impérativement avant lancement commercial** | `ClubIdentity.appName = 'Club'`, `web/manifest.json` name/short_name = `Club`, `web/index.html` title et titre iOS = `Club` | Unifier le **futur** nom commercial approuvé, avec tests PWA |
 | VIS-13 | Sources SVG historiques de l'icône | **Examiner, puis remplacer si elles représentent AS Grinta** | `docs/branding/icone_app.svg` et `icone_app_android.svg` ont les **mêmes SHA** dans original et commercial | Aucun usage commercial sans vérification du graphisme et des droits |
-| VIS-14 | Favicon et icônes PWA actuels | **Adapter au nom / logo final** | `web/favicon.svg` contient un blason et un ballon génériques ; PNG PWA commercial différents de l'original (SHA distincts) | Contrôler correspondance et netteté aux formats 192/512/maskable |
+| VIS-14 | Favicon et icônes PWA actuels | **Adapter au nom / logo final** | PNG 192, 512, maskable et favicon inspectés : écusson bleu générique au ballon blanc, **pas** l'icône historique « AS LA GRINTA » ; SVG du favicon également générique | Conserver le système de formats, contrôler cohérence, lisibilité et nom final |
 | VIS-15 | Noms techniques internes `as_grinta`, `Grinta*`, identifiants JS | **Ne pas remplacer globalement** | Références code, imports, JS, service worker, tests ; non nécessairement visibles | Audit ciblé uniquement si nom visible, juridique ou conflit fonctionnel ; éviter régression |
 | VIS-16 | Ressources audio du bilan | **Adapter seulement si besoin** | `assets/audio/README.md` décrit `wrapped.mp3` mais la piste n'est pas présente dans l'arbre lu | Ne pas promettre de musique ; examiner les droits avant ajout |
 | VIS-17 | Police Oswald | **Conserver, sous réserve de conformité** | `assets/fonts/OFL-Oswald.txt` est présent (SIL OFL 1.1) | Conserver notice et conditions de distribution |
-| VIS-18 | Logo générique de repli | **Conserver le mécanisme, auditer l'image** | `ClubIdentity.defaultCrestAsset` et `crestImage` offrent un fallback | Vérifier visuellement qu'il ne rappelle pas AS Grinta, puis valider l'alternative |
+| VIS-18 | Logo générique de repli | **Conserver le mécanisme**, identité produit à confirmer | Fichier WebP inspecté : écu bleu vif, bord blanc et ballon stylisé blanc, sans inscription AS Grinta visible | Le visuel est neutre sur l'écrit ; décider s'il devient logo produit ou simple écusson par défaut |\n| VIS-19 | Décor de stade — drapeaux et tribunes | **Adapter légèrement** la ressource **si elle est censée être multiclub** | Affiche `stade.jpg` commerciale inspectée et comparée à l'original : fond de stade conservé avec nombreux drapeaux **bleu et jaune**, couleurs historiquement associées à AS Grinta | Évaluer avec fil 01/02 une version de décor neutre / déclinable **sans remplacer l'animation ni son rythme**, après validation de droits |
 
 **Attention :** « remplacer impérativement » ici signifie *avant diffusion commerciale*, **pas** « changer immédiatement le code ». Aucune identité nouvelle n'a encore été choisie.
 
@@ -93,7 +93,7 @@ Mesurer les contrastes de texte normal (objectif WCAG AA 4,5:1), grands titres (
 | SVG de l'icône historique | `docs/branding/icone_app*.svg` | Fichiers identiques à ceux du dépôt AS Grinta ; décider remplacement ou autorisation |
 | Écusson par défaut / splash | `assets/images/club_crest.webp`, `web/club_crest.webp` | Usage codé ; image et origine à examiner |
 | Icônes PWA/favicons | `web/icons/`, `web/favicon.*` | PNG commerciaux différents de l'original ; vérifier auteur, caractère distinctif |
-| Stade vidéo et affiche | `assets/composition/stade*.mp4`, `stade.jpg` | Présents dans le dépôt, provenance/licence inconnues à ce stade |
+| Stade vidéo et affiche | `assets/composition/stade*.mp4`, `stade.jpg` | Fichier JPG directement visualisé : drapeaux bleu/jaune hérités ; vidéo MP4 non inspectée ni droits établis |
 | Icône chaussure de passe | `assets/images/icons/assist_boot.png` | Vérifier provenance et autorisation |
 | Maillots | `docs/branding/maillots/*.svg`, `assets/images/jerseys/*.png` | README les qualifie de dessins originaux sans marque ; à corroborer si besoin |
 | Badges, images utilisateurs, joueurs | Code et Storage prévus | Vérifier propriété des illustrations et droit à l'image des personnes avec fil 07 |
@@ -118,6 +118,7 @@ Critères d'acceptation : un joueur d'un club fictif ne voit jamais l'écusson o
 
 **Terminé :**
 - lecture de la documentation commune, de la PR #29 et de la PR #25 ;
+- inspection **visuelle de 10 images** commerciales/originales (icônes, écussons, affiche de stade, trois maillots) hors exécution de l'application ;
 - première matrice sourcée conserver / adapter / remplacer ;
 - repérage de l'identité provisoire, des couleurs fixes, des liens logo → splash/auth et des SVG de l'ancien produit ;
 - registre des ressources à valider avec le fil 07.
@@ -142,4 +143,4 @@ Critères d'acceptation : un joueur d'un club fictif ne voit jamais l'écusson o
 - **07 :** qualifier les droits des SVG d'icône, du stade animé, de l'icône chaussure, des badges, des photos et de la musique.
 - **09 :** prévoir tests cache PWA/manifest/favicon et versionnement lors du futur changement de nom/icône.
 
-**Statut final :** audit de code initial **documenté** ; validation visuelle, juridique et commerciale **bloquée tant que les vérifications et décisions ne sont pas faites**. Aucune action demandée sur la base commerciale, aucune modification du dépôt original.
+**Statut final :** audit de code **et des visuels sources** documenté ; rendu de l'application en fonctionnement, validation juridique et validation commerciale **toujours non réalisés**. Aucune action demandée sur la base commerciale, aucune modification du dépôt original.
