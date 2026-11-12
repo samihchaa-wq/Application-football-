@@ -10,8 +10,8 @@ héberger un service commercial. GitHub Pages reste utilisable pour les tests
 gratuit, autorise l'usage commercial et fonctionne même si le dépôt passe en
 privé.
 
-**Adresse recommandée** : `app.<domaine>` pour l'appli (ex. `app.lucarne.fr`),
-et le domaine seul (`lucarne.fr`) gardé pour la future page de présentation.
+**Adresse recommandée** : `app.<domaine>` pour l'appli (ex. `app.petitfilet.fr`),
+et le domaine seul (`petitfilet.fr`) gardé pour la future page de présentation.
 
 ---
 
@@ -38,7 +38,7 @@ dossier juridique).
 
 1. Cloudflare > Profil > **Jetons d'API** > Créer un jeton > « Modèle
    personnalisé ».
-   - Nom : `GitHub publication Lucarne`
+   - Nom : `GitHub publication Petit Filet`
    - Autorisation : **Compte > Cloudflare Pages > Modifier** (rien d'autre)
    - Expiration : dans un an
    Copie le jeton affiché (il n'est montré qu'une fois).
@@ -50,7 +50,7 @@ dossier juridique).
      `CLOUDFLARE_API_TOKEN` = le jeton. L'ID de compte Cloudflare actuel est
      déjà inscrit dans le workflow ; `CLOUDFLARE_ACCOUNT_ID` n'est utile que
      pour changer de compte.
-   - Aucune variable à créer à ce stade : le projet s'appelle `lucarne` par
+   - Aucune variable à créer à ce stade : le projet s'appelle `petit-filet` par
      défaut et l'adresse `*.pages.dev` attribuée par Cloudflare est lue
      automatiquement (variables facultatives `CLOUDFLARE_PAGES_PROJECT` et
      `COMMERCIAL_APP_URL`, voir étape 5).
@@ -60,11 +60,11 @@ dossier juridique).
 1. GitHub > Actions > « Publier l'appli commerciale sur Cloudflare Pages » >
    Run workflow > Run.
 2. Le journal affiche « Adresse publique utilisée : https://….pages.dev/ »
-   (Cloudflare ajoute parfois un suffixe si `lucarne` est déjà pris).
+   (Cloudflare ajoute parfois un suffixe si `petit-filet` est déjà pris).
 
 ## Étape 5 : relier ta propre adresse
 
-1. Cloudflare > Workers & Pages > `lucarne` > **Domaines personnalisés** >
+1. Cloudflare > Workers & Pages > `petit-filet` > **Domaines personnalisés** >
    Configurer > tape `app.<domaine>` > Activer. Cloudflare crée lui-même
    l'enregistrement DNS et le certificat https (quelques minutes).
 2. GitHub > Variables : change `COMMERCIAL_APP_URL` en `https://app.<domaine>/`.
@@ -99,7 +99,7 @@ joueur ne peut récupérer son mot de passe seul.
    (sinon, copie-les dans Cloudflare > DNS). Attends la coche verte.
 3. Brevo > Expéditeurs > ajoute `contact@<domaine>`.
 4. Brevo > SMTP et API > onglet **Clés API** > Générer une clé API, nom
-   `Lucarne appli`. Copie la clé (montrée une seule fois).
+   `Petit Filet appli`. Copie la clé (montrée une seule fois).
    Brevo peut bloquer les envois venant d'une adresse IP inconnue : les
    fonctions Supabase changent d'adresse, donc dans Brevo > Sécurité >
    **IP autorisées**, désactive ce blocage (sinon le premier essai échoue et
@@ -108,7 +108,7 @@ joueur ne peut récupérer son mot de passe seul.
    Actions :
    - Onglet **Secrets** > New repository secret : `BREVO_API_KEY` = la clé.
    - Onglet **Variables** > New repository variable :
-     `MAIL_FROM_EMAIL` = `contact@<domaine>` ; `MAIL_FROM_NAME` = `Lucarne`.
+     `MAIL_FROM_EMAIL` = `contact@<domaine>` ; `MAIL_FROM_NAME` = `Petit Filet`.
 6. GitHub > Actions > « Supabase commercial : mise en route » > Run workflow,
    en cochant seulement « functions ». Le journal doit afficher « Envoi des
    e-mails : réglé ».
@@ -119,7 +119,7 @@ ici) partent par défaut d'un service limité à quelques messages par heure.
 Pour les faire passer aussi par Brevo : Brevo > SMTP et API > onglet **SMTP**
 > Générer une clé SMTP, puis Supabase > Authentication > **Emails** > SMTP
 Settings > Activer (hôte `smtp-relay.brevo.com`, port `587`, identifiant et
-clé SMTP Brevo, expéditeur `contact@<domaine>`, nom `Lucarne`).
+clé SMTP Brevo, expéditeur `contact@<domaine>`, nom `Petit Filet`).
 
 ## Étape 8 (plus tard) : connexion Facebook
 

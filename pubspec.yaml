@@ -42,7 +42,7 @@ flutter:
 
   assets:
     - assets/images/club_crest.webp
-    - assets/images/lucarne_logo.webp
+    - assets/images/petit_filet_logo.webp
     - assets/images/icons/
     - assets/composition/
 

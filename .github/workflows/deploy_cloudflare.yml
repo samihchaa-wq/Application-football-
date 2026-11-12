@@ -8,7 +8,7 @@ name: Publier l'appli commerciale sur Cloudflare Pages
 # - secret   CLOUDFLARE_API_TOKEN (droit « Cloudflare Pages : Modifier »)
 # - l'ID du compte Cloudflare (non secret) est inscrit ci-dessous par défaut ;
 #   le secret ou la variable CLOUDFLARE_ACCOUNT_ID le remplace si besoin.
-# - variables facultatives : CLOUDFLARE_PAGES_PROJECT (défaut : lucarne) et
+# - variables facultatives : CLOUDFLARE_PAGES_PROJECT (défaut : petit-filet) et
 #   COMMERCIAL_APP_URL (défaut : l'adresse *.pages.dev que Cloudflare attribue
 #   au projet ; à renseigner avec le domaine propre une fois relié).
 # Sans les secrets, le workflow s'arrête avant toute publication.
@@ -32,7 +32,7 @@ env:
   # COMMERCIAL_PUBLIC_URL est fixée par l'étape « Préparer le projet » (via
   # GITHUB_ENV, qu'une clé env: ici empêcherait de remplacer).
   COMMERCIAL_APP_URL_VAR: ${{ vars.COMMERCIAL_APP_URL }}
-  PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT || 'lucarne' }}
+  PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT || 'petit-filet' }}
   WRANGLER_VERSION: '4.150.0'
 
 jobs:

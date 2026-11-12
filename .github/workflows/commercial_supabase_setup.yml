@@ -87,7 +87,7 @@ jobs:
           if [ -n "${MAIL_API_KEY:-}" ] && [ -n "${MAIL_FROM_EMAIL:-}" ]; then
             supabase secrets set --project-ref "$SUPABASE_PROJECT_REF" \
               "MAIL_API_KEY=$MAIL_API_KEY" "MAIL_FROM_EMAIL=$MAIL_FROM_EMAIL" \
-              "MAIL_FROM_NAME=${MAIL_FROM_NAME:-Lucarne}"
+              "MAIL_FROM_NAME=${MAIL_FROM_NAME:-Petit Filet}"
             echo "Envoi des e-mails : réglé (expéditeur $MAIL_FROM_EMAIL)."
           elif [ -n "${MAIL_API_KEY:-}" ] || [ -n "${MAIL_FROM_EMAIL:-}" ]; then
             echo '::error::Il faut à la fois le secret BREVO_API_KEY et la variable MAIL_FROM_EMAIL.'
