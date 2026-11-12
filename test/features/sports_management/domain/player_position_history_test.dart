@@ -3,8 +3,8 @@ import 'package:as_grinta/features/sports_management/domain/football_formation.d
 import 'package:as_grinta/features/sports_management/domain/player_position_history.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Romain Spigolon : MDC très marqué dans l'archive.
-const String romainSpigolon = 'bd469e77-23a2-4be4-98e4-2e85923fac69';
+/// Romain Serrano : MDC très marqué dans l'archive.
+const String romainSerrano = 'bd469e77-23a2-4be4-98e4-2e85923fac69';
 
 /// Un joueur inconnu de l'archive, comme une recrue.
 const String recrue = 'recrue-sans-archive';
@@ -83,8 +83,8 @@ void main() {
       );
 
       expect(
-        merged[romainSpigolon]!.mainSlotLabel,
-        kTestPositionProfiles[romainSpigolon]!.mainSlotLabel,
+        merged[romainSerrano]!.mainSlotLabel,
+        kTestPositionProfiles[romainSerrano]!.mainSlotLabel,
       );
     });
 
@@ -101,14 +101,14 @@ void main() {
     });
 
     test('quelques matchs ne renversent pas un poste très marqué', () {
-      final avant = kTestPositionProfiles[romainSpigolon]!;
+      final avant = kTestPositionProfiles[romainSerrano]!;
       final merged = mergePlayerPositionProfiles(
         archive: kTestPositionProfiles,
-        history: repeated(romainSpigolon, 'DCD', times: 3, year: 2026),
+        history: repeated(romainSerrano, 'DCD', times: 3, year: 2026),
       );
 
       expect(avant.mainSlotLabel, 'MDC');
-      expect(merged[romainSpigolon]!.mainSlotLabel, 'MDC');
+      expect(merged[romainSerrano]!.mainSlotLabel, 'MDC');
     });
 
     test('un changement de poste durable finit par faire basculer le profil',
@@ -116,26 +116,26 @@ void main() {
       final merged = mergePlayerPositionProfiles(
         archive: kTestPositionProfiles,
         history: [
-          ...repeated(romainSpigolon, 'DCD', times: 20, year: 2026),
-          ...repeated(romainSpigolon, 'DCD', times: 20, year: 2027),
+          ...repeated(romainSerrano, 'DCD', times: 20, year: 2026),
+          ...repeated(romainSerrano, 'DCD', times: 20, year: 2027),
         ],
       );
 
-      expect(merged[romainSpigolon]!.mainSlotLabel, 'DCD');
+      expect(merged[romainSerrano]!.mainSlotLabel, 'DCD');
       expect(
-        merged[romainSpigolon]!.secondarySlotLabel,
-        kTestPositionProfiles[romainSpigolon]!.mainSlotLabel,
+        merged[romainSerrano]!.secondarySlotLabel,
+        kTestPositionProfiles[romainSerrano]!.mainSlotLabel,
       );
     });
 
     test('les matchs joués s’ajoutent au compteur de titularisations', () {
-      final avant = kTestPositionProfiles[romainSpigolon]!.appearances;
+      final avant = kTestPositionProfiles[romainSerrano]!.appearances;
       final merged = mergePlayerPositionProfiles(
         archive: kTestPositionProfiles,
-        history: repeated(romainSpigolon, 'MDC', times: 5, year: 2026),
+        history: repeated(romainSerrano, 'MDC', times: 5, year: 2026),
       );
 
-      expect(merged[romainSpigolon]!.appearances, avant + 5);
+      expect(merged[romainSerrano]!.appearances, avant + 5);
     });
 
     test('les postes fusionnés restent triés et bornés', () {
@@ -143,11 +143,11 @@ void main() {
         archive: kTestPositionProfiles,
         history: [
           for (final slot in matchSheetSlotPositions.keys)
-            played(romainSpigolon, slot, year: 2026),
+            played(romainSerrano, slot, year: 2026),
         ],
       );
 
-      final samples = merged[romainSpigolon]!.samples;
+      final samples = merged[romainSerrano]!.samples;
       expect(samples.length, lessThanOrEqualTo(6));
       for (var index = 1; index < samples.length; index += 1) {
         expect(
