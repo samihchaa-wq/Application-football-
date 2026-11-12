@@ -8,8 +8,10 @@
 -- jusqu'à T-15, pendant le live. Un club qui réglait 0 minute voyait
 -- l'effectif figé à T-15 alors que la composition restait modifiable.
 --
--- Les quatre fonctions utilisent maintenant private.match_prediction_closes_at,
--- la même frontière que le live et les pronostics. Corps repris à
+-- Les quatre fonctions utilisent maintenant la même frontière que le live et
+-- les pronostics (private.match_prediction_closes_at, ou la même règle lue
+-- directement pour admin_remove_match_guest, qui tourne avec les droits du
+-- compte connecté). Corps repris à
 -- l'identique de 20261111000100_socle_structure.sql ; seule cette frontière
 -- change. Avec le réglage par défaut (15 minutes), rien ne change.
 
@@ -442,7 +444,11 @@ begin
 
   if v_status = 'a_venir'
      and v_kickoff_at is not null
-     and now() >= private.match_prediction_closes_at(v_kickoff_at) then
+     -- Fonction appelée avec les droits du joueur connecté : la règle est lue
+     -- par private.club_rule, ouverte aux comptes connectés, plutôt que par
+     -- private.match_prediction_closes_at, qui ne l'est pas.
+     and now() >= v_kickoff_at
+       - make_interval(mins => private.club_rule('prediction_close_minutes')) then
     raise exception 'L’effectif est figé depuis l’ouverture du Live.'
       using errcode = '22023';
   end if;
