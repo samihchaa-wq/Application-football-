@@ -382,7 +382,7 @@ class _StageLayer extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'AS GRINTA',
+              ClubIdentity.name.toUpperCase(),
               style: TextStyle(
                 fontFamily: 'Oswald',
                 fontWeight: FontWeight.w400,
