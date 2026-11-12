@@ -606,14 +606,31 @@ select diag(format('Club %s : %s joueurs ont joué au moins un match, %s bilans,
   (select max(wrapped.matches_played) from public.season_wrapped wrapped where wrapped.season_id = club.season_id)))
 from sim_clubs club order by club.label;
 
+-- Règle de l'appli : un joueur sans aucun match joué n'a pas de bilan.
 select is(
   (select count(*) from public.season_wrapped
    where season_id in (select season_id from sim_clubs)),
-  40::bigint,
-  'chaque joueur des deux clubs a son bilan de saison'
+  (select count(distinct attendance.season_player_id)
+   from public.match_attendance attendance
+   join public.matches match on match.id = attendance.match_id
+   where match.season_id in (select season_id from sim_clubs)),
+  'chaque joueur ayant joué au moins un match a son bilan de saison'
 );
 
-select pg_temp.sim_as(profile_id) from sim_players where club = 'b' and number = 2;
+select ok(
+  (select count(*) from public.season_wrapped
+   where season_id in (select season_id from sim_clubs)) >= 30,
+  'au moins 15 joueurs par club ont un bilan sur la saison'
+);
+
+select pg_temp.sim_as((
+  select player.profile_id
+  from sim_players player
+  join public.season_wrapped wrapped on wrapped.profile_id = player.profile_id
+  where player.club = 'b'
+  order by player.number
+  limit 1
+));
 select ok(
   public.get_my_season_wrapped() is not null,
   'un joueur du club B ouvre son bilan de saison'
