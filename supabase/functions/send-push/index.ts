@@ -2,6 +2,10 @@
 // Appelée par la base via pg_net avec le jeton interne x-push-token.
 import { createClient } from "npm:@supabase/supabase-js@2.95.0";
 import webpush from "npm:web-push@3.6.7";
+
+// Sujet VAPID propre au service commercial (jamais AS Grinta).
+const VAPID_SUBJECT = Deno.env.get("PUBLIC_APP_URL")?.trim() ||
+  "https://samihchaa-wq.github.io/Application-football-/";
 import { optionalMatchId, targetedDeliveryLogKind } from "./delivery_log.ts";
 import {
   executePushDelivery,
@@ -152,7 +156,7 @@ async function sendFixedPayloadToProfiles(
   if (targets.length === 0) return { attempted: 0, sent: 0, failed: 0 };
 
   webpush.setVapidDetails(
-    "https://samihchaa-wq.github.io/AS-Grinta",
+    VAPID_SUBJECT,
     vapid.public,
     vapid.private,
   );
@@ -363,7 +367,7 @@ Deno.serve(async (req: Request) => {
     }
 
     webpush.setVapidDetails(
-      "https://samihchaa-wq.github.io/AS-Grinta",
+      VAPID_SUBJECT,
       config.vapid_public,
       config.vapid_private,
     );
@@ -493,7 +497,7 @@ Deno.serve(async (req: Request) => {
       supabase,
       profileIds,
       {
-        title: "Test AS Grinta",
+        title: "Notification de test",
         body: "Si tu vois ceci, les notifications fonctionnent 🎉",
         url: ".",
         tag: "test-push",
@@ -611,7 +615,7 @@ Deno.serve(async (req: Request) => {
   }
 
   webpush.setVapidDetails(
-    "https://samihchaa-wq.github.io/AS-Grinta",
+    VAPID_SUBJECT,
     config.vapid_public,
     config.vapid_private,
   );
