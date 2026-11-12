@@ -113,6 +113,13 @@ Les consignes opérationnelles sont désormais tracées **dans les issues et dan
 
 **Actions prioritaires** : revue des PR #47/#50/#52 et gardes #44, vérification de la séparation A/B avec deux clubs fictifs (seulement dans un environnement et avec une autorisation appropriée), paramètres Auth/e-mails, confidentialités publiques et sauvegardes, conformité commerciale avant mai 2027. GitHub Pages ne doit pas devenir l'hébergement d'un SaaS payant. Ne pas fusionner, déployer, écrire dans Supabase ou engager des coûts sans accord exprès. La base originale et Carte soirée restent intouchables.
 
+## Intégration vérifiée du 12/11/2026 — après 14 h
+
+- **PR [#47](https://github.com/samihchaa-wq/Application-football-/pull/47) : FUSIONNÉE** sur `main`, squash `a80ac7d25e379a8a06dbbffa23c269f85ba5f9d1`. Cinq workflows verts sur le HEAD exact : Flutter CI, Supabase business/RLS, test de charge, Runtime diagnostic et garde des actions. Les mesures de séparation multiclub distant restent non éprouvées. La fusion ne publie pas le site et n'applique aucune migration commerciale.
+- **PR [#50](https://github.com/samihchaa-wq/Application-football-/pull/50) : BLOQUÉE** désormais `mergeable=false` après la fusion #47. Rebase/résolution de conflits puis tests sur le nouveau SHA, revue M03/M04 des permissions et du basculement visuel club A→B. Demande transmise dans le commentaire de PR.
+- **PR [#52](https://github.com/samihchaa-wq/Application-football-/pull/52) : BLOQUÉE** désormais `mergeable=false` ; remettre à jour de main et résoudre la revue de licence de la police embarquée, puis CI neuve. Demande transmise dans le commentaire de PR.
+- **Règle** : ne pas confondre CI verte sur ancienne branche avec tests de l'intégration combinée. Ne pas fusionner les PR bloquées, ni déclencher de publication, de migration ou de coût sans accord.
+
 ## Circuit de transmission entre les fils
 
 - **01 → 02 :** décisions fonctionnelles, paramètres et critères d'acceptation.
