@@ -1,5 +1,6 @@
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
 import 'package:as_grinta/features/badges/data/badge_inbox_repository.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/notifications/data/notification_inbox_repository.dart';
 import 'package:as_grinta/features/notifications/presentation/notifications_page.dart';
 import 'package:as_grinta/features/preferences/data/preferences_repository.dart';
@@ -56,6 +57,7 @@ Future<void> _pumpNotifications(
   WidgetTester tester,
   _FakePushSubscriptions repository, {
   bool supported = true,
+  ClubModules modules = const ClubModules.allEnabled(),
 }) async {
   await tester.pumpWidget(
     ProviderScope(
@@ -73,6 +75,7 @@ Future<void> _pumpNotifications(
         appPreferencesProvider.overrideWith(
           (ref) async => const AppPreferences(),
         ),
+        clubModulesProvider.overrideWith((ref) async => modules),
         // Le reste de l'écran est réservé aux administrateurs : le garder
         // fermé isole la carte des notifications de cet appareil.
         isAdminViewProvider.overrideWithValue(false),
@@ -217,6 +220,26 @@ void main() {
         );
       }
       expect(find.byType(Switch), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'fonctions coupées par le club : leur cloche disparaît',
+    (tester) async {
+      await _pumpNotifications(
+        tester,
+        _FakePushSubscriptions(subscribed: true),
+        modules: const ClubModules({
+          'predictions': false,
+          'man_of_the_match': false,
+          'badges': false,
+        }),
+      );
+
+      expect(find.text('Rappel pronostic'), findsNothing);
+      expect(find.text('Vote Homme du match'), findsNothing);
+      expect(find.text('Badge débloqué'), findsNothing);
+      expect(find.text('Composition en ligne'), findsOneWidget);
     },
   );
 
