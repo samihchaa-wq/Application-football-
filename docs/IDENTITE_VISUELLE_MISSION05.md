@@ -118,7 +118,7 @@ Critères d'acceptation : un joueur d'un club fictif ne voit jamais l'écusson o
 
 **Terminé :**
 - lecture de la documentation commune, de la PR #29 et de la PR #25 ;
-- inspection **visuelle de 10 images** commerciales/originales (icônes, écussons, affiche de stade, trois maillots) hors exécution de l'application ;
+- inspection **visuelle d'un échantillon d'images** commerciales/originales (icônes, écussons, affiche de stade, trois maillots) hors exécution de l'application ;
 - première matrice sourcée conserver / adapter / remplacer ;
 - repérage de l'identité provisoire, des couleurs fixes, des liens logo → splash/auth et des SVG de l'ancien produit ;
 - registre des ressources à valider avec le fil 07.
