@@ -314,22 +314,16 @@ Deno.serve(async (req: Request) => {
     if (updateError) throw updateError;
 
     if (mode === "create") {
-      const { error: founderError } = await scoped.rpc("promote_club_founder", {
+      // Promotion du créateur et preuve d'acceptation du contrat du club, en
+      // une seule transaction (public.found_club) : si la preuve ne peut pas
+      // être enregistrée, rien n'est fait, et le club vide est supprimé
+      // plus bas par discard_empty_club.
+      const { error: founderError } = await scoped.rpc("found_club", {
         p_club_id: club.id,
         p_profile_id: newUserId,
+        p_contract_version: clubContractVersion,
       });
       if (founderError) throw founderError;
-
-      // Preuve de l'acceptation du contrat du club : qui, quand, quelle
-      // version. Sans elle, le club n'est pas créé.
-      const { error: contractError } = await scoped
-        .from("club_contract_acceptances")
-        .insert({
-          club_id: club.id,
-          profile_id: newUserId,
-          contract_version: clubContractVersion,
-        });
-      if (contractError) throw contractError;
     }
 
     // Le compte est créé : l'envoi du lien de confirmation est un plus. S'il

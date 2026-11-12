@@ -48,3 +48,29 @@ create policy active_authenticated_profile_only on public.club_contract_acceptan
 create policy deny_client_access on public.club_contract_acceptances
   as restrictive for all to anon, authenticated
   using (false) with check (false);
+
+-- Fondation d'un club en une seule transaction : le créateur devient
+-- administrateur ET la preuve d'acceptation du contrat est enregistrée, ou
+-- rien n'est fait. Si l'enregistrement de la preuve échoue, la promotion est
+-- annulée avec lui : le profil reste « en attente » et les fonctions serveur
+-- peuvent alors supprimer le club vide (discard_empty_club). Aucun club ne
+-- peut donc exister avec un administrateur actif mais sans preuve.
+create function public.found_club(
+  p_club_id uuid,
+  p_profile_id uuid,
+  p_contract_version text
+) returns void
+language plpgsql security definer
+set search_path to ''
+as $$
+begin
+  perform public.promote_club_founder(p_club_id, p_profile_id);
+
+  insert into public.club_contract_acceptances (club_id, profile_id, contract_version)
+  values (p_club_id, p_profile_id, p_contract_version);
+end;
+$$;
+
+alter function public.found_club(uuid, uuid, text) owner to postgres;
+revoke all on function public.found_club(uuid, uuid, text) from public, anon, authenticated;
+grant execute on function public.found_club(uuid, uuid, text) to service_role;
