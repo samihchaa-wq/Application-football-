@@ -6,6 +6,7 @@ import 'package:as_grinta/features/admin/presentation/admin_page.dart';
 import 'package:as_grinta/features/auth/data/auth_repository.dart';
 import 'package:as_grinta/features/auth/domain/auth_profile.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:as_grinta/features/players/data/roster_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,10 +17,16 @@ import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 /// les actions sur un compte et leur confirmation, la saison ouverte.
 void main() {
   late _FakeAdminRepository repository;
+  late _FakeRosterRepository roster;
 
-  setUp(() => repository = _FakeAdminRepository());
+  setUp(() {
+    repository = _FakeAdminRepository();
+    roster = _FakeRosterRepository();
+  });
 
-  Future<void> pumpAdmin(WidgetTester tester) async {
+  Future<void> pumpAdmin(WidgetTester tester, {
+    Widget home = const AdminPage(),
+  }) async {
     await tester.binding.setSurfaceSize(const Size(900, 1400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
@@ -30,8 +37,9 @@ void main() {
           ),
           adminRepositoryProvider.overrideWithValue(repository),
           clubRepositoryProvider.overrideWithValue(_FakeClubRepository()),
+          rosterRepositoryProvider.overrideWithValue(roster),
         ],
-        child: const MaterialApp(home: AdminPage()),
+        child: MaterialApp(home: home),
       ),
     );
     await tester.pumpAndSettle();
@@ -64,7 +72,7 @@ void main() {
     expect(find.text('Valider ce compte'), findsOneWidget);
   });
 
-  testWidgets('une seule entrée « Membres » réunit comptes et effectif',
+  testWidgets('l’administration retrouve les deux onglets d’AS Grinta',
       (tester) async {
     repository.profiles = [
       _profile('p-1', 'Karim', status: 'active'),
@@ -73,12 +81,11 @@ void main() {
 
     await pumpAdmin(tester);
 
-    expect(find.text('Membres'), findsOneWidget);
-    expect(find.text('Utilisateurs'), findsNothing);
-    expect(find.text('Comptes'), findsOneWidget);
     expect(find.text('Effectif'), findsOneWidget);
-    // Le nombre de comptes à valider est visible sans changer d'onglet.
-    expect(find.text('En attente (1)'), findsOneWidget);
+    expect(find.text('Validés'), findsOneWidget);
+    expect(find.text('En attente'), findsOneWidget);
+    expect(find.text('Membres'), findsNothing);
+    expect(find.text('Comptes'), findsNothing);
   });
 
   testWidgets('annonce l’absence de compte en attente', (tester) async {
@@ -158,7 +165,7 @@ void main() {
     await tester.tap(find.text('Samih'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Toi'), findsOneWidget);
+    expect(find.text('Toi'), findsNothing);
     expect(find.text('Archiver'), findsNothing);
     expect(find.text('Supprimer'), findsNothing);
   });
@@ -209,33 +216,31 @@ void main() {
       find.textContaining('Lien d’inscription copié'),
       findsOneWidget,
     );
-    expect(find.textContaining('ABCDEFGH'), findsOneWidget);
+    // La copie du lien est visible dans le presse-papiers, sans révéler
+    // l'invitation du club dans le bandeau.
+    expect(find.textContaining('ABCDEFGH'), findsNothing);
   });
 
-  testWidgets('l’onglet Saison montre la saison ouverte', (tester) async {
+  testWidgets('la page Saison distincte montre la saison ouverte', (tester) async {
     repository.seasons = const [
       AdminSeasonItem(id: 's-1', name: '2025-2026', status: 'archived'),
       AdminSeasonItem(id: 's-2', name: '2026-2027', status: 'open'),
     ];
 
-    await pumpAdmin(tester);
-    await tester.tap(find.text('Saison'));
-    await tester.pumpAndSettle();
+    await pumpAdmin(tester, home: const AdminSeasonPage());
 
     expect(find.text('Saison 2026-2027'), findsOneWidget);
     expect(find.text('Finir la saison'), findsOneWidget);
     expect(find.text('Créer une saison'), findsNothing);
   });
 
-  testWidgets('sans saison ouverte, l’onglet Saison propose d’en créer une',
+  testWidgets('sans saison ouverte, la page Saison propose d’en créer une',
       (tester) async {
     repository.seasons = const [
       AdminSeasonItem(id: 's-1', name: '2025-2026', status: 'archived'),
     ];
 
-    await pumpAdmin(tester);
-    await tester.tap(find.text('Saison'));
-    await tester.pumpAndSettle();
+    await pumpAdmin(tester, home: const AdminSeasonPage());
 
     expect(find.text('Créer une saison'), findsOneWidget);
     expect(find.text('Finir la saison'), findsNothing);
@@ -258,6 +263,20 @@ AdminProfileItem _profile(
       role: role,
       status: status,
     );
+
+class _FakeRosterRepository implements RosterRepository {
+  String? seasonId;
+  List<RosterPlayer> players = const [];
+
+  @override
+  Future<String?> openSeasonId() async => seasonId;
+
+  @override
+  Future<List<RosterPlayer>> fetchRoster(String seasonId) async => players;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 class _FakeAdminRepository implements AdminRepository {
   List<AdminProfileItem> profiles = const [];
