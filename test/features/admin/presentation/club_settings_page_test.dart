@@ -141,6 +141,23 @@ void main() {
     expect(find.text('Adresse du terrain effacée.'), findsOneWidget);
   });
 
+  testWidgets('le quota habituel est réglable de 1 à 30', (tester) async {
+    await pumpPage(tester);
+    final plus = find.byKey(const Key('club-usual-squad-size-plus'));
+    await tester.ensureVisible(plus);
+    expect(find.text('14'), findsOneWidget);
+
+    await tester.tap(plus);
+    await tester.pumpAndSettle();
+    expect(repository.usualSquadSize, 15);
+    expect(find.text('15'), findsOneWidget);
+
+    final minus = find.byKey(const Key('club-usual-squad-size-minus'));
+    await tester.tap(minus);
+    await tester.pumpAndSettle();
+    expect(repository.usualSquadSize, 14);
+  });
+
   testWidgets('changer le code demande confirmation puis affiche le nouveau',
       (tester) async {
     await pumpPage(tester);
@@ -259,6 +276,7 @@ class _FakeClubRepository implements ClubRepository {
   final Map<String, bool> modules = {};
   int identityUpdates = 0;
   String? homeAddress;
+  int usualSquadSize = 14;
   final Map<String, int> ruleValues = {'prediction_close_minutes': 15};
 
   List<ClubRule> _rules() => [
@@ -295,6 +313,15 @@ class _FakeClubRepository implements ClubRepository {
   Future<String?> updateHomeAddress(String? address) async {
     homeAddress = address;
     return address;
+  }
+
+  @override
+  Future<int> fetchUsualSquadSize() async => usualSquadSize;
+
+  @override
+  Future<int> updateUsualSquadSize(int value) async {
+    usualSquadSize = value;
+    return value;
   }
 
   @override
