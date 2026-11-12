@@ -9,12 +9,14 @@ abstract final class ClubRules {
   static const String featuresOpenDaysKey = 'features_open_days';
   static const String featuresOpenHourKey = 'features_open_hour';
   static const String predictionCloseMinutesKey = 'prediction_close_minutes';
+  static const String correctionWindowHoursKey = 'correction_window_hours';
   static const String waitlistModeKey = 'waitlist_mode';
 
   static const Map<String, int> defaults = {
     featuresOpenDaysKey: 6,
     featuresOpenHourKey: 12,
     predictionCloseMinutesKey: 15,
+    correctionWindowHoursKey: 24,
     waitlistModeKey: 0,
   };
 
@@ -41,6 +43,10 @@ abstract final class ClubRules {
   static int get featuresOpenHour => _get(featuresOpenHourKey);
   static Duration get predictionCloseBeforeKickoff =>
       Duration(minutes: _get(predictionCloseMinutesKey));
+
+  /// Délai pendant lequel un résultat validé peut encore être corrigé.
+  static Duration get correctionWindow =>
+      Duration(hours: _get(correctionWindowHoursKey));
 
   /// Qui passe en premier quand il y a trop de disponibles.
   static WaitlistMode get waitlistMode =>

@@ -15,6 +15,7 @@ import {
   sha256Hex,
 } from "./account_email.ts";
 import { parseClubContractVersion, parseConsent } from "./consent.ts";
+import { usernameCandidates } from "./username_candidates.ts";
 import { validatePassword } from "./password_policy.ts";
 
 const USERNAME_DOMAIN = Deno.env.get("USERNAME_DOMAIN")?.trim() ||
@@ -251,10 +252,9 @@ Deno.serve(async (req: Request) => {
       club = { id: match.id, name: match.name };
     }
 
-    const base = `${normalizedFirst}${normalizedInitial}`.slice(0, 27);
+    const base = `${normalizedFirst}${normalizedInitial}`;
     let username = "";
-    for (let suffix = 1; suffix <= 20; suffix++) {
-      const candidate = suffix === 1 ? base : `${base}${suffix}`;
+    for (const candidate of usernameCandidates(base)) {
       const { data: existing, error: existsError } = await admin
         .from("profiles")
         .select("id")
