@@ -24,34 +24,62 @@ mettre à jour à chaque étape importante.
   `jvxkhgdopslctpcjrhzw`, organisation Pro, région Paris (eu-west-3).
   Coût : inclus dans l'abonnement Pro (~25 $/mois), aucun supplément tant que
   c'est le seul projet de l'organisation.
-  - Migrations appliquées jusqu'à `20261112040000_notifications_nom_du_club`
-    (enregistrées dans `supabase_migrations.schema_migrations`). Base vide :
-    aucun club, aucun utilisateur.
+  - Migrations appliquées jusqu'à `20261112050000_blocage_serveur_mode_live`
+    (enregistrées dans `supabase_migrations.schema_migrations`). Lecture seule du 12/11 :
+    0 club, 0 profil, 0 match, 0 utilisateur Auth, 0 abonnement.
   - Schéma `install_tmp` restant (inaccessible à l'appli) : à supprimer depuis
     l'éditeur SQL Supabase, `drop schema install_tmp cascade;`.
-  - Pas encore faits sur cette base : fonctions serveur (Edge Functions),
-    secrets (VAPID, `push_internal_token` dans Vault, `PUBLIC_APP_URL`,
-    `USERNAME_DOMAIN`), réglages d'authentification (URL du site, e-mails),
-    compte éditeur (`private.platform_operators`).
+  - Huit Edge Functions sont **déployées et ACTIVE** selon Supabase au 12/11 :
+    `account-email`, `calendar-feed`, `claim-account`, `claim-club`,
+    `manage-user`, `register-account`, `send-prediction-reminders`, `send-push`.
+    **Secrets VAPID/Push, Auth, e-mails, cron, URL publique, compte éditeur et
+    réussite en production non vérifiés** ; ACTIVE ne vaut pas test fonctionnel.
 - **PR fusionnées** : #1 à #22 (socle multiclub, réglages, sécurité de
   publication).
 - **PR #23** : nom du club dans les notifications au lieu de « AS Grinta »,
   lien d'agenda, nom du fichier du bilan.
-- **Prochaine PR** (branche `claude/project-thread-q37eby`) : blocage serveur
-  du mode live désactivé, `config/production.json` relié à la base
-  commerciale, ce document.
+- **PR #25 ouverte** (branche `claude/project-thread-isgvly`) : audit
+  fonctionnel documentaire enrichi (164 entrées) et cahier des charges fil 02.
+  Les documents de cette PR ne sont pas intégrés à `main` avant fusion.
+- Le blocage serveur du mode live apparaît dans la migration commerciale
+  `20261112050000`, enregistrée dans Supabase. Vérifier séparément les PR
+  concurrentes avant toute adaptation.
 - Déploiement GitHub Pages **désactivé** (`.github/workflows-disabled/`).
+
+## Mission 01 — audit en cours de validation documentaire (12/11/2026)
+
+- **PR #25** : `docs/AUDIT_FONCTIONNALITES.md` (analyse initiale),
+  `docs/AUDIT_FONCTIONNALITES_DETAILLE.md` (**164 fonctions, classification,
+  état de preuve, risques, priorité**) et `docs/CAHIER_DES_CHARGES_FIL_02.md`
+  (**30 tâches d'adaptation, critères d'acceptation et coordination inter-fils**).
+- Vérifications réalisées sans écriture : lecture des deux dépôts GitHub,
+  inspection de la base commerciale (19 migrations, 8 Edge Functions,
+  59 tables public et 24 tables private avec RLS, 3 buckets),
+  cinq compteurs métier à zéro. **Aucun test E2E, Flutter, SQL en exécution
+  ou notification réelle n'a été effectué par ce fil.**
+- 157 fonctions SECURITY DEFINER du schéma `public` exécutables par
+  `authenticated` (nombre de fonctions, non de vulnérabilités). Advisors
+  Supabase signalent notamment les catégories
+  `function_search_path_mutable` et
+  `authenticated_security_definer_function_executable`. **Fil 04** :
+  vérifier les autorisations internes de chaque RPC, RLS/Storage/Realtime
+  et prouver l'absence de lecture croisée entre clubs.
+- **Fil 02** : commencer par recaler l'état des PR/branches parallèles,
+  puis suivre le cahier des charges. Ne pas prendre l'inventaire documentaire
+  pour un feu vert de déploiement.
+- Aucun fichier d'AS Grinta, aucune donnée Supabase, aucun code applicatif
+  ni migration n'a été modifié par la mission 01. Cette PR reste à relire
+  avant fusion (contrôles verts exigés).
 
 ## Reste à faire, par priorité
 
 ### Bloquant pour un club test
-1-2. Fonctions serveur, secrets du coffre (`project_url`,
-   `push_internal_token`, clés VAPID générées automatiquement) et migrations
-   en attente : workflow GitHub **« Supabase commercial : mise en route »**
-   (`.github/workflows/commercial_supabase_setup.yml`, lancement manuel).
-   Prérequis côté Samih : secret GitHub `SUPABASE_ACCESS_TOKEN` (Supabase >
-   Account > Access Tokens). Les assistants ne peuvent pas écrire de secret
-   eux-mêmes. Le workflow refuse tout autre projet que la base commerciale.
+1-2. Huit Edge Functions et 19 migrations existent déjà sur la base commerciale.
+   **Ne pas relancer aveuglément** le workflow « Supabase commercial : mise
+   en route » (`.github/workflows/commercial_supabase_setup.yml`) ; d'abord
+   vérifier secrets, Vault, VAPID, `PUBLIC_APP_URL`, `USERNAME_DOMAIN`, cron,
+   idempotence et état de chaque endpoint. Aucun secret ne doit être affiché.
+   Le workflow refuse tout autre projet que la base commerciale.
 3. Réglages Auth dans Supabase (action de Samih dans le tableau de bord) :
    URL du site `https://samihchaa-wq.github.io/Application-football-/`, URLs
    de redirection, service d'envoi d'e-mails.
