@@ -144,7 +144,7 @@ Deno.serve(async (req: Request) => {
     return jsonResponse(
       {
         error:
-          "Accepte les conditions d’utilisation et indique ton âge pour continuer.",
+          "Accepte les conditions d’utilisation et indique ton âge pour continuer. Si la page est ancienne, recharge-la.",
       },
       400,
     );
@@ -154,7 +154,7 @@ Deno.serve(async (req: Request) => {
     return jsonResponse(
       {
         error:
-          "Pour créer le club, accepte les conditions d’abonnement et l’accord sur les données.",
+          "Pour créer le club, accepte les conditions d’abonnement et l’accord sur les données. Si la page est ancienne, recharge-la.",
       },
       400,
     );

@@ -28,7 +28,19 @@ professionnel du droit obligatoire avant de faire payer un club.**
 - `clubContractVersion` (CGV + accord sur les données) est enregistrée dans
   `public.club_contract_acceptances` par les fonctions `register-account` et
   `claim-club`. Une création de club sans cette acceptation est refusée.
-- Changer la version à chaque modification de fond. **Limite connue :**
+- Les fonctions serveur n'acceptent **que** la version publiée
+  (`CURRENT_TERMS_VERSION` / `CURRENT_CLUB_CONTRACT_VERSION` dans
+  `supabase/functions/*/consent.ts`) : une version ancienne, future ou
+  inventée par une requête forgée est refusée. Ces constantes doivent rester
+  égales à celles du fichier Dart (test `tool/tests/test_commercial_legal_versions.py`).
+- Archive des textes : le texte exact d'une version est celui du fichier Dart
+  dans l'historique Git à cette date. Avant la commercialisation, exporter
+  aussi chaque version publiée en PDF horodaté, conservé hors du dépôt.
+- La case « j'ai le pouvoir d'engager le club » est une déclaration : elle ne
+  vérifie pas le pouvoir de représentation. Pour un club payant, faire signer
+  ou confirmer le bon de commande par le président ou le trésorier.
+- Changer la version à chaque modification de fond, **dans les trois
+  fichiers**. **Limite connue :**
   l'appli ne redemande pas encore l'accord après un changement de version ;
   écran à construire avant la première modification des textes.
 
