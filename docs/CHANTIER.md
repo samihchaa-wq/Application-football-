@@ -103,6 +103,16 @@ Les consignes opérationnelles sont désormais tracées **dans les issues et dan
 - M02/M03 : corriger les références inutiles aux identités de l'ancien club et tester la régression sans diffuser de données réelles.
 - Si un secret ou une exposition de données à risque est démontré, signaler l'incident au propriétaire avec preuves non sensibles et préparer les mesures proportionnées (rotation/réécriture seulement après autorisation).
 
+## Reprise des cinq automatisations — 12/11/2026, 11 h UTC
+
+**Ordre explicite du propriétaire : « Relance tout le monde ».** Les cinq tâches M00, M01-M02, M03-M09, M04-M07 et M05-M06-M08 ont été réactivées (état `is_enabled=true` confirmé). Reprise des passages horaires et des synthèses deux fois par jour ; chaque résultat devra être vérifié, pas seulement le déclenchement.
+
+**Nouveau relais opérationnel :** nom public **Lucarne**, cible de sortie **mai 2027**, foot à 11 exclusivement, conserver l'UX de l'application originale mais sans modifier AS Grinta, badges avec emojis, « Étoile du match », maillots et stade personnalisables par club. Prix et paiement non encore décidés. Dépôt commercial **public** sur décision B, non modifiable sans accord explicite ; tout coût doit être annoncé **avant** engagement.
+
+**État GitHub vérifié** : PR #24 (publication Pages manuelle pour test), #25 (audit), #46 (assainissement), #48 (attente et matchs historiques), #49 (juridique) et #51 (identité Lucarne + stade) **fusionnées** ; #47, #50, #52 **ouvertes** ; #43 empilée sur #40 et sans CI de HEAD lors de la revue précédente. Vérifier les résultats CI sur chaque HEAD avant toute proposition de fusion. La liste plus ancienne dans les sections précédentes représente une photographie historique, non le statut présent.
+
+**Actions prioritaires** : revue des PR #47/#50/#52 et gardes #44, vérification de la séparation A/B avec deux clubs fictifs (seulement dans un environnement et avec une autorisation appropriée), paramètres Auth/e-mails, confidentialités publiques et sauvegardes, conformité commerciale avant mai 2027. GitHub Pages ne doit pas devenir l'hébergement d'un SaaS payant. Ne pas fusionner, déployer, écrire dans Supabase ou engager des coûts sans accord exprès. La base originale et Carte soirée restent intouchables.
+
 ## Circuit de transmission entre les fils
 
 - **01 → 02 :** décisions fonctionnelles, paramètres et critères d'acceptation.
