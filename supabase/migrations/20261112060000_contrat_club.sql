@@ -30,11 +30,21 @@ create index club_contract_acceptances_profile_id_idx
 alter table public.club_contract_acceptances enable row level security;
 revoke all on public.club_contract_acceptances from public, anon, authenticated;
 grant all on public.club_contract_acceptances to service_role;
+-- La colonne id crée une séquence, qui reçoit par défaut des droits pour
+-- anon et authenticated : on les retire aussi.
+revoke all on sequence public.club_contract_acceptances_id_seq
+  from public, anon, authenticated;
+grant usage, select on sequence public.club_contract_acceptances_id_seq
+  to service_role;
 
 create policy club_isolation on public.club_contract_acceptances
   as restrictive for all to public
   using (club_id = (select private.current_club_id()))
   with check (club_id = (select private.current_club_id()));
+create policy active_authenticated_profile_only on public.club_contract_acceptances
+  as restrictive for all to authenticated
+  using ((select private.is_active_profile()))
+  with check ((select private.is_active_profile()));
 create policy deny_client_access on public.club_contract_acceptances
   as restrictive for all to anon, authenticated
   using (false) with check (false);
