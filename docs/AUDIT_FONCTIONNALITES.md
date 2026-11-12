@@ -6,6 +6,7 @@
 ## Livrables et source de vérité
 
 - **Tableau complet de référence — 164 unités métiers** avec sous-fonctions, classification, présence code/serveur, changements, risques, priorités, limites : [AUDIT_FONCTIONNALITES_DETAILLE.md](AUDIT_FONCTIONNALITES_DETAILLE.md).
+- **Audit des routes, interactions et paramètres — 41 entrées de navigation, 7 interrupteurs et 8 règles** : [AUDIT_ROUTES_ET_PARAMETRES.md](AUDIT_ROUTES_ET_PARAMETRES.md). Cette annexe précise les contrôles écran par écran à vérifier, sans prétendre que ces contrôles ont été exécutés.
 - **Cahier des charges du fil 02 — 30 tâches**, scénarios et critères d'acceptation : [CAHIER_DES_CHARGES_FIL_02.md](CAHIER_DES_CHARGES_FIL_02.md).
 - **Relais entre fils, décisions et état vérifié** : [HANDOFF.md](HANDOFF.md).
 - **Registre de pilotage du fil 00** : [CHANTIER.md](CHANTIER.md) (sur branche PR #29 tant que celle-ci n'est pas fusionnée).
