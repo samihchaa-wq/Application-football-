@@ -93,6 +93,17 @@ select is(
   'Alpha ne voit que ses badges'
 );
 
+select lives_ok(
+  $$select public.log_client_incident('incident-alpha', 'test', 'test', '0')$$,
+  'un membre d’Alpha signale un incident de l’application'
+);
+select is(
+  (select count(*) from public.admin_recent_client_incidents()
+   where reference = 'incident-alpha'),
+  1::bigint,
+  'l’administrateur d’Alpha voit les incidents de son club'
+);
+
 reset role;
 
 -- ---------------------------------------------------------------------------
@@ -124,6 +135,12 @@ select is(
    where profile_id = '1c000000-0000-0000-0000-00000000000a'),
   0::bigint,
   'les classements de Bravo ne contiennent pas les membres d’Alpha'
+);
+select is(
+  (select count(*) from public.admin_recent_client_incidents()
+   where reference = 'incident-alpha'),
+  0::bigint,
+  'l’administrateur de Bravo ne voit pas les incidents d’Alpha'
 );
 
 with touched as (
@@ -193,7 +210,6 @@ select is(
         'private.registration_attempts',
         'private.prediction_reminder_cron_config',
         'private.sport_waitlist_engine_activation',
-        'private.client_incident_log',
         'private.platform_operators',
         'private.email_confirmations',
         'private.email_attempts'
