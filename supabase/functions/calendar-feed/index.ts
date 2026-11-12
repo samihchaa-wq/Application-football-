@@ -82,7 +82,11 @@ function eventLines(row: Record<string, unknown>): string {
   if (!id) return "";
 
   let out = "BEGIN:VEVENT\r\n";
-  out += foldLine(`UID:${escapeIcs(id)}@calendrier-club`);
+  // Compatibilité des abonnements existants : un UID iCalendar est une clé
+  // persistante. Ne pas changer le suffixe historique, même si le produit
+  // est désormais Lucarne : cela créerait des matchs en double dans les
+  // agendas déjà abonnés (Apple, Google, Outlook).
+  out += foldLine(`UID:${escapeIcs(id)}@sporteasy-grinta`);
   out += `DTSTAMP:${formatUtc(new Date())}\r\n`;
   out += `LAST-MODIFIED:${formatUtc(changedAt)}\r\n`;
   out += `SEQUENCE:${sequenceFor(changedAt)}\r\n`;
