@@ -88,6 +88,40 @@ void main() {
     expect(find.text('Comptes'), findsNothing);
   });
 
+  testWidgets('une fiche de compte reprend les actions visibles d’AS Grinta',
+      (tester) async {
+    repository.profiles = [_profile('p-1', 'Karim', status: 'active')];
+    roster.seasonId = 's-1';
+    await pumpAdmin(tester);
+
+    // Une fiche repliée ne présente que le nom et le portrait.
+    expect(find.text('Karim'), findsOneWidget);
+    expect(find.text('Rôle'), findsNothing);
+    await tester.tap(find.text('Karim'));
+    await tester.pumpAndSettle();
+
+    for (final label in [
+      'Prénom',
+      'Identifiant',
+      'Rattachement',
+      'Rôle',
+      'Photo',
+      'Mot de passe',
+      'Archiver',
+      'Supprimer',
+    ]) {
+      expect(find.text(label), findsOneWidget);
+    }
+    for (final role in [
+      'role-effectif',
+      'role-admin',
+      'role-gardien',
+      'role-coach',
+    ]) {
+      expect(find.byKey(ValueKey(role)), findsOneWidget);
+    }
+  });
+
   testWidgets('annonce l’absence de compte en attente', (tester) async {
     repository.profiles = [_profile('p-1', 'Karim', status: 'active')];
 
