@@ -124,5 +124,17 @@ select lives_ok(
 );
 reset role;
 
+-- Rappel de pronostic : match du soir inchangé, match tôt rappelé avant fermeture.
+select is(
+  private.match_prediction_notification_at('2030-05-10 18:00+00'),
+  '2030-05-10 14:00+00'::timestamptz,
+  'match du soir : le rappel part à l’heure réglée (16 h)'
+);
+select is(
+  private.match_prediction_notification_at('2030-05-10 13:00+00'),
+  '2030-05-10 11:45+00'::timestamptz,
+  'match tôt : le rappel part 60 min avant la fermeture des pronostics'
+);
+
 select * from finish();
 rollback;
