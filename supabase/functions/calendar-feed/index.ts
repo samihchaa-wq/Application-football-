@@ -82,7 +82,7 @@ function eventLines(row: Record<string, unknown>): string {
   if (!id) return "";
 
   let out = "BEGIN:VEVENT\r\n";
-  out += foldLine(`UID:${escapeIcs(id)}@sporteasy-grinta`);
+  out += foldLine(`UID:${escapeIcs(id)}@calendrier-club`);
   out += `DTSTAMP:${formatUtc(new Date())}\r\n`;
   out += `LAST-MODIFIED:${formatUtc(changedAt)}\r\n`;
   out += `SEQUENCE:${sequenceFor(changedAt)}\r\n`;
