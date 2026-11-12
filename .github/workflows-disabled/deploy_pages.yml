@@ -51,13 +51,16 @@ jobs:
           fi
       - name: Block wrong commercial configuration
         run: python3 tool/check_commercial_deploy.py
+      - name: Prepare commercial Supabase content-security-policy
+        run: python3 tool/stamp_commercial_csp.py
       - name: Setup Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           channel: stable
+          flutter-version: 3.47.9
           cache: true
-      - name: Install dependencies
-        run: flutter pub get
+      - name: Install locked dependencies
+        run: flutter pub get --enforce-lockfile
       - name: Read application version
         shell: bash
         run: |
@@ -159,6 +162,14 @@ jobs:
           curl --retry 5 --retry-delay 5 -LfsS "${base}main.dart.js?audit=${token}" -o /tmp/main.dart.js
           curl --retry 5 --retry-delay 5 -LfsS "${base}favicon.svg?audit=${token}" -o /tmp/favicon.svg
           test -s /tmp/index.html
+          # Interdire une sortie HTML qui conserve les anciennes origines.
+          project_host=$(jq -r '.SUPABASE_URL | sub("^https://"; "") | sub("/$"; "")' config/production.json)
+          grep -Fq "https://$project_host" /tmp/index.html
+          grep -Fq "wss://$project_host" /tmp/index.html
+          if grep -Fq 'a-remplacer.supabase.co' /tmp/index.html; then
+            echo '::error::CSP commercial resté sur une configuration provisoire.'
+            exit 1
+          fi
           test -s /tmp/app_shell.js
           test -s /tmp/build_version.js
           test -s /tmp/flutter_bootstrap.js
