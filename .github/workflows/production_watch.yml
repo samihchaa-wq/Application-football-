@@ -5,8 +5,9 @@ name: Production watch
 # de problème, le contrôle échoue et GitHub envoie un e-mail au propriétaire
 # du dépôt.
 #
-# Inactif tant que le secret PRODUCTION_DB_URL n'existe pas (aucune base en
-# ligne pour l'instant). Voir docs/exploitation.md.
+# Sans le secret PRODUCTION_DB_URL, le workflow échoue explicitement :
+# un contrôle non exécuté ne doit jamais apparaître comme un succès.
+# La réception des alertes GitHub doit être testée séparément.
 on:
   schedule:
     - cron: '17 * * * *'
@@ -22,10 +23,12 @@ jobs:
     env:
       DB_URL: ${{ secrets.PRODUCTION_DB_URL }}
     steps:
-      - name: Skip when no production database is configured
+      - name: Require configured production database
         if: env.DB_URL == ''
-        run: >-
-          echo "::notice::Pas encore de base en ligne : surveillance inactive."
+        shell: bash
+        run: |
+          echo "::error::PRODUCTION_DB_URL manquant : surveillance non effectuée."
+          exit 1
 
       - name: Check scheduled jobs and notifications
         if: env.DB_URL != ''
