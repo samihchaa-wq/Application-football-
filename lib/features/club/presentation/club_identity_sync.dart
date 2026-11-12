@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:as_grinta/core/club/club_identity.dart';
+import 'package:as_grinta/core/club/club_kits.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
 import 'package:as_grinta/features/club/data/club_repository.dart';
@@ -23,6 +24,7 @@ final clubIdentitySyncProvider = Provider<void>((ref) {
       if (!authenticated) {
         ClubIdentity.reset();
         AppTheme.resetClubColors();
+        ClubKits.reset();
         return;
       }
       try {
@@ -30,6 +32,7 @@ final clubIdentitySyncProvider = Provider<void>((ref) {
         if (disposed) return;
         ClubIdentity.set(name: club.name, shortName: club.shortName);
         applyClubColors(club);
+        ClubKits.setFromJson(club.kits);
         ClubIdentity.setLogoUrl(ref.read(clubRepositoryProvider).logoUrl(club));
       } catch (_) {
         // Le libellé neutre reste affiché ; la prochaine connexion réessaie.
@@ -40,8 +43,9 @@ final clubIdentitySyncProvider = Provider<void>((ref) {
 
 /// Habille l'application aux couleurs du club.
 void applyClubColors(Club club) {
-  AppTheme.applyClubColors(
-    primary: AppTheme.parseHex(club.primaryColor),
-    secondary: AppTheme.parseHex(club.secondaryColor),
-  );
+  final primary = AppTheme.parseHex(club.primaryColor);
+  final secondary = AppTheme.parseHex(club.secondaryColor);
+  AppTheme.applyClubColors(primary: primary, secondary: secondary);
+  // Les maillots par défaut reprennent les couleurs du club.
+  ClubKits.setClubColors(primary: primary, secondary: secondary);
 }
