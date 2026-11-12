@@ -48,6 +48,10 @@ mettre à jour à chaque étape importante.
 
 ## Mission 01 — audit en cours de validation documentaire (12/11/2026)
 
+- **Annexe des parcours** : `docs/AUDIT_ROUTES_ET_PARAMETRES.md`
+  (**41 entrées de routes et redirections**, 7 interrupteurs de modules,
+  8 règles configurables avec valeurs/bornes, matrice des commandes visibles).
+  Inventaire statique : la vérification bouton par bouton et API reste fil 03.
 - **PR #25** : `docs/AUDIT_FONCTIONNALITES.md` (analyse initiale),
   `docs/AUDIT_FONCTIONNALITES_DETAILLE.md` (**164 fonctions, classification,
   état de preuve, risques, priorité**) et `docs/CAHIER_DES_CHARGES_FIL_02.md`
