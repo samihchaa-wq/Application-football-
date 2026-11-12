@@ -154,13 +154,23 @@ begin
     for v_index in 1..20 loop
       v_profile := ('5a000000-0000-0000-0000-' || case v_club.label when 'a' then '0a' else '0b' end
                     || lpad(v_index::text, 10, '0'))::uuid;
-      v_season_player := gen_random_uuid();
-      insert into public.season_players (
-        id, club_id, season_id, first_name, last_name, is_goalkeeper, is_active, position, profile_id
-      ) values (
-        v_season_player, v_club.id, v_season, (array['Adrien','Bastien','Cyril','Damien','Emile','Fabien','Gael','Hugo','Ilan','Jules','Kevin','Loic','Malo','Nael','Oscar','Pablo','Quentin','Remi','Sacha','Theo'])[v_index], 'Sim' || upper(v_club.label),
-        v_index = 1, true, v_index, v_profile
-      );
+      -- Les membres actifs rejoignent la saison ouverte d'eux-mêmes ; on
+      -- complète seulement leur numéro et le poste de gardien.
+      select id into v_season_player from public.season_players
+      where season_id = v_season and profile_id = v_profile;
+      if v_season_player is null then
+        v_season_player := gen_random_uuid();
+        insert into public.season_players (
+          id, club_id, season_id, first_name, last_name, is_goalkeeper, is_active, position, profile_id
+        ) values (
+          v_season_player, v_club.id, v_season, 'Remplacant', 'Sim' || upper(v_club.label),
+          v_index = 1, true, v_index, v_profile
+        );
+      else
+        update public.season_players
+        set is_goalkeeper = (v_index = 1), is_active = true
+        where id = v_season_player;
+      end if;
       insert into sim_players values (v_club.label, v_index, v_profile, v_season_player);
     end loop;
   end loop;
@@ -169,7 +179,8 @@ $$;
 
 select is(
   (select count(*) from public.season_players
-   where season_id in (select season_id from sim_clubs) and is_active),
+   where season_id in (select season_id from sim_clubs) and is_active
+     and profile_id in (select profile_id from sim_players)),
   40::bigint,
   'chaque club a 20 joueurs actifs dans sa saison'
 );
