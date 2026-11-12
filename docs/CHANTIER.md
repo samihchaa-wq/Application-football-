@@ -20,7 +20,7 @@
 |---|---|---|---|
 | 01 | Audit exhaustif des fonctionnalités | **Travail documenté, non validé** | PR [#25](https://github.com/samihchaa-wq/Application-football-/pull/25) ouverte : audit basé sur lecture du code ; compléter et confirmer les décisions |
 | 02 | Adaptation multiclub | **Socle existant, validation incomplète** | Migrations multiclub présentes ; réaliser les écarts du fil 01 en PR isolées |
-| 03 | Tests fonctionnels | **Automatisation présente ; essais réels non confirmés** | Inventorier preuves CI ; tester parcours de bout en bout et limites |
+| 03 | Tests fonctionnels | **Registre QA rédigé, non validé** | PR [#26](https://github.com/samihchaa-wq/Application-football-/pull/26) ouverte (brouillon) : 34 scénarios, 8 risques ; tests réels à compléter |
 | 04 | Sécurité et stabilité | **Audits prioritaires non terminés** | Vérifier la séparation A/B ; examiner les alertes RLS/RPC et fonctions privilégiées |
 | 05 | DA et identité | **Livrable propre au fil non confirmé** | Auditer l'UI ; conserver l'ADN d'AS Grinta ; préparer identité neutre |
 | 06 | Business et lancement | **Choix commerciaux ouverts** | Tarif indicatif non validé ; paiement en ligne absent |
@@ -34,9 +34,10 @@ Les statuts indiquent **l'état vérifiable du projet GitHub/Supabase**, pas l'a
 
 1. **Accès et confidentialité** : les dépôts GitHub sont publics ; la documentation signale que l'historique commercial contient d'anciennes données AS Grinta. Vérifier l'exposition avant toute ouverture commerciale. Envisager dépôt privé et remédiation historique, sans divulguer de données.
 2. **Sécurité du cloisonnement** : contrôler avec deux clubs fictifs toutes les tables, RPC, Storage, invitations et notifications. Le linter Supabase remonte **157 avertissements** sur l'exécution de fonctions `SECURITY DEFINER` par des utilisateurs authentifiés : il faut analyser les contrôles internes, pas assimiler chaque avertissement à une faille avérée.
-3. **PR [#24](https://github.com/samihchaa-wq/Application-football-/pull/24)** ouverte : réactivation GitHub Pages de test. Ne fusionner qu'après vérification des prérequis, de la sécurité, de l'environnement cible et des contrôles CI.
-4. **PR [#25](https://github.com/samihchaa-wq/Application-football-/pull/25)** ouverte : compléter le cahier des charges et confirmer la matrice conserver/adapter/paramétrer/supprimer.
-5. **Pré-lancement** : configuration Auth / emails, identité commerciale, conditions légales, paiement, support, sauvegardes et restauration doivent être revus avant la vente.
+3. **Qualité et supervision** : PR [#26](https://github.com/samihchaa-wq/Application-football-/pull/26) signale que le script de charge masque les échecs de `pgbench` avec `|| true`, et qu'une sonde réelle n'a pas été exécutée malgré un monitoring vert. Investiguer avant de se fier à ces indicateurs.
+4. **PR [#24](https://github.com/samihchaa-wq/Application-football-/pull/24)** ouverte : réactivation GitHub Pages de test. Ne fusionner qu'après vérification des prérequis, de la sécurité, de l'environnement cible et des contrôles CI.
+5. **PR [#25](https://github.com/samihchaa-wq/Application-football-/pull/25)** ouverte : compléter le cahier des charges et confirmer la matrice conserver/adapter/paramétrer/supprimer.
+6. **Pré-lancement** : configuration Auth / emails, identité commerciale, conditions légales, paiement, support, sauvegardes et restauration doivent être revus avant la vente.
 
 ## Circuit de transmission entre les fils
 
