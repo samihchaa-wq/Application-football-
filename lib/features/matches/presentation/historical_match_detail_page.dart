@@ -3,7 +3,9 @@ import 'package:as_grinta/core/utils/app_errors.dart';
 import 'package:as_grinta/core/widgets/grinta_loader.dart';
 import 'package:as_grinta/core/widgets/match_detail_header_card.dart';
 import 'package:as_grinta/core/widgets/match_sheet_top_row.dart';
+import 'package:as_grinta/features/auth/presentation/auth_state.dart';
 import 'package:as_grinta/features/matches/data/calendar_history_repository.dart';
+import 'package:as_grinta/features/matches/data/history_entry_repository.dart';
 import 'package:as_grinta/features/matches/data/historical_match_detail_repository.dart';
 import 'package:as_grinta/features/matches/presentation/widgets/completed_match_composition_card.dart';
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
@@ -71,6 +73,8 @@ class HistoricalMatchDetailPage extends ConsumerWidget {
                   );
                 },
               ),
+              if (ref.watch(isAdminViewProvider))
+                _DeleteHistoricalMatchButton(matchId: matchId),
             ],
           ),
         ),
@@ -251,7 +255,6 @@ MatchCompositionEntry _entryFromHistorical(
 }
 
 /// Construit l'effectif de secours d'une archive sans composition exploitable.
-/// Philippe est le coach et ne doit jamais être présenté comme joueur.
 @visibleForTesting
 List<CompletedPlayerSummary> historicalFallbackPlayers(
   HistoricalMatchDetail detail,
@@ -263,15 +266,11 @@ List<CompletedPlayerSummary> historicalFallbackPlayers(
 
   void addPlayer(String rawName, int goals) {
     final name = rawName.trim();
-    // Le coach est reconnu sur son appellation actuelle comme sur le nom écrit
-    // à l'époque : lui donner un surnom ne doit pas le faire réapparaître dans
-    // l'effectif de secours.
-    final archiveName = detail.archiveNameByLabel[name] ?? '';
-    if (name.isEmpty ||
-        _isHistoricalCoachName(name) ||
-        _isHistoricalCoachName(archiveName)) {
-      return;
-    }
+    // Le club d'origine écartait ici son coach, reconnu à son prénom. Dans la
+    // version multi-clubs, ce filtre aurait fait disparaître tout joueur de ce
+    // prénom : les archives saisies par l'administrateur ne contiennent que
+    // des joueurs.
+    if (name.isEmpty) return;
     final key = name.toLowerCase();
     final existing = playersByName[key];
     if (existing == null || goals > existing.goals) {
@@ -296,7 +295,74 @@ List<CompletedPlayerSummary> historicalFallbackPlayers(
     ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 }
 
-bool _isHistoricalCoachName(String name) {
-  final normalized = name.trim().toLowerCase();
-  return normalized == 'philippe' || normalized.startsWith('philippe ');
+/// Retire de l'historique un match saisi par erreur (administrateur).
+class _DeleteHistoricalMatchButton extends ConsumerStatefulWidget {
+  const _DeleteHistoricalMatchButton({required this.matchId});
+
+  final String matchId;
+
+  @override
+  ConsumerState<_DeleteHistoricalMatchButton> createState() =>
+      _DeleteHistoricalMatchButtonState();
+}
+
+class _DeleteHistoricalMatchButtonState
+    extends ConsumerState<_DeleteHistoricalMatchButton> {
+  bool _busy = false;
+
+  Future<void> _delete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Supprimer ce match ?'),
+        content: const Text(
+          'Il disparaît de l’historique et des statistiques. '
+          'Tu pourras le saisir à nouveau.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Supprimer'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _busy = true);
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    try {
+      await ref
+          .read(historyEntryRepositoryProvider)
+          .deleteMatch(widget.matchId);
+      refreshHistoricalArchives(ref);
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Match retiré de l’historique.')),
+      );
+      await navigator.maybePop();
+    } catch (error) {
+      messenger.showSnackBar(SnackBar(content: Text(humanizeError(error))));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 24),
+      child: Center(
+        child: TextButton.icon(
+          key: const Key('historical-match-delete'),
+          onPressed: _busy ? null : _delete,
+          icon: const Icon(Icons.delete_outline),
+          label: const Text('Supprimer ce match de l’historique'),
+        ),
+      ),
+    );
+  }
 }

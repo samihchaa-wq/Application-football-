@@ -6,6 +6,24 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- liste d'attente : chaque club choisit, dans « Réglages du club », qui passe
+  en premier quand il y a plus de disponibles que de places. « Par présence
+  l'an dernier » (la règle d'origine, toujours par défaut), « Ordre
+  d'arrivée » (les premiers à se dire disponibles sont convoqués, un joueur
+  qui revient se replace en fin de file) ou « Par choix » (tous les
+  disponibles sont convoqués, l'admin met lui-même en attente ceux en trop) ;
+- historique : « Ajouter des matchs passés », dans Paramètres pour les admins.
+  Un seul formulaire, pensé pour le téléphone : adversaire, date, domicile ou
+  extérieur, score, joueurs présents (y compris d'anciens joueurs sans
+  compte), buteurs, homme du match et, si on s'en souvient, la composition.
+  « Enregistrer et ajouter le suivant » garde l'effectif et avance d'une
+  semaine pour saisir une saison d'affilée. Les matchs rejoignent le
+  calendrier, les fiches de match archivé et les statistiques « Toutes
+  saisons ». Un match saisi par erreur se supprime depuis sa fiche. Seuls les
+  matchs antérieurs à la première saison suivie dans l'application sont
+  acceptés ;
+- historique : l'effectif d'un match archivé n'écarte plus les joueurs
+  prénommés Philippe (filtre propre au club d'origine) ;
 - maillots : les trois maillots proposés pour un match (France, Orange,
   Bleu) sont désormais des dessins aux couleurs du club, sans logo ni
   écusson. Ils reprenaient jusqu'ici des photos de maillots de sélections
