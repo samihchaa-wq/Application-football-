@@ -29,9 +29,10 @@ mettre à jour à chaque étape importante.
     aucun club, aucun utilisateur.
   - Schéma `install_tmp` restant (inaccessible à l'appli) : à supprimer depuis
     l'éditeur SQL Supabase, `drop schema install_tmp cascade;`.
-  - Pas encore faits sur cette base : fonctions serveur (Edge Functions),
-    secrets (VAPID, `push_internal_token` dans Vault, `PUBLIC_APP_URL`,
-    `USERNAME_DOMAIN`), réglages d'authentification (URL du site, e-mails),
+  - Faits le 12/11 via le workflow « Supabase commercial : mise en route » :
+    migrations jusqu'à `20261112050000`, coffre (project_url,
+    push_internal_token, clés VAPID), 8 Edge Functions et leurs secrets.
+  - Pas encore faits : réglages d'authentification (URL du site, e-mails),
     compte éditeur (`private.platform_operators`).
 - **PR fusionnées** : #1 à #22 (socle multiclub, réglages, sécurité de
   publication).
@@ -40,7 +41,7 @@ mettre à jour à chaque étape importante.
 - **Prochaine PR** (branche `claude/project-thread-q37eby`) : blocage serveur
   du mode live désactivé, `config/production.json` relié à la base
   commerciale, ce document.
-- Déploiement GitHub Pages **désactivé** (`.github/workflows-disabled/`).
+- Déploiement GitHub Pages : workflow réactivé en **publication manuelle uniquement** (PR #24), pour un test à clubs fictifs. Site cible : https://samihchaa-wq.github.io/Application-football-/ — publié seulement après lancement manuel et vérification. GitHub Pages **n'autorise pas** l'hébergement d'un SaaS commercial : un autre hébergeur sera nécessaire avant toute vente.
 
 ## Reste à faire, par priorité
 
