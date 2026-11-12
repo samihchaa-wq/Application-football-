@@ -643,5 +643,47 @@ select is(
 );
 select pg_temp.sim_as(null);
 
+-- Lecture directe de la table des bilans, identité par identité (club A).
+create temporary table sim_wrapped_expected on commit drop as
+select
+  (select count(*) from public.season_wrapped wrapped
+   where wrapped.season_id = club.season_id) as club_rows
+from sim_clubs club where club.label = 'a';
+grant select on sim_wrapped_expected to authenticated;
+
+select pg_temp.sim_as((
+  select player.profile_id from sim_players player
+  join public.season_wrapped wrapped on wrapped.profile_id = player.profile_id
+  where player.club = 'a' order by player.number limit 1
+));
+select is(
+  (select count(*) from public.season_wrapped),
+  1::bigint,
+  'un joueur du club A lit son bilan, et seulement le sien (pas celui d’un coéquipier)'
+);
+select is(
+  (select count(*) from public.season_wrapped where profile_id <> (select auth.uid())),
+  0::bigint,
+  'un joueur du club A ne lit le bilan d’aucun autre joueur'
+);
+select pg_temp.sim_as(null);
+
+select pg_temp.sim_as((select admin_id from sim_clubs where label = 'a'));
+select is(
+  (select count(*) from public.season_wrapped),
+  (select club_rows from sim_wrapped_expected),
+  'l’administrateur du club A lit tous les bilans de son club, et aucun autre'
+);
+select pg_temp.sim_as(null);
+
+select pg_temp.sim_as((select admin_id from sim_clubs where label = 'b'));
+select is(
+  (select count(*) from public.season_wrapped
+   where club_id = (select id from sim_clubs where label = 'a')),
+  0::bigint,
+  'l’administrateur du club B ne lit aucun bilan du club A'
+);
+select pg_temp.sim_as(null);
+
 select * from finish();
 rollback;
