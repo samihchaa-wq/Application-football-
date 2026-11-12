@@ -240,6 +240,28 @@ void main() {
     expect(ClubRules.waitlistMode, WaitlistMode.arrivalOrder);
   });
 
+  testWidgets('les +1 sont manuels et les heures auto ne sont plus proposées',
+      (tester) async {
+    repository.ruleValues.addAll({
+      'waitlist_mode': 0,
+      'waitlist_cutoff_days': 1,
+      'waitlist_cutoff_hour': 12,
+    });
+    await pumpPage(tester);
+
+    expect(find.textContaining('Aucun +1 n’est automatique.'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('club-rule-waitlist_cutoff_days')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('club-rule-waitlist_cutoff_hour')),
+      findsNothing,
+    );
+    // Les trois règles de convocation restent disponibles.
+    expect(find.text('Par choix'), findsOneWidget);
+  });
+
   testWidgets('retirer le logo rétablit l’écusson neutre', (tester) async {
     repository.club = Club(
       id: repository.club.id,
