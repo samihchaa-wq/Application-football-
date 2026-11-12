@@ -8,6 +8,9 @@ on:
       - 'tool/stamp_web_release.py'
       - 'tool/check_web_performance_budget.py'
       - '.github/workflows/deploy_pages.yml'
+      - 'tool/check_commercial_deploy.py'
+      - 'tool/tests/test_commercial_preflight.py'
+      - '.github/workflows-disabled/deploy_pages.yml'
       - '.github/workflows/web_release_contract.yml'
   push:
     branches: [main]
@@ -16,6 +19,9 @@ on:
       - 'tool/stamp_web_release.py'
       - 'tool/check_web_performance_budget.py'
       - '.github/workflows/deploy_pages.yml'
+      - 'tool/check_commercial_deploy.py'
+      - 'tool/tests/test_commercial_preflight.py'
+      - '.github/workflows-disabled/deploy_pages.yml'
       - '.github/workflows/web_release_contract.yml'
   workflow_dispatch:
 
@@ -29,6 +35,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Test commercial publication guard
+        run: python3 -m unittest discover -s tool/tests -p 'test_commercial_preflight.py' -v
 
       - name: Validate release scripts
         shell: bash
