@@ -233,3 +233,13 @@ Avec **3 clubs, les pourcentages sont très incertains**. Les chiffres orientent
 **Décisions à obtenir avant usage réel :** validation des trois profils de clubs ; autorisation explicite d'approcher les clubs ; validation de l'avis d'information aux testeurs et des documents légaux ; autorisation séparée de créer les comptes fictifs sur la base commerciale et de mettre en ligne l'environnement pilote ; confirmation de la disponibilité du canal support.
 
 **Prochaine vérification après G0 :** faire exécuter à une personne qui ne connaît pas AS Grinta la tâche unique « créer un club, une saison et un match » sans consigne supplémentaire. C'est le premier test d'autonomie, et non une démonstration de l'éditeur.
+
+
+## 9. Mise en exécution et coordination avec le fil 00 (12/11/2026)
+
+- **Kit de séance prêt :** [PILOTE_FICHES_EXECUTION.md](PILOTE_FICHES_EXECUTION.md). Il fournit des consignes d'observation administrateur/joueur, une fiche prête à remplir, un journal **encore vide**, la matrice de correspondance **T01–T18 / QA F01–F34**, ainsi qu'un format de remontée des décisions et blocages au fil 00.
+- **Tableau de pilotage du fil 00 :** [PR #29 — docs/CHANTIER.md](https://github.com/samihchaa-wq/Application-football-/pull/29) (ouverte au moment du constat ; pas encore disponible dans main). Le fil 08 **ne modifie pas** ce tableau de sa propre initiative : il signale les preuves dans sa PR et un commentaire de coordination.
+- **Références intermissions :** [fil 01, PR #25](https://github.com/samihchaa-wq/Application-football-/pull/25) pour les règles/fonctions ; [fil 03, PR #26](https://github.com/samihchaa-wq/Application-football-/pull/26) pour la QA ; fil 04 pour la séparation A/B. Ne pas dédoubler leur audit.
+- **État :** documentation prête à relire ; aucun Txx exécuté en conditions réelles, aucune ouverture de pilote, aucune sollicitation de club.
+- **Blocages :** validation sécurité/isolement A-B, Auth et e-mails réels, publication de la version fictive et conformité des notices ; les PR #24 et #29 ne valent pas déploiement.
+- **Accord requis :** création de clubs/comptes fictifs sur Supabase commercial ; puis, distinctement, recrutement d'équipes réelles et lancement du pilote.
