@@ -136,5 +136,22 @@ select is(
   'match tôt : le rappel part 60 min avant la fermeture des pronostics'
 );
 
+-- Bornes : jamais la veille, jamais avant l'ouverture, changement d'heure.
+select is(
+  private.match_prediction_notification_at('2030-05-09 22:30+00'),
+  '2030-05-09 22:00+00'::timestamptz,
+  'match à 00 h 30 : le rappel part à minuit le jour du match, pas la veille'
+);
+select is(
+  private.match_prediction_notification_at('2030-01-10 13:00+00'),
+  '2030-01-10 11:45+00'::timestamptz,
+  'hiver (UTC+1) : rappel toujours 60 min avant la fermeture (14 h Paris, rappel 12 h 45)'
+);
+select ok(
+  private.match_prediction_notification_at('2030-05-10 13:00+00')
+    >= private.match_features_open_at('2030-05-10 13:00+00'),
+  'le rappel ne précède jamais l’ouverture des pronostics'
+);
+
 select * from finish();
 rollback;

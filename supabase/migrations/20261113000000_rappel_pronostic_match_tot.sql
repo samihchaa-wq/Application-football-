@@ -58,18 +58,27 @@ as $$
                  default_value, min_value, max_value, sort_order);
 $$;
 
+-- Le rappel ne part jamais la veille du match (début du jour civil à Paris)
+-- ni avant l'ouverture des pronostics : pour un coup d'envoi juste après
+-- minuit, il part à minuit. Si cette heure tombe après la fermeture des
+-- pronostics, le traitement d'envoi ne le déclenche pas (pas de rappel).
 create or replace function private.match_prediction_notification_at(p_kickoff_at timestamp with time zone)
 returns timestamp with time zone
 language sql stable strict
 set search_path to ''
 as $$
-  select least(
-    (
-      ((p_kickoff_at at time zone 'Europe/Paris')::date
-        + make_interval(hours => private.club_rule('prediction_reminder_hour')))
-      at time zone 'Europe/Paris'
+  select greatest(
+    least(
+      (
+        ((p_kickoff_at at time zone 'Europe/Paris')::date
+          + make_interval(hours => private.club_rule('prediction_reminder_hour')))
+        at time zone 'Europe/Paris'
+      ),
+      private.match_prediction_closes_at(p_kickoff_at)
+        - make_interval(mins => private.club_rule('prediction_reminder_lead_minutes'))
     ),
-    private.match_prediction_closes_at(p_kickoff_at)
-      - make_interval(mins => private.club_rule('prediction_reminder_lead_minutes'))
+    ((p_kickoff_at at time zone 'Europe/Paris')::date)::timestamp
+      at time zone 'Europe/Paris',
+    private.match_features_open_at(p_kickoff_at)
   );
 $$;
