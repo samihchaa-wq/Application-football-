@@ -230,6 +230,63 @@ class RosterRepository {
     });
   }
 
+  /// Reprend l'action « Effectif » de l'administration AS Grinta, tout en
+  /// utilisant les opérations du club commercial courant.
+  Future<void> addProfileToRoster({
+    required String seasonId,
+    required String profileId,
+    required String firstName,
+    String? existingSeasonPlayerId,
+  }) async {
+    if (existingSeasonPlayerId != null) {
+      await setActive(id: existingSeasonPlayerId, active: true);
+      return;
+    }
+
+    // Dans Petit Filet, la validation crée normalement la fiche toute seule.
+    // Réutiliser une fiche existante évite les doublons.
+    final existing = await _client
+        .from('season_players')
+        .select('id')
+        .eq('season_id', seasonId)
+        .eq('profile_id', profileId)
+        .limit(1);
+    if ((existing as List).isNotEmpty) {
+      await setActive(id: existing.first['id'].toString(), active: true);
+      return;
+    }
+
+    final name = firstName.trim();
+    if (name.isEmpty) throw ArgumentError('Le prénom est obligatoire.');
+    final maxRows = await _client
+        .from('season_players')
+        .select('position')
+        .eq('season_id', seasonId)
+        .order('position', ascending: false)
+        .limit(1);
+    final maxPosition = (maxRows as List).isEmpty
+        ? 0
+        : ((maxRows.first['position'] as num?)?.toInt() ?? 0);
+
+    final inserted = await _client.from('season_players').insert({
+      'season_id': seasonId,
+      'first_name': name,
+      'last_name': '',
+      'is_goalkeeper': false,
+      'is_coach': false,
+      'is_active': true,
+      'position': maxPosition + 1,
+    }).select('id').single();
+    final newId = inserted['id'].toString();
+    try {
+      // La RPC garde le contrôle de liaison au club courant.
+      await setProfileLink(seasonPlayerId: newId, profileId: profileId);
+    } catch (_) {
+      await deletePlayer(newId);
+      rethrow;
+    }
+  }
+
   Future<void> updatePlayer({
     required String id,
     required String firstName,
