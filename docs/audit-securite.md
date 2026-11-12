@@ -74,7 +74,15 @@ Par ordre d'importance :
    brancher un service d'e-mail (SMTP).
 5. **Garder le plafond de dépenses** (Spend cap) activé dans l'organisation Pro.
 6. **Sauvegardes** : ajouter `PRODUCTION_DB_URL` et `BACKUP_PASSPHRASE`
-   (phrase longue, gardée hors de GitHub) puis tester une restauration.
+   (au moins 32 caractères, gardée hors de GitHub ; le workflow refuse
+   désormais une phrase plus courte) puis tester une restauration.
+7. **Protections GitHub gratuites pour un dépôt public** (Settings › Code
+   security) : activer *Secret scanning* et *Push protection* (bloque un envoi
+   qui contiendrait une clé secrète), et *Dependabot alerts* (alerte sur une
+   bibliothèque vulnérable, sans ouvrir de PR automatiques).
+8. **Adresse e-mail des commits** : dans GitHub › Settings › Emails, cocher
+   « Keep my email addresses private » pour que les prochains commits
+   n'exposent plus l'adresse personnelle.
 
 ## Requêtes de contrôle (12/11/2026, lecture seule, base vide)
 
