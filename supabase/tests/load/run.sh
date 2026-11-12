@@ -40,15 +40,16 @@ psql "$DB_URL" -q -f "$HERE/cron_summary.sql"
 echo
 
 echo "### Lecture : ouverture de l'appli par des membres au hasard"
+# Préserver le code de retour de pgbench malgré le filtrage (set -o pipefail).
 pgbench "$DB_URL" -n -c "$CLIENTS" -j 4 -T "$SECONDS_PER_RUN" -P 15 \
   -D users="$USERS" -f "$HERE/read.pgbench" -r --failures-detailed 2>&1 \
-  | grep -vE '^progress' || true
+  | sed '/^progress/d'
 echo
 
 echo "### Écriture : saisie de buts simultanée dans les Lives"
 pgbench "$DB_URL" -n -c "$CLIENTS" -j 4 -T "$SECONDS_PER_RUN" -P 15 \
   -D clubs="$CLUBS" -f "$HERE/write.pgbench" -r --failures-detailed 2>&1 \
-  | grep -vE '^progress' || true
+  | sed '/^progress/d'
 echo
 
 echo "### Taille de la base"
