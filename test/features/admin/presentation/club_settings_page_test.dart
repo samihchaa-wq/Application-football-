@@ -118,6 +118,29 @@ void main() {
     expect(find.textContaining('entre 2 et 80'), findsOneWidget);
   });
 
+  testWidgets('adresse du terrain propre au club et effaçable', (tester) async {
+    repository.homeAddress = 'Rue du Stade, Toulouse';
+    await pumpPage(tester);
+
+    final field = find.byKey(const Key('club-settings-home-address'));
+    expect(tester.widget<TextField>(field).controller!.text,
+        'Rue du Stade, Toulouse');
+
+    await tester.ensureVisible(field);
+    await tester.enterText(field, '  12 avenue des Sports, Lille  ');
+    final save = find.byKey(const Key('club-settings-save-home-address'));
+    await tester.ensureVisible(save);
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+    expect(repository.homeAddress, '12 avenue des Sports, Lille');
+
+    await tester.enterText(field, '');
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+    expect(repository.homeAddress, isNull);
+    expect(find.text('Adresse du terrain effacée.'), findsOneWidget);
+  });
+
   testWidgets('changer le code demande confirmation puis affiche le nouveau',
       (tester) async {
     await pumpPage(tester);
@@ -235,6 +258,7 @@ class _FakeClubRepository implements ClubRepository {
   );
   final Map<String, bool> modules = {};
   int identityUpdates = 0;
+  String? homeAddress;
   final Map<String, int> ruleValues = {'prediction_close_minutes': 15};
 
   List<ClubRule> _rules() => [
@@ -263,6 +287,15 @@ class _FakeClubRepository implements ClubRepository {
 
   @override
   Future<Club> fetchMyClub() async => club;
+
+  @override
+  Future<String?> fetchHomeAddress() async => homeAddress;
+
+  @override
+  Future<String?> updateHomeAddress(String? address) async {
+    homeAddress = address;
+    return address;
+  }
 
   @override
   Future<ClubModules> fetchModules() async => ClubModules(Map.of(modules));
