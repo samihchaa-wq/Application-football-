@@ -5,11 +5,13 @@ name: Publier l'appli commerciale sur Cloudflare Pages
 # « Publier l'appli commerciale sur Cloudflare Pages » > Run workflow.
 #
 # Prérequis (une seule fois, voir docs/MISE_EN_LIGNE.md) :
-# - secrets  CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
-# - variables COMMERCIAL_APP_URL (ex. https://lucarne.fr/ ou
-#             https://lucarne.pages.dev/) et CLOUDFLARE_PAGES_PROJECT
-#             (ex. lucarne)
-# Sans eux, le workflow s'arrête avant toute publication.
+# - secret   CLOUDFLARE_API_TOKEN (droit « Cloudflare Pages : Modifier »)
+# - l'ID du compte Cloudflare (non secret) est inscrit ci-dessous par défaut ;
+#   le secret ou la variable CLOUDFLARE_ACCOUNT_ID le remplace si besoin.
+# - variables facultatives : CLOUDFLARE_PAGES_PROJECT (défaut : lucarne) et
+#   COMMERCIAL_APP_URL (défaut : l'adresse *.pages.dev que Cloudflare attribue
+#   au projet ; à renseigner avec le domaine propre une fois relié).
+# Sans les secrets, le workflow s'arrête avant toute publication.
 on:
   workflow_dispatch:
     inputs:
@@ -27,8 +29,10 @@ concurrency:
 
 env:
   TARGET_SHA: ${{ inputs.target_sha || github.sha }}
-  COMMERCIAL_PUBLIC_URL: ${{ vars.COMMERCIAL_APP_URL }}
-  PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+  # COMMERCIAL_PUBLIC_URL est fixée par l'étape « Préparer le projet » (via
+  # GITHUB_ENV, qu'une clé env: ici empêcherait de remplacer).
+  COMMERCIAL_APP_URL_VAR: ${{ vars.COMMERCIAL_APP_URL }}
+  PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT || 'lucarne' }}
   WRANGLER_VERSION: '4.150.0'
 
 jobs:
@@ -39,14 +43,16 @@ jobs:
       - name: Vérifier les réglages Cloudflare
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID || '3eac3b573d991d43901ec78c94c3dd53' }}
         shell: bash
         run: |
           set -euo pipefail
+          # Secrets collés depuis un téléphone : retirer les blancs invisibles.
+          CLOUDFLARE_API_TOKEN="$(printf '%s' "$CLOUDFLARE_API_TOKEN" | tr -d '[:space:]')"
+          CLOUDFLARE_ACCOUNT_ID="$(printf '%s' "$CLOUDFLARE_ACCOUNT_ID" | tr -d '[:space:]')"
           missing=()
           [[ -n "${CLOUDFLARE_API_TOKEN}" ]] || missing+=('secret CLOUDFLARE_API_TOKEN')
           [[ -n "${CLOUDFLARE_ACCOUNT_ID}" ]] || missing+=('secret CLOUDFLARE_ACCOUNT_ID')
-          [[ -n "${COMMERCIAL_PUBLIC_URL}" ]] || missing+=('variable COMMERCIAL_APP_URL')
           [[ -n "${PAGES_PROJECT}" ]] || missing+=('variable CLOUDFLARE_PAGES_PROJECT')
           if (( ${#missing[@]} )); then
             for item in "${missing[@]}"; do echo "::error::Manque : $item (voir docs/MISE_EN_LIGNE.md)."; done
@@ -56,6 +62,43 @@ jobs:
             echo '::error::CLOUDFLARE_PAGES_PROJECT : minuscules, chiffres et tirets uniquement.'
             exit 1
           fi
+
+      # Crée le projet Cloudflare Pages s'il n'existe pas, et lit l'adresse
+      # *.pages.dev réellement attribuée (Cloudflare ajoute un suffixe si le
+      # nom est déjà pris ailleurs). Elle sert d'adresse publique tant que
+      # COMMERCIAL_APP_URL n'est pas renseignée.
+      - name: Préparer le projet Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID || '3eac3b573d991d43901ec78c94c3dd53' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          token="$(printf '%s' "$CLOUDFLARE_API_TOKEN" | tr -d '[:space:]')"
+          account="$(printf '%s' "$CLOUDFLARE_ACCOUNT_ID" | tr -d '[:space:]')"
+          api="https://api.cloudflare.com/client/v4/accounts/${account}/pages/projects"
+          auth=(-H "Authorization: Bearer ${token}" -H 'Content-Type: application/json')
+          project=$(curl -sS "${auth[@]}" "${api}/${PAGES_PROJECT}")
+          if [[ "$(jq -r '.success' <<<"$project")" != "true" ]]; then
+            echo "Projet ${PAGES_PROJECT} absent : création."
+            project=$(curl -sS -X POST "${auth[@]}" "$api" \
+              --data "$(jq -n --arg n "$PAGES_PROJECT" '{name: $n, production_branch: "main"}')")
+            if [[ "$(jq -r '.success' <<<"$project")" != "true" ]]; then
+              echo '::error::Projet Cloudflare Pages ni lisible ni créable : vérifier le jeton, ses droits (Cloudflare Pages > Modifier) et l ID de compte.'
+              jq -r '.errors[]? | "\(.code) \(.message)"' <<<"$project"
+              exit 1
+            fi
+          fi
+          subdomain=$(jq -r '.result.subdomain // empty' <<<"$project")
+          if [[ -z "$subdomain" ]]; then
+            echo "::error::Cloudflare n'a pas renvoyé l'adresse du projet."
+            exit 1
+          fi
+          echo "Adresse Cloudflare du projet : https://${subdomain}/"
+          url="$(printf '%s' "${COMMERCIAL_APP_URL_VAR}" | tr -d '[:space:]')"
+          [[ -n "$url" ]] || url="https://${subdomain}/"
+          echo "Adresse publique utilisée : $url"
+          echo "COMMERCIAL_PUBLIC_URL=$url" >> "$GITHUB_ENV"
 
       - name: Récupérer la version validée
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -179,10 +222,13 @@ jobs:
       - name: Publier sur Cloudflare Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID || '3eac3b573d991d43901ec78c94c3dd53' }}
         shell: bash
         run: |
           set -euo pipefail
+          CLOUDFLARE_API_TOKEN="$(printf '%s' "$CLOUDFLARE_API_TOKEN" | tr -d '[:space:]')"
+          CLOUDFLARE_ACCOUNT_ID="$(printf '%s' "$CLOUDFLARE_ACCOUNT_ID" | tr -d '[:space:]')"
+          export CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID
           wrangler="npx --yes wrangler@${WRANGLER_VERSION}"
           if ! $wrangler pages project list 2>/dev/null | grep -qw "$PAGES_PROJECT"; then
             $wrangler pages project create "$PAGES_PROJECT" --production-branch=main

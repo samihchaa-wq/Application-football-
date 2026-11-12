@@ -47,20 +47,20 @@ dossier juridique).
 3. GitHub > dépôt Application-football- > Settings > Secrets and variables >
    Actions :
    - Onglet **Secrets** > New repository secret :
-     `CLOUDFLARE_API_TOKEN` = le jeton ; `CLOUDFLARE_ACCOUNT_ID` = l'ID de compte.
-   - Onglet **Variables** > New repository variable :
-     `CLOUDFLARE_PAGES_PROJECT` = `lucarne` ;
-     `COMMERCIAL_APP_URL` = `https://lucarne.pages.dev/` (provisoire, voir
-     étape 5).
+     `CLOUDFLARE_API_TOKEN` = le jeton. L'ID de compte Cloudflare actuel est
+     déjà inscrit dans le workflow ; `CLOUDFLARE_ACCOUNT_ID` n'est utile que
+     pour changer de compte.
+   - Aucune variable à créer à ce stade : le projet s'appelle `lucarne` par
+     défaut et l'adresse `*.pages.dev` attribuée par Cloudflare est lue
+     automatiquement (variables facultatives `CLOUDFLARE_PAGES_PROJECT` et
+     `COMMERCIAL_APP_URL`, voir étape 5).
 
 ## Étape 4 : première publication
 
 1. GitHub > Actions > « Publier l'appli commerciale sur Cloudflare Pages » >
    Run workflow > Run.
-2. Si l'étape finale « Vérifier le site en ligne » échoue, regarde dans
-   Cloudflare > Workers & Pages > `lucarne` l'adresse réellement attribuée
-   (Cloudflare ajoute parfois un suffixe, ex. `lucarne-4xz.pages.dev`), mets-la
-   dans `COMMERCIAL_APP_URL` (avec `https://` et le `/` final) et relance.
+2. Le journal affiche « Adresse publique utilisée : https://….pages.dev/ »
+   (Cloudflare ajoute parfois un suffixe si `lucarne` est déjà pris).
 
 ## Étape 5 : relier ta propre adresse
 
