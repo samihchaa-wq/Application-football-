@@ -87,24 +87,39 @@ renvoient vers une mauvaise adresse.
 
 ## Étape 7 : envoyer les e-mails depuis ton domaine (Brevo)
 
-Le service d'e-mails intégré à Supabase n'envoie que quelques messages par
-heure : inutilisable avec un vrai club.
+L'appli envoie elle-même les e-mails de compte (« mot de passe oublié »,
+confirmation de l'adresse) par Brevo. Tant que Brevo n'est pas branché, ces
+écrans affichent « L'envoi d'e-mails n'est pas encore configuré » et aucun
+joueur ne peut récupérer son mot de passe seul.
 
 1. Crée un compte sur brevo.com (offre gratuite, 300 e-mails/jour, société
-   française).
+   française). Active la double authentification.
 2. Brevo > Expéditeurs, domaines > **Domaines** > Ajouter `<domaine>` >
    choisis « Cloudflare » : Brevo ajoute lui-même les enregistrements DNS
    (sinon, copie-les dans Cloudflare > DNS). Attends la coche verte.
 3. Brevo > Expéditeurs > ajoute `contact@<domaine>`.
-4. Brevo > SMTP et API > onglet **SMTP** > Générer une clé SMTP. Note
-   l'identifiant SMTP (une adresse en `@smtp-brevo.com`) et la clé.
-5. Supabase > Authentication > **Emails** > SMTP Settings > Activer :
-   - Hôte `smtp-relay.brevo.com`, port `587`
-   - Identifiant = l'identifiant SMTP Brevo, mot de passe = la clé SMTP
-   - Adresse d'expéditeur `contact@<domaine>`, nom d'expéditeur `Lucarne`
-6. Supabase > Authentication > **Rate Limits** : passe la limite d'e-mails à
-   100 par heure.
+4. Brevo > SMTP et API > onglet **Clés API** > Générer une clé API, nom
+   `Lucarne appli`. Copie la clé (montrée une seule fois).
+   Brevo peut bloquer les envois venant d'une adresse IP inconnue : les
+   fonctions Supabase changent d'adresse, donc dans Brevo > Sécurité >
+   **IP autorisées**, désactive ce blocage (sinon le premier essai échoue et
+   Brevo t'envoie un e-mail « IP non reconnue »).
+5. GitHub > dépôt Application-football- > Settings > Secrets and variables >
+   Actions :
+   - Onglet **Secrets** > New repository secret : `BREVO_API_KEY` = la clé.
+   - Onglet **Variables** > New repository variable :
+     `MAIL_FROM_EMAIL` = `contact@<domaine>` ; `MAIL_FROM_NAME` = `Lucarne`.
+6. GitHub > Actions > « Supabase commercial : mise en route » > Run workflow,
+   en cochant seulement « functions ». Le journal doit afficher « Envoi des
+   e-mails : réglé ».
 7. Test : sur l'appli, « mot de passe oublié » avec ta propre adresse.
+
+Facultatif, par sécurité : les e-mails envoyés par Supabase lui-même (rares
+ici) partent par défaut d'un service limité à quelques messages par heure.
+Pour les faire passer aussi par Brevo : Brevo > SMTP et API > onglet **SMTP**
+> Générer une clé SMTP, puis Supabase > Authentication > **Emails** > SMTP
+Settings > Activer (hôte `smtp-relay.brevo.com`, port `587`, identifiant et
+clé SMTP Brevo, expéditeur `contact@<domaine>`, nom `Lucarne`).
 
 ## Étape 8 (plus tard) : connexion Facebook
 

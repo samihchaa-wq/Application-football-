@@ -7,7 +7,9 @@ name: Production backup
 #
 # Le dépôt étant public, la copie est chiffrée avec BACKUP_PASSPHRASE avant
 # d'être déposée : sans cette phrase secrète, le fichier est illisible.
-# Inactif tant que PRODUCTION_DB_URL et BACKUP_PASSPHRASE n'existent pas.
+# Sans PRODUCTION_DB_URL ou BACKUP_PASSPHRASE, le workflow échoue :
+# une sauvegarde non effectuée ne doit jamais apparaître comme un succès.
+# Cette archive SQL n'inclut pas les objets Storage ; voir docs/exploitation.md.
 on:
   schedule:
     - cron: '23 2 * * 1'
@@ -24,10 +26,12 @@ jobs:
       DB_URL: ${{ secrets.PRODUCTION_DB_URL }}
       BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
     steps:
-      - name: Skip when no production database is configured
+      - name: Require configured database and backup passphrase
         if: env.DB_URL == '' || env.BACKUP_PASSPHRASE == ''
-        run: >-
-          echo "::notice::Pas encore de base en ligne ou de phrase secrète : sauvegarde inactive."
+        shell: bash
+        run: |
+          echo "::error::PRODUCTION_DB_URL ou BACKUP_PASSPHRASE manquant : sauvegarde non effectuée."
+          exit 1
 
       # Les artefacts d'un dépôt public sont téléchargeables par tout compte
       # GitHub : seule la phrase secrète protège la copie. Une phrase courte
