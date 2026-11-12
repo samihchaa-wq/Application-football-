@@ -15,5 +15,24 @@ Samih (but, ballon en pleine lucarne, traînée verte).
   `web/icons/notification-badge-96.png`.
 - `gen2.py` : génère tous les SVG (police Oswald intégrée, vert `#2EE57A`).
 
+## Licence de la police du logo
+
+Le générateur `gen2.py` intègre la police **Oswald** dans le code. Les trois
+logos SVG contenant le mot « LUCARNE » embarquent également cette police au
+format `@font-face`. Leur redistribution est soumise à la licence libre
+**SIL Open Font License 1.1 (OFL-1.1)**.
+
+- Titulaire du droit : **Copyright 2016 The Oswald Project Authors**.
+- Projet source : https://github.com/googlefonts/OswaldFont
+- Texte de licence redistribué avec les fichiers : [OFL-Oswald.txt](OFL-Oswald.txt)
+- Licence officielle de référence : https://github.com/google/fonts/blob/main/ofl/oswald/OFL.txt
+- Oswald peut être utilisée dans un produit commercial sous réserve du
+  respect de la licence, notamment de la conservation des notices lorsqu'une
+  copie de la police est redistribuée.
+
+Cette notice couvre **la police Oswald seulement** ; elle ne constitue pas
+une vérification de disponibilité de la marque « Lucarne », des droits sur les
+autres ressources graphiques, ni des usages particuliers du logo.
+
 L'écusson neutre `assets/images/club_crest.webp` reste celui des clubs qui
 n'ont pas envoyé de logo : ce n'est pas le logo du produit.
