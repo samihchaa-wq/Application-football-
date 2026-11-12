@@ -31,7 +31,9 @@ declare
   v_label text;
   v_enabled_count integer := 0;
 begin
-  if not (select private.is_admin()) then
+  -- Administrateur actif d'un club actif : un club suspendu ou un compte
+  -- suspendu ne peut plus rien modifier.
+  if not (select private.is_admin()) or not (select private.is_active_profile()) then
     raise exception 'Réservé aux administrateurs.' using errcode = '42501';
   end if;
   if p_kits is null or jsonb_typeof(p_kits) <> 'array'
