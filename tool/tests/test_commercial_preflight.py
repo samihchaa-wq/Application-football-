@@ -11,7 +11,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from check_commercial_deploy import (  # noqa: E402
     EXPECTED_PUBLIC_URL,
-    ROOT,
     check,
 )
 
@@ -40,9 +39,10 @@ class CommercialPreflightTests(unittest.TestCase):
         self.valid["SUPABASE_ANON_KEY"] = self.jwt("anon")
         self.assertEqual(check(self.valid), [])
 
-    def test_current_config_cannot_be_published(self) -> None:
-        current = json.loads((ROOT / "config" / "production.json").read_text())
-        self.assertTrue(check(current))
+    def test_placeholders_cannot_be_published(self) -> None:
+        self.valid["SUPABASE_URL"] = "https://A-REMPLACER.supabase.co"
+        self.valid["SUPABASE_ANON_KEY"] = "A-REMPLACER"
+        self.assertTrue(check(self.valid))
 
     def test_private_as_grinta_project_is_forbidden(self) -> None:
         self.valid["SUPABASE_URL"] = "https://ovzijmqrnsgcmryinkfa.supabase.co"
