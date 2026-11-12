@@ -84,7 +84,7 @@ void main() {
       expect(detail.scorers.single.goals, 2);
     });
 
-    test('le coach reste exclu de l’effectif de secours même surnommé', () {
+    test('l’effectif de secours garde chaque joueur sous son surnom', () {
       final detail = historicalMatchDetailFromRow(
         _archiveRow(
           names: ['Philippe Couzin', 'Milan Couzin'],
@@ -96,8 +96,10 @@ void main() {
       );
 
       final roster = historicalFallbackPlayers(detail);
-      expect(roster.map((player) => player.name), isNot(contains('Coach')));
-      expect(roster.map((player) => player.name), contains('Pipo'));
+      // Plus aucun prénom n'est écarté d'office (ancien filtre propre au
+      // club d'origine) : chacun apparaît sous son appellation actuelle.
+      expect(
+          roster.map((player) => player.name), containsAll(['Coach', 'Pipo']));
     });
   });
 

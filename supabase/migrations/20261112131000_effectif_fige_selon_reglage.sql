@@ -11,9 +11,10 @@
 -- Les quatre fonctions utilisent maintenant la même frontière que le live et
 -- les pronostics (private.match_prediction_closes_at, ou la même règle lue
 -- directement pour admin_remove_match_guest, qui tourne avec les droits du
--- compte connecté). Corps repris à
--- l'identique de 20261111000100_socle_structure.sql ; seule cette frontière
--- change. Avec le réglage par défaut (15 minutes), rien ne change.
+-- compte connecté). Corps repris à l'identique de leur dernière version
+-- (20261111000100_socle_structure.sql, et 20261112100000_liste_attente_modes.sql
+-- pour recompute_match_convocations_internal) ; seule cette frontière change.
+-- Avec le réglage par défaut (15 minutes), rien ne change.
 
 CREATE OR REPLACE FUNCTION "private"."publish_match_effectif"("p_match_id" "uuid", "p_squad_size_limit" integer, "p_decisions" "jsonb", "p_reason" "text" DEFAULT NULL::"text") RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
@@ -258,6 +259,9 @@ declare
   v_convoked integer;
   v_waiting integer;
   v_auto_slots integer;
+  -- 0 : par présence l'an dernier (rotation d'origine) ; 1 : ordre
+  -- d'arrivée ; 2 : par choix de l'administrateur.
+  v_mode integer := private.club_rule('waitlist_mode');
 begin
   perform private.require_sports_management_enabled();
   select m.season_id, w.squad_size_limit, m.match_type, m.kickoff_at, m.status
@@ -304,7 +308,9 @@ begin
       and not sp.is_coach;
 
     -- Match « entre nous » : inchangé, tous les présents sont convoqués.
-    if v_match_type = 'entre_nous' then
+    -- Mode « par choix » : tous les présents sont convoqués et
+    -- l'administrateur place lui-même en attente ceux qui sont en trop.
+    if v_match_type = 'entre_nous' or v_mode = 2 then
       v_auto_slots := 2147483647;
     end if;
 
@@ -312,7 +318,10 @@ begin
     -- le rang ne concerne que les joueurs présents, éligibles et non forcés.
     with ranked as (
       select p.id, row_number() over (
-        order by e.position desc, p.id
+        order by
+          -- Ordre d'arrivée : le premier à s'être dit présent passe d'abord.
+          case when v_mode = 1 then p.availability_updated_at end asc nulls last,
+          e.position desc, p.id
       ) as priority
       from public.match_sport_participants p
       join public.sport_waitlist_entries e
@@ -323,7 +332,9 @@ begin
         and p.availability_status = 'available'
         and not p.convocation_manual_override
     ), decision as (
-      select p.id, e.position, sp.is_coach, r.priority,
+      select p.id,
+        private.match_waitlist_position(p_match_id, p.season_player_id, e.position) as position,
+        sp.is_coach, r.priority,
         p.convocation_manual_override and not sp.is_coach as manual,
         case
           when sp.is_coach and p.availability_status = 'available'

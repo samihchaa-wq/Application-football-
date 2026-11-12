@@ -10,12 +10,14 @@ abstract final class ClubRules {
   static const String featuresOpenHourKey = 'features_open_hour';
   static const String predictionCloseMinutesKey = 'prediction_close_minutes';
   static const String correctionWindowHoursKey = 'correction_window_hours';
+  static const String waitlistModeKey = 'waitlist_mode';
 
   static const Map<String, int> defaults = {
     featuresOpenDaysKey: 6,
     featuresOpenHourKey: 12,
     predictionCloseMinutesKey: 15,
     correctionWindowHoursKey: 24,
+    waitlistModeKey: 0,
   };
 
   static bool _liveEnabled = true;
@@ -46,6 +48,10 @@ abstract final class ClubRules {
   static Duration get correctionWindow =>
       Duration(hours: _get(correctionWindowHoursKey));
 
+  /// Qui passe en premier quand il y a trop de disponibles.
+  static WaitlistMode get waitlistMode =>
+      WaitlistMode.fromValue(_get(waitlistModeKey));
+
   /// Remplace les valeurs connues ; les clés absentes reprennent leur défaut.
   static void set(Map<String, int> values) {
     final next = {
@@ -61,4 +67,44 @@ abstract final class ClubRules {
     set(const {});
     setLiveEnabled(true);
   }
+}
+
+/// Les trois façons de départager les disponibles quand il y a trop de monde.
+/// La valeur numérique est celle enregistrée par le serveur.
+enum WaitlistMode {
+  /// Ceux qui sont le moins venus la saison passée attendent les premiers,
+  /// puis chacun son tour (règle d'origine).
+  lastSeasonAttendance(
+    0,
+    'Par présence l’an dernier',
+    'Ceux qui sont le moins venus la saison passée attendent en premier, '
+        'puis chacun son tour.',
+  ),
+
+  /// Premier à se dire disponible, premier convoqué.
+  arrivalOrder(
+    1,
+    'Ordre d’arrivée',
+    'Les premiers à se dire disponibles sont convoqués, les derniers '
+        'attendent.',
+  ),
+
+  /// Tout le monde est convoqué ; l'admin met lui-même en attente.
+  adminChoice(
+    2,
+    'Par choix',
+    'Tous les disponibles sont convoqués : tu mets toi-même en attente '
+        'ceux qui sont en trop.',
+  );
+
+  const WaitlistMode(this.value, this.label, this.description);
+
+  final int value;
+  final String label;
+  final String description;
+
+  static WaitlistMode fromValue(int value) => WaitlistMode.values.firstWhere(
+        (mode) => mode.value == value,
+        orElse: () => WaitlistMode.lastSeasonAttendance,
+      );
 }

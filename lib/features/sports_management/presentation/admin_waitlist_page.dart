@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_rules.dart';
 import 'package:as_grinta/core/utils/app_errors.dart';
 import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
 import 'package:as_grinta/core/widgets/grinta_empty_state.dart';
@@ -160,6 +161,18 @@ class _AdminWaitlistPageState extends ConsumerState<AdminWaitlistPage> {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Column(
         children: [
+          if (ClubRules.waitlistMode != WaitlistMode.lastSeasonAttendance)
+            Padding(
+              key: const ValueKey('waitlist-mode-notice'),
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                'Ton club est en mode « ${ClubRules.waitlistMode.label} » : '
+                'ce classement ne sert pas pour l’instant. Il reprendra si '
+                'tu reviens au mode « Par présence l’an dernier » dans les '
+                'réglages du club.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {

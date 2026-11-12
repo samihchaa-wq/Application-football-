@@ -5,7 +5,8 @@
 -- autorisé jusqu'ici (1 heure), le vote fermait avant même de pouvoir
 -- ouvrir : aucun vote n'avait jamais lieu, sans message d'erreur. 6 heures
 -- laissent le temps de finir le match et de valider le compte rendu.
--- Seul ce minimum change dans le catalogue.
+-- Catalogue repris de 20261112100000_liste_attente_modes.sql ; seul ce
+-- minimum change.
 
 create or replace function private.club_rule_catalogue()
 returns table (
@@ -41,6 +42,9 @@ as $$
     ('correction_window_hours', 'Délai de correction du résultat',
      'Combien d’heures après sa validation le résultat peut encore être corrigé.',
      'h', 'Après le match', 24, 1, 168, 60),
+    ('waitlist_mode', 'Liste d’attente : qui passe en premier',
+     'Quand il y a plus de disponibles que de places : par présence l’an dernier, par ordre d’arrivée, ou par choix de l’administrateur.',
+     'mode', 'Liste d’attente', 0, 0, 2, 65),
     ('waitlist_cutoff_days', 'Liste d’attente : jour limite',
      'Combien de jours avant le match la liste d’attente cesse de créditer des places (0 = le jour même).',
      'jours', 'Liste d’attente', 1, 0, 7, 70),

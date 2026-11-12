@@ -57,4 +57,15 @@ void main() {
     ClubRules.reset();
     expect(isMatchLiveTooEarly(kickoff, now: during), isFalse);
   });
+
+  test('le mode de liste d’attente suit le réglage du club', () {
+    expect(ClubRules.waitlistMode, WaitlistMode.lastSeasonAttendance);
+    ClubRules.set({ClubRules.waitlistModeKey: 1});
+    expect(ClubRules.waitlistMode, WaitlistMode.arrivalOrder);
+    ClubRules.set({ClubRules.waitlistModeKey: 2});
+    expect(ClubRules.waitlistMode, WaitlistMode.adminChoice);
+    // Une valeur inconnue retombe sur la règle d'origine.
+    ClubRules.set({ClubRules.waitlistModeKey: 9});
+    expect(ClubRules.waitlistMode, WaitlistMode.lastSeasonAttendance);
+  });
 }
