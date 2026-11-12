@@ -31,9 +31,9 @@ set status = 'active',
     role = case when first_name = 'Admin' then 'admin' else 'pronostiqueur' end
 where id::text like '1f000000-%';
 
--- Un administrateur du club A dont le compte est suspendu, et un club C
+-- Un administrateur du club A dont le compte est désactivé (archivé), et un club C
 -- suspendu par l'éditeur.
-update public.profiles set status = 'suspended'
+update public.profiles set status = 'archived'
 where id = '1f000000-0000-0000-0000-00000000000d';
 update public.clubs set status = 'suspended'
 where id = (select id from test_clubs where label = 'c');
@@ -128,13 +128,13 @@ select throws_ok(
 );
 reset role;
 
--- Compte administrateur suspendu (club A).
+-- Compte administrateur désactivé (club A).
 select pg_temp.act_as('1f000000-0000-0000-0000-00000000000d');
 set local role authenticated;
 select throws_ok(
   $$select public.admin_update_club_kits(pg_temp.kits())$$,
   '42501', null,
-  'un administrateur suspendu ne peut pas changer les maillots'
+  'un administrateur désactivé ne peut pas changer les maillots'
 );
 reset role;
 
