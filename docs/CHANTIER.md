@@ -57,6 +57,30 @@ Les consignes opérationnelles sont désormais tracées **dans les issues et dan
 
 **Attention :** la publication de commentaires GitHub ne réveille pas automatiquement les discussions ChatGPT des fils. Ils consulteront ces consignes lorsqu'ils seront relancés. Le suivi programmé du fil 00 contrôle les preuves, pas le travail autonome en arrière-plan.
 
+## Exécution automatisée des missions (12/11/2026)
+
+**Statut : cinq tâches programmées actives créées et confirmées.** Le compte impose un maximum de cinq tâches actives ; quatre exécutants couvrent les neuf domaines, et le fil 00 assure le pilotage. Ces tâches sont **distinctes des neuf conversations du projet** : elles ne peuvent pas réveiller ces conversations.
+
+| Agent actif | Missions couvertes | Fréquence (Europe/Paris) | Périmètre |
+|---|---|---|---|
+| Chef M00 — Chantier Application football | 00 | Horaire | Supervision, priorisation, distribution via GitHub, revue PR et blocages |
+| Exécutant Produit M01-M02 | 01, 02 | Quotidien vers 06 h | Inventaire et petits lots multiclubs |
+| Exécutant QA M03-M09 | 03, 09 | Quotidien vers 07 h | Tests, monitoring, sauvegarde et support |
+| Exécutant Sécurité M04-M07 | 04, 07 | Quotidien vers 08 h | RLS, confidentialité, droits, RGPD, juridique |
+| Exécutant Marché M05-M06-M08 | 05, 06, 08 | Quotidien vers 09 h | Identité, prix hypothétiques et parcours pilotes |
+
+### Contrat de travail automatisé
+
+1. À chaque passage, lire la documentation commune, les issues et PR de sa compétence, sélectionner une **action sûre et utile** plutôt que republier le même rapport.
+2. Les livrables doivent se retrouver dans GitHub : commentaire pertinent sur une issue/PR, branche + PR de code ciblée, test non perturbateur ou documentation. Les tâches sont autonomes **au moment de leur exécution programmée** ; rien ne garantit qu'un test ou un correctif réussisse.
+3. **Les agents ne fusionnent pas leurs PR**, ne changent pas la production, n'engagent pas de frais, et ne créent pas de données client. Ils attendent l'approbation du propriétaire pour les opérations sensibles.
+4. Chaque agent a ses fichiers/branches propres. Éviter les PR concurrentes sur les mêmes fichiers, particulièrement `docs/HANDOFF.md` et `docs/CHANTIER.md` ; ce dernier est maintenu par M00.
+5. Le chef 00 vérifie l'avancement GitHub, détecte les conflits, répartit les priorités par issues/commentaires, vérifie les preuves de tests et signale seulement les décisions demandant arbitrage.
+6. Tant que les passages n'ont pas eu lieu, considérer le système comme **configuré, pas encore éprouvé**. L'accès effectif à GitHub/Supabase et la capacité des tâches à produire des PR doivent être confirmés par leurs premiers résultats horodatés.
+7. En cas d'échec d'accès, de conflit, de dépense, de migration ou de déploiement requis, ne pas contourner le contrôle : documenter le blocage et demander l'accord.
+
+**Important :** le fonctionnement « tout seul » couvre le travail répétable et autorisé par ces tâches. Il ne remplace pas des agents de développement persistants ni les décisions humaines sur le lancement commercial, la sécurité et la production.
+
 ## Circuit de transmission entre les fils
 
 - **01 → 02 :** décisions fonctionnelles, paramètres et critères d'acceptation.
