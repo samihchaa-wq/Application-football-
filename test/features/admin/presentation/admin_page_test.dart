@@ -24,7 +24,8 @@ void main() {
     roster = _FakeRosterRepository();
   });
 
-  Future<void> pumpAdmin(WidgetTester tester, {
+  Future<void> pumpAdmin(
+    WidgetTester tester, {
     Widget home = const AdminPage(),
   }) async {
     await tester.binding.setSurfaceSize(const Size(900, 1400));
@@ -255,7 +256,8 @@ void main() {
     expect(find.textContaining('ABCDEFGH'), findsNothing);
   });
 
-  testWidgets('la page Saison distincte montre la saison ouverte', (tester) async {
+  testWidgets('la page Saison distincte montre la saison ouverte',
+      (tester) async {
     repository.seasons = const [
       AdminSeasonItem(id: 's-1', name: '2025-2026', status: 'archived'),
       AdminSeasonItem(id: 's-2', name: '2026-2027', status: 'open'),
