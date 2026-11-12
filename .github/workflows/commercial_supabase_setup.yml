@@ -69,9 +69,12 @@ jobs:
       - name: Deploy Edge Functions and their settings
         if: inputs.functions
         shell: bash
+        env:
+          # Adresse définitive (Cloudflare) si elle est réglée, sinon GitHub Pages.
+          COMMERCIAL_APP_URL: ${{ vars.COMMERCIAL_APP_URL }}
         run: |
           set -euo pipefail
-          app_url=$(jq -r .PUBLIC_APP_URL config/production.json)
+          app_url="${COMMERCIAL_APP_URL:-$(jq -r .PUBLIC_APP_URL config/production.json)}"
           domain=$(jq -r .USERNAME_DOMAIN config/production.json)
           supabase secrets set --project-ref "$SUPABASE_PROJECT_REF" \
             "PUBLIC_APP_URL=$app_url" "USERNAME_DOMAIN=$domain"
