@@ -10,8 +10,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// Renseigne le nom du club affiché partout dès qu'un compte est connecté, et
 /// revient au libellé neutre à la déconnexion.
 final clubIdentitySyncProvider = Provider<void>((ref) {
-  final authenticated = ref.watch(
-    authControllerProvider.select((state) => state.isAuthenticated),
+  // L'authentification peut rester vraie lors d'un changement de compte.
+  // Suivre aussi l'identité du profil pour recharger les données du bon club.
+  final identity = ref.watch(
+    authControllerProvider.select(
+      (state) => (
+        authenticated: state.isAuthenticated,
+        profileId: state.profile?.id,
+      ),
+    ),
   );
   var disposed = false;
   ref.onDispose(() => disposed = true);
@@ -21,12 +28,12 @@ final clubIdentitySyncProvider = Provider<void>((ref) {
   unawaited(
     Future<void>.microtask(() async {
       if (disposed) return;
-      if (!authenticated) {
-        ClubIdentity.reset();
-        AppTheme.resetClubColors();
-        ClubKits.reset();
-        return;
-      }
+      // Neutraliser immédiatement l'ancien club, même si la session suivante
+      // est authentifiée. Un échec réseau ne doit pas conserver ses maillots.
+      ClubIdentity.reset();
+      AppTheme.resetClubColors();
+      ClubKits.reset();
+      if (!identity.authenticated) return;
       try {
         final club = await ref.read(clubRepositoryProvider).fetchMyClub();
         if (disposed) return;
