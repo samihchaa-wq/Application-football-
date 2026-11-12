@@ -23,7 +23,7 @@ export function readMailConfig(): MailConfig | null {
     apiUrl: Deno.env.get("MAIL_API_URL")?.trim() || DEFAULT_MAIL_API_URL,
     apiKey,
     fromEmail,
-    fromName: Deno.env.get("MAIL_FROM_NAME")?.trim() || "Club",
+    fromName: Deno.env.get("MAIL_FROM_NAME")?.trim() || "Lucarne",
   };
 }
 

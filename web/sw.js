@@ -257,7 +257,7 @@ self.addEventListener('push', (event) => {
   }
   event.waitUntil(
     Promise.all([
-      self.registration.showNotification(data.title || 'Club', {
+      self.registration.showNotification(data.title || 'Lucarne', {
         body: data.body || '',
         icon: 'icons/Icon-192.png',
         // Android dessine le badge de la barre d'état avec sa seule
