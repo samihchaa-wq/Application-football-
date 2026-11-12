@@ -14,7 +14,7 @@ RUNNER = Path(__file__).with_name("run.sh")
 
 class LoadRunnerExitStatusTests(unittest.TestCase):
     def _run_with_fake_database(
-        self, *, fail_phase: str = "", progress_only: bool = False
+        self, *, fail_phase: str = "", progress_only: bool = False, db_url: str = "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
     ) -> subprocess.CompletedProcess[str]:
         with tempfile.TemporaryDirectory() as folder:
             fake_bin = Path(folder)
@@ -39,7 +39,7 @@ class LoadRunnerExitStatusTests(unittest.TestCase):
                 PATH=f"{fake_bin}{os.pathsep}{environment.get('PATH', '')}",
                 FAIL_PHASE=fail_phase,
                 PROGRESS_ONLY="1" if progress_only else "0",
-                DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres",
+                DB_URL=db_url,
             )
             return subprocess.run(
                 ["bash", str(RUNNER), "1", "2", "1", "3", "1"],
@@ -68,6 +68,14 @@ class LoadRunnerExitStatusTests(unittest.TestCase):
         self.assertEqual(run.returncode, 17, run.stdout + run.stderr)
         self.assertIn("result: read", run.stdout)
         self.assertIn("result: write", run.stdout)
+
+    def test_remote_database_is_rejected_before_any_mutation(self) -> None:
+        run = self._run_with_fake_database(
+            db_url="postgresql://postgres:postgres@commercial.example:5432/postgres"
+        )
+        self.assertEqual(run.returncode, 2)
+        self.assertIn("base PostgreSQL sur localhost", run.stderr)
+        self.assertNotIn("result: read", run.stdout)
 
     def test_empty_filtered_output_is_not_failure(self) -> None:
         run = self._run_with_fake_database(progress_only=True)
