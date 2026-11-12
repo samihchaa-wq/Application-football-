@@ -93,6 +93,16 @@ Les consignes opérationnelles sont désormais tracées **dans les issues et dan
 - **Revue croisée** : M03 examine tests et CI de #44 ; M04 examine l'étanchéité du périmètre commercial / Supabase et le protocole de migrations ; M09 examine effet sur les workflows ; M00 suit intégration et arbitrage.
 - **Environnement isolé** : tests SQL locaux déjà présents, mais validation A/B réelle et restauration distante non prouvées. Tout nouvel environnement payant ou toute donnée à créer nécessitent l'accord du propriétaire.
 
+## Décision B — dépôt public maintenu (12/11/2026)
+
+**Décision explicite du propriétaire :** conserver `samihchaa-wq/Application-football-` en **public** et poursuivre l'audit de confidentialité. Ne pas modifier la visibilité, ne pas rouvrir la même question sans preuve nouvelle significative et ne jamais toucher à AS Grinta original.
+
+- Consigne M04/M07 : continuer l'inventaire non public des données potentiellement personnelles dans le contenu et l'historique Git ; diffuser uniquement des constats anonymisés et des recommandations ciblées dans GitHub. [Issue #37](https://github.com/samihchaa-wq/Application-football-/issues/37#issuecomment-6820783856), [issue #39](https://github.com/samihchaa-wq/Application-football-/issues/39#issuecomment-6820784692).
+- Le nettoyage des noms des fichiers actifs proposé par [PR #46](https://github.com/samihchaa-wq/Application-football-/pull/46) n'efface **pas** les anciens commits. Ne pas réécrire l'historique ni les migrations déjà appliquées sans nouvel accord explicite.
+- M09/M04 : auditer l'accès aux sauvegardes chiffrées conservées comme artefacts GitHub d'un dépôt public et leur gestion des secrets **avant activation** ; prévoir aussi les objets Storage.
+- M02/M03 : corriger les références inutiles aux identités de l'ancien club et tester la régression sans diffuser de données réelles.
+- Si un secret ou une exposition de données à risque est démontré, signaler l'incident au propriétaire avec preuves non sensibles et préparer les mesures proportionnées (rotation/réécriture seulement après autorisation).
+
 ## Circuit de transmission entre les fils
 
 - **01 → 02 :** décisions fonctionnelles, paramètres et critères d'acceptation.
