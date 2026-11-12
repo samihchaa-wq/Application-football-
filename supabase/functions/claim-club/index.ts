@@ -4,7 +4,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2.95.0";
 import { parseConsent } from "./consent.ts";
-import { firstFreeUsername } from "./username.ts";
+import { isDuplicateError, reserveUsername } from "./username.ts";
 
 const INVITE_CODE_PATTERN = /^[A-Z2-9]{8}$/;
 const MAX_BODY_BYTES = 4_096;
@@ -250,32 +250,6 @@ Deno.serve(async (req: Request) => {
       club = { id: match.id, name: match.name };
     }
 
-    const base = `${normalizedFirst}${normalizedInitial}`.slice(0, 27);
-    // Les identifiants sont uniques sur toute la plateforme (tous clubs
-    // confondus) : « thomasd », puis « thomasd2 », « thomasd3 »… On lit en
-    // une fois les homonymes déjà pris pour choisir le premier numéro libre,
-    // sans plafond (l'ancienne limite de 20 homonymes bloquait l'inscription
-    // dès qu'il y avait beaucoup de clubs).
-    const { data: homonyms, error: homonymsError } = await admin
-      .from("profiles")
-      .select("username")
-      .filter("username", "match", `^${base}[0-9]*$`);
-    if (homonymsError) throw homonymsError;
-    const username = firstFreeUsername(
-      base,
-      (homonyms ?? []).map((row: { username: string | null }) => row.username),
-    );
-    if (!username) {
-      if (createdClubId) {
-        await admin.rpc("discard_empty_club", { p_club_id: createdClubId });
-        createdClubId = null;
-      }
-      return jsonResponse(
-        { error: "Impossible de générer un identifiant disponible." },
-        409,
-      );
-    }
-
     // Le club est inscrit dans la zone réservée au serveur : le déclencheur
     // de la base crée alors le profil dans ce club.
     const { error: assignError } = await admin.auth.admin.updateUserById(
@@ -293,18 +267,40 @@ Deno.serve(async (req: Request) => {
       global: { headers: { "x-club-id": club.id } },
     });
 
-    const { error: updateError } = await scoped
-      .from("profiles")
-      .update({
-        username,
-        terms_version: consent.termsVersion,
-        terms_accepted_at: new Date().toISOString(),
-        age_confirmation: consent.ageConfirmation,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", userId)
-      .eq("club_id", club.id);
-    if (updateError) throw updateError;
+    const base = `${normalizedFirst}${normalizedInitial}`.slice(0, 27);
+    // Les identifiants sont uniques sur toute la plateforme (tous clubs
+    // confondus) : « thomasd », puis « thomasd2 », « thomasd3 »… La base
+    // calcule le premier libre, sans plafond ; si une inscription simultanée
+    // vient de le prendre, l'enregistrement est refusé et on passe au suivant.
+    const nextFree = async (skip: string[]) => {
+      const { data, error } = await admin!.rpc("internal_next_free_username", {
+        p_base: base,
+        p_skip: skip,
+      });
+      if (error) throw error;
+      return typeof data === "string" ? data : null;
+    };
+    const username = await reserveUsername(nextFree, async (candidate) => {
+      const { error: updateError } = await scoped
+        .from("profiles")
+        .update({
+          username: candidate,
+          terms_version: consent.termsVersion,
+          terms_accepted_at: new Date().toISOString(),
+          age_confirmation: consent.ageConfirmation,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", userId)
+        .eq("club_id", club.id);
+      if (updateError) {
+        if (isDuplicateError(updateError)) return "taken";
+        throw updateError;
+      }
+      return "ok";
+    });
+    if (!username) {
+      throw new Error("Impossible de générer un identifiant disponible.");
+    }
 
     if (mode === "create") {
       const { error: founderError } = await scoped.rpc("promote_club_founder", {

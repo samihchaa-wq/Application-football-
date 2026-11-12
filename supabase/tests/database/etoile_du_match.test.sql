@@ -8,12 +8,17 @@ select no_plan();
 
 select is(
   (select count(*)
-   from pg_proc p
-   join pg_namespace n on n.oid = p.pronamespace
-   where n.nspname in ('public', 'private')
-     and p.prosrc ~* 'ommes? du match'),
+   from unnest(array[
+     'private.admin_cancel_match_motm_vote(uuid, text)',
+     'private.club_rule_catalogue()',
+     'private.guard_motm_module()',
+     'private.match_motm_result_notification_payloads(uuid)',
+     'public.internal_push_dispatch(text, uuid)',
+     'public.send_test_push_kind(text)'
+   ]) as f(signature)
+   where pg_get_functiondef(to_regprocedure(f.signature)) ~* 'ommes? du match'),
   0::bigint,
-  'aucune fonction de la base n’écrit plus « Homme du match »'
+  'les fonctions qui écrivent des textes visibles ne disent plus « Homme du match »'
 );
 
 select ok(

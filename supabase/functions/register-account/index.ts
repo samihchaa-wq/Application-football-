@@ -15,7 +15,7 @@ import {
   sha256Hex,
 } from "./account_email.ts";
 import { parseConsent } from "./consent.ts";
-import { firstFreeUsername } from "./username.ts";
+import { isDuplicateError, reserveUsername } from "./username.ts";
 import { validatePassword } from "./password_policy.ts";
 
 const USERNAME_DOMAIN = Deno.env.get("USERNAME_DOMAIN")?.trim() ||
@@ -244,19 +244,39 @@ Deno.serve(async (req: Request) => {
 
     const base = `${normalizedFirst}${normalizedInitial}`.slice(0, 27);
     // Les identifiants sont uniques sur toute la plateforme (tous clubs
-    // confondus) : « thomasd », puis « thomasd2 », « thomasd3 »… On lit en
-    // une fois les homonymes déjà pris pour choisir le premier numéro libre,
-    // sans plafond (l'ancienne limite de 20 homonymes bloquait l'inscription
-    // dès qu'il y avait beaucoup de clubs).
-    const { data: homonyms, error: homonymsError } = await admin
-      .from("profiles")
-      .select("username")
-      .filter("username", "match", `^${base}[0-9]*$`);
-    if (homonymsError) throw homonymsError;
-    const username = firstFreeUsername(
-      base,
-      (homonyms ?? []).map((row: { username: string | null }) => row.username),
-    );
+    // confondus) : « thomasd », puis « thomasd2 », « thomasd3 »… La base
+    // calcule le premier libre, sans plafond ; si une inscription simultanée
+    // vient de le prendre, la création du compte est refusée et on passe au
+    // suivant.
+    const nextFree = async (skip: string[]) => {
+      const { data, error } = await admin!.rpc("internal_next_free_username", {
+        p_base: base,
+        p_skip: skip,
+      });
+      if (error) throw error;
+      return typeof data === "string" ? data : null;
+    };
+    const username = await reserveUsername(nextFree, async (candidate) => {
+      const { data: created, error: createError } =
+        await admin!.auth.admin.createUser({
+          email: `${candidate}@${USERNAME_DOMAIN}`,
+          password,
+          email_confirm: true,
+          user_metadata: {
+            first_name: firstName,
+            last_name: lastName,
+          },
+          // Lu par le déclencheur d'inscription ; non modifiable par le compte.
+          app_metadata: { club_id: club.id },
+        });
+      if (createError) {
+        if (isDuplicateError(createError)) return "taken";
+        throw createError;
+      }
+      newUserId = created.user?.id ?? null;
+      if (!newUserId) throw new Error("Account creation returned no user id");
+      return "ok";
+    });
     if (!username) {
       if (createdClubId) {
         await admin.rpc("discard_empty_club", { p_club_id: createdClubId });
@@ -267,22 +287,6 @@ Deno.serve(async (req: Request) => {
         409,
       );
     }
-
-    const { data: created, error: createError } =
-      await admin.auth.admin.createUser({
-        email: `${username}@${USERNAME_DOMAIN}`,
-        password,
-        email_confirm: true,
-        user_metadata: {
-          first_name: firstName,
-          last_name: lastName,
-        },
-        // Lu par le déclencheur d'inscription ; non modifiable par le compte.
-        app_metadata: { club_id: club.id },
-      });
-    if (createError) throw createError;
-    newUserId = created.user?.id ?? null;
-    if (!newUserId) throw new Error("Account creation returned no user id");
 
     // Les automatismes de la base rangent ce qu'ils écrivent dans le club
     // annoncé par cet en-tête, que seule la clé de service peut fournir.
