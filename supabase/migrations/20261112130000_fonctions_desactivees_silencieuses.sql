@@ -7,13 +7,16 @@
 -- n'était :
 --   - rappel « Pense à pronostiquer » envoyé aux joueurs ;
 --   - vote de l'homme du match ouvert, puis notification « Pense à voter »
---     et annonce du résultat ;
+--     et annonce du résultat (y compris à la clôture d'un vote ouvert avant
+--     la coupure) ;
 --   - notification « Badge débloqué » ;
 --   - météo du match demandée au service externe toutes les 15 minutes.
 -- Un joueur recevait donc une notification qui menait vers un écran absent.
 --
 -- Chaque tâche vérifie maintenant que la fonction est activée pour le club
--- traité (les tâches planifiées passent club par club). Les corps sont repris
+-- traité (les tâches planifiées passent club par club). La file des
+-- annonces de badges est en plus bornée explicitement au club traité, en
+-- complément du cloisonnement par règles d'accès (relecture sécurité). Les corps sont repris
 -- à l'identique de 20261111000100_socle_structure.sql ; seule la vérification
 -- est ajoutée. CREATE OR REPLACE conserve propriétaire et droits.
 
@@ -261,7 +264,8 @@ begin
   if v_token is null then
     -- Sans canal push, on évite simplement que la file grossisse sans fin.
     delete from private.badge_unlock_push_queue queue
-    where queue.queued_at < p_now - interval '1 day';
+    where queue.queued_at < p_now - interval '1 day'
+      and queue.club_id = (select private.current_club_id());
     return 0;
   end if;
 
@@ -269,6 +273,7 @@ begin
     with ready as (
       select queue.profile_id
       from private.badge_unlock_push_queue queue
+      where queue.club_id = (select private.current_club_id())
       group by queue.profile_id
       having max(queue.queued_at) <= p_now - interval '45 seconds'
     ),
@@ -276,6 +281,7 @@ begin
       delete from private.badge_unlock_push_queue queue
       using ready
       where queue.profile_id = ready.profile_id
+        and queue.club_id = (select private.current_club_id())
       returning queue.profile_id, queue.badge_id, queue.queued_at
     )
     select
@@ -362,5 +368,47 @@ begin
 exception
   when others then
     return null;
+end;
+$$;
+
+-- 7. Homme du match : pas d'annonce du résultat à la clôture d'un vote ouvert
+-- avant la coupure (déclencheur push_on_motm_election_closed)
+CREATE OR REPLACE FUNCTION "private"."try_motm_result_notification"("p_kind" "text", "p_match_id" "uuid", "p_sent_at" timestamp with time zone DEFAULT "now"()) RETURNS boolean
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO ''
+    AS $$
+begin
+  if p_kind not in ('motm_result_general', 'motm_result_winner') then
+    raise exception 'Unknown MOTM result notification kind' using errcode = '22023';
+  end if;
+
+  -- Homme du match coupé (par exemple pendant un vote déjà ouvert) : le
+  -- résultat n'est pas annoncé, ni à la clôture ni en rattrapage.
+  if not private.club_module_enabled('man_of_the_match') then
+    return false;
+  end if;
+
+  perform pg_catalog.pg_advisory_xact_lock(
+    pg_catalog.hashtextextended(p_match_id::text || ':' || p_kind, 0)
+  );
+
+  if exists (
+    select 1
+    from public.push_notification_log log
+    where log.match_id = p_match_id
+      and log.kind = p_kind
+  ) then
+    return false;
+  end if;
+
+  if not private.dispatch_motm_result_notification(p_kind, p_match_id) then
+    return false;
+  end if;
+
+  insert into public.push_notification_log(match_id, kind, sent_at)
+  values (p_match_id, p_kind, p_sent_at)
+  on conflict do nothing;
+
+  return found;
 end;
 $$;

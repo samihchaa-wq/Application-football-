@@ -243,5 +243,29 @@ select is(
   'réactivé dans le délai du vote, le vote peut de nouveau s’ouvrir'
 );
 
+-- Coupé pendant un vote ouvert : la clôture n'annonce pas le résultat.
+update private.app_feature_flags set enabled = false where key = 'man_of_the_match';
+update public.match_sport_motm_elections
+set state = 'closed', closed_at = now(), updated_at = now()
+where match_id = current_setting('test.motm_off_match')::uuid;
+select is(
+  (select count(*) from public.push_notification_log
+   where match_id = current_setting('test.motm_off_match')::uuid
+     and kind in ('motm_result_general', 'motm_result_winner')),
+  0::bigint,
+  'coupé pendant le vote, la clôture n’annonce aucun résultat'
+);
+select is(
+  private.try_motm_result_notification(
+    'motm_result_general', current_setting('test.motm_off_match')::uuid, now()),
+  false,
+  'aucun rattrapage de l’annonce tant que la fonction est coupée'
+);
+select is(
+  private.push_due_motm_result_notifications(now()),
+  0,
+  'la tâche de rattrapage n’annonce rien non plus'
+);
+
 select * from finish();
 rollback;

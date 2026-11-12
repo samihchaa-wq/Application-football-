@@ -137,6 +137,43 @@ select is(
   'l’annonce en attente du club B n’est pas touchée'
 );
 
+-- Le club B traite sa file (badges activés) : seule sa ligne part, et la
+-- file d'un autre club n'est jamais touchée. Préférence coupée pour ne rien
+-- envoyer réellement : la ligne est prise puis écartée.
+update public.profiles set notify_badges = false
+where id = '5e000000-0000-0000-0000-00000000000b';
+-- Une annonce en attente dans le club A, posée directement.
+select pg_temp.as_club('a');
+insert into private.badge_unlock_push_queue (profile_id, badge_id, queued_at)
+select '5e000000-0000-0000-0000-00000000000a', badge.id, now() - interval '1 hour'
+from public.badges badge where badge.code = 'test_silence_a';
+update private.app_feature_flags set enabled = true where key = 'badges';
+-- Le club A remet les badges, mais c'est le club B qui est traité.
+select pg_temp.as_club('b');
+select is(
+  private.process_badge_unlock_notifications(now() + interval '1 minute'),
+  0,
+  'le club B traite sa file sans rien envoyer (préférence coupée)'
+);
+select is(
+  (select count(*)::integer from private.badge_unlock_push_queue
+   where profile_id = '5e000000-0000-0000-0000-00000000000b'),
+  0,
+  'la ligne du club B est traitée'
+);
+select pg_temp.as_club('a');
+select is(
+  (select count(*)::integer from private.badge_unlock_push_queue
+   where profile_id = '5e000000-0000-0000-0000-00000000000a'),
+  1,
+  'traiter le club B ne touche jamais la file du club A'
+);
+select ok(
+  position('queue.club_id = (select private.current_club_id())'
+    in pg_get_functiondef('private.process_badge_unlock_notifications(timestamptz)'::regprocedure)) > 0,
+  'la file des annonces de badges est bornée explicitement au club traité'
+);
+
 -- ---------------------------------------------------------------------------
 -- 3. Météo coupée : aucune demande, même avec le canal serveur configuré
 -- ---------------------------------------------------------------------------
