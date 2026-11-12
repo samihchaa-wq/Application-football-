@@ -24,34 +24,31 @@ mettre à jour à chaque étape importante.
   `jvxkhgdopslctpcjrhzw`, organisation Pro, région Paris (eu-west-3).
   Coût : inclus dans l'abonnement Pro (~25 $/mois), aucun supplément tant que
   c'est le seul projet de l'organisation.
-  - Migrations appliquées jusqu'à `20261112040000_notifications_nom_du_club`
+  - Migrations appliquées jusqu'à `20261112050000_blocage_serveur_mode_live`
     (enregistrées dans `supabase_migrations.schema_migrations`). Base vide :
     aucun club, aucun utilisateur.
   - Schéma `install_tmp` restant (inaccessible à l'appli) : à supprimer depuis
     l'éditeur SQL Supabase, `drop schema install_tmp cascade;`.
-  - Pas encore faits sur cette base : fonctions serveur (Edge Functions),
-    secrets (VAPID, `push_internal_token` dans Vault, `PUBLIC_APP_URL`,
-    `USERNAME_DOMAIN`), réglages d'authentification (URL du site, e-mails),
-    compte éditeur (`private.platform_operators`).
-- **PR fusionnées** : #1 à #22 (socle multiclub, réglages, sécurité de
-  publication).
-- **PR #23** : nom du club dans les notifications au lieu de « AS Grinta »,
-  lien d'agenda, nom du fichier du bilan.
-- **Prochaine PR** (branche `claude/project-thread-q37eby`) : blocage serveur
-  du mode live désactivé, `config/production.json` relié à la base
-  commerciale, ce document.
+  - État relevé par le fil 9 le 12/11 : 8 Edge Functions actives (déploiement constaté),
+    4 entrées Vault comptées sans lire leurs valeurs, 12 tâches cron actives.
+    Le fonctionnement des notifications, de l'Auth, du compte éditeur et des
+    secrets n'est pas encore validé de bout en bout.
+- **PR fusionnées** : #1 à #23 au dernier relevé du fil 9.
+- **PR #24** : proposition de réactivation Pages (ouverte au relevé).
+- **PR #25** : audit fonctionnel (ouverte au relevé).
+- **Mission 09** : diagnostic et procédures dans
+  `docs/MAINTENANCE_SUPPORT_MISSION09.md` (PR documentaire séparée).
 - Déploiement GitHub Pages **désactivé** (`.github/workflows-disabled/`).
 
 ## Reste à faire, par priorité
 
 ### Bloquant pour un club test
-1-2. Fonctions serveur, secrets du coffre (`project_url`,
-   `push_internal_token`, clés VAPID générées automatiquement) et migrations
-   en attente : workflow GitHub **« Supabase commercial : mise en route »**
-   (`.github/workflows/commercial_supabase_setup.yml`, lancement manuel).
-   Prérequis côté Samih : secret GitHub `SUPABASE_ACCESS_TOKEN` (Supabase >
-   Account > Access Tokens). Les assistants ne peuvent pas écrire de secret
-   eux-mêmes. Le workflow refuse tout autre projet que la base commerciale.
+1-2. Mise en route technique **exécutée avec succès** le 12/11 via workflow
+   **« Supabase commercial : mise en route »** (run 43134233822) : migrations,
+   Vault et déploiement des Edge Functions. Reste à tester leurs comportements
+   réels avec deux clubs de démonstration, et à vérifier les paramètres Auth.
+   Le workflow reste réservé à la seule base commerciale et ne doit pas être
+   relancé avec des opérations d'écriture sans accord explicite.
 3. Réglages Auth dans Supabase (action de Samih dans le tableau de bord) :
    URL du site `https://samihchaa-wq.github.io/Application-football-/`, URLs
    de redirection, service d'envoi d'e-mails.
@@ -74,8 +71,12 @@ mettre à jour à chaque étape importante.
     (`lib/features/legal/domain/legal_documents.dart`).
 11. Passer le dépôt en privé (l'historique contient d'anciennes données
     AS Grinta).
-12. Secrets GitHub `PRODUCTION_DB_URL` et `BACKUP_PASSPHRASE` pour la
-    surveillance et la sauvegarde hebdomadaire.
+12. **Protection d'exploitation à activer et vérifier** : le run de
+    `Production watch` du 12/11 (43133882260) est vert mais son contrôle SQL
+    a été **ignoré** car `PRODUCTION_DB_URL` n'était pas disponible.
+    Sauvegarde hebdomadaire SQL non validée (`BACKUP_PASSPHRASE` à vérifier),
+    aucun test de restauration réalisé. Les fichiers des trois buckets
+    Storage ne sont pas inclus dans ce workflow. Voir la Mission 09.
 
 ## Contrôles avant fusion
 
