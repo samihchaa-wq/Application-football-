@@ -469,8 +469,8 @@ select is(
 );
 
 select is(
-  (select count(*) from public.match_sport_motm_results
-   where match_id in (select match_id from sim_matches)),
+  (select count(distinct match_id) from public.match_sport_motm_results
+   where match_id in (select match_id from sim_matches) and is_winner),
   20::bigint,
   'chaque match a son Étoile du match'
 );
