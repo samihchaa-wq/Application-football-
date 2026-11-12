@@ -252,3 +252,16 @@ final allHistoricalMatchesProvider =
     StreamProvider<List<HistoricalMatchResult>>((ref) {
   return ref.watch(calendarHistoryRepositoryProvider).watchAllLocalFirst();
 });
+
+/// Fait relire les archives après un ajout ou une suppression, sans attendre
+/// le cache. Un échec ici ne doit pas faire passer l'enregistrement, réussi,
+/// pour une erreur : le calendrier se remettra à jour à la prochaine lecture.
+void refreshHistoricalArchives(WidgetRef ref) {
+  ref.invalidate(allHistoricalMatchesProvider);
+  try {
+    ref
+        .read(calendarHistoryRepositoryProvider)
+        .fetchAll(forceRefresh: true)
+        .ignore();
+  } catch (_) {}
+}

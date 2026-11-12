@@ -5,6 +5,7 @@ import 'package:as_grinta/app/router/deferred_route_page.dart';
 import 'package:as_grinta/app/router/initial_app_location.dart';
 import 'package:as_grinta/app/shell/app_shell.dart';
 import 'package:as_grinta/features/admin/presentation/club_settings_page.dart';
+import 'package:as_grinta/features/matches/presentation/history_entry_page.dart';
 import 'package:as_grinta/features/admin/presentation/admin_menu_page.dart'
     deferred as admin_menu;
 import 'package:as_grinta/features/admin/presentation/admin_notification_page.dart'
@@ -248,6 +249,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/admin/club',
                 builder: (_, __) => const ClubSettingsPage(),
+              ),
+              GoRoute(
+                path: '/admin/history',
+                builder: (_, __) => const HistoryEntryPage(),
               ),
               GoRoute(path: '/more', builder: (_, __) => const MorePage()),
               GoRoute(

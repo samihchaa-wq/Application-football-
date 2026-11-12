@@ -116,7 +116,7 @@ Chaque ligne de critères doit être validée par test démontrable. **Une lectu
 - **Source de l'audit :** E07,E08,E09,E10,E11.
 - **Changements attendus :** Intégrer le travail parallèle; algorithme unique pour priorité, ordre d'arrivée et sélection admin.
 - **Critères d'acceptation :** Pour chacun des 3 modes : ajout/suppression, désistement, retour, quota modifié et égalités ont un ordre déterministe; même état visible client et base; aucune rétroaction injustifiée.
-- **Dépendance / coordination :** Branche en cours liste d'attente.
+- **Dépendance / coordination :** Trois modes fusionnés le 12/11 (PR #48). Reste à vérifier ce travail contre les critères ci-dessus (fil 3).
 - **Preuves à fournir :** chemins et PR modifiés, tests Dart/SQL pertinents, captures ou traces redigées si tests E2E, compte rendu des cas limites. Aucun log contenant jeton, e-mail privé ou identité réelle.
 
 ### F2-07 — Passages en attente transactionnels (P0, Pilote)
@@ -132,7 +132,7 @@ Chaque ligne de critères doit être validée par test démontrable. **Une lectu
 - **Source de l'audit :** D10,D11,I07.
 - **Changements attendus :** Réconcilier le développement en cours, valider résultat/saison/joueurs/score.
 - **Critères d'acceptation :** L'admin saisit un match antérieur et peut corriger la saisie selon droits; stats et adversaire sont actualisés sans créer de pronostic, push ou Live fictifs; deux clubs ne se croisent pas.
-- **Dépendance / coordination :** Branche en cours historique.
+- **Dépendance / coordination :** Saisie d'historique fusionnée le 12/11 (PR #48). Reste à vérifier ce travail contre les critères ci-dessus (fil 3).
 - **Preuves à fournir :** chemins et PR modifiés, tests Dart/SQL pertinents, captures ou traces redigées si tests E2E, compte rendu des cas limites. Aucun log contenant jeton, e-mail privé ou identité réelle.
 
 ### F2-09 — Identifiants multi-clubs robustes (P0, Pilote)
