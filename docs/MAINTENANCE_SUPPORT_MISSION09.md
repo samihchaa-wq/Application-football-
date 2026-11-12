@@ -202,3 +202,18 @@ Table de suivi mensuel à conserver : mois ; clubs actifs ; comptes ; taille BDD
 - Fil 8 : tests pilotes, parcours et FAQ issue des demandes réelles.
 
 Ce document est un **diagnostic initial**, pas une autorisation d'activation. À chaque livraison, mettre à jour les états et les preuves dans docs/HANDOFF.md ou un compte rendu d'exploitation dédié. Ne jamais conclure « opérationnel » sans test daté, résultats et destinataire de l'alerte.
+
+## 12. Transmission formelle au fil 00 (pilotage)
+
+Référence : [PR #29 — docs/CHANTIER.md](https://github.com/samihchaa-wq/Application-football-/pull/29) (document en attente de fusion au moment du constat). Le fil 00 consolide les arbitrages à partir des preuves publiées, pas à partir de conversations supposées synchrones.
+
+| Élément à piloter | Mission | Statut vérifiable | Preuve / responsable |
+| --- | --- | --- | --- |
+| Diagnostic et neuf procédures M09 | 09 | Documentation proposée, non fusionnée | [PR #31](https://github.com/samihchaa-wq/Application-football-/pull/31) |
+| Faux vert des workflows sans secrets | 09 | Correctif et tests de non-régression proposés, non fusionnés | [PR #32](https://github.com/samihchaa-wq/Application-football-/pull/32) ; contrôle réel non exécuté |
+| Validation des contrôles CI | 09 / 03 | Attendre résultat du dernier SHA de chaque PR | GitHub Actions (ne pas confondre CI et test en production) |
+| Mise en place des secrets nécessaires | Propriétaire / 04 | Bloqué : intervention autorisée requise | `PRODUCTION_DB_URL`, `BACKUP_PASSPHRASE` ; ne jamais divulguer leurs valeurs |
+| Sauvegarde des objets Storage et exercice de restauration | 09 / 04 | Non testé, bloquant avant premiers clubs réels | Plan technique, accord du propriétaire si service/ressource supplémentaire |
+| Parcours utilisateurs et notifications réelles | 03 / 08 | Non testé sur deux clubs réels fictifs | Attendre validations sécurité/accès et autorisation des écritures |
+
+À signaler systématiquement au chef de projet : nouvelle PR, CI du SHA concerné, défaut réel, incidence sur clubs, coût annoncé avant achat, décision du propriétaire et validation de reprise. Une PR en brouillon ne change pas la production. Le correctif fail-closed prévu dans la PR #32 rend volontairement rouges les jobs planifiés tant que les secrets manquent : **prévoir la configuration autorisée et l'essai contrôlé de l'alerte avant fusion**.
