@@ -29,12 +29,14 @@ seule, base vide : 0 club, 0 compte). Dépôt : `Application-football-`.
 
 ## Corrigé dans cette PR
 
-- Schéma `install_tmp` supprimé par migration, objet par objet, sans
-  `CASCADE` (inventaire des dépendances dans l'en-tête de la migration).
+- Schéma `install_tmp` supprimé par migration (`20261112210000`), objet par
+  objet, sans `CASCADE`. Inventaire des dépendances, comparaison des
+  empreintes avec les fichiers du dépôt et essai sur base locale isolée dans
+  l'en-tête de la migration.
 - Noms de famille réels de joueurs d'AS Grinta remplacés par des noms fictifs
   dans les tests Dart, deux tests SQL et un commentaire du code.
   **Cela ne purge pas l'historique Git public** : les anciens commits gardent
-  ces noms. Seul le passage du dépôt en privé limite l'exposition.
+  ces noms.
 
 ## Laissé volontairement en l'état
 
@@ -52,10 +54,16 @@ seule, base vide : 0 club, 0 compte). Dépôt : `Application-football-`.
 
 Par ordre d'importance :
 
-1. **Passer le dépôt en privé.** L'historique Git contient encore les noms de
-   joueurs réels d'AS Grinta (anciennes migrations, non modifiables) et
-   l'adresse e-mail personnelle de Samih (auteur des commits). Les
-   sauvegardes hebdomadaires seraient aussi déposées dans ce dépôt.
+1. **Dépôt public (décision du 12/11 : il reste public).** Conséquences et
+   limites : l'historique Git garde les noms de joueurs réels d'AS Grinta
+   (anciens commits et anciennes migrations, non modifiables) et l'adresse
+   e-mail de l'auteur des commits. Remédiations sans réécriture d'historique :
+   continuer à assainir les fichiers courants, ne plus citer de noms réels
+   dans les PR et commentaires publics, utiliser l'adresse « noreply » de
+   GitHub pour les prochains commits. Une purge de l'historique demanderait
+   une réécriture, à décider séparément. Les sauvegardes hebdomadaires
+   (artefacts téléchargeables par tout compte GitHub) restent chiffrées :
+   la phrase secrète doit être longue.
 2. **Jeton `SUPABASE_ACCESS_TOKEN`** : il donne accès à *tous* les projets
    Supabase du compte, AS Grinta compris. Le recréer avec une date
    d'expiration courte, ou le révoquer entre deux mises en route.
