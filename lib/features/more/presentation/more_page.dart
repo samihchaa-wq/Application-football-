@@ -104,6 +104,13 @@ class MorePage extends ConsumerWidget {
                   title: 'Réglages du club',
                   onTap: () => context.push('/admin/club'),
                 ),
+                // La gestion des saisons reste dans Petit Filet, mais
+                // elle n'altère pas l'Administration identique à AS Grinta.
+                _SettingsTile(
+                  icon: Icons.calendar_month_rounded,
+                  title: 'Saisons',
+                  onTap: () => context.push('/admin/season'),
+                ),
                 _SettingsTile(
                   icon: Icons.history_rounded,
                   title: 'Ajouter des matchs passés',
