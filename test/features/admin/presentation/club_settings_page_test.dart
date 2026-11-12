@@ -24,7 +24,7 @@ void main() {
   });
 
   Future<void> pumpPage(WidgetTester tester) async {
-    tester.view.physicalSize = const Size(900, 2400);
+    tester.view.physicalSize = const Size(900, 3000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
@@ -176,6 +176,30 @@ void main() {
     expect(ClubRules.predictionCloseBeforeKickoff, const Duration(minutes: 16));
   });
 
+  testWidgets('le mode de liste d’attente se choisit parmi trois options',
+      (tester) async {
+    repository.ruleValues['waitlist_mode'] = 0;
+    await pumpPage(tester);
+
+    expect(find.text('Par présence l’an dernier'), findsOneWidget);
+    expect(find.text('Ordre d’arrivée'), findsOneWidget);
+    expect(find.text('Par choix'), findsOneWidget);
+    // Pas de compteur +/- pour ce réglage.
+    expect(
+      find.byKey(const ValueKey('club-rule-waitlist_mode-plus')),
+      findsNothing,
+    );
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('club-rule-waitlist_mode-1')),
+    );
+    await tester.tap(find.byKey(const ValueKey('club-rule-waitlist_mode-1')));
+    await tester.pumpAndSettle();
+
+    expect(repository.ruleValues['waitlist_mode'], 1);
+    expect(ClubRules.waitlistMode, WaitlistMode.arrivalOrder);
+  });
+
   testWidgets('retirer le logo rétablit l’écusson neutre', (tester) async {
     repository.club = Club(
       id: repository.club.id,
@@ -239,17 +263,30 @@ class _FakeClubRepository implements ClubRepository {
 
   List<ClubRule> _rules() => [
         for (final entry in ruleValues.entries)
-          ClubRule(
-            key: entry.key,
-            label: 'Fermeture des pronostics',
-            description: 'Minutes avant le coup d’envoi.',
-            unit: 'min',
-            group: 'Pronostics',
-            defaultValue: 15,
-            min: 0,
-            max: 240,
-            value: entry.value,
-          ),
+          if (entry.key == 'waitlist_mode')
+            ClubRule(
+              key: entry.key,
+              label: 'Liste d’attente : qui passe en premier',
+              description: 'Quand il y a trop de disponibles.',
+              unit: 'mode',
+              group: 'Liste d’attente',
+              defaultValue: 0,
+              min: 0,
+              max: 2,
+              value: entry.value,
+            )
+          else
+            ClubRule(
+              key: entry.key,
+              label: 'Fermeture des pronostics',
+              description: 'Minutes avant le coup d’envoi.',
+              unit: 'min',
+              group: 'Pronostics',
+              defaultValue: 15,
+              min: 0,
+              max: 240,
+              value: entry.value,
+            ),
       ];
 
   @override
@@ -257,7 +294,7 @@ class _FakeClubRepository implements ClubRepository {
 
   @override
   Future<List<ClubRule>> setRule(String key, int? value) async {
-    ruleValues[key] = value ?? 15;
+    ruleValues[key] = value ?? (key == 'waitlist_mode' ? 0 : 15);
     return _rules();
   }
 

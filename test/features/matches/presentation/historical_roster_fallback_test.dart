@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('Philippe n’apparaît jamais dans l’effectif historique de secours', () {
+  test('aucun prénom n’est écarté de l’effectif historique de secours', () {
     const detail = HistoricalMatchDetail(
       formation: null,
       fieldPlayers: [],
@@ -17,7 +17,10 @@ void main() {
 
     final players = historicalFallbackPlayers(detail);
 
-    expect(players.map((player) => player.name).toList(), ['Alban', 'Milan']);
+    expect(
+      players.map((player) => player.name).toList(),
+      ['Alban', 'Milan', 'Philippe', 'Philippe C.'],
+    );
   });
 
   test('l’Étoile du match est repéré dans l’effectif de secours', () {
