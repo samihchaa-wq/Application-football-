@@ -29,11 +29,24 @@ seule, base vide : 0 club, 0 compte). Dépôt : `Application-football-`.
 
 ## Corrigé dans cette PR
 
-- Schéma `install_tmp` supprimé par migration (plus besoin de l'éditeur SQL).
-- Fonction héritée qui écartait une personne réelle d'AS Grinta, par son nom,
-  des statistiques : neutralisée.
-- Noms et prénoms réels de joueurs d'AS Grinta retirés des tests et d'un
-  commentaire du code (remplacés par des noms fictifs).
+- Schéma `install_tmp` supprimé par migration, objet par objet, sans
+  `CASCADE` (inventaire des dépendances dans l'en-tête de la migration).
+- Noms de famille réels de joueurs d'AS Grinta remplacés par des noms fictifs
+  dans les tests Dart, deux tests SQL et un commentaire du code.
+  **Cela ne purge pas l'historique Git public** : les anciens commits gardent
+  ces noms. Seul le passage du dépôt en privé limite l'exposition.
+
+## Laissé volontairement en l'état
+
+- `private.is_known_non_player_archive_name` écarte encore des archives une
+  personne de l'ancien club, désignée par son nom (et son test pgTAP garde ce
+  nom). Changer cette règle métier relève du fil d'adaptation multiclub :
+  il faut un critère par club (rôle « staff »), pas un nom écrit en dur.
+- Les 157 fonctions `SECURITY DEFINER` appelables par un utilisateur connecté
+  signalées par Supabase ne sont pas 157 failles : elles appartiennent à
+  `club_scope` et restent soumises au cloisonnement. Une matrice fonction par
+  fonction existe dans `supabase/SECURITY_RPC_MATRIX.md` ; elle n'a pas été
+  revérifiée une à une ici.
 
 ## Reste à faire (action de Samih)
 
@@ -54,6 +67,22 @@ Par ordre d'importance :
 5. **Garder le plafond de dépenses** (Spend cap) activé dans l'organisation Pro.
 6. **Sauvegardes** : ajouter `PRODUCTION_DB_URL` et `BACKUP_PASSPHRASE`
    (phrase longue, gardée hors de GitHub) puis tester une restauration.
+
+## Requêtes de contrôle (12/11/2026, lecture seule, base vide)
+
+- Tables `public`/`storage` sans RLS : aucune (`pg_class.relrowsecurity`).
+- Droits du rôle `anon` sur les tables et fonctions de `public` : aucun
+  (`information_schema.role_table_grants`, `has_function_privilege`).
+- Fonctions `SECURITY DEFINER` exécutables par `authenticated` et non
+  possédées par `club_scope` : 6 (`current_club_id`, `is_platform_operator`,
+  `get_my_club_access`, `platform_health`, `platform_list_clubs`,
+  `platform_update_club`), corps relus.
+- Table `public` sans règle `club_isolation` : seulement `clubs`, filtrée sur
+  le club de l'utilisateur.
+- Historique Git : recherche par motifs (JWT, `sb_secret_`, `sbp_`, URL
+  Postgres avec mot de passe, clé privée, `ghp_`, `sk_live_`) : seule l'URL
+  de la base locale de développement (`postgres:postgres@127.0.0.1`).
+- `cron.job_run_details` sur 2 h : 13 tâches, 0 échec.
 
 ## Non testé
 
