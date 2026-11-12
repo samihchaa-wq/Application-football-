@@ -41,7 +41,7 @@ mettre à jour à chaque étape importante.
 - **Prochaine PR** (branche `claude/project-thread-q37eby`) : blocage serveur
   du mode live désactivé, `config/production.json` relié à la base
   commerciale, ce document.
-- Déploiement GitHub Pages **réactivé le 12/11/2026 pour tester** avec des clubs fictifs (accord de Samih) : https://samihchaa-wq.github.io/Application-football-/ . Aucun vrai club dessus.
+- Déploiement GitHub Pages : workflow réactivé en **publication manuelle uniquement** (PR #24), pour un test à clubs fictifs. Site cible : https://samihchaa-wq.github.io/Application-football-/ — publié seulement après lancement manuel et vérification. GitHub Pages **n'autorise pas** l'hébergement d'un SaaS commercial : un autre hébergeur sera nécessaire avant toute vente.
 
 ## Reste à faire, par priorité
 
