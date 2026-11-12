@@ -73,6 +73,21 @@ class BadgeDef {
   bool get awardedAutomatically =>
       (auto && metric != null && threshold != null) || autoRule != null;
 
+  /// Vrai si l'administrateur peut changer le nombre à atteindre (badge à
+  /// paliers compté : buts, passes, matchs…). Même liste que le serveur
+  /// (`staff_update_badge_threshold`).
+  bool get hasAdjustableThreshold {
+    final m = metric;
+    if (!auto || kind != 'tier' || m == null || threshold == null) {
+      return false;
+    }
+    return !(m == 'max_match_goals' ||
+        m == 'max_match_assists' ||
+        m == 'seasons_complete' ||
+        m == 'bet_against_grinta' ||
+        m.startsWith('title_'));
+  }
+
   factory BadgeDef.fromMap(Map<String, dynamic> m) => BadgeDef(
         code: m['code'].toString(),
         name: (m['name'] ?? '').toString(),

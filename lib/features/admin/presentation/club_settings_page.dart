@@ -432,8 +432,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           contentPadding: EdgeInsets.zero,
           title: Text(rule.label),
           subtitle: Text(
-            '${rule.description}\nPar défaut : ${rule.defaultValue} '
-            '${rule.unit}',
+            '${rule.description}\nPar défaut : '
+            '${_ruleValueLabel(rule, rule.defaultValue)}',
           ),
           isThreeLine: true,
           trailing: Row(
@@ -447,7 +447,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
                         ? null
                         : () => _setRule(rule, rule.value - 1),
               ),
-              Text('${rule.value} ${rule.unit}'),
+              Text(_ruleValueLabel(rule, rule.value)),
               IconButton(
                 key: ValueKey('club-rule-${rule.key}-plus'),
                 icon: const Icon(Icons.add_circle_outline),
@@ -463,6 +463,13 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     }
     return widgets;
   }
+
+  /// Valeur affichée d'une règle : « 15 min », ou « × 1,5 » pour un
+  /// multiplicateur du barème (enregistré en dixièmes).
+  String _ruleValueLabel(ClubRule rule, int value) =>
+      rule.unit == ClubRules.multiplierUnit
+          ? ClubRules.formatMultiplier(value)
+          : '$value ${rule.unit}';
 
   /// Choix du mode de liste d'attente : trois options expliquées, pas un
   /// compteur.

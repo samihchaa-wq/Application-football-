@@ -4,6 +4,7 @@ import 'package:as_grinta/features/badges/data/badge_repository.dart';
 import 'package:as_grinta/features/badges/presentation/badge_emblem.dart';
 import 'package:as_grinta/features/badges/presentation/badge_image_editor.dart';
 import 'package:as_grinta/features/badges/presentation/badge_text_editor.dart';
+import 'package:as_grinta/features/badges/presentation/badge_threshold_editor.dart';
 import 'package:as_grinta/features/badges/presentation/locked_badge_emblem.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -205,6 +206,13 @@ class BadgeDetailSheet extends ConsumerWidget {
                     ),
                   ],
                 ),
+                if (currentBadge.hasAdjustableThreshold) ...[
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: BadgeThresholdEditorButton(badge: currentBadge),
+                  ),
+                ],
               ],
               if (showFamily) ...[
                 if (showHero) const SizedBox(height: 16),

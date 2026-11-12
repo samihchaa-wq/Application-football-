@@ -334,7 +334,9 @@ class ClubRepository {
   /// Nombre habituel de convoqués (1 à 30) du club, lu côté serveur.
   Future<int> fetchUsualSquadSize() async {
     final payload = await _client.rpc('get_public_feature_flags');
-    return FeatureFlagsSnapshot.fromRpc(payload).sportsManagement.usualSquadSize;
+    return FeatureFlagsSnapshot.fromRpc(payload)
+        .sportsManagement
+        .usualSquadSize;
   }
 
   /// Change la taille habituelle des convocations futures.
