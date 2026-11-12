@@ -127,4 +127,104 @@ Sources : lib/features/matches/ ; lib/features/admin/presentation/admin_season_s
 | M24 | Identifiant ICS sporteasy-grinta | 2 | SRC | Neutraliser sans briser anciens abonnements | Marque tierce | P1 |
 | M25 | Saison implicitement juillet-juin | 3 | SRC | Rendre cycle saison configurable si cible élargie | Bilan mal placé | P2 |
 
+
+### Disponibilités, convocations et liste d'attente
+
+Sources : lib/features/sports_management/data/match_availability_repository.dart ; presentation/admin_waitlist_page.dart ; docs/changes/refonte-liste-attente-3-regles.md.
+
+| ID | Fonction et description | Classement | État | Adaptation et contrôle nécessaires | Risque | Priorité |
+|---|---|---|---|---|---|---|
+| D01 | Déclarer présent/absent/sans réponse | 1 | SRC | Contrôler transitions et accès selon horaire | Convocations erronées | P0 |
+| D02 | Ouverture disponibilités J-6 à 12h par défaut | 3 | DEP | Appliquer règles horaires du club | Ouverture inattendue | P1 |
+| D03 | Ouverture spécifique anticipée/retardée du match | 3 | SRC | Faire prévaloir choix explicite du match | Fenêtre contradictoire | P1 |
+| D04 | Tableau disponibilités et photos des joueurs | 1 | SRC | Rôles, filtres, cache et nouveaux arrivants | Effectif faux | P1 |
+| D05 | Indisponibilité sur intervalle de dates | 1 | SRC | Ajouter, modifier, annuler ; dates incluses | Absence non comptée | P1 |
+| D06 | Motif d'absence visible seulement intéressé/admin | 1 | SRC | Vérifier RLS, RPC et journaux | Donnée personnelle exposée | P0 |
+| D07 | Indisponibilité prime sur réponse et convocation | 1 | SRC | Rattraper match créé/déplacé pendant période | Convoqué à tort | P0 |
+| D08 | Blocage modification disponibilité pendant indisponibilité | 1 | SRC | Interdit également à admin, sauf annulation de période | Règles violées | P1 |
+| D09 | Désistement d'un convoqué et promotion suivant | 1 | SRC | Priorité, idempotence, notifications réelles | Sureffectif | P0 |
+| D10 | Retour d'un convoqué après absence | 1 | SRC | Ne pas dépasser quota, recalcul cohérent | Sureffectif | P0 |
+| D11 | Quota par rencontre et règle de club par défaut | 3 | PARTIEL | Créer écran club 1–30, conserver exceptions par match | Quota AS Grinta imposé | P0 |
+| D12 | Ordre de liste d'attente historique | 3 | PARTIEL | Réconcilier moteur actualisé, rang et compteur | Injustice | P0 |
+| D13 | Trois modes envisagés admin/arrivée/présence | 3 | DEV | Faire confirmer contrat et persistance par match ou club | Modes incompatibles | P1 |
+| D14 | Crédit +1 après passage en attente | 3 | PARTIEL | Au plus une fois par match, idempotent au coup d'envoi | Points dupliqués | P0 |
+| D15 | Correction admin +/- des passages | 1 | SRC | Journal d'audit, retri automatique sans bouton | Désaccord classement | P1 |
+| D16 | Modification manuelle convoqués/attente | 1 | SRC | Conserver choix jusqu'à changement de disponibilité | Choix effacé | P1 |
+| D17 | Date/heure limite de crédits d'attente | 3 | DEP | Aucun crédit lors d'annulation, report ou quota élargi | Injustice | P1 |
+| D18 | Consultation liste d'attente par joueurs | 1 | SRC | Toujours lecture seule pour non-admin | Elévation de droit | P1 |
+| D19 | Joueur permanent sans compte connecté | 1 | DEP | Lier plus tard sans doubler statistiques | Identités dupliquées | P1 |
+| D20 | Invités ponctuels / réutilisables / archivage | 1 | SRC | Aucune suppression destructive d'historique | Perte références | P1 |
+| D21 | Coach présent hors quota, jamais titulaire ni attente | 1 | SRC | Exception dans tous les états et règles de facturation | Règles incohérentes | P0 |
+| D22 | Rappels manuels des joueurs n'ayant pas répondu | 1 | SRC | Exclure indisponibles, éviter répétitions | Spam | P1 |
+| D23 | Publication effectif et déclenchement notifications | 1 | SRC | Destinataires corrects, contrôle serveur, gel | Fuite d'info de match | P1 |
+
+### Compositions, maillots, simulations et présentation
+
+Sources : lib/features/sports_management/domain/football_formation.dart ; presentation/admin_squad_plan_page*.dart ; presentation/widgets/composition_presentation*.dart ; lib/features/matches/domain/jersey_option.dart.
+
+| ID | Fonction et description | Classement | État | Adaptation et contrôle nécessaires | Risque | Priorité |
+|---|---|---|---|---|---|---|
+| P01 | Editeur terrain de titulaires et banc | 1 | SRC | Glisser-déposer, joueurs uniques, emplacement vide | Compo invalide | P1 |
+| P02 | 26 dispositifs actuels de football à 11 | 2+3 | SRC | Créer catalogue adapté aux autres formats | Formats non supportés | P1 |
+| P03 | Format football à 11, 8, 7, 5 | 3 | DEV | Régler nombre titulaires, rôles, dispositif et durée | Marché restreint | P1 |
+| P04 | Dispositif préféré 4-2-1-3 | 3 | SRC | Changer valeur par défaut par club/format | Préférence AS Grinta | P1 |
+| P05 | Simuler un onze automatiquement | 1 | SRC | Conserver priorités, postes, derniers bancs, gardien | Proposition incohérente | P1 |
+| P06 | Postes de référence calculés depuis matchs du club | 1 | SRC | Aucun poste historique propre à AS Grinta | Profil artificiel | P1 |
+| P07 | Priorité au joueur resté sur banc lors dernier match joué | 1 | SRC | Ne pas forcer poste inadapté | Rotation injuste | P1 |
+| P08 | Explication des placements hors poste / poste vide | 1 | SRC | Messages compréhensibles, pas de donnée autre club | Explication absente | P2 |
+| P09 | Enregistrer et publier composition | 1 | SRC | Côté serveur, cohérent avec l'effectif | Etat incomplet | P0 |
+| P10 | Gel effectif/compo T-15 réglable | 3 | DEP | Respecter le délai choisi, Live et édition postérieure | Modification interdite contournée | P0 |
+| P11 | Deux compositions pour un match entre nous | 1 | SRC | Equipe A/B, effectif 1–11, pas de doublons | Joueur dans deux équipes | P1 |
+| P12 | Maillots fixes Blanc, Orange, Bleu | 3 | SRC | Créer maillots au choix de club, repli neutre | Aspect spécifique AS Grinta | P0 |
+| P13 | Portraits par trois tenues saisonnières | 2+3 | SRC | Associer options photos aux nouveaux maillots | Photos incompatibles | P1 |
+| P14 | Animation de composition avant affichage terrain | 1 | SRC | Déclenchement geste utilisateur, groupe, fin de vidéo | Mauvaise expérience | P1 |
+| P15 | Vidéo de stade et image de fond | 2 | SRC | Vérifier droits, optimiser diffusion et prévoir sans vidéo | Droits et lenteur | P1 |
+| P16 | Mini-vidéos individuelles détourées | 3+4 | DEV | Import/admin/stockage/transparent/non-vidéo ; n'est pas une fonction démontrée | Poids médias et droits | P2 |
+| P17 | Portrait fixe pour joueur sans mini-vidéo | 1 | DEV | Garder fallback si option vidéo développée | Composition partielle | P2 |
+| P18 | Notification composition rejoue la présentation | 1 | SRC | Respecter marqueur source notification | Animation sautée | P2 |
+| P19 | Retrait portraits, maillots et visuels AS Grinta | 5 | DEP | Aucune reprise de données privées/licenciées | Atteinte droits à l'image | P0 |
+
+### Live et temps de jeu
+
+Sources : lib/features/match_live/ ; supabase/migrations/20261112050000_blocage_serveur_mode_live.sql.
+
+| ID | Fonction et description | Classement | État | Adaptation et contrôle nécessaires | Risque | Priorité |
+|---|---|---|---|---|---|---|
+| L01 | Live activé/désactivé par club | 4 | DEP | Refus serveur nouvelles sessions/événements ; fin toujours possible | Contournement toggle | P0 |
+| L02 | Ouverture Live au gel T-15 | 3 | DEP | Synchroniser avec fermeture pronos | Ouverture trop tôt | P1 |
+| L03 | Pilotage par coach ou admin autorisé | 1 | SRC | Vérifier ACL et identité de pilote | Prise de contrôle | P0 |
+| L04 | Pilote unique et transfert après reconnexion | 1 | SRC | Tester concurrence 2 appareils et expiration | Double pilotage | P0 |
+| L05 | Chronomètre, pause et fin | 1 | SRC | Temps serveur cohérent après retour hors ligne | Temps faux | P1 |
+| L06 | But avec buteur et passeur | 1 | SRC | Score transactionnel, aucune double saisie | Résultat corrompu | P0 |
+| L07 | Remplacements / salves / temps de jeu | 1 | SRC | Temps cumulés et entrée directe au banc | Minutes fausses | P1 |
+| L08 | Changement de tactique durant le live | 1 | SRC | Maintenir joueurs uniques, préserver journal | Etat incohérent | P1 |
+| L09 | Ajout/retrait d'un invité ou joueur tardif | 1 | SRC | Nouveau joueur sur le banc, contrôle des doublons | Participation fausse | P1 |
+| L10 | Journal des événements, corrections | 1 | SRC | Horodatage, annulation et collisions | Récapitulatif faux | P1 |
+| L11 | Alertes buts et abonnements par rencontre | 4 | DEP | Cohérence module, préférences, destinataires | Push vers autre club | P0 |
+| L12 | Fin de Live et validation récapitulatif | 1 | SRC | Idempotence, crash et score final cohérent | Match bloqué | P0 |
+| L13 | Désactivation Live pendant session active | 4 | DEP | Fin et consultation possibles sans nouvelle création | Session orpheline | P1 |
+
+### Après-match, votes, statistiques et fiches joueurs
+
+Sources : lib/features/sports_management/presentation/match_report_page.dart ; sport_motm_vote_page.dart ; lib/features/statistics/ ; lib/features/players/.
+
+| ID | Fonction et description | Classement | État | Adaptation et contrôle nécessaires | Risque | Priorité |
+|---|---|---|---|---|---|---|
+| R01 | Score final officiel à valider | 1 | SRC | Vérifier transition Live -> rapport -> passé | Résultat prématuré | P0 |
+| R02 | Buteurs, passeurs et présents du rapport | 1 | SRC | Source unique pour statistiques de match | Double comptage | P0 |
+| R03 | Clean sheets, gardiens et temps de jeu | 1 | SRC | Vérifier interne, amical, historique et invité | Stats fausses | P1 |
+| R04 | Correction de rapport pendant délai du club | 3 | DEP | Recalculer pronos, stats, badges et classement | Correction partielle | P1 |
+| R05 | Versionnage / rejouement de validation | 1 | DEP | Rejeter double validation simultanée | Résultat dupliqué | P0 |
+| R06 | Vote anonyme du joueur du match | 4 | DEP | Désactivation en SQL, anonymat et permissions | Vote manipulable | P0 |
+| R07 | Fenêtre de vote / fermeture automatique | 3 | DEP | Heure selon règle et égalités | Résultat erroné | P1 |
+| R08 | Ex-aequo, co-vainqueurs, résultat collectif | 1 | SRC | Afficher gagnants et notifier correctement | Conflit de trophées | P1 |
+| R09 | Libellé Homme du match et badges genrés | 2+3 | SRC | Libellé neutre ou réglable, préserver fonction | Inadapté équipes mixtes | P0 |
+| R10 | Statistiques collectives et séries | 4 | SRC | Masquage sans perte de données, chiffrages vérifiés | Classement incohérent | P1 |
+| R11 | Stats joueurs : buts, passes, matchs, victoire | 4 | SRC | Coach hors stats sportives, invité sous contrôle | Statistiques inexactes | P1 |
+| R12 | Classements par saison, précédente et total | 1 | SRC | Etats vides pour club neuf | Tableau cassé | P1 |
+| R13 | Fiche joueur, portraits et maillots | 1 | SRC | Photos privées et repli image | Exposition de photo | P1 |
+| R14 | Faits du match dans fiche joueur | 1 | SRC | Uniquement résultats validés, jamais Live brut | Contradiction historique | P1 |
+| R15 | Identité canonique à travers historique/noms | 1 | DEP | Ne pas fusionner homonymes | Stats attribuées à tort | P1 |
+| R16 | Statistiques historiques importées par le club | 2 | PARTIEL | Workflow de saisie/import volontaire, pas de données AS Grinta | Origine incertaine | P2 |
+
 <!-- AUDIT_MISSION_01_APPEND_BLOCKS -->
