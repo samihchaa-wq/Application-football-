@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:as_grinta/core/club/club_kits.dart';
 import 'package:as_grinta/core/config/app_config.dart';
 import 'package:as_grinta/core/providers/supabase_provider.dart';
 import 'package:as_grinta/core/security/password_policy.dart';
@@ -17,6 +18,7 @@ class Club {
     this.primaryColor,
     this.secondaryColor,
     this.logoPath,
+    this.kits,
   });
 
   factory Club.fromJson(Map<String, dynamic> json) => Club(
@@ -27,6 +29,7 @@ class Club {
         primaryColor: json['primary_color'] as String?,
         secondaryColor: json['secondary_color'] as String?,
         logoPath: json['logo_path'] as String?,
+        kits: json['kits'],
       );
 
   final String id;
@@ -40,6 +43,10 @@ class Club {
 
   /// Chemin du logo dans l'espace d'images (null : écusson neutre).
   final String? logoPath;
+
+  /// Maillots réglés par le club (null : maillots par défaut). Voir
+  /// [ClubKits.parse].
+  final Object? kits;
 
   /// Lien d'inscription à partager : il ouvre la page d'inscription avec le
   /// code du club déjà rempli.
@@ -73,8 +80,8 @@ enum ClubModule {
   ),
   manOfTheMatch(
     'man_of_the_match',
-    'Homme du match',
-    'Le vote de l’homme du match après chaque rencontre.',
+    'Étoile du match',
+    'Le vote de l’Étoile du match après chaque rencontre.',
   ),
   liveMode(
     'live_mode',
@@ -205,9 +212,22 @@ class ClubRepository {
     final row = await _client
         .from('clubs')
         .select(
-            'id,name,short_name,invite_code,primary_color,secondary_color,logo_path')
+            'id,name,short_name,invite_code,primary_color,secondary_color,logo_path,kits')
         .single();
     return Club.fromJson(row);
+  }
+
+  /// Enregistre les trois maillots du club. Réservé aux administrateurs.
+  Future<List<ClubKit>> updateKits(List<ClubKit> kits) async {
+    final result = await _client.rpc(
+      'admin_update_club_kits',
+      params: {
+        'p_kits': [for (final kit in kits) kit.toJson()],
+      },
+    );
+    final saved = ClubKits.parse(result);
+    if (saved == null) throw StateError('Les maillots n’ont pas pu changer.');
+    return saved;
   }
 
   /// Remplace le code d'invitation du club. Réservé aux administrateurs.

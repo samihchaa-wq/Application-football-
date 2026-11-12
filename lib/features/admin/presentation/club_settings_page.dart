@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 /// Réglages du club, réservés à ses administrateurs : nom, invitation des
 /// joueurs, fonctionnalités à activer ou non.
@@ -563,6 +564,16 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           'club-color-secondary',
           club.secondaryColor,
           (hex) => _setColors(secondary: hex),
+        ),
+        const SizedBox(height: 12),
+        ListTile(
+          key: const ValueKey('club-kits-entry'),
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.checkroom_rounded),
+          title: const Text('Maillots du club'),
+          subtitle: const Text('Noms et couleurs des maillots proposés.'),
+          trailing: const Icon(Icons.chevron_right_rounded),
+          onTap: () => context.push('/admin/club/maillots'),
         ),
         const SizedBox(height: 28),
         Text('Inviter des joueurs', style: theme.textTheme.titleMedium),
