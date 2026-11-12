@@ -143,6 +143,47 @@ select is(
   'l’administrateur de Bravo ne voit pas les incidents d’Alpha'
 );
 
+select throws_ok(
+  $$insert into storage.objects (id, bucket_id, name, owner, owner_id, metadata)
+    values (
+      '3c000000-0000-0000-0000-00000000000b',
+      'profile-photos',
+      '1c000000-0000-0000-0000-00000000000a/intrus.png',
+      '1c000000-0000-0000-0000-00000000000b',
+      '1c000000-0000-0000-0000-00000000000b',
+      '{"mimetype":"image/png","size":10}'::jsonb
+    )$$,
+  '42501',
+  null,
+  'l’administrateur de Bravo ne peut pas déposer dans le dossier photo d’un membre d’Alpha'
+);
+select throws_ok(
+  $$insert into storage.objects (id, bucket_id, name, owner, owner_id, metadata)
+    select
+      '3c000000-0000-0000-0000-00000000000c',
+      'badge-images',
+      'club-logos/' || id || '/logo.png',
+      '1c000000-0000-0000-0000-00000000000b',
+      '1c000000-0000-0000-0000-00000000000b',
+      '{"mimetype":"image/png","size":10}'::jsonb
+    from test_clubs where label = 'a'$$,
+  '42501',
+  null,
+  'l’administrateur de Bravo ne peut pas déposer dans le dossier logo d’Alpha'
+);
+select lives_ok(
+  $$insert into storage.objects (id, bucket_id, name, owner, owner_id, metadata)
+    values (
+      '3c000000-0000-0000-0000-00000000000d',
+      'profile-photos',
+      '1c000000-0000-0000-0000-00000000000b/avatar.png',
+      '1c000000-0000-0000-0000-00000000000b',
+      '1c000000-0000-0000-0000-00000000000b',
+      '{"mimetype":"image/png","size":10}'::jsonb
+    )$$,
+  'l’administrateur de Bravo dépose dans son propre dossier photo'
+);
+
 with touched as (
   update public.opponents set name = 'Piraté'
   where name = 'Adversaire Alpha'
