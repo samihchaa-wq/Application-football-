@@ -36,8 +36,12 @@ mettre à jour à chaque étape importante.
 - **PR fusionnées** : #1 à #23 au dernier relevé du fil 9.
 - **PR #24** : proposition de réactivation Pages (ouverte au relevé).
 - **PR #25** : audit fonctionnel (ouverte au relevé).
+- **Pilotage fil 00** : `docs/CHANTIER.md` proposé par la PR #29 (brouillon,
+  pas encore sur `main` au relevé du fil 9).
 - **Mission 09** : diagnostic et procédures dans
-  `docs/MAINTENANCE_SUPPORT_MISSION09.md` (PR documentaire séparée).
+  `docs/MAINTENANCE_SUPPORT_MISSION09.md` (PR #31 en brouillon) ; correctif
+  fail-closed des alertes/sauvegardes et tests associés dans la PR #32
+  (en brouillon, non activé).
 - Déploiement GitHub Pages **désactivé** (`.github/workflows-disabled/`).
 
 ## Reste à faire, par priorité
