@@ -29,6 +29,18 @@ jobs:
         run: >-
           echo "::notice::Pas encore de base en ligne ou de phrase secrète : sauvegarde inactive."
 
+      # Les artefacts d'un dépôt public sont téléchargeables par tout compte
+      # GitHub : seule la phrase secrète protège la copie. Une phrase courte
+      # se casse par essais successifs, donc on refuse de sauvegarder avec.
+      - name: Refuse a short passphrase
+        if: env.DB_URL != '' && env.BACKUP_PASSPHRASE != ''
+        shell: bash
+        run: |
+          if [ "${#BACKUP_PASSPHRASE}" -lt 32 ]; then
+            echo "::error::BACKUP_PASSPHRASE doit faire au moins 32 caractères."
+            exit 1
+          fi
+
       - name: Setup Supabase CLI
         if: env.DB_URL != '' && env.BACKUP_PASSPHRASE != ''
         uses: supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf # v2
