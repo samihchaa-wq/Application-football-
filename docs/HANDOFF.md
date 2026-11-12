@@ -71,6 +71,36 @@ mettre à jour à chaque étape importante.
   ni migration n'a été modifié par la mission 01. Cette PR reste à relire
   avant fusion (contrôles verts exigés).
 
+## Coordination fil 00 — PR #29 (12/11/2026)
+
+- Le fil **00** est chef de projet des neuf missions ; son tableau de pilotage
+  est `docs/CHANTIER.md` dans la **PR #29** (branche
+  `pilotage/tableau-chantier-20261112`, **non fusionnée** à cette date).
+  Il n'existe donc pas encore dans `main` : le lire depuis cette branche.
+- Le fil **01** livre dans la **PR #25** : audit initial
+  `docs/AUDIT_FONCTIONNALITES.md`, inventaire approfondi
+  `docs/AUDIT_FONCTIONNALITES_DETAILLE.md` (164 éléments) et
+  `docs/CAHIER_DES_CHARGES_FIL_02.md` (30 lots et critères).
+- **État du fil 01 : documentation produite, conformité documentaire à relire,
+  vérification technique partielle ; tests E2E non exécutés, validation
+  utilisateur non obtenue.** Aucune modification de l'application, de ses
+  données ou de l'original.
+- **Dépendances explicites** : fil 02 reprend F2-00 à F2-29 avec critères ;
+  fil 03 utilise la matrice T01-T18 ; fil 04 audite les droits SQL/RLS,
+  Storage, Edge et les 157 RPC privilegiées ; fil 05 tranche identité,
+  maillots, libellés ; fil 06 tarification ; fil 07 légalité et médias ;
+  fil 08 pilote après feu vert ; fil 09 supervise et restaure.
+- **Décisions réservées au propriétaire** : identifiant multiclub, date de
+  prise en charge du foot à 5/7/8, appellation du vote et personnalisation
+  des maillots, prix/paiement, ouverture réelle du pilote et toute écriture
+  dans la base commerciale.
+- **Vigilance PR concurrentes** : #24 propose la réactivation Pages,
+  #26 rassemble QA, #29 centralise pilotage. Ne pas interpréter leur
+  ouverture comme une fusion ou une mise en production.
+- Un commentaire de transmission est publié sur la PR #29 à destination
+  du fil 00. Ne pas écraser le tableau `docs/CHANTIER.md` depuis cette
+  branche du fil 01 : sa mise à jour revient au fil 00.
+
 ## Reste à faire, par priorité
 
 ### Bloquant pour un club test
