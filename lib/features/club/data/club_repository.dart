@@ -4,6 +4,7 @@ import 'package:as_grinta/core/config/app_config.dart';
 import 'package:as_grinta/core/providers/supabase_provider.dart';
 import 'package:as_grinta/core/security/password_policy.dart';
 import 'package:as_grinta/core/utils/app_errors.dart';
+import 'package:as_grinta/features/feature_flags/domain/feature_flags.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -308,6 +309,28 @@ class ClubRepository {
       throw StateError('L’adresse du terrain n’a pas pu être enregistrée.');
     }
     return result as String?;
+  }
+
+  /// Nombre habituel de convoqués (1 à 30) du club, lu côté serveur.
+  Future<int> fetchUsualSquadSize() async {
+    final payload = await _client.rpc('get_public_feature_flags');
+    return FeatureFlagsSnapshot.fromRpc(payload).sportsManagement.usualSquadSize;
+  }
+
+  /// Change la taille habituelle des convocations futures.
+  /// Le serveur vérifie rôle, bornes et isolation entre clubs.
+  Future<int> updateUsualSquadSize(int value) async {
+    if (value < 1 || value > 30) {
+      throw RangeError.range(value, 1, 30, 'value');
+    }
+    final payload = await _client.rpc(
+      'admin_set_club_usual_squad_size',
+      params: {'p_size': value},
+    );
+    if (payload is! num || payload.toInt() != value) {
+      throw StateError('Le nombre de convoqués n’a pas pu être enregistré.');
+    }
+    return payload.toInt();
   }
 
   /// Les fonctionnalités activées pour le club du compte connecté.
