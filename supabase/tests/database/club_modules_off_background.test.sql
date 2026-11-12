@@ -180,5 +180,14 @@ select ok(
   'l’effectif et la liste d’attente se figent à l’heure réglée par le club, plus à T-15 en dur'
 );
 
+-- ---------------------------------------------------------------------------
+-- 6. Vote de l'homme du match : jamais plus court que le temps de valider
+-- ---------------------------------------------------------------------------
+select is(
+  (select min_value from private.club_rule_catalogue() where key = 'motm_window_hours'),
+  6,
+  'le vote de l’homme du match dure au moins 6 heures après le coup d’envoi'
+);
+
 select * from finish();
 rollback;
