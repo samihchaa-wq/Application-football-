@@ -44,6 +44,7 @@ mettre à jour à chaque étape importante.
   l'historique par l'admin.
 - **PR #25** (audit fonctionnel, documents seulement) : voir section suivante.
 - Déploiement GitHub Pages : workflow réactivé en **publication manuelle uniquement** (PR #24), pour un test à clubs fictifs. Site cible : https://samihchaa-wq.github.io/Application-football-/ — publié seulement après lancement manuel et vérification. GitHub Pages **n'autorise pas** l'hébergement d'un SaaS commercial : un autre hébergeur sera nécessaire avant toute vente.
+- Hébergement définitif : Cloudflare Pages, workflow manuel `deploy_cloudflare.yml` (secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, variables `COMMERCIAL_APP_URL`, `CLOUDFLARE_PAGES_PROJECT`). Notice pour Samih : `docs/MISE_EN_LIGNE.md` (domaine, Cloudflare, Auth Supabase, e-mails Brevo). Jamais lancé tant que le compte Cloudflare n'existe pas. Plan de sortie commerciale : https://claude.ai/artifact/Akdg7d8RWKrKTjYh4euAaZ
 
 ## Audit fonctionnel (fil 1, PR #25) — 12/11/2026
 
