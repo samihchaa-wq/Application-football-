@@ -110,7 +110,7 @@ begin
       insert into auth.users (id, email, raw_user_meta_data, raw_app_meta_data)
       values (
         v_profile, format('sim-%s-%s@example.invalid', v_label, v_index),
-        jsonb_build_object('first_name', 'Joueur' || v_index, 'last_name', 'Sim' || upper(v_label)),
+        jsonb_build_object('first_name', (array['Adrien','Bastien','Cyril','Damien','Emile','Fabien','Gael','Hugo','Ilan','Jules','Kevin','Loic','Malo','Nael','Oscar','Pablo','Quentin','Remi','Sacha','Theo'])[v_index], 'last_name', 'Sim' || upper(v_label)),
         jsonb_build_object('club_id', v_club)
       );
       update public.profiles
@@ -146,7 +146,7 @@ begin
     perform pg_temp.sim_as(v_club.admin_id);
     v_season := public.open_or_create_season('2099-2100');
     for v_index in 1..5 loop
-      perform public.get_or_create_opponent(format('Adversaire %s %s', upper(v_club.label), v_index));
+      perform public.get_or_create_opponent(format('Adversaire %s %s', upper(v_club.label), (array['Nord','Sud','Est','Ouest','Centre'])[v_index]));
     end loop;
     perform pg_temp.sim_as(null);
     update sim_clubs set season_id = v_season where label = v_club.label;
@@ -158,7 +158,7 @@ begin
       insert into public.season_players (
         id, club_id, season_id, first_name, last_name, is_goalkeeper, is_active, position, profile_id
       ) values (
-        v_season_player, v_club.id, v_season, 'Joueur' || v_index, 'Sim' || upper(v_club.label),
+        v_season_player, v_club.id, v_season, (array['Adrien','Bastien','Cyril','Damien','Emile','Fabien','Gael','Hugo','Ilan','Jules','Kevin','Loic','Malo','Nael','Oscar','Pablo','Quentin','Remi','Sacha','Theo'])[v_index], 'Sim' || upper(v_club.label),
         v_index = 1, true, v_index, v_profile
       );
       insert into sim_players values (v_club.label, v_index, v_profile, v_season_player);
@@ -211,7 +211,7 @@ begin
       begin
         perform pg_temp.sim_as(v_club.admin_id);
         select id into v_opponent from public.opponents
-        where name = format('Adversaire %s %s', upper(v_club.label), 1 + (v_number - 1) % 5);
+        where name = format('Adversaire %s %s', upper(v_club.label), (array['Nord','Sud','Est','Ouest','Centre'])[1 + (v_number - 1) % 5]);
         v_kickoff := now() + interval '2 days' + make_interval(mins => v_number);
         v_match := public.admin_create_match_complete(
           v_club.season_id, v_opponent,
