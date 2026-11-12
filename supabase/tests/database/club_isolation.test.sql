@@ -236,6 +236,72 @@ select is(
   'chaque club garde sa propre ligne, intacte'
 );
 
+-- Journal des incidents : la purge quotidienne passe dans chaque club, sans
+-- compte connecté, comme la tâche planifiée.
+insert into private.client_incident_log (reference, operation, error_type, app_version, created_at, club_id)
+select 'ancien-' || label, 'test', 'test', '0', now() - interval '120 days', id from test_clubs;
+insert into private.client_incident_log (reference, operation, error_type, app_version, created_at, club_id)
+select 'recent-' || label, 'test', 'test', '0', now(), id from test_clubs;
+select set_config('request.jwt.claims', '', true);
+select is(
+  private.purge_client_incident_log_all_clubs(now()),
+  2,
+  'la purge supprime les incidents anciens des deux clubs'
+);
+select is(
+  (select count(*) from private.client_incident_log where reference like 'recent-%'),
+  2::bigint,
+  'la purge garde les incidents récents des deux clubs'
+);
+
+-- Fichiers : chaque sens, chaque sorte de dossier, et les chemins mal formés.
+insert into public.season_players (id, season_id, first_name, last_name, club_id)
+values ('5c000000-0000-0000-0000-00000000000a', '2c000000-0000-0000-0000-00000000000a', 'Joueur', 'Alpha',
+        (select id from test_clubs where label = 'a'));
+
+create temporary table storage_cases (
+  actor text, bucket text, path text, allowed boolean
+) on commit drop;
+grant select on storage_cases to authenticated;
+insert into storage_cases
+select 'b', 'profile-photos', '1c000000-0000-0000-0000-00000000000a/x.png', false union all
+select 'b', 'profile-photos', 'season/5c000000-0000-0000-0000-00000000000a/x.png', false union all
+select 'b', 'profile-photos', 'guest/x.png', false union all
+select 'b', 'profile-photos', 'x.png', false union all
+select 'b', 'profile-photos', 'pas-un-uuid/x.png', false union all
+select 'a', 'profile-photos', 'season/5c000000-0000-0000-0000-00000000000a/x.png', true union all
+select 'a', 'profile-photos', '1c000000-0000-0000-0000-00000000000b/x.png', false union all
+select 'a', 'badge-images', 'club-logos/' || (select id from test_clubs where label = 'b') || '/x.png', false union all
+select 'a', 'badge-images', 'club-logos/' || (select id from test_clubs where label = 'a') || '/x.png', true;
+
+create function pg_temp.storage_try(p_actor text, p_bucket text, p_path text) returns boolean
+language plpgsql as $$
+declare
+  v_user uuid := ('1c000000-0000-0000-0000-00000000000' || p_actor)::uuid;
+begin
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', v_user, 'role', 'authenticated', 'aud', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  begin
+    insert into storage.objects (bucket_id, name, owner, owner_id, metadata)
+    values (p_bucket, p_path, v_user, v_user, '{"mimetype":"image/png","size":10}'::jsonb);
+    execute 'reset role';
+    return true;
+  exception when others then
+    execute 'reset role';
+    return false;
+  end;
+end;
+$$;
+
+select is(
+  (select coalesce(string_agg(format('%s %s/%s', actor, bucket, path), ', '), '')
+   from storage_cases
+   where pg_temp.storage_try(actor, bucket, path) is distinct from allowed),
+  '',
+  'chaque dépôt de fichier n’est accepté que dans un dossier de son propre club'
+);
+
 -- Aucune table métier n'échappe au cloisonnement.
 select is(
   (
@@ -252,6 +318,7 @@ select is(
         'private.prediction_reminder_cron_config',
         'private.sport_waitlist_engine_activation',
         'private.platform_operators',
+        'private.client_incident_log_unassigned',
         'private.email_confirmations',
         'private.email_attempts'
       )
