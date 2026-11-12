@@ -1,6 +1,6 @@
 # Cahier des charges exécutable pour le fil 02
 
-**Établi le 12/11/2026.** Dérivé de `docs/AUDIT_FONCTIONNALITES_DETAILLE.md` (164 fonctions inventoriées), de la PR #25 existante, du code commercial et d'une inspection Supabase **strictement en lecture seule**.
+**Établi le 12/11/2026.** Sous pilotage du fil 00 ([PR #29 — tableau commun](https://github.com/samihchaa-wq/Application-football-/pull/29)). Dérivé de `docs/AUDIT_FONCTIONNALITES_DETAILLE.md` (164 fonctions inventoriées), de la PR #25 existante, du code commercial et d'une inspection Supabase **strictement en lecture seule**.
 
 ## Règles de gouvernance
 
@@ -42,7 +42,7 @@ Les tâches **F2-xx** sont des lots livrables indépendants autant que possible.
 | F2-11 | P0 | Pilote | B08,G01,H08,I08,J01,K01 | Interrupteurs sans perte de données |
 | F2-12 | P1 | Pilote | C03,C04,C07,C08 | Cohérence membres, joueurs et invités |
 | F2-13 | P1 | Pilote | F01,F04,F05,F06 | Composition 11 : fiabilisation et UX |
-| F2-14 | P1 | Pilote | F08,F09,F10 | Présentation de composition et clips joueurs |
+| F2-14 | P1 (présentation) / P2 (clips sous décision DEC-06) | Pilote puis option | F08,F09,F10 | Présentation existante ; clips joueurs conditionnels |
 | F2-15 | P0 | Pilote | G03-G10 | Intégrité live et récapitulatif |
 | F2-16 | P1 | Pilote | H01-H07,I01-I07 | Pronostics et statistiques sans historique initial |
 | F2-17 | P1 | Pilote | J01-J09,K01-K05 | Badges et bilan de saison |
@@ -175,11 +175,12 @@ Chaque ligne de critères doit être validée par test démontrable. **Une lectu
 - **Dépendance / coordination :** F2-00.
 - **Preuves à fournir :** chemins et PR modifiés, tests Dart/SQL pertinents, captures ou traces redigées si tests E2E, compte rendu des cas limites. Aucun log contenant jeton, e-mail privé ou identité réelle.
 
-### F2-14 — Présentation de composition et clips joueurs (P1, Pilote)
+### F2-14 — Présentation de composition et clips joueurs (P1 existant ; P2 clips conditionnels)
 
-- **Source de l'audit :** F08,F09,F10.
-- **Changements attendus :** Auditer fichiers individuels et moyens réels d'import; garder animations photo si aucun clip.
-- **Critères d'acceptation :** Un joueur avec clip valide est animé dans le groupe; sans clip affiche la photo; vidéo absente/échec de chargement n'empêche pas la composition; aucune sortie de cadre.
+- **Source de l'audit :** F08,F09,F10 ; **décision propriétaire DEC-06**.
+- **Changements attendus :** Conserver et vérifier immédiatement la présentation de composition animée avec photos et stade. Les **clips individuels détourés** sont un besoin différent : aucun écran d'import ou pipeline de stockage de ces clips n'a été vérifié. Spécifier format, transparence, quotas et droits avant développement **seulement si DEC-06 est validée**.
+- **Critères d'acceptation phase P1 :** Une composition publiée se présente avec portraits fixes, les joueurs apparaissent par groupes sans sortir du cadre, puis sont placés ; vidéo de stade absente/échec réseau n'empêche jamais l'affichage du terrain.
+- **Critères d'acceptation phase conditionnelle P2 :** Si import de clips validé, un joueur avec clip valide est animé dans son groupe pendant 3–5 secondes, les autres conservent la photo ; import réservé à l'admin du club, contenu et stockage isolés par club ; aucune dégradation lourde du chargement ; droits à l'image vérifiés.
 - **Dépendance / coordination :** Fil 5 + Fil 7.
 - **Preuves à fournir :** chemins et PR modifiés, tests Dart/SQL pertinents, captures ou traces redigées si tests E2E, compte rendu des cas limites. Aucun log contenant jeton, e-mail privé ou identité réelle.
 
