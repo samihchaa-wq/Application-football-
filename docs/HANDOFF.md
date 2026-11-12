@@ -29,10 +29,10 @@ mettre à jour à chaque étape importante.
     aucun club, aucun utilisateur.
   - Schéma `install_tmp` restant (inaccessible à l'appli) : à supprimer depuis
     l'éditeur SQL Supabase, `drop schema install_tmp cascade;`.
-  - Pas encore faits sur cette base : fonctions serveur (Edge Functions),
-    secrets (VAPID, `push_internal_token` dans Vault, `PUBLIC_APP_URL`,
-    `USERNAME_DOMAIN`), réglages d'authentification (URL du site, e-mails),
-    compte éditeur (`private.platform_operators`).
+  - Constat M04 du 12/11 : **8 Edge Functions sont ACTIVE** dans l'API Supabase ;
+    cela ne prouve **ni leurs secrets ni leur fonctionnement réel**. Les
+    réglages Auth/e-mail, le compte éditeur et les secrets opérationnels
+    restent **à vérifier**, sans les divulguer.
 - **PR fusionnées** : #1 à #22 (socle multiclub, réglages, sécurité de
   publication).
 - **PR #23** : nom du club dans les notifications au lieu de « AS Grinta »,
@@ -86,3 +86,34 @@ flutter analyze --fatal-warnings --fatal-infos   # Flutter 3.47.9
 flutter test
 ```
 Tests base de données : workflow GitHub « Supabase business and RLS tests ».
+
+## Mission 04 — sécurité et résilience (audit en lecture seule, 12/11/2026)
+
+Rapport et registre : [`docs/M04_SECURITE_RESILIENCE_20261112.md`](M04_SECURITE_RESILIENCE_20261112.md), dans la PR de la mission 04.
+
+**Constaté :** RLS active sur 59 tables `public` et 24 `private`, dix vues
+`security_invoker`, aucune RPC applicative exécutable par `anon` dans
+`public`/`private`. Linter : 157 avertissements SECURITY DEFINER en
+`public` (à examiner individuellement), et un pour `install_tmp.apply`.
+Le projet Supabase commercial est sain mais vide (aucun club réel testé).
+12 cron actifs ; les exécutions présentes dans l'historique consulté ont réussi.
+
+**Corrections à préparer (fil 02, aucune migration exécutée) :**
+- M04-01 : journal `admin_recent_client_incidents` global non filtré par club.
+- M04-02 : `private.is_admin()` n'intègre pas l'état suspendu du club ;
+  plusieurs RPC de réglage restent potentiellement accessibles.
+- M04-08 : tests de cloisonnement des appels `service_role`.
+
+**À valider (fil 03) :** comptes fictifs clubs A et B, permissions, suspension,
+Storage, RPC/Edge, invitations, notifications, charge, backup + restauration.
+
+**À traiter (fil 09 et fil 00) :** sauvegardes des objets Storage absentes des
+exports SQL, surveillance d'usage commerciale désactivée, secret et alerte
+de monitoring non vérifiés, choix d'hébergement compatible SaaS, dépôt public
+à inventorier avec le fil 07 avant la vente.
+
+**Décision M04 : NO-GO pour les premiers clubs réels** à cette étape.
+Aucun test intrusif ni écriture, aucun déploiement et aucun coût engagé.
+Les migrations, tests A/B en base commerciale, dépôts privés et services
+externes exigent les autorisations du propriétaire. Voir aussi la PR #29 de
+pilotage (`docs/CHANTIER.md`, encore non fusionnée à cette date).
