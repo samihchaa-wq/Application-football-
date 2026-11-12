@@ -117,7 +117,7 @@ Les consignes opérationnelles sont désormais tracées **dans les issues et dan
 
 - **PR [#47](https://github.com/samihchaa-wq/Application-football-/pull/47) : FUSIONNÉE** sur `main`, squash `a80ac7d25e379a8a06dbbffa23c269f85ba5f9d1`. Cinq workflows verts sur le HEAD exact : Flutter CI, Supabase business/RLS, test de charge, Runtime diagnostic et garde des actions. Les mesures de séparation multiclub distant restent non éprouvées. La fusion ne publie pas le site et n'applique aucune migration commerciale.
 - **PR [#50](https://github.com/samihchaa-wq/Application-football-/pull/50) : BLOQUÉE** désormais `mergeable=false` après la fusion #47. Rebase/résolution de conflits puis tests sur le nouveau SHA, revue M03/M04 des permissions et du basculement visuel club A→B. Demande transmise dans le commentaire de PR.
-- **PR [#52](https://github.com/samihchaa-wq/Application-football-/pull/52) : BLOQUÉE** désormais `mergeable=false` ; remettre à jour de main et résoudre la revue de licence de la police embarquée, puis CI neuve. Demande transmise dans le commentaire de PR.
+- **PR [#52](https://github.com/samihchaa-wq/Application-football-/pull/52) : FUSIONNÉE** le 12/11 vers 16 h 10, squash `a77dfb6cd3cd7d62ec51cfdcf7a3b14471563665`. Licence OFL Oswald ajoutée et provenance documentée ; Flutter CI, Runtime diagnostic et Web release shell contract verts sur le HEAD exact. Essais PWA réels et recherche de marque encore à faire ; aucune publication automatique.
 - **Règle** : ne pas confondre CI verte sur ancienne branche avec tests de l'intégration combinée. Ne pas fusionner les PR bloquées, ni déclencher de publication, de migration ou de coût sans accord.
 
 ## Circuit de transmission entre les fils
