@@ -6,6 +6,7 @@ import 'package:as_grinta/features/admin/presentation/club_subscription_section.
 import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/club/presentation/club_identity_sync.dart';
 import 'package:as_grinta/features/club/presentation/club_rules_sync.dart';
+import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
@@ -28,11 +29,13 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   Club? _club;
   ClubModules _modules = const ClubModules.allEnabled();
   List<ClubRule> _rules = const [];
+  int _usualSquadSize = 14;
   final Set<String> _pendingRules = {};
   Object? _loadError;
   bool _loading = true;
   bool _savingIdentity = false;
   bool _savingHomeAddress = false;
+  bool _savingUsualSquadSize = false;
   bool _renewingCode = false;
   bool _savingColors = false;
   bool _savingLogo = false;
@@ -80,6 +83,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       final modules = await repository.fetchModules();
       final rules = await repository.fetchRules();
       final homeAddress = await repository.fetchHomeAddress();
+      final usualSquadSize = await repository.fetchUsualSquadSize();
       if (!mounted) return;
       setState(() {
         _club = club;
@@ -88,6 +92,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
         _nameController.text = club.name;
         _shortNameController.text = club.shortName;
         _homeAddressController.text = homeAddress ?? '';
+        _usualSquadSize = usualSquadSize;
         _loading = false;
       });
     } catch (error) {
@@ -168,6 +173,25 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       }
     } finally {
       if (mounted) setState(() => _savingHomeAddress = false);
+    }
+  }
+
+  Future<void> _saveUsualSquadSize(int value) async {
+    if (_savingUsualSquadSize || value < 1 || value > 30) return;
+    setState(() => _savingUsualSquadSize = true);
+    try {
+      final saved =
+          await ref.read(clubRepositoryProvider).updateUsualSquadSize(value);
+      if (!mounted) return;
+      setState(() => _usualSquadSize = saved);
+      // Les formulaires de futurs matchs relisent le quota du club.
+      ref.invalidate(featureFlagsControllerProvider);
+    } catch (_) {
+      if (mounted) {
+        _showMessage('Le nombre de convoqués n’a pas pu être enregistré.');
+      }
+    } finally {
+      if (mounted) setState(() => _savingUsualSquadSize = false);
     }
   }
 
@@ -641,6 +665,38 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
                 ? null
                 : (value) => _setModule(module, value),
           ),
+        const SizedBox(height: 28),
+        Text('Convocations', style: theme.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        const Text(
+          'Nombre habituel de joueurs convoqués pour les nouveaux matchs. '
+          'Tu pourras toujours choisir un autre nombre pour chaque match.',
+        ),
+        ListTile(
+          key: const Key('club-usual-squad-size'),
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Joueurs convoqués par défaut'),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                key: const Key('club-usual-squad-size-minus'),
+                icon: const Icon(Icons.remove_circle_outline),
+                onPressed: _savingUsualSquadSize || _usualSquadSize <= 1
+                    ? null
+                    : () => _saveUsualSquadSize(_usualSquadSize - 1),
+              ),
+              Text('$_usualSquadSize'),
+              IconButton(
+                key: const Key('club-usual-squad-size-plus'),
+                icon: const Icon(Icons.add_circle_outline),
+                onPressed: _savingUsualSquadSize || _usualSquadSize >= 30
+                    ? null
+                    : () => _saveUsualSquadSize(_usualSquadSize + 1),
+              ),
+            ],
+          ),
+        ),
         ..._ruleSection(theme),
       ],
     );
