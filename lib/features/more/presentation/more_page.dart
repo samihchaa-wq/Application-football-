@@ -105,6 +105,11 @@ class MorePage extends ConsumerWidget {
                   onTap: () => context.push('/admin/club'),
                 ),
                 _SettingsTile(
+                  icon: Icons.history_rounded,
+                  title: 'Ajouter des matchs passés',
+                  onTap: () => context.push('/admin/history'),
+                ),
+                _SettingsTile(
                   icon: Icons.admin_panel_settings_outlined,
                   title: 'Administration',
                   onTap: () => context.push('/admin'),

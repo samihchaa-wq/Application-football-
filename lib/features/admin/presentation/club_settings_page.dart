@@ -1,4 +1,5 @@
 import 'package:as_grinta/core/club/club_identity.dart';
+import 'package:as_grinta/core/club/club_rules.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
 import 'package:as_grinta/core/widgets/grinta_loader.dart';
@@ -365,6 +366,10 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           ..add(const SizedBox(height: 16))
           ..add(Text(rule.group, style: theme.textTheme.titleSmall));
       }
+      if (rule.key == ClubRules.waitlistModeKey) {
+        widgets.add(_waitlistModeTile(rule));
+        continue;
+      }
       widgets.add(
         ListTile(
           key: ValueKey('club-rule-${rule.key}'),
@@ -401,6 +406,43 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       );
     }
     return widgets;
+  }
+
+  /// Choix du mode de liste d'attente : trois options expliquées, pas un
+  /// compteur.
+  Widget _waitlistModeTile(ClubRule rule) {
+    final current = WaitlistMode.fromValue(rule.value);
+    final pending = _pendingRules.contains(rule.key);
+    return Column(
+      key: ValueKey('club-rule-${rule.key}'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 8, bottom: 4),
+          child: Text(rule.label),
+        ),
+        RadioGroup<WaitlistMode>(
+          groupValue: current,
+          onChanged: (selected) {
+            if (pending || selected == null || selected == current) return;
+            _setRule(rule, selected.value);
+          },
+          child: Column(
+            children: [
+              for (final mode in WaitlistMode.values)
+                RadioListTile<WaitlistMode>(
+                  key: ValueKey('club-rule-${rule.key}-${mode.value}'),
+                  contentPadding: EdgeInsets.zero,
+                  value: mode,
+                  enabled: !pending,
+                  title: Text(mode.label),
+                  subtitle: Text(mode.description),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   @override
