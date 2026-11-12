@@ -268,15 +268,19 @@ class RosterRepository {
         ? 0
         : ((maxRows.first['position'] as num?)?.toInt() ?? 0);
 
-    final inserted = await _client.from('season_players').insert({
-      'season_id': seasonId,
-      'first_name': name,
-      'last_name': '',
-      'is_goalkeeper': false,
-      'is_coach': false,
-      'is_active': true,
-      'position': maxPosition + 1,
-    }).select('id').single();
+    final inserted = await _client
+        .from('season_players')
+        .insert({
+          'season_id': seasonId,
+          'first_name': name,
+          'last_name': '',
+          'is_goalkeeper': false,
+          'is_coach': false,
+          'is_active': true,
+          'position': maxPosition + 1,
+        })
+        .select('id')
+        .single();
     final newId = inserted['id'].toString();
     try {
       // La RPC garde le contrôle de liaison au club courant.
