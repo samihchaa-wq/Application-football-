@@ -314,9 +314,11 @@ begin
         perform pg_temp.sim_as(null);
       end;
 
-      -- Le match se joue : on le place dans le passé, un match par semaine.
+      -- Le match se joue : coup d'envoi placé trois heures plus tôt, comme un
+      -- admin qui saisit le résultat le soir du match. Le calendrier de la
+      -- saison (un match par semaine) est reconstitué après la boucle.
       set local session_replication_role = replica;
-      v_kickoff := now() - make_interval(days => 7 * (11 - v_number)) - interval '3 hours';
+      v_kickoff := now() - interval '3 hours' - make_interval(mins => v_number);
       update public.matches
       set kickoff_at = v_kickoff,
           match_date = (v_kickoff at time zone 'Europe/Paris')::date,
@@ -420,6 +422,40 @@ begin
       end;
     end loop;
   end loop;
+end;
+$$;
+
+-- Calendrier de la saison : chaque match recule d'une semaine par rang, avec
+-- toutes ses dates (coup d'envoi, validation, vote). Les délais de
+-- correction de 24 h sont ainsi écoulés, comme en fin de saison réelle.
+do $$
+begin
+  set local session_replication_role = replica;
+  create temporary table sim_shift on commit drop as
+  select match.id as match_id,
+         make_interval(days => 7 * (11 - row_number() over (
+           partition by match.season_id order by match.kickoff_at
+         )::integer)) as delta
+  from public.matches match
+  where match.season_id in (select season_id from sim_clubs);
+
+  update public.matches match
+  set kickoff_at = match.kickoff_at - shift.delta,
+      match_date = ((match.kickoff_at - shift.delta) at time zone 'Europe/Paris')::date,
+      match_time = ((match.kickoff_at - shift.delta) at time zone 'Europe/Paris')::time,
+      result_validated_at = match.result_validated_at - shift.delta
+  from sim_shift shift where shift.match_id = match.id;
+
+  update public.match_sport_finalizations finalization
+  set validated_at = finalization.validated_at - shift.delta
+  from sim_shift shift where shift.match_id = finalization.match_id;
+
+  update public.match_sport_motm_elections election
+  set opens_at = election.opens_at - shift.delta,
+      closes_at = election.closes_at - shift.delta,
+      closed_at = election.closed_at - shift.delta
+  from sim_shift shift where shift.match_id = election.match_id;
+  set local session_replication_role = origin;
 end;
 $$;
 
@@ -569,6 +605,18 @@ select ok(
    where season_id in (select season_id from sim_clubs)),
   'chaque club reçoit ses titres de fin de saison'
 );
+
+-- Répartition du temps de jeu, pour lire le bilan dans le rapport de la CI.
+select diag(format('Club %s : %s joueurs ont joué au moins un match, %s bilans, %s matchs joués par joueur (min) à %s (max)',
+  club.label,
+  (select count(distinct attendance.season_player_id)
+   from public.match_attendance attendance
+   join public.matches match on match.id = attendance.match_id
+   where match.season_id = club.season_id),
+  (select count(*) from public.season_wrapped wrapped where wrapped.season_id = club.season_id),
+  (select min(wrapped.matches_played) from public.season_wrapped wrapped where wrapped.season_id = club.season_id),
+  (select max(wrapped.matches_played) from public.season_wrapped wrapped where wrapped.season_id = club.season_id)))
+from sim_clubs club order by club.label;
 
 select is(
   (select count(*) from public.season_wrapped
