@@ -249,7 +249,8 @@ Deno.serve(async (req: Request) => {
     // vient de le prendre, la création du compte est refusée et on passe au
     // suivant.
     const nextFree = async (skip: string[]) => {
-      const { data, error } = await admin!.rpc("internal_next_free_username", {
+      if (!admin) throw new Error("Missing server client");
+      const { data, error } = await admin.rpc("internal_next_free_username", {
         p_base: base,
         p_skip: skip,
       });
@@ -257,8 +258,9 @@ Deno.serve(async (req: Request) => {
       return typeof data === "string" ? data : null;
     };
     const username = await reserveUsername(nextFree, async (candidate) => {
+      if (!admin) throw new Error("Missing server client");
       const { data: created, error: createError } =
-        await admin!.auth.admin.createUser({
+        await admin.auth.admin.createUser({
           email: `${candidate}@${USERNAME_DOMAIN}`,
           password,
           email_confirm: true,

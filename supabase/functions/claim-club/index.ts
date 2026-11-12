@@ -273,7 +273,8 @@ Deno.serve(async (req: Request) => {
     // calcule le premier libre, sans plafond ; si une inscription simultanée
     // vient de le prendre, l'enregistrement est refusé et on passe au suivant.
     const nextFree = async (skip: string[]) => {
-      const { data, error } = await admin!.rpc("internal_next_free_username", {
+      if (!admin) throw new Error("Missing server client");
+      const { data, error } = await admin.rpc("internal_next_free_username", {
         p_base: base,
         p_skip: skip,
       });
