@@ -23,6 +23,7 @@ class ClubSettingsPage extends ConsumerStatefulWidget {
 class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   final _nameController = TextEditingController();
   final _shortNameController = TextEditingController();
+  final _homeAddressController = TextEditingController();
 
   Club? _club;
   ClubModules _modules = const ClubModules.allEnabled();
@@ -31,6 +32,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   Object? _loadError;
   bool _loading = true;
   bool _savingIdentity = false;
+  bool _savingHomeAddress = false;
   bool _renewingCode = false;
   bool _savingColors = false;
   bool _savingLogo = false;
@@ -63,6 +65,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   void dispose() {
     _nameController.dispose();
     _shortNameController.dispose();
+    _homeAddressController.dispose();
     super.dispose();
   }
 
@@ -76,6 +79,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       final club = await repository.fetchMyClub();
       final modules = await repository.fetchModules();
       final rules = await repository.fetchRules();
+      final homeAddress = await repository.fetchHomeAddress();
       if (!mounted) return;
       setState(() {
         _club = club;
@@ -83,6 +87,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
         _rules = rules;
         _nameController.text = club.name;
         _shortNameController.text = club.shortName;
+        _homeAddressController.text = homeAddress ?? '';
         _loading = false;
       });
     } catch (error) {
@@ -137,6 +142,29 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       if (mounted) _showMessage('Le nom du club n’a pas pu être enregistré.');
     } finally {
       if (mounted) setState(() => _savingIdentity = false);
+    }
+  }
+
+  Future<void> _saveHomeAddress() async {
+    final address = _homeAddressController.text.trim();
+    if (address.length > 200 || address.contains(RegExp(r'[\r\n\t]'))) {
+      _showMessage('L’adresse doit tenir sur une ligne (200 caractères maximum).');
+      return;
+    }
+    setState(() => _savingHomeAddress = true);
+    try {
+      final saved = await ref
+          .read(clubRepositoryProvider)
+          .updateHomeAddress(address.isEmpty ? null : address);
+      if (!mounted) return;
+      _homeAddressController.text = saved ?? '';
+      _showMessage(saved == null
+          ? 'Adresse du terrain effacée.'
+          : 'Adresse du terrain enregistrée.');
+    } catch (_) {
+      if (mounted) _showMessage('L’adresse du terrain n’a pas pu être enregistrée.');
+    } finally {
+      if (mounted) setState(() => _savingHomeAddress = false);
     }
   }
 
@@ -465,6 +493,34 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           child: FilledButton(
             onPressed: _savingIdentity ? null : _saveIdentity,
             child: Text(_savingIdentity ? 'Enregistrement…' : 'Enregistrer'),
+          ),
+        ),
+        const SizedBox(height: 28),
+        Text('Terrain à domicile', style: theme.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        const Text(
+          'Adresse proposée automatiquement lors de la création '
+          'd’un match à domicile. Modifiable pour chaque rencontre.',
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          key: const Key('club-settings-home-address'),
+          controller: _homeAddressController,
+          maxLength: 200,
+          keyboardType: TextInputType.streetAddress,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: const InputDecoration(
+            labelText: 'Adresse du terrain',
+            hintText: 'Rue, code postal, ville',
+            prefixIcon: Icon(Icons.place_outlined),
+          ),
+        ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: FilledButton(
+            key: const Key('club-settings-save-home-address'),
+            onPressed: _savingHomeAddress ? null : _saveHomeAddress,
+            child: Text(_savingHomeAddress ? 'Enregistrement…' : 'Enregistrer l’adresse'),
           ),
         ),
         const SizedBox(height: 28),
