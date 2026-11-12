@@ -274,10 +274,13 @@ select 'a', 'profile-photos', '1c000000-0000-0000-0000-00000000000b/x.png', fals
 select 'a', 'badge-images', 'club-logos/' || (select id from test_clubs where label = 'b') || '/x.png', false union all
 select 'a', 'badge-images', 'club-logos/' || (select id from test_clubs where label = 'a') || '/x.png', true;
 
-create function pg_temp.storage_try(p_actor text, p_bucket text, p_path text) returns boolean
+-- Renvoie 'ok' si le dépôt passe, sinon le code d'erreur exact. Un refus
+-- n'est compté comme bon que s'il vient de la règle de cloisonnement (42501).
+create function pg_temp.storage_try(p_actor text, p_bucket text, p_path text) returns text
 language plpgsql as $$
 declare
   v_user uuid := ('1c000000-0000-0000-0000-00000000000' || p_actor)::uuid;
+  v_state text;
 begin
   perform set_config('request.jwt.claims',
     json_build_object('sub', v_user, 'role', 'authenticated', 'aud', 'authenticated')::text, true);
@@ -286,20 +289,24 @@ begin
     insert into storage.objects (bucket_id, name, owner, owner_id, metadata)
     values (p_bucket, p_path, v_user, v_user, '{"mimetype":"image/png","size":10}'::jsonb);
     execute 'reset role';
-    return true;
+    return 'ok';
   exception when others then
+    get stacked diagnostics v_state = returned_sqlstate;
     execute 'reset role';
-    return false;
+    return v_state;
   end;
 end;
 $$;
 
 select is(
-  (select coalesce(string_agg(format('%s %s/%s', actor, bucket, path), ', '), '')
-   from storage_cases
-   where pg_temp.storage_try(actor, bucket, path) is distinct from allowed),
+  (select coalesce(string_agg(format('%s %s/%s => %s', actor, bucket, path, outcome), ', '), '')
+   from (
+     select actor, bucket, path, allowed, pg_temp.storage_try(actor, bucket, path) as outcome
+     from storage_cases
+   ) tried
+   where outcome is distinct from case when allowed then 'ok' else '42501' end),
   '',
-  'chaque dépôt de fichier n’est accepté que dans un dossier de son propre club'
+  'chaque dépôt de fichier n’est accepté que dans un dossier de son propre club, et chaque refus vient de la règle de cloisonnement'
 );
 
 -- Aucune table métier n'échappe au cloisonnement.
