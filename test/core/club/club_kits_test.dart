@@ -75,8 +75,7 @@ void main() {
     expect(ClubKits.parse(duplicate), isNull);
   });
 
-  test('changement de compte : aucun maillot de l’ancien club ne persiste',
-      () {
+  test('changement de compte : aucun maillot de l’ancien club ne persiste', () {
     ClubKits.setClubColors(primary: const Color(0xFFAA0000));
     ClubKits.setFromJson(savedJson());
     expect(ClubKits.of(JerseyOption.france).label, 'Rouge');
