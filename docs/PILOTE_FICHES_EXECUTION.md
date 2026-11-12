@@ -66,17 +66,17 @@ Demander à l'administrateur de retrouver le match passé, renseigner le résult
 | T04 saison et effectif | F07, F11 | C01, C03, C04 | Ordre des actions compris |
 | T05 inscription invitée / validation admin | F01, F02, F03 | A02, A04 | Attente comprise par les deux rôles |
 | T06 code invalide/renouvelé | F01, F02 | A02, A03 | Capacité à corriger seul |
-| T07 premier match | F08, F19 | B05, C01 | Temps et champs bloquants |
-| T08 disponibilité | F10, F11 | C03 | Taux d'action sans aide |
-| T09 lien agenda/pronos | F09, F19 | A02 | Repérage de la fonctionnalité |
-| T10 notifications et PWA | F24, F30 | A15 | Compréhension de la permission |
-| T11 clôture | F17, F18, F20 | C01 | Clôture sans intervention |
+| T07 premier match | F08, F19 | D01, D03, D04, H04 | Temps et champs bloquants |
+| T08 disponibilité | F10, F11 | E01, E02, E06 | Taux d'action sans aide |
+| T09 lien agenda/pronos | F09, F19 | D08, H01, H04 | Repérage de la fonctionnalité |
+| T10 notifications et PWA | F24, F30 | L01, L11 | Compréhension de la permission |
+| T11 clôture | F17, F18, F20 | G09, G10, G11 | Clôture sans intervention |
 | T12 A/B | F03, F04 | A02, A17 | **Contrôle de sécurité fil 04, pas une séance UX** |
-| T13 profils/permissions | F03, F27 | A04, A16 | Messages adaptés au rôle |
-| T14 appareil et reconnexion | F30, F31 | A06, A15 | Reprise des actions |
-| T15 accessibilité mobile | F34 | B03 | Lisibilité, navigation clavier/tactile |
-| T16 deux administrateurs | F08, F27, F31 | C11 | Confirmation claire des conflits |
-| T17 modules désactivés | F06, F16 | B08, B09 | Compréhension des conséquences |
+| T13 profils/permissions | F03, F27 | A04, A16, M01 | Messages adaptés au rôle |
+| T14 appareil et reconnexion | F30, F31 | A06, A15, L11 | Reprise des actions |
+| T15 accessibilité mobile | F34 | B03, L11 | Lisibilité, navigation clavier/tactile |
+| T16 deux administrateurs | F08, F27, F31 | C11, M03 | Confirmation claire des conflits |
+| T17 modules désactivés | F06, F16 | B08, B09, G01, H08 | Compréhension des conséquences |
 | T18 sans e-mail | F02 | A08, A09 | Compréhension de la récupération |
 
 **Note au fil 00 :** aucun Txx n'est encore une preuve d'essai. Le fil 08 transmet au fil 03 une demande de validation via les identifiants Fxx et aux fils 02/05 les frictions **observées**, pas les hypothèses initiales.
