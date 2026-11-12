@@ -93,6 +93,47 @@ select is(
   public.admin_set_club_logo(null) ->> 'logo_path', null,
   'le logo peut être retiré'
 );
+select is(
+  public.admin_set_club_home_address('  1 rue du Stade, Toulouse  '),
+  '1 rue du Stade, Toulouse',
+  'l’admin fixe le terrain du club A, espaces retirés'
+);
+select is(
+  (select home_address from public.club_settings),
+  '1 rue du Stade, Toulouse',
+  'le terrain du club A est enregistré sur son seul réglage'
+);
+select throws_ok(
+  $$select public.admin_set_club_home_address(repeat('a', 201))$$,
+  '22023', null,
+  'une adresse de plus de 200 caractères est refusée'
+);
+select throws_ok(
+  $$select public.admin_set_club_home_address(E'Rue\nVille')$$,
+  '22023', null,
+  'une adresse multiligne est refusée'
+);
+select is(
+  public.admin_set_club_usual_squad_size(18),
+  18,
+  'l’administrateur A fixe un quota de 18 convoqués'
+);
+select is(
+  (public.get_public_feature_flags()
+    #>> '{sports_management,config,usual_squad_size}')::integer,
+  18,
+  'le quota est lu dans le réglage du club A'
+);
+select throws_ok(
+  $$select public.admin_set_club_usual_squad_size(0)$$,
+  '22023', null,
+  'un quota inférieur à 1 est refusé'
+);
+select throws_ok(
+  $$select public.admin_set_club_usual_squad_size(31)$$,
+  '22023', null,
+  'un quota supérieur à 30 est refusé'
+);
 reset role;
 
 -- Simple membre du club A
@@ -122,6 +163,16 @@ select throws_ok(
   '42501', null,
   'un simple membre ne peut pas changer les couleurs'
 );
+select throws_ok(
+  $$select public.admin_set_club_home_address('Rue interdite')$$,
+  '42501', null,
+  'un membre ne peut pas changer le terrain'
+);
+select throws_ok(
+  $$select public.admin_set_club_usual_squad_size(22)$$,
+  '42501', null,
+  'un membre ne peut pas changer le quota du club'
+);
 select is(
   (select primary_color from public.clubs), '#AA0000',
   'un membre voit les couleurs choisies par son administrateur'
@@ -142,6 +193,30 @@ select is(
 select isnt(
   (select primary_color from public.clubs), '#AA0000',
   'les couleurs d’un club ne touchent pas un autre club'
+);
+select is(
+  (select home_address from public.club_settings), null,
+  'le terrain du club B reste vide après la modification du club A'
+);
+select is(
+  public.admin_set_club_home_address('Terrain du club B'),
+  'Terrain du club B',
+  'le club B configure son terrain indépendamment'
+);
+select is(
+  public.admin_set_club_home_address(null), null,
+  'le terrain du club B peut être effacé'
+);
+select is(
+  (public.get_public_feature_flags()
+    #>> '{sports_management,config,usual_squad_size}')::integer,
+  14,
+  'le club B conserve un quota de 14 malgré le changement du club A'
+);
+select is(
+  public.admin_set_club_usual_squad_size(9),
+  9,
+  'le club B définit indépendamment son quota'
 );
 reset role;
 
