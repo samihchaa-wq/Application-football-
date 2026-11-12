@@ -49,13 +49,18 @@ jobs:
             echo '::error::Only commits already present in main history may be deployed.'
             exit 1
           fi
+      - name: Block wrong commercial configuration
+        run: python3 tool/check_commercial_deploy.py
+      - name: Prepare commercial Supabase content-security-policy
+        run: python3 tool/stamp_commercial_csp.py
       - name: Setup Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           channel: stable
+          flutter-version: 3.47.9
           cache: true
-      - name: Install dependencies
-        run: flutter pub get
+      - name: Install locked dependencies
+        run: flutter pub get --enforce-lockfile
       - name: Read application version
         shell: bash
         run: |
@@ -81,7 +86,7 @@ jobs:
         run: |
           flutter build web \
             --release \
-            --base-href "/AS-Grinta/" \
+            --base-href "/Application-football-/" \
             --pwa-strategy=none \
             --no-web-resources-cdn \
             --dart-define-from-file=config/production.json \
@@ -109,7 +114,7 @@ jobs:
           grep -Fq "app_shell.js?v=$WEB_VERSION" build/web/index.html
           grep -Fq '"mainJsPath":"main.dart.js?v=' build/web/flutter_bootstrap.js
           grep -q 'version-check' build/web/app_shell.js
-          grep -q '/AS-Grinta/' build/web/index.html
+          grep -q '/Application-football-/' build/web/index.html
           grep -q 'Content-Security-Policy' build/web/index.html
           grep -q 'staleWhileRevalidate' build/web/sw.js
       - name: Upload GitHub Pages artifact
@@ -143,6 +148,8 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ env.TARGET_SHA }}
+      - name: Recheck commercial target
+        run: python3 tool/check_commercial_deploy.py
       - name: Verify public application files
         run: |
           set -euo pipefail
@@ -155,6 +162,14 @@ jobs:
           curl --retry 5 --retry-delay 5 -LfsS "${base}main.dart.js?audit=${token}" -o /tmp/main.dart.js
           curl --retry 5 --retry-delay 5 -LfsS "${base}favicon.svg?audit=${token}" -o /tmp/favicon.svg
           test -s /tmp/index.html
+          # Interdire une sortie HTML qui conserve les anciennes origines.
+          project_host=$(jq -r '.SUPABASE_URL | sub("^https://"; "") | sub("/$"; "")' config/production.json)
+          grep -Fq "https://$project_host" /tmp/index.html
+          grep -Fq "wss://$project_host" /tmp/index.html
+          if grep -Fq 'a-remplacer.supabase.co' /tmp/index.html; then
+            echo '::error::CSP commercial resté sur une configuration provisoire.'
+            exit 1
+          fi
           test -s /tmp/app_shell.js
           test -s /tmp/build_version.js
           test -s /tmp/flutter_bootstrap.js
@@ -167,7 +182,7 @@ jobs:
           grep -Fq "app_shell.js?v=$web_version" /tmp/index.html
           grep -q 'version-check' /tmp/app_shell.js
           grep -q 'Content-Security-Policy' /tmp/index.html
-          grep -q '/AS-Grinta/' /tmp/index.html
+          grep -q '/Application-football-/' /tmp/index.html
       - name: Verify HTTPS transport
         run: |
           set -euo pipefail
@@ -199,7 +214,7 @@ jobs:
         run: npm install --no-save playwright-core@1.52.0
       - name: Verify rendered Flutter application
         env:
-          APP_URL: https://samihchaa-wq.github.io/AS-Grinta/
+          APP_URL: https://samihchaa-wq.github.io/Application-football-/
         run: |
           node <<'NODE'
           const fs = require('fs');
@@ -239,9 +254,9 @@ jobs:
               .first()
               .waitFor({ state: 'attached', timeout: 45000 });
             await page.waitForTimeout(3000);
-            await page.screenshot({ path: 'as-grinta-smoke.png', fullPage: true });
-            fs.writeFileSync('as-grinta-smoke-errors.log', errors.join('\n'));
-            const size = fs.statSync('as-grinta-smoke.png').size;
+            await page.screenshot({ path: 'application-football-smoke.png', fullPage: true });
+            fs.writeFileSync('application-football-smoke-errors.log', errors.join('\n'));
+            const size = fs.statSync('application-football-smoke.png').size;
             if (size < 4000) throw new Error(`Capture anormalement vide: ${size} octets`);
             if (errors.length > 0) throw new Error(errors.join(' | '));
             await browser.close();
@@ -256,8 +271,8 @@ jobs:
         with:
           name: pages-smoke-diagnostic
           path: |
-            as-grinta-smoke.png
-            as-grinta-smoke-errors.log
+            application-football-smoke.png
+            application-football-smoke-errors.log
             /tmp/pages-headers.txt
           if-no-files-found: warn
 

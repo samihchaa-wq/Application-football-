@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/features/season_wrapped/data/season_wrapped_repository.dart';
 import 'package:as_grinta/features/season_wrapped/presentation/wrapped_slides.dart';
 import 'package:as_grinta/features/season_wrapped/presentation/wrapped_theme.dart';
@@ -29,7 +30,7 @@ class _ShareHeader extends StatelessWidget {
         Container(height: 4, width: 40, color: skin.figure),
         const SizedBox(height: 10),
         Text(
-          'AS GRINTA · $seasonName',
+          '${ClubIdentity.name.toUpperCase()} · $seasonName',
           style: WrappedType.label(skin.muted, size: 11),
         ),
         const SizedBox(height: 6),
