@@ -105,6 +105,15 @@ mettre à jour à chaque étape importante.
   du fil 00. Ne pas écraser le tableau `docs/CHANTIER.md` depuis cette
   branche du fil 01 : sa mise à jour revient au fil 00.
 
+## Coordination avec fil 00 (PR #29) — état de Mission 01
+
+- **Chef de projet : fil 00**, [tableau `docs/CHANTIER.md` proposé dans la PR #29](https://github.com/samihchaa-wq/Application-football-/pull/29). La PR #29 est **brouillon, non fusionnée** à la lecture du 12/11 ; le suivi est fait via commentaires PR et ces documents, **pas par un travail automatique des fils**.
+- **Livrables fil 01, PR #25 :** `docs/AUDIT_FONCTIONNALITES.md` est l'index de synthèse ; le **référentiel unique de 164 unités** et des 5 classes est `docs/AUDIT_FONCTIONNALITES_DETAILLE.md` ; le **cahier des charges de 30 tickets F2-00…F2-29** est `docs/CAHIER_DES_CHARGES_FIL_02.md`. Ne pas créer de tableau parallèle avec des identifiants concurrents.
+- **Corrections d'audit vérifiées par code :** aucun type `coupe` dans le formulaire/modèle actuel ; clips individuels transparents non démontrés comme importables, à distinguer de la présentation animée existante ; les maillots sont trois options fixes ; l'original possède une migration de réglages quota/adresse domicile **non portée telle quelle** au commercial.
+- **État :** documentation rédigée sur branche PR #25, revue/acceptation et tests applicatifs réels **non faits**. Requêtes Supabase de lecture seule, aucun nouveau club, aucune migration, aucun utilisateur et aucune suppression. Ne pas présenter `DEP` ou `ACTIVE` comme `E2E vert`.
+- **Décisions requises :** DEC-01 une équipe ou plusieurs ; DEC-02 formats 11/8/7/5 ; DEC-03 identité de connexion et homonymies ; DEC-04 types de maillots ; DEC-05 vocabulaire du vote et badges ; DEC-06 clips joueurs ; DEC-07 tarif/paiement ; DEC-08 marque et licences de médias. Voir l'audit détaillé ; le propriétaire tranchera, pas le fil 01.
+- **Transmissions :** fil 02 reçoit les tickets et critères ; fil 03 les scénarios de vérification ; fil 04 le contrôle interclub, les 157 fonctions priviligiées et Storage ; fils 05/07 identité + licences ; 06 tarif ; 08 pilotes ; 09 secrets, monitoring, sauvegardes. Le fil 00 arbitre les dépendances et confirme les contrôles avant fusion.
+
 ## Reste à faire, par priorité
 
 ### Bloquant pour un club test
