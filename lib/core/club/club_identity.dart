@@ -13,9 +13,8 @@ abstract final class ClubIdentity {
   static const String defaultShortName = 'CLUB';
 
   /// Nom de l'application elle-même, quand aucun club n'est en jeu (écran de
-  /// connexion, titre de l'onglet…). Provisoire tant que le nom du produit
-  /// n'est pas choisi.
-  static const String appName = 'Club';
+  /// connexion, titre de l'onglet…).
+  static const String appName = 'Lucarne';
 
   static final ValueNotifier<int> _revision = ValueNotifier<int>(0);
   static String _name = defaultName;

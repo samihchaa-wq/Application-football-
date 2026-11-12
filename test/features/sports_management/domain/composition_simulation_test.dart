@@ -7,23 +7,23 @@ import 'package:flutter_test/flutter_test.dart';
 /// connaît. Elles servent à vérifier la simulation sur des joueurs réels
 /// plutôt que sur des profils inventés.
 const String samihGardien = '89f24276-dac0-4046-87a3-6c28e48fef3a';
-const String samuelGranier = 'c5ba5eda-9cb3-4ec5-aa68-eef33b84a3ad';
-const String stephaneFernandez = '7fe67f9b-75c0-4606-8030-021b00900cc1';
+const String samuelGuerin = 'c5ba5eda-9cb3-4ec5-aa68-eef33b84a3ad';
+const String stephaneFerreira = '7fe67f9b-75c0-4606-8030-021b00900cc1';
 const String julienCesar = 'a1cac6b7-ef09-493f-9d3e-7078fcaa3d97';
-const String olivierMillet = 'b26acaab-3d33-4371-a80f-5692ffb6d026';
-const String alyounCherfi = '2c40dbe5-a804-4b9f-9256-432ab85ce495';
-const String julioVignard = '6f81ca4f-cfd3-4711-a2e5-8f8112a2375d';
-const String romainSpigolon = 'bd469e77-23a2-4be4-98e4-2e85923fac69';
-const String floArnauduc = '1343e65c-63fa-4f8f-af56-56d3136962b5';
-const String lukaBrunel = 'b9f696f7-297d-4891-96f1-34a974c0f7a1';
-const String allanBamokena = '9af382c3-7df3-4109-8c07-601754f19f89';
-const String nicolasBelmonte = '4bbdab69-6f29-430d-8c05-eb8bc4b1e547';
-const String milanCouzin = '5c681291-ec75-47ed-8bee-1b538b69cefe';
-const String hakimCherfi = 'aaa132f5-1fca-47dc-a875-5c2aaa4a9ae9';
-const String simonReis = '0d8871eb-b369-4578-8ba6-17790623fceb';
-const String albanRicard = 'a595c2c2-be69-430c-8dd5-6bbaa2dd7a65';
-const String amineSalhi = 'c1fe7ae2-3dea-4981-9510-a61826e5341a';
-const String francoisDeLaBourdonnaye = '0cd558f5-b283-4e7c-bc3d-ac09f63655f8';
+const String olivierMoreau = 'b26acaab-3d33-4371-a80f-5692ffb6d026';
+const String alyounChaoui = '2c40dbe5-a804-4b9f-9256-432ab85ce495';
+const String julioVasseur = '6f81ca4f-cfd3-4711-a2e5-8f8112a2375d';
+const String romainSerrano = 'bd469e77-23a2-4be4-98e4-2e85923fac69';
+const String floAubertin = '1343e65c-63fa-4f8f-af56-56d3136962b5';
+const String lukaBarral = 'b9f696f7-297d-4891-96f1-34a974c0f7a1';
+const String allanBamba = '9af382c3-7df3-4109-8c07-601754f19f89';
+const String nicolasBarreau = '4bbdab69-6f29-430d-8c05-eb8bc4b1e547';
+const String milanCollet = '5c681291-ec75-47ed-8bee-1b538b69cefe';
+const String hakimChaoui = 'aaa132f5-1fca-47dc-a875-5c2aaa4a9ae9';
+const String simonRoux = '0d8871eb-b369-4578-8ba6-17790623fceb';
+const String albanRenaud = 'a595c2c2-be69-430c-8dd5-6bbaa2dd7a65';
+const String amineSabri = 'c1fe7ae2-3dea-4981-9510-a61826e5341a';
+const String francoisDeLaBonneville = '0cd558f5-b283-4e7c-bc3d-ac09f63655f8';
 
 SimulationCandidate candidate(
   String name, {
@@ -96,9 +96,9 @@ void main() {
     });
 
     test('les couteaux suisses sont ceux sans poste dominant', () {
-      expect(kTestPositionProfiles[hakimCherfi]!.isVersatile, isTrue);
-      expect(kTestPositionProfiles[simonReis]!.isVersatile, isTrue);
-      expect(kTestPositionProfiles[milanCouzin]!.isVersatile, isFalse);
+      expect(kTestPositionProfiles[hakimChaoui]!.isVersatile, isTrue);
+      expect(kTestPositionProfiles[simonRoux]!.isVersatile, isTrue);
+      expect(kTestPositionProfiles[milanCollet]!.isVersatile, isFalse);
       expect(kTestPositionProfiles[samihGardien]!.mainSlotLabel, 'GB');
     });
   });
@@ -109,16 +109,16 @@ void main() {
         slots: formation.slots,
         candidates: [
           candidate('Samih', playerId: samihGardien, isGoalkeeper: true),
-          candidate('Alyoun', playerId: alyounCherfi),
+          candidate('Alyoun', playerId: alyounChaoui),
           candidate('Julien', playerId: julienCesar),
-          candidate('Olivier', playerId: olivierMillet),
-          candidate('Julio', playerId: julioVignard),
-          candidate('Romain', playerId: romainSpigolon),
-          candidate('Flo', playerId: floArnauduc),
-          candidate('Luka', playerId: lukaBrunel),
-          candidate('Nicolas', playerId: nicolasBelmonte),
-          candidate('Milan', playerId: milanCouzin),
-          candidate('Allan', playerId: allanBamokena),
+          candidate('Olivier', playerId: olivierMoreau),
+          candidate('Julio', playerId: julioVasseur),
+          candidate('Romain', playerId: romainSerrano),
+          candidate('Flo', playerId: floAubertin),
+          candidate('Luka', playerId: lukaBarral),
+          candidate('Nicolas', playerId: nicolasBarreau),
+          candidate('Milan', playerId: milanCollet),
+          candidate('Allan', playerId: allanBamba),
         ],
       );
 
@@ -129,7 +129,7 @@ void main() {
       expect(slotOf(simulation, 'Milan'), 'BU');
       expect(slotOf(simulation, 'Allan'), 'AD');
       expect(slotOf(simulation, 'Nicolas'), 'AG');
-      // Fernandez absent : les deux axiaux sont Cesar et Millet.
+      // Ferreira absent : les deux axiaux sont Cesar et Moreau.
       expect(slotOf(simulation, 'Julien'), 'DCG');
       expect(slotOf(simulation, 'Olivier'), 'DCD');
       // Les trois milieux se partagent les trois postes du milieu.
@@ -148,8 +148,8 @@ void main() {
       final simulation = simulateComposition(
         slots: formation.slots,
         candidates: [
-          candidate('Stéphane', playerId: stephaneFernandez),
-          candidate('Olivier', playerId: olivierMillet),
+          candidate('Stéphane', playerId: stephaneFerreira),
+          candidate('Olivier', playerId: olivierMoreau),
         ],
       );
 
@@ -176,18 +176,18 @@ void main() {
         slots: formation.slots,
         candidates: [
           candidate('Samih', playerId: samihGardien, isGoalkeeper: true),
-          candidate('Amine', playerId: amineSalhi),
+          candidate('Amine', playerId: amineSabri),
           candidate('Julien', playerId: julienCesar),
-          candidate('Stéphane', playerId: stephaneFernandez),
-          candidate('Olivier', playerId: olivierMillet),
-          candidate('Samuel', playerId: samuelGranier),
-          candidate('Flo', playerId: floArnauduc),
-          candidate('Romain', playerId: romainSpigolon),
-          candidate('Luka', playerId: lukaBrunel),
-          candidate('Alban', playerId: albanRicard),
-          candidate('François', playerId: francoisDeLaBourdonnaye),
-          candidate('Milan', playerId: milanCouzin),
-          candidate('Allan', playerId: allanBamokena),
+          candidate('Stéphane', playerId: stephaneFerreira),
+          candidate('Olivier', playerId: olivierMoreau),
+          candidate('Samuel', playerId: samuelGuerin),
+          candidate('Flo', playerId: floAubertin),
+          candidate('Romain', playerId: romainSerrano),
+          candidate('Luka', playerId: lukaBarral),
+          candidate('Alban', playerId: albanRenaud),
+          candidate('François', playerId: francoisDeLaBonneville),
+          candidate('Milan', playerId: milanCollet),
+          candidate('Allan', playerId: allanBamba),
         ],
       );
 
@@ -207,9 +207,9 @@ void main() {
       final simulation = simulateComposition(
         slots: formationForCode('4-4-2 à plat').slots,
         candidates: [
-          candidate('Stéphane', playerId: stephaneFernandez),
+          candidate('Stéphane', playerId: stephaneFerreira),
           candidate('Julien', playerId: julienCesar),
-          candidate('Hakim', playerId: hakimCherfi),
+          candidate('Hakim', playerId: hakimChaoui),
         ],
       );
 
@@ -225,9 +225,9 @@ void main() {
       final simulation = simulateComposition(
         slots: formation.slots,
         candidates: [
-          candidate('Nicolas', playerId: nicolasBelmonte),
-          candidate('Allan', playerId: allanBamokena),
-          candidate('Luka', playerId: lukaBrunel),
+          candidate('Nicolas', playerId: nicolasBarreau),
+          candidate('Allan', playerId: allanBamba),
+          candidate('Luka', playerId: lukaBarral),
         ],
       );
 
@@ -247,8 +247,8 @@ void main() {
         ],
         candidates: [
           candidate('Julien', playerId: julienCesar),
-          candidate('Stéphane', playerId: stephaneFernandez),
-          candidate('Milan', playerId: milanCouzin, benchedLastTime: true),
+          candidate('Stéphane', playerId: stephaneFerreira),
+          candidate('Milan', playerId: milanCollet, benchedLastTime: true),
         ],
       );
 
@@ -285,34 +285,34 @@ void main() {
         slots: formation.slots,
         candidates: [
           candidate('Samih', playerId: samihGardien, isGoalkeeper: true),
-          candidate('Alban', playerId: albanRicard),
-          candidate('Allan', playerId: allanBamokena),
-          candidate('Amine', playerId: amineSalhi, benchCount: 1),
-          candidate('Flo', playerId: floArnauduc),
+          candidate('Alban', playerId: albanRenaud),
+          candidate('Allan', playerId: allanBamba),
+          candidate('Amine', playerId: amineSabri, benchCount: 1),
+          candidate('Flo', playerId: floAubertin),
           candidate(
             'Hakim',
-            playerId: hakimCherfi,
+            playerId: hakimChaoui,
             benchCount: 2,
             benchedLastTime: true,
           ),
           candidate('Julien', playerId: julienCesar, benchCount: 1),
           candidate(
             'Luka',
-            playerId: lukaBrunel,
+            playerId: lukaBarral,
             benchCount: 1,
             benchedLastTime: true,
           ),
-          candidate('Milan', playerId: milanCouzin),
-          candidate('Nicolas', playerId: nicolasBelmonte, benchCount: 1),
-          candidate('Olivier', playerId: olivierMillet, benchCount: 1),
-          candidate('Romain', playerId: romainSpigolon, benchCount: 1),
+          candidate('Milan', playerId: milanCollet),
+          candidate('Nicolas', playerId: nicolasBarreau, benchCount: 1),
+          candidate('Olivier', playerId: olivierMoreau, benchCount: 1),
+          candidate('Romain', playerId: romainSerrano, benchCount: 1),
           candidate(
             'Simon',
-            playerId: simonReis,
+            playerId: simonRoux,
             benchCount: 1,
             benchedLastTime: true,
           ),
-          candidate('Stéphane', playerId: stephaneFernandez, benchCount: 1),
+          candidate('Stéphane', playerId: stephaneFerreira, benchCount: 1),
         ],
       );
 
@@ -337,8 +337,8 @@ void main() {
           const FootballFormationSlot(label: 'DG', position: Offset(.10, .65)),
         ],
         candidates: [
-          candidate('Alyoun', playerId: alyounCherfi, benchCount: 1),
-          candidate('Alyoun bis', playerId: alyounCherfi, benchCount: 7),
+          candidate('Alyoun', playerId: alyounChaoui, benchCount: 1),
+          candidate('Alyoun bis', playerId: alyounChaoui, benchCount: 7),
         ],
       );
 
@@ -352,15 +352,15 @@ void main() {
           const FootballFormationSlot(label: 'BU', position: Offset(.50, .08)),
         ],
         candidates: [
-          candidate('Peu', playerId: nicolasBelmonte, benchCount: 1),
-          candidate('Beaucoup', playerId: lukaBrunel, benchCount: 9),
-          candidate('Moyen', playerId: allanBamokena, benchCount: 4),
+          candidate('Peu', playerId: nicolasBarreau, benchCount: 1),
+          candidate('Beaucoup', playerId: lukaBarral, benchCount: 9),
+          candidate('Moyen', playerId: allanBamba, benchCount: 4),
           candidate(
             'Remplaçant la dernière fois',
             playerId: julienCesar,
             benchedLastTime: true,
           ),
-          candidate('Titulaire', playerId: milanCouzin, benchCount: 12),
+          candidate('Titulaire', playerId: milanCollet, benchCount: 12),
         ],
       );
 
@@ -377,9 +377,9 @@ void main() {
       List<SimulationCandidate> squad() => [
             candidate('Samih', playerId: samihGardien, isGoalkeeper: true),
             candidate('Aki', benchCount: 2),
-            candidate('Hakim', playerId: hakimCherfi, benchCount: 2),
-            candidate('Simon', playerId: simonReis, benchCount: 2),
-            candidate('Flo', playerId: floArnauduc, benchCount: 2),
+            candidate('Hakim', playerId: hakimChaoui, benchCount: 2),
+            candidate('Simon', playerId: simonRoux, benchCount: 2),
+            candidate('Flo', playerId: floAubertin, benchCount: 2),
           ];
       String lineup(SimulatedComposition simulation) => simulation.placements
           .map((p) => '${p.slot.label}:${p.candidate.displayName}')
@@ -405,7 +405,7 @@ void main() {
         slots: formation.slots,
         candidates: [
           candidate('Samih', playerId: samihGardien, isGoalkeeper: true),
-          candidate('Stéphane', playerId: stephaneFernandez, benchCount: 9),
+          candidate('Stéphane', playerId: stephaneFerreira, benchCount: 9),
         ],
       );
 
@@ -420,9 +420,9 @@ void main() {
       final simulation = simulateComposition(
         slots: formation.slots,
         candidates: [
-          // Granier a déjà gardé les buts, mais il n'est pas gardien déclaré.
-          candidate('Samuel', playerId: samuelGranier, benchCount: 9),
-          candidate('Stéphane', playerId: stephaneFernandez, benchCount: 9),
+          // Guerin a déjà gardé les buts, mais il n'est pas gardien déclaré.
+          candidate('Samuel', playerId: samuelGuerin, benchCount: 9),
+          candidate('Stéphane', playerId: stephaneFerreira, benchCount: 9),
         ],
       );
 
@@ -483,7 +483,7 @@ void main() {
         slots: formation.slots,
         candidates: [
           candidate('Invité', isGuest: true),
-          candidate('Milan', playerId: milanCouzin),
+          candidate('Milan', playerId: milanCollet),
         ],
       );
 
@@ -526,11 +526,11 @@ void main() {
         ],
         candidates: [
           candidate('Recrue', benchCount: 12),
-          candidate('Milan', playerId: milanCouzin, benchCount: 0),
+          candidate('Milan', playerId: milanCollet, benchCount: 0),
         ],
       );
 
-      // Malgré son compteur banc, la recrue ne prend pas la pointe à Couzin :
+      // Malgré son compteur banc, la recrue ne prend pas la pointe à Collet :
       // elle hérite du poste que personne ne revendique, à confirmer.
       expect(slotOf(simulation, 'Milan'), 'BU');
       expect(slotOf(simulation, 'Recrue'), 'DC');
@@ -546,16 +546,16 @@ void main() {
         slots: formation.slots,
         candidates: [
           candidate('Samih', playerId: samihGardien, isGoalkeeper: true),
-          candidate('Alyoun', playerId: alyounCherfi),
+          candidate('Alyoun', playerId: alyounChaoui),
           candidate('Julien', playerId: julienCesar),
-          candidate('Olivier', playerId: olivierMillet),
-          candidate('Julio', playerId: julioVignard),
-          candidate('Romain', playerId: romainSpigolon),
-          candidate('Flo', playerId: floArnauduc),
-          candidate('Luka', playerId: lukaBrunel),
-          candidate('Nicolas', playerId: nicolasBelmonte),
-          candidate('Milan', playerId: milanCouzin),
-          candidate('Allan', playerId: allanBamokena),
+          candidate('Olivier', playerId: olivierMoreau),
+          candidate('Julio', playerId: julioVasseur),
+          candidate('Romain', playerId: romainSerrano),
+          candidate('Flo', playerId: floAubertin),
+          candidate('Luka', playerId: lukaBarral),
+          candidate('Nicolas', playerId: nicolasBarreau),
+          candidate('Milan', playerId: milanCollet),
+          candidate('Allan', playerId: allanBamba),
           candidate('Recrue', benchedLastTime: true),
         ],
       );

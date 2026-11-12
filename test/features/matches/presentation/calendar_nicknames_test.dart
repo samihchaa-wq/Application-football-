@@ -29,9 +29,9 @@ void main() {
     test('le surnom du club remplace le prénom de la feuille de match', () {
       final detail = historicalMatchDetailFromRow(
         _archiveRow(
-          names: ['Olivier Millet'],
+          names: ['Olivier Moreau'],
           identities: {
-            'Olivier Millet': {'name': 'Poulain', 'last_initial': 'M'},
+            'Olivier Moreau': {'name': 'Poulain', 'last_initial': 'M'},
           },
         ),
       );
@@ -70,12 +70,12 @@ void main() {
     test('les buteurs portent la même appellation que le terrain', () {
       final detail = historicalMatchDetailFromRow(
         _archiveRow(
-          names: ['Milan Couzin'],
+          names: ['Milan Collet'],
           identities: {
-            'Milan Couzin': {'name': 'Pipo', 'last_initial': 'C'},
+            'Milan Collet': {'name': 'Pipo', 'last_initial': 'C'},
           },
           scorers: [
-            {'name': 'Milan Couzin', 'goals': 2},
+            {'name': 'Milan Collet', 'goals': 2},
           ],
         ),
       );
@@ -87,10 +87,10 @@ void main() {
     test('l’effectif de secours garde chaque joueur sous son surnom', () {
       final detail = historicalMatchDetailFromRow(
         _archiveRow(
-          names: ['Philippe Couzin', 'Milan Couzin'],
+          names: ['Philippe Collet', 'Milan Collet'],
           identities: {
-            'Philippe Couzin': {'name': 'Coach', 'last_initial': 'C'},
-            'Milan Couzin': {'name': 'Pipo', 'last_initial': 'C'},
+            'Philippe Collet': {'name': 'Coach', 'last_initial': 'C'},
+            'Milan Collet': {'name': 'Pipo', 'last_initial': 'C'},
           },
         ),
       );
