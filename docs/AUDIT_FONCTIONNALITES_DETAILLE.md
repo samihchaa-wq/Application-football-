@@ -95,7 +95,7 @@ Chemins à confronter : `lib/features/matches/`, `supabase/functions/calendar-fe
 
 | ID | Fonction et description | Décision | Preuve | Adaptation / vérification requise | Risque | Priorité |
 |---|---|---|---|---|---|---|
-| D01 | Créer championnat, amical, coupe, entre nous | C | B | Valider validations propres à chaque type | Match mal catégorisé | P1 |
+| D01 | Créer un match championnat, amical ou « entre nous » ; **coupe non implémentée** | C | B | Valider les trois types présents, et n'ajouter « coupe » qu'après décision produit et tests serveur/client | Match mal catégorisé / promesse commerciale trompeuse | P1 |
 | D02 | Journée de championnat | C | B | Gérer doublons, valeurs manquantes, autres compétitions | Classement erroné | P1 |
 | D03 | Domicile/extérieur, stade et adversaire | C | B | Conserver bibliothèque équipes/stades, édition/suppression | Adresse dupliquée | P1 |
 | D04 | Horaire, lieu et heure de rendez-vous | C | B | Tester modification avant/après ouverture, report | Invitations erronées | P0 |
@@ -145,8 +145,8 @@ Chemins à confronter : `lib/features/sports_management/domain/football_formatio
 | F06 | Publication et correction de composition | C | B | Vérifier verrou, droits et exceptions | Modification non permise | P0 |
 | F07 | Compositions de deux équipes 'entre nous' | C | B | Tester équipes déséquilibrées, joueurs 1-11 | Joueur manquant | P1 |
 | F08 | Animation d'entrée et stade vidéo | C | C | Préserver ergonomie, fluidité et vérifier droits média | Licence et performances | P1 |
-| F09 | Vidéos individuelles de présentation des joueurs | P | C | Auditer chargement et import; ne pas promettre si pas de flux admin | PWA lourde, média absent | P2 |
-| F10 | Fallback photo et absence de vidéo | C | C | Préserver tous les joueurs même sans clip | Présence invisible | P1 |
+| F09 | Mini-vidéos individuelles détourées 3 à 5 secondes par joueur (souhait produit, distinct de l'animation de stade) | P | G | Aucun parcours d'import/admin et stockage vidéo personnel vérifié ; définir spécification, fallback et coûts avant implémentation | PWA lourde, droits à l'image, média absent | P2 |
+| F10 | Portrait fixe si joueur sans mini-vidéo | C | G | Préserver le comportement photographique actuel et exiger fallback lorsque F09 sera réellement réalisé | Présence invisible si vidéo indisponible | P1 |
 | F11 | Choix du maillot du match | P | G | Remplacer enum France/Orange/Bleu par catalogue propre club | Identité incorrecte | P1 |
 | F12 | Photos de kits associées à joueur/saison | P | B | Associer variantes à catalogue de club, conserver anciens matchs | Références cassées | P1 |
 
@@ -297,6 +297,31 @@ Chemins à confronter : `supabase/migrations/`, `supabase/tests/database/`, `doc
 4. Le cycle complet du match est une transaction fonctionnelle : calendrier → ouverture → réponses → convoqués → compo → gel → live facultatif → compte rendu → vote facultatif → statistiques/badges/pronos → saison. Aucun chantier ne doit casser les liens entre étapes.
 5. Préserver l'UX et la DA actuelles (animations, calendrier, fiches, badges, partage), mais neutraliser les marques/noms/images du club d'origine et obtenir les droits sur médias avant commercialisation.
 6. Les règles coach/gardien/invité, entre-nous, saisons archivées et retrocorrections méritent des tests spécifiques : elles traversent plusieurs modules.
+
+## 3 bis. Corrections vérifiées et coordination avec le fil 00
+
+- **PR #29 — CHANTIER** : le fil 00 est responsable du pilotage des neuf missions. Son tableau est disponible sur la branche de la [PR #29](https://github.com/samihchaa-wq/Application-football-/pull/29) (non fusionnée au moment de ce contrôle). La présente PR #25 alimente **01 → 02**, et les risques sont transmis à **03/04/05/07/09**. L'état documentaire ne constitue pas un feu vert de développement ni de déploiement.
+- **Type de rencontre :** le modèle Dart `lib/features/matches/domain/match_model.dart` admet actuellement `championnat`, `amical` et `entre_nous`, et le formulaire de création propose les mêmes familles. Le type « coupe », mentionné dans la version initiale de cette matrice, **n'est pas une fonction livrée**. La correction a été faite en D01. Une extension coupe doit être décidée et spécifiée séparément.
+- **Import de vidéos individuelles :** `player_composition_video.dart` orchestre la **présentation de composition** sur fond de stade, pas un import de clip transparent pour chaque footballeur. Un éditeur d'images de joueur n'implique pas un pipeline de stockage des vidéos. F09/F10 sont donc des besoins **non démontrés en fonctionnement**, à ne pas annoncer en commercialisation.
+- **Réglages récents de l'original :** `AS-Grinta/supabase/migrations/20261111100000_admin_club_defaults.sql` prévoit quota usuel de joueurs et adresse du terrain par défaut. Cette migration n'existe pas dans les 19 migrations commerciales enregistrées. **Ne pas la recopier telle quelle :** ses requêtes présument une table `club_settings` singleton ; le modèle commercial est multiclub. Tâches F2-01/02 à adapter aux `club_id` et à tester sur deux clubs.
+- **Module activable :** `ClubModule` expose sept interrupteurs (pronostics, statistiques, vote, live, badges, bilan de saison, météo). Les couches Flutter et SQL peuvent avoir des comportements différents à l'arrêt : la matrice de tests des toggles doit préciser pour chacun lecture, création, notification, données historiques et réactivation.
+- **Notifications / endpoint :** présence d'une Edge Function en état ACTIVE ne prouve ni configuration VAPID, ni planification, ni réception sur téléphone. Les deux fonctions héritées `claim-account` et `send-prediction-reminders` sont décrites comme endpoints de compatibilité 410 dans `docs/business-security-matrix.md`; **ne pas les compter comme des parcours actifs**.
+- **Risque sécurité :** les 157 fonctions `SECURITY DEFINER` appelables par `authenticated` sont une **surface à auditer**, et non 157 failles confirmées. Fil 04 : inventorier ACL, contrôles internes, `search_path`, RLS et preuves A/B. Ne pas effectuer d'écriture SQL pendant la mission 01.
+- **Incertitude de couverture :** les 164 lignes sont le **référentiel métier**. Un audit interaction-par-interaction (routes, boutons, modales, RPC et interactions d'admin) doit encore être rapproché d'un relevé de test des écrans par les fils 02/03 ; ne pas prétendre l'exhaustivité opérationnelle.
+
+### Registre d'arbitrage à faire valider par le propriétaire
+
+| Réf. | Décision demandée | Proposition soumise, sans modification appliquée |
+|---|---|---|
+| DEC-01 | Périmètre initial : une équipe par club/espace ou multiéquipe | Une équipe/espace pour le pilote, transparent dans l'offre |
+| DEC-02 | Foot à 11 seulement au lancement ou aussi 5/7/8 | Lancer à 11 si cible initiale 11, développer les autres formats avant de les vendre |
+| DEC-03 | Pseudo lisible global, par club, ou e-mail obligatoire | Corriger les homonymes sans rendre l'e-mail obligatoire par surprise |
+| DEC-04 | Choix des maillots : couleurs, modèles ou fichiers propres au club | Prévoir catalogue par club, fallback neutre |
+| DEC-05 | Nom du trophée Homme du match et badges genrés | Libellé inclusif neutre ou modifiable ; coordination DA/juridique |
+| DEC-06 | Import mini-vidéos individuelles au lancement ou plus tard | Option à spécifier, pas une fonction existante confirmée |
+| DEC-07 | Prix, modèle d'abonnement, moyens de paiement, essai | Réservé aux fils 06/07 et au propriétaire ; ne pas facturer selon le défaut technique |
+| DEC-08 | Marque, propriété/licences vidéos et musique | Réservé aux fils 05/07 ; ne pas transporter de média original sans droits |
+
 
 ## 4. Zones à explorer pour atteindre une exhaustivité démontrable
 
