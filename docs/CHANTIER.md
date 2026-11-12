@@ -25,8 +25,8 @@
 | 05 | DA et identité | **Livrable propre au fil non confirmé** | Auditer l'UI ; conserver l'ADN d'AS Grinta ; préparer identité neutre |
 | 06 | Business et lancement | **Choix commerciaux ouverts** | Tarif indicatif non validé ; paiement en ligne absent |
 | 07 | Juridique | **Validation juridique non confirmée** | Droits des médias, dépôts publics, RGPD, textes et contrats |
-| 08 | Clubs pilotes | **Pas de pilote validé** | Préparer deux clubs fictifs et tests d'onboarding après validation sécurité |
-| 09 | Exploitation et maintenance | **Socle à éprouver** | Vérifier alertes, backups, restauration et procédures |
+| 08 | Clubs pilotes | **Plan documentaire en relecture ; aucun pilote exécuté** | PR [#30](https://github.com/samihchaa-wq/Application-football-/pull/30) : parcours du premier match, 18 scénarios, questionnaires, seuils GO/NO-GO ; tests terrain à venir |
+| 09 | Exploitation et maintenance | **Diagnostic documentaire en relecture** | PR [#31](https://github.com/samihchaa-wq/Application-football-/pull/31) : contrôle surveillance, sauvegardes, support ; sonde SQL sautée, Storage non sauvegardé, restauration non prouvée |
 
 Les statuts indiquent **l'état vérifiable du projet GitHub/Supabase**, pas l'activité des conversations ChatGPT elles-mêmes.
 
@@ -36,8 +36,9 @@ Les statuts indiquent **l'état vérifiable du projet GitHub/Supabase**, pas l'a
 2. **Sécurité du cloisonnement** : contrôler avec deux clubs fictifs toutes les tables, RPC, Storage, invitations et notifications. Le linter Supabase remonte **157 avertissements** sur l'exécution de fonctions `SECURITY DEFINER` par des utilisateurs authentifiés : il faut analyser les contrôles internes, pas assimiler chaque avertissement à une faille avérée.
 3. **Qualité et supervision** : PR [#26](https://github.com/samihchaa-wq/Application-football-/pull/26) signale que le script de charge masque les échecs de `pgbench` avec `|| true`, et qu'une sonde réelle n'a pas été exécutée malgré un monitoring vert. Investiguer avant de se fier à ces indicateurs.
 4. **PR [#24](https://github.com/samihchaa-wq/Application-football-/pull/24)** ouverte : réactivation GitHub Pages de test. Ne fusionner qu'après vérification des prérequis, de la sécurité, de l'environnement cible et des contrôles CI.
-5. **PR [#25](https://github.com/samihchaa-wq/Application-football-/pull/25)** ouverte : compléter le cahier des charges et confirmer la matrice conserver/adapter/paramétrer/supprimer.
-6. **Pré-lancement** : configuration Auth / emails, identité commerciale, conditions légales, paiement, support, sauvegardes et restauration doivent être revus avant la vente.
+5. **PR [#25](https://github.com/samihchaa-wq/Application-football-/pull/25)** ouverte : audit enrichi et cahier des charges du fil 02 ; **non fusionnable au dernier contrôle GitHub** (mergeable=false), vérifier et résoudre les conflits, notamment autour de HANDOFF, avant revue.
+6. **PR [#30](https://github.com/samihchaa-wq/Application-football-/pull/30) et [#31](https://github.com/samihchaa-wq/Application-football-/pull/31)** : documents de pilotes et de maintenance en brouillon, sans tests réels ; plusieurs PR modifient simultanément `docs/HANDOFF.md` : réconcilier leurs mises à jour sans écrasement.
+7. **Pré-lancement** : configuration Auth / emails, identité commerciale, conditions légales, paiement, support, sauvegardes et restauration doivent être revus avant la vente.
 
 ## Circuit de transmission entre les fils
 
