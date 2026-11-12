@@ -230,7 +230,6 @@ class _UsersAdminSection extends ConsumerWidget {
   }
 }
 
-
 /// Gestion des saisons propre à Petit Filet, isolée de l'écran « Effectif ».
 /// L'administration principale reste visuellement identique à AS Grinta.
 /// On préserve ici la création/clôture de saison nécessaire au multiclub.
