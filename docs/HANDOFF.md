@@ -70,8 +70,10 @@ mettre à jour à chaque étape importante.
 ### Bloquant pour faire payer (décisions de Samih)
 8. Paiement : Stripe non intégré.
 9. Prix : 10 €/joueur/an dans le code, non validé.
-10. Textes légaux : SIRET et coordonnées à compléter
-    (`lib/features/legal/domain/legal_documents.dart`).
+10. Textes légaux : les 5 textes sont rédigés (fil « Blinder l'appli
+    juridiquement », `docs/legal/README.md`). Reste : SIRET et coordonnées,
+    relecture par un juriste, licence de la vidéo du stade, écran de
+    nouvelle acceptation après changement de version.
 11. Passer le dépôt en privé (l'historique contient d'anciennes données
     AS Grinta).
 12. Secrets GitHub `PRODUCTION_DB_URL` et `BACKUP_PASSPHRASE` pour la

@@ -21,3 +21,15 @@ export function parseConsent(body: Record<string, unknown>): Consent | null {
   }
   return { termsVersion, ageConfirmation };
 }
+
+/**
+ * Création d'un club : version du contrat du club (conditions d'abonnement et
+ * accord sur le traitement des données des membres) acceptée par la personne
+ * qui crée le club, ou `null` si elle manque ou est invalide.
+ */
+export function parseClubContractVersion(
+  body: Record<string, unknown>,
+): string | null {
+  const version = String(body.acceptedClubContractVersion ?? "").trim();
+  return VERSION_PATTERN.test(version) ? version : null;
+}

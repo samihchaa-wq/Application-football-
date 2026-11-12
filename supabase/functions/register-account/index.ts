@@ -14,7 +14,7 @@ import {
   sendMail,
   sha256Hex,
 } from "./account_email.ts";
-import { parseConsent } from "./consent.ts";
+import { parseClubContractVersion, parseConsent } from "./consent.ts";
 import { validatePassword } from "./password_policy.ts";
 
 const USERNAME_DOMAIN = Deno.env.get("USERNAME_DOMAIN")?.trim() ||
@@ -171,6 +171,16 @@ Deno.serve(async (req: Request) => {
       400,
     );
   }
+  const clubContractVersion = parseClubContractVersion(body);
+  if (mode === "create" && !clubContractVersion) {
+    return jsonResponse(
+      {
+        error:
+          "Pour créer le club, accepte les conditions d’abonnement et l’accord sur les données.",
+      },
+      400,
+    );
+  }
   const passwordError = validatePassword(password);
   if (passwordError) {
     return jsonResponse({ error: passwordError }, 400);
@@ -309,6 +319,17 @@ Deno.serve(async (req: Request) => {
         p_profile_id: newUserId,
       });
       if (founderError) throw founderError;
+
+      // Preuve de l'acceptation du contrat du club : qui, quand, quelle
+      // version. Sans elle, le club n'est pas créé.
+      const { error: contractError } = await scoped
+        .from("club_contract_acceptances")
+        .insert({
+          club_id: club.id,
+          profile_id: newUserId,
+          contract_version: clubContractVersion,
+        });
+      if (contractError) throw contractError;
     }
 
     // Le compte est créé : l'envoi du lien de confirmation est un plus. S'il

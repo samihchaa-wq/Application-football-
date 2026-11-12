@@ -359,12 +359,14 @@ class ClubRepository {
     required String lastName,
     required String password,
     required String acceptedTermsVersion,
+    required String acceptedClubContractVersion,
     required AgeConfirmation ageConfirmation,
     String? email,
   }) {
     return _register({
       'mode': 'create',
       'acceptedTermsVersion': acceptedTermsVersion,
+      'acceptedClubContractVersion': acceptedClubContractVersion,
       'ageConfirmation': ageConfirmation.serverValue,
       'clubName': clubName.trim(),
       if (clubShortName != null && clubShortName.trim().isNotEmpty)
@@ -386,6 +388,7 @@ class ClubRepository {
     required String firstName,
     required String lastName,
     required String acceptedTermsVersion,
+    String? acceptedClubContractVersion,
     required AgeConfirmation ageConfirmation,
   }) async {
     final FunctionResponse response;
@@ -401,6 +404,8 @@ class ClubRepository {
           'firstName': firstName.trim(),
           'lastName': lastName.trim(),
           'acceptedTermsVersion': acceptedTermsVersion,
+          if (create && acceptedClubContractVersion != null)
+            'acceptedClubContractVersion': acceptedClubContractVersion,
           'ageConfirmation': ageConfirmation.serverValue,
         },
       );

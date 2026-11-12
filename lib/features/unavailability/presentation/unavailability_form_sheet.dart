@@ -156,7 +156,11 @@ class _UnavailabilityFormSheetState
               ],
               decoration: const InputDecoration(
                 labelText: 'Raison',
-                hintText: 'Vacances, blessure, déplacement…',
+                hintText: 'Vacances, travail, déplacement…',
+                // Une raison de santé est une donnée très protégée : on
+                // invite à ne pas la détailler.
+                helperText: 'Visible par toi et les admins. Pas de détail '
+                    'médical.',
               ),
             ),
             const SizedBox(height: AppSpacing.contentGap),

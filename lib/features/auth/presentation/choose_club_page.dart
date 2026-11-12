@@ -27,6 +27,7 @@ class _ChooseClubPageState extends ConsumerState<ChooseClubPage> {
   RegisterMode _mode = RegisterMode.join;
   AgeConfirmation? _ageConfirmation;
   bool _acceptedTerms = false;
+  bool _acceptedClubContract = false;
   bool _submitting = false;
   String? _error;
 
@@ -71,6 +72,9 @@ class _ChooseClubPageState extends ConsumerState<ChooseClubPage> {
     } else if (!_acceptedTerms) {
       problem = 'Accepte les conditions d’utilisation et la politique de '
           'confidentialité pour continuer.';
+    } else if (create && !_acceptedClubContract) {
+      problem = 'Pour créer le club, confirme que tu peux l’engager et '
+          'accepte les conditions d’abonnement et l’accord sur les données.';
     }
     if (problem != null) {
       setState(() => _error = problem);
@@ -90,6 +94,7 @@ class _ChooseClubPageState extends ConsumerState<ChooseClubPage> {
             firstName: firstName,
             lastName: lastName,
             acceptedTermsVersion: legalVersion,
+            acceptedClubContractVersion: create ? clubContractVersion : null,
             ageConfirmation: _ageConfirmation!,
           );
       // Le profil existe maintenant : le routeur fait entrer dans le club, ou
@@ -192,6 +197,10 @@ class _ChooseClubPageState extends ConsumerState<ChooseClubPage> {
             enabled: !_submitting,
             onAgeChanged: (value) => setState(() => _ageConfirmation = value),
             onTermsChanged: (value) => setState(() => _acceptedTerms = value),
+            showClubContract: create,
+            acceptedClubContract: _acceptedClubContract,
+            onClubContractChanged: (value) =>
+                setState(() => _acceptedClubContract = value),
           ),
           if (_error != null) ...[
             const SizedBox(height: 16),

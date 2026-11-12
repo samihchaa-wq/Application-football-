@@ -1,4 +1,4 @@
-import { parseConsent } from "./consent.ts";
+import { parseClubContractVersion, parseConsent } from "./consent.ts";
 
 function assertEquals(actual: unknown, expected: unknown, message?: string) {
   if (JSON.stringify(actual) !== JSON.stringify(expected)) {
@@ -28,5 +28,15 @@ Deno.test("refuse une inscription sans consentement", () => {
     { acceptedTermsVersion: "2026-11-12", ageConfirmation: "moins_de_15" },
   ]) {
     assertEquals(parseConsent(body), null, JSON.stringify(body));
+  }
+});
+
+Deno.test("lit la version du contrat du club, ou rien", () => {
+  assertEquals(
+    parseClubContractVersion({ acceptedClubContractVersion: "2026-11-12" }),
+    "2026-11-12",
+  );
+  for (const body of [{}, { acceptedClubContractVersion: "oui" }]) {
+    assertEquals(parseClubContractVersion(body), null, JSON.stringify(body));
   }
 });

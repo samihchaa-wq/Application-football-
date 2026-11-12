@@ -1,0 +1,40 @@
+-- Preuve de l'acceptation du contrat par le club.
+--
+-- Quand une personne crée un club, elle accepte pour lui les conditions
+-- d'abonnement (CGV) et l'accord sur le traitement des données des membres
+-- (contrat de sous-traitance prévu par l'article 28 du RGPD). Cette table
+-- garde la preuve : quel club, qui, quand, quelle version des textes.
+--
+-- Écrite uniquement par les fonctions serveur d'inscription (rôle
+-- service_role) ; aucun accès direct depuis l'application.
+
+create table public.club_contract_acceptances (
+  id bigint generated always as identity primary key,
+  club_id uuid not null references public.clubs(id) on delete cascade,
+  -- La preuve reste si la personne supprime ensuite son compte.
+  profile_id uuid references public.profiles(id) on delete set null,
+  contract_version text not null
+    constraint club_contract_acceptances_version_check
+      check (contract_version ~ '^\d{4}-\d{2}-\d{2}$'),
+  accepted_at timestamptz not null default now()
+);
+
+comment on table public.club_contract_acceptances is
+  'Acceptation des conditions d''abonnement et de l''accord sur les données par un club.';
+
+create index club_contract_acceptances_club_id_idx
+  on public.club_contract_acceptances (club_id);
+create index club_contract_acceptances_profile_id_idx
+  on public.club_contract_acceptances (profile_id);
+
+alter table public.club_contract_acceptances enable row level security;
+revoke all on public.club_contract_acceptances from public, anon, authenticated;
+grant all on public.club_contract_acceptances to service_role;
+
+create policy club_isolation on public.club_contract_acceptances
+  as restrictive for all to public
+  using (club_id = (select private.current_club_id()))
+  with check (club_id = (select private.current_club_id()));
+create policy deny_client_access on public.club_contract_acceptances
+  as restrictive for all to anon, authenticated
+  using (false) with check (false);

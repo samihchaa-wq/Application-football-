@@ -3,7 +3,7 @@
 // Le club n'est jamais choisi par le client autrement que par un code valide.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2.95.0";
-import { parseConsent } from "./consent.ts";
+import { parseClubContractVersion, parseConsent } from "./consent.ts";
 
 const INVITE_CODE_PATTERN = /^[A-Z2-9]{8}$/;
 const MAX_BODY_BYTES = 4_096;
@@ -145,6 +145,16 @@ Deno.serve(async (req: Request) => {
       {
         error:
           "Accepte les conditions d’utilisation et indique ton âge pour continuer.",
+      },
+      400,
+    );
+  }
+  const clubContractVersion = parseClubContractVersion(body);
+  if (mode === "create" && !clubContractVersion) {
+    return jsonResponse(
+      {
+        error:
+          "Pour créer le club, accepte les conditions d’abonnement et l’accord sur les données.",
       },
       400,
     );
@@ -311,6 +321,17 @@ Deno.serve(async (req: Request) => {
         p_profile_id: userId,
       });
       if (founderError) throw founderError;
+
+      // Preuve de l'acceptation du contrat du club : qui, quand, quelle
+      // version. Sans elle, le club n'est pas créé.
+      const { error: contractError } = await scoped
+        .from("club_contract_acceptances")
+        .insert({
+          club_id: club.id,
+          profile_id: userId,
+          contract_version: clubContractVersion,
+        });
+      if (contractError) throw contractError;
     }
 
     return jsonResponse({
