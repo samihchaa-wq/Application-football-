@@ -75,6 +75,25 @@ void main() {
     expect(ClubKits.parse(duplicate), isNull);
   });
 
+  test('changement de compte : aucun maillot de l’ancien club ne persiste',
+      () {
+    ClubKits.setClubColors(primary: const Color(0xFFAA0000));
+    ClubKits.setFromJson(savedJson());
+    expect(ClubKits.of(JerseyOption.france).label, 'Rouge');
+    expect(ClubKits.of(JerseyOption.france).body, const Color(0xFFAA0000));
+
+    // La couche de synchronisation appelle reset dès que l'identité change,
+    // avant de charger le club suivant. Même en cas d'échec réseau, les
+    // maillots mémorisés du club A ne doivent pas apparaître sur B.
+    ClubKits.reset();
+    expect(ClubKits.usesDefaults, isTrue);
+    expect(ClubKits.of(JerseyOption.france).label, 'Domicile');
+
+    ClubKits.setClubColors(primary: const Color(0xFF0055CC));
+    expect(ClubKits.of(JerseyOption.france).body, const Color(0xFF0055CC));
+    expect(ClubKits.of(JerseyOption.france).label, 'Domicile');
+  });
+
   test('toJson produit ce que le serveur attend', () {
     final kit = ClubKits.parse(savedJson())!.first;
     expect(kit.toJson(), {
