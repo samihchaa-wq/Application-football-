@@ -24,9 +24,9 @@ mettre à jour à chaque étape importante.
   `jvxkhgdopslctpcjrhzw`, organisation Pro, région Paris (eu-west-3).
   Coût : inclus dans l'abonnement Pro (~25 $/mois), aucun supplément tant que
   c'est le seul projet de l'organisation.
-  - Migrations appliquées jusqu'à `20261112040000_notifications_nom_du_club`
-    (enregistrées dans `supabase_migrations.schema_migrations`). Base vide :
-    aucun club, aucun utilisateur.
+  - Migrations appliquées jusqu'à `20261112050000_blocage_serveur_mode_live`
+    (19 migrations, vérifié dans Supabase le 12/11 à 10 h 35 UTC). Base vide
+    à la lecture du 12/11 : aucun club, aucun utilisateur.
   - Schéma `install_tmp` restant (inaccessible à l'appli) : à supprimer depuis
     l'éditeur SQL Supabase, `drop schema install_tmp cascade;`.
   - Faits le 12/11 via le workflow « Supabase commercial : mise en route » :
@@ -38,10 +38,30 @@ mettre à jour à chaque étape importante.
   publication).
 - **PR #23** : nom du club dans les notifications au lieu de « AS Grinta »,
   lien d'agenda, nom du fichier du bilan.
-- **Prochaine PR** (branche `claude/project-thread-q37eby`) : blocage serveur
-  du mode live désactivé, `config/production.json` relié à la base
-  commerciale, ce document.
+- **PR #24** fusionnée : blocage serveur du mode live, `config/production.json`
+  relié à la base commerciale, workflow Pages en publication manuelle.
+- **PR #48** fusionnée : liste d'attente en trois modes et saisie de
+  l'historique par l'admin.
+- **PR #25** (audit fonctionnel, documents seulement) : voir section suivante.
 - Déploiement GitHub Pages : workflow réactivé en **publication manuelle uniquement** (PR #24), pour un test à clubs fictifs. Site cible : https://samihchaa-wq.github.io/Application-football-/ — publié seulement après lancement manuel et vérification. GitHub Pages **n'autorise pas** l'hébergement d'un SaaS commercial : un autre hébergeur sera nécessaire avant toute vente.
+
+## Audit fonctionnel (fil 1, PR #25) — 12/11/2026
+
+- Index lisible : `docs/AUDIT_FONCTIONNALITES.md`. Référentiel unique :
+  `docs/AUDIT_FONCTIONNALITES_DETAILLE.md` (164 fonctions classées).
+  Pages et réglages : `docs/AUDIT_ROUTES_ET_PARAMETRES.md`. Tâches du fil 2 :
+  `docs/CAHIER_DES_CHARGES_FIL_02.md` (F2-00 à F2-29). Ne pas créer de
+  tableau concurrent.
+- Audit fait par **lecture du code** et requêtes Supabase en lecture seule.
+  Aucun parcours testé dans l'appli, aucune notification réelle, aucun test
+  de cloisonnement entre deux clubs : c'est le rôle des fils 3 et 4.
+- Décisions réservées à Samih (DEC-01 à DEC-08) : une équipe ou plusieurs
+  par espace ; foot à 11 seul ou aussi 8/7/5 ; identifiants de connexion
+  (aujourd'hui uniques sur toute la plateforme, 20 homonymes maximum) ;
+  maillots personnalisables ; nom neutre pour « Homme du match » et les
+  badges genrés ; clips joueurs ; prix et paiement ; nom et droits des médias.
+- Alertes Supabase : 157 fonctions serveur accessibles aux comptes connectés
+  (nombre de fonctions, pas des failles prouvées) ; à instruire par le fil 4.
 
 ## Reste à faire, par priorité
 
