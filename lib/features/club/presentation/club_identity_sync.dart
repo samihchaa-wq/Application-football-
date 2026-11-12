@@ -37,6 +37,13 @@ final clubIdentitySyncProvider = Provider<void>((ref) {
       try {
         final club = await ref.read(clubRepositoryProvider).fetchMyClub();
         if (disposed) return;
+        // Une réponse réseau d'une ancienne session ne doit jamais remettre
+        // les couleurs ou les maillots du compte précédent après connexion B.
+        final latest = ref.read(authControllerProvider);
+        if (!latest.isAuthenticated ||
+            latest.profile?.id != identity.profileId) {
+          return;
+        }
         ClubIdentity.set(name: club.name, shortName: club.shortName);
         applyClubColors(club);
         ClubKits.setFromJson(club.kits);
