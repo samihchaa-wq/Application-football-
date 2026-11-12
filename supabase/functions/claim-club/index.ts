@@ -4,6 +4,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2.95.0";
 import { parseConsent } from "./consent.ts";
+import { firstFreeUsername } from "./username.ts";
 
 const INVITE_CODE_PATTERN = /^[A-Z2-9]{8}$/;
 const MAX_BODY_BYTES = 4_096;
@@ -250,20 +251,20 @@ Deno.serve(async (req: Request) => {
     }
 
     const base = `${normalizedFirst}${normalizedInitial}`.slice(0, 27);
-    let username = "";
-    for (let suffix = 1; suffix <= 20; suffix++) {
-      const candidate = suffix === 1 ? base : `${base}${suffix}`;
-      const { data: existing, error: existsError } = await admin
-        .from("profiles")
-        .select("id")
-        .eq("username", candidate)
-        .maybeSingle();
-      if (existsError) throw existsError;
-      if (!existing) {
-        username = candidate;
-        break;
-      }
-    }
+    // Les identifiants sont uniques sur toute la plateforme (tous clubs
+    // confondus) : « thomasd », puis « thomasd2 », « thomasd3 »… On lit en
+    // une fois les homonymes déjà pris pour choisir le premier numéro libre,
+    // sans plafond (l'ancienne limite de 20 homonymes bloquait l'inscription
+    // dès qu'il y avait beaucoup de clubs).
+    const { data: homonyms, error: homonymsError } = await admin
+      .from("profiles")
+      .select("username")
+      .filter("username", "match", `^${base}[0-9]*$`);
+    if (homonymsError) throw homonymsError;
+    const username = firstFreeUsername(
+      base,
+      (homonyms ?? []).map((row: { username: string | null }) => row.username),
+    );
     if (!username) {
       if (createdClubId) {
         await admin.rpc("discard_empty_club", { p_club_id: createdClubId });
