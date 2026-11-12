@@ -42,6 +42,7 @@ flutter:
 
   assets:
     - assets/images/club_crest.webp
+    - assets/images/lucarne_logo.webp
     - assets/images/icons/
     - assets/images/jerseys/
     - assets/composition/
