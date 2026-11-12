@@ -86,6 +86,13 @@ Les consignes opérationnelles sont désormais tracées **dans les issues et dan
 6. Les tâches ChatGPT programmées sont distinctes des neuf conversations et **ne réveillent pas celles-ci**. Des limites d'exécution, de quota ou d'outillage peuvent interrompre le fonctionnement ; confirmer chaque résultat.
 7. **Capacité théorique maximale : 120 déclenchements par jour**, pas 120 modifications garanties. Réduire la cadence si les passages se chevauchent ou produisent du bruit plutôt que des résultats.
 
+## Renforcement transversal qualité — 12/11/2026
+
+- **[PR #44 — garde qualité automatisée](https://github.com/samihchaa-wq/Application-football-/pull/44)** (brouillon) : script et CI qui refusent d'éditer/renommer/supprimer d'anciennes migrations, 9 tests unitaires locaux validés ; modèle de PR et consignes `AGENTS.md` propres au commercial. **CI GitHub à vérifier, non fusionné**.
+- **[Issue #45 — protection de main](https://github.com/samihchaa-wq/Application-football-/issues/45)** : règles de branche nécessaires ; aucun ruleset visible, lecture de l'ancienne protection non autorisée par l'intégration ; seul le propriétaire peut confirmer et appliquer le réglage GitHub.
+- **Revue croisée** : M03 examine tests et CI de #44 ; M04 examine l'étanchéité du périmètre commercial / Supabase et le protocole de migrations ; M09 examine effet sur les workflows ; M00 suit intégration et arbitrage.
+- **Environnement isolé** : tests SQL locaux déjà présents, mais validation A/B réelle et restauration distante non prouvées. Tout nouvel environnement payant ou toute donnée à créer nécessitent l'accord du propriétaire.
+
 ## Circuit de transmission entre les fils
 
 - **01 → 02 :** décisions fonctionnelles, paramètres et critères d'acceptation.
