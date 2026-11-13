@@ -96,7 +96,7 @@ where player.id = participant.season_player_id
 -- Les tests peuvent uniquement modifier leur transaction : simulation d'un
 -- coup d'envoi apres activation, sans toucher a la base commerciale.
 update private.waitlist_auto_activation
-set activated_at = now() - interval '2 hours'
+set activated_at = now() - interval '2 days'
 where singleton;
 
 select private.recompute_match_convocations_internal(
@@ -112,8 +112,8 @@ select is(
   'meme avec force=true, jamais de credit avant le coup d envoi');
 
 update public.matches
-set match_date = ((now() - interval '1 minute') at time zone 'Europe/Paris')::date,
-    match_time = ((now() - interval '1 minute') at time zone 'Europe/Paris')::time
+set match_date = ((now() - interval '1 day') at time zone 'Europe/Paris')::date,
+    match_time = ((now() - interval '1 day') at time zone 'Europe/Paris')::time
 where id = current_setting('test.match')::uuid;
 
 select is(
@@ -242,8 +242,8 @@ select set_config('test.match3',
     'domicile', 2.10, 3.20, 2.90, 2
   )::text, true);
 reset role;
-update public.matches set match_date=((now() - interval '3 hours') at time zone 'Europe/Paris')::date,
-    match_time=((now() - interval '3 hours') at time zone 'Europe/Paris')::time
+update public.matches set match_date=((now() - interval '3 days') at time zone 'Europe/Paris')::date,
+    match_time=((now() - interval '3 days') at time zone 'Europe/Paris')::time
 where id=current_setting('test.match3')::uuid;
 select is(
   private.finalize_match_waitlist_turns_internal(
