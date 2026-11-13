@@ -240,15 +240,13 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
         fit: StackFit.expand,
         children: [
           const TransparentPhotoBackground(),
-          photo,
-          // Le maillot du club est purement visuel : l'export n'enregistre
-          // que les pixels de la photo et la matrice de recadrage.
-          IgnorePointer(
-            child: KitPortrait(
-              kit: _previewKit,
-              isGoalkeeper: widget.isGoalkeeper,
-              child: const SizedBox.expand(),
-            ),
+          // Découper la photo sur la même silhouette que les compositions :
+          // les épaules d'origine ne doivent jamais traverser le maillot.
+          // Les repères et la tenue restent exclus de l'export PNG/JPEG.
+          KitPortrait(
+            kit: _previewKit,
+            isGoalkeeper: widget.isGoalkeeper,
+            child: photo,
           ),
           if (guide) const PortraitAlignmentGuide(),
         ],
