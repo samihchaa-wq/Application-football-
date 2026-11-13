@@ -106,6 +106,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                             photoUrl: profile?.photoUrl,
                             name: profile?.displayName ?? '',
                             lastName: profile?.lastName,
+                            isGoalkeeper: profile?.isGoalkeeper == true,
                             size: avatarSize,
                           ),
                           Positioned(
