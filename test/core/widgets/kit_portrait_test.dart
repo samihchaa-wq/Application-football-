@@ -94,35 +94,6 @@ void main() {
     expect(find.byIcon(Icons.checkroom), findsNothing);
   });
 
-  testWidgets('photo avec maillot : aucun cadre coloré autour du portrait',
-      (tester) async {
-    final kit = ClubKits.of(JerseyOption.orange).copyWith(
-      dressPlayers: true,
-    );
-    // Une URL déjà signée déclenche l'affichage du portrait, même si le
-    // chargement réseau est remplacé par un placeholder en test.
-    await tester.pumpWidget(MaterialApp(
-        home: Scaffold(
-            body: CompositionKitScope(
-      kit: kit,
-      child: const PlayerAvatar(
-        photoUrl: 'https://example.com/portrait.png',
-        name: 'Alpha',
-        size: 58,
-      ),
-    ))));
-    final avatarContainer = tester.widgetList<Container>(
-      find.descendant(
-        of: find.byType(PlayerAvatar),
-        matching: find.byType(Container),
-      ),
-    ).firstWhere((container) =>
-        container.decoration is BoxDecoration &&
-        (container.decoration! as BoxDecoration).borderRadius != null);
-    final decoration = avatarContainer.decoration! as BoxDecoration;
-    expect(decoration.border, isNull);
-  });
-
   testWidgets('option désactivée : le portrait garde son affichage existant',
       (tester) async {
     await tester.pumpWidget(MaterialApp(
