@@ -33,6 +33,33 @@ void main() {
     }
   });
 
+  test('les épaules descendent naturellement, le col laisse le cou visible',
+      () async {
+    final recorder = ui.PictureRecorder();
+    const PortraitJerseyPainter(
+      body: Colors.red,
+      trim: Colors.yellow,
+      pattern: KitPattern.plain,
+    ).paint(Canvas(recorder), const Size(180, 180));
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(180, 180);
+    final pixels = (await image.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    ))!.buffer.asUint8List();
+
+    int opacityAt(int x, int y) => pixels[(y * 180 + x) * 4 + 3];
+
+    // La manche commence sur une épaule inclinée et ne forme plus un disque.
+    expect(opacityAt(12, 125), 0);
+    expect(opacityAt(12, 157), 255);
+    // Le centre reste ouvert pour le cou photographié, pas pour un faux col.
+    expect(opacityAt(90, 119), 0);
+    expect(opacityAt(90, 143), 255);
+
+    image.dispose();
+    picture.dispose();
+  });
+
   testWidgets('joueur et gardien portent leur modèle sur toute la vignette',
       (tester) async {
     final kit = ClubKits.of(JerseyOption.orange).copyWith(
