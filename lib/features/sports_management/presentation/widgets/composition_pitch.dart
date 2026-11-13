@@ -891,7 +891,7 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
     );
   }
 
-  Widget _photo(String url, {ClubKit? kit}) {
+  Widget _photo(String url, {required ClubKit kit}) {
     final fallbackSize =
         widget.size * widget.fallbackScale.clamp(.5, 1).toDouble();
     return Image.network(
@@ -903,7 +903,7 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
       gaplessPlayback: true,
       filterQuality: FilterQuality.medium,
       frameBuilder: (context, child, frame, wasSynchronouslyLoaded) =>
-          frame == null || kit == null
+          frame == null
               ? child
               : KitPortrait(
                   kit: kit,
