@@ -348,13 +348,17 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
                     fit: StackFit.expand,
                     children: [
                       const TransparentPhotoBackground(),
-                      Image.memory(widget.bytes,
-                          fit: BoxFit.cover, alignment: alignment),
+                      // Même découpe et même tenue que le grand patron.
+                      // La photo brute ne doit pas déborder sous le maillot.
                       IgnorePointer(
                         child: KitPortrait(
                           kit: _previewKit,
                           isGoalkeeper: widget.isGoalkeeper,
-                          child: const SizedBox.expand(),
+                          child: Image.memory(
+                            widget.bytes,
+                            fit: BoxFit.cover,
+                            alignment: alignment,
+                          ),
                         ),
                       ),
                       Align(
