@@ -420,7 +420,7 @@ class MatchLivePreKickoffSpectatorView extends StatelessWidget {
         MediaQuery.withClampedTextScaling(
           maxScaleFactor: 1,
           child: MatchCompositionKitScope(
-            matchId: matchId,
+            matchId: bundle.session.matchId,
             child: CompositionPitchWithBench(
               field: lineup.entriesFor(MatchCompositionZone.field),
               bench: lineup.entriesFor(MatchCompositionZone.bench),
