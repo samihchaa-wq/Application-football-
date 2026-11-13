@@ -1,3 +1,5 @@
+import 'package:as_grinta/core/club/club_kits.dart';
+import 'package:as_grinta/features/matches/domain/jersey_option.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
@@ -40,9 +42,10 @@ MatchCompositionEntry _entry(
       y: position?.dy,
     );
 
-CompositionPresentationData _data({bool coach = true}) {
+CompositionPresentationData _data({bool coach = true, ClubKit? kit}) {
   final slots = formationForCode('4-2-1-3').slots;
   return CompositionPresentationData(
+    kit: kit,
     homeName: 'TOAC Foot Loisir 2',
     awayName: 'AS Grinta',
     grintaIsHome: false,
@@ -105,6 +108,22 @@ Future<void> _playUntil(WidgetTester tester, double seconds) async {
 }
 
 void main() {
+  testWidgets('la vidéo habille le gardien avec la tenue sélectionnée',
+      (tester) async {
+    final kit = ClubKits.of(JerseyOption.orange).copyWith(
+      dressPlayers: true,
+      goalkeeperBody: const Color(0xFF123456),
+      goalkeeperPattern: KitPattern.hoops,
+    );
+    await _pumpPage(tester, _data(coach: false, kit: kit));
+    await tester.pump();
+    await tester.pump();
+    await _playUntil(tester, 3.4);
+    expect(
+        find.byKey(const ValueKey('portrait-jersey-goalkeeper')), findsWidgets);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   testWidgets('la vidéo enchaîne accroche, lignes, puis l’écran Composition', (
     tester,
   ) async {

@@ -295,16 +295,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
   Future<void> _pickAndUploadPhoto() async {
     final picker = ImagePicker();
-    final file = await picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 800,
-      maxHeight: 800,
-      imageQuality: 85,
-    );
+    final file = await picker.pickImage(source: ImageSource.gallery);
     if (file == null) return;
     final bytes = await file.readAsBytes();
     if (!mounted) return;
-    final cropped = await cropProfilePhoto(context, bytes);
+    final cropped = await cropProfilePhoto(
+      context,
+      bytes,
+      isGoalkeeper:
+          ref.read(authControllerProvider).profile?.isGoalkeeper ?? false,
+    );
     if (cropped == null) return;
     await ref
         .read(authControllerProvider.notifier)

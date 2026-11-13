@@ -521,9 +521,12 @@ class _AdminSquadPlanPageState extends ConsumerState<AdminSquadPlanPage> {
               editable: !_locked,
             )
           else if (_convocations != null && _composition != null)
-            step == _AdminStep.effectif
-                ? _buildEffectif()
-                : _buildComposition(),
+            MatchCompositionKitScope(
+              matchId: isInternal ? null : _selectedMatchId,
+              child: step == _AdminStep.effectif
+                  ? _buildEffectif()
+                  : _buildComposition(),
+            ),
         ],
       ),
     );

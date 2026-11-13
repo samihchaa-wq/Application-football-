@@ -120,112 +120,119 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
     final setupControlsDisabled =
         _saving || _savingFormation || _pending.isNotEmpty;
 
-    final pitchArea = LayoutBuilder(
-      builder: (context, constraints) {
-        final metrics = benchAndPitchMetrics(constraints.maxWidth);
-        final lastExits = lastExitMarksByParticipant(bundle.events);
-        // Prochains à sortir : calculés sur la dernière salve validée.
-        // Ils restent affichés pendant la préparation de la suivante, pour
-        // choisir parmi les joueurs en orange ceux qui restent à sortir.
-        final nextOut = nextOutPlayers(
-          field: lineup.entriesFor(MatchCompositionZone.field),
-          events: bundle.events,
-          substituteCounts: bundle.substituteCounts,
-          benchCount: lineup.entriesFor(MatchCompositionZone.bench).length,
-        );
-        return IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _BenchColumn(
-                bench: bench,
-                bundle: bundle,
-                canEdit: canEdit,
-                metrics: metrics,
-                pendingOutIds: pendingOutIds,
-                onFieldPlayerDropped: (playerOut, playerIn) =>
-                    _stage(playerIn: playerIn, playerOut: playerOut),
-                footer: widget.fullScreen && canEdit
-                    ? Column(
-                        children: [
-                          _BenchAction(
-                            icon: Icons.person_add_alt_1_rounded,
-                            label: 'Ajouter',
-                            tooltip: 'Ajouter un joueur',
-                            onPressed: setupControlsDisabled
-                                ? null
-                                : () => showMatchLiveAddPlayerSheet(
-                                      context,
-                                      ref,
-                                      matchId: matchId,
-                                    ),
-                          ),
-                          _BenchAction(
-                            icon: Icons.person_remove_rounded,
-                            label: 'Retirer',
-                            tooltip: 'Retirer un joueur du banc',
-                            onPressed: setupControlsDisabled ||
-                                    lineup
-                                        .entriesFor(MatchCompositionZone.bench)
-                                        .isEmpty
-                                ? null
-                                : () => _removeBenchPlayer(lineup, controller),
-                          ),
-                        ],
-                      )
-                    : null,
-              ),
-              const SizedBox(width: _benchGap),
-              Expanded(
-                child: FormationPitchEditor(
-                  slots: formationForCode(lineup.formationCode).slots,
-                  entries: field,
-                  editable: canEdit,
-                  finishedBenchCounts: bundle.substituteCounts,
-                  benchLabels: {
-                    for (final MapEntry(:key, :value)
-                        in bundle.substituteCounts.entries)
-                      key: liveBenchLabel(lastExits[key], value),
-                  },
-                  benchColors: {
-                    for (final key in bundle.substituteCounts.keys)
-                      key: switch (lastExits[key]) {
-                        final exit? => substitutionSalvoColorAt(
-                            exit.colorIndex,
-                          ),
-                        null => substitutionStartColor,
-                      },
-                  },
-                  namesOnly: true,
-                  nameSuffixes: {
-                    for (final MapEntry(:key, :value) in minutesOnField(
-                      field: lineup.entriesFor(MatchCompositionZone.field),
-                      events: bundle.events,
-                      elapsed: bundle.session.elapsedAt(DateTime.now()),
-                    ).entries)
-                      key: "$value'",
-                  },
-                  nameColors: {
-                    for (final id in nextOut.sure) id: nextOutSureColor,
-                    for (final id in nextOut.toChoose) id: nextOutToChooseColor,
-                  },
-                  markerMetrics: metrics,
-                  onDroppedOnSlot: (moving, slot) => _handlePitchDrop(
-                    context,
-                    controller,
-                    lineup,
-                    moving,
-                    slot,
+    final pitchArea = MatchCompositionKitScope(
+        matchId: matchId,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final metrics = benchAndPitchMetrics(constraints.maxWidth);
+            final lastExits = lastExitMarksByParticipant(bundle.events);
+            // Prochains à sortir : calculés sur la dernière salve validée.
+            // Ils restent affichés pendant la préparation de la suivante, pour
+            // choisir parmi les joueurs en orange ceux qui restent à sortir.
+            final nextOut = nextOutPlayers(
+              field: lineup.entriesFor(MatchCompositionZone.field),
+              events: bundle.events,
+              substituteCounts: bundle.substituteCounts,
+              benchCount: lineup.entriesFor(MatchCompositionZone.bench).length,
+            );
+            return IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _BenchColumn(
+                    bench: bench,
+                    bundle: bundle,
+                    canEdit: canEdit,
+                    metrics: metrics,
+                    pendingOutIds: pendingOutIds,
+                    onFieldPlayerDropped: (playerOut, playerIn) =>
+                        _stage(playerIn: playerIn, playerOut: playerOut),
+                    footer: widget.fullScreen && canEdit
+                        ? Column(
+                            children: [
+                              _BenchAction(
+                                icon: Icons.person_add_alt_1_rounded,
+                                label: 'Ajouter',
+                                tooltip: 'Ajouter un joueur',
+                                onPressed: setupControlsDisabled
+                                    ? null
+                                    : () => showMatchLiveAddPlayerSheet(
+                                          context,
+                                          ref,
+                                          matchId: matchId,
+                                        ),
+                              ),
+                              _BenchAction(
+                                icon: Icons.person_remove_rounded,
+                                label: 'Retirer',
+                                tooltip: 'Retirer un joueur du banc',
+                                onPressed: setupControlsDisabled ||
+                                        lineup
+                                            .entriesFor(
+                                                MatchCompositionZone.bench)
+                                            .isEmpty
+                                    ? null
+                                    : () =>
+                                        _removeBenchPlayer(lineup, controller),
+                              ),
+                            ],
+                          )
+                        : null,
                   ),
-                  onRemoveFromField: (entry) =>
-                      _explainHowToSubstitute(context),
-                ),
+                  const SizedBox(width: _benchGap),
+                  Expanded(
+                    child: FormationPitchEditor(
+                      slots: formationForCode(lineup.formationCode).slots,
+                      entries: field,
+                      editable: canEdit,
+                      finishedBenchCounts: bundle.substituteCounts,
+                      benchLabels: {
+                        for (final MapEntry(:key, :value)
+                            in bundle.substituteCounts.entries)
+                          key: liveBenchLabel(lastExits[key], value),
+                      },
+                      benchColors: {
+                        for (final key in bundle.substituteCounts.keys)
+                          key: switch (lastExits[key]) {
+                            final exit? => substitutionSalvoColorAt(
+                                exit.colorIndex,
+                              ),
+                            null => substitutionStartColor,
+                          },
+                      },
+                      namesOnly:
+                          CompositionKitScope.maybeOf(context)?.dressPlayers !=
+                              true,
+                      nameSuffixes: {
+                        for (final MapEntry(:key, :value) in minutesOnField(
+                          field: lineup.entriesFor(MatchCompositionZone.field),
+                          events: bundle.events,
+                          elapsed: bundle.session.elapsedAt(DateTime.now()),
+                        ).entries)
+                          key: "$value'",
+                      },
+                      nameColors: {
+                        for (final id in nextOut.sure) id: nextOutSureColor,
+                        for (final id in nextOut.toChoose)
+                          id: nextOutToChooseColor,
+                      },
+                      markerMetrics: metrics,
+                      onDroppedOnSlot: (moving, slot) => _handlePitchDrop(
+                        context,
+                        controller,
+                        lineup,
+                        moving,
+                        slot,
+                      ),
+                      onRemoveFromField: (entry) =>
+                          _explainHowToSubstitute(context),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        );
-      },
-    );
+            );
+          },
+        ));
 
     if (widget.fullScreen) {
       return _buildFullScreen(

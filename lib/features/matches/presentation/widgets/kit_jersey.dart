@@ -1,4 +1,5 @@
 import 'package:as_grinta/core/club/club_kits.dart';
+import 'package:as_grinta/core/widgets/kit_pattern_paint.dart';
 import 'package:flutter/material.dart';
 
 /// Dessin d'un maillot aux couleurs choisies par le club : corps d'une
@@ -30,6 +31,7 @@ class KitJersey extends StatelessWidget {
           painter: _KitJerseyPainter(
             body: isGoalkeeper ? kit.goalkeeperBody : kit.body,
             trim: isGoalkeeper ? kit.goalkeeperTrim : kit.trim,
+            pattern: isGoalkeeper ? kit.goalkeeperPattern : kit.pattern,
           ),
         ),
       ),
@@ -38,7 +40,11 @@ class KitJersey extends StatelessWidget {
 }
 
 class _KitJerseyPainter extends CustomPainter {
-  _KitJerseyPainter({required this.body, required this.trim});
+  _KitJerseyPainter({
+    required this.body,
+    required this.trim,
+    required this.pattern,
+  });
 
   // Repère du dessin (même proportions que les anciennes illustrations).
   static const double width = 520;
@@ -46,6 +52,7 @@ class _KitJerseyPainter extends CustomPainter {
 
   final Color body;
   final Color trim;
+  final KitPattern pattern;
 
   static Color _shade(Color color, double amount) {
     final hsl = HSLColor.fromColor(color);
@@ -122,7 +129,14 @@ class _KitJerseyPainter extends CustomPainter {
           ).createShader(const Rect.fromLTWH(0, 0, width, height)),
       )
       ..save()
-      ..clipPath(shirt)
+      ..clipPath(shirt);
+    paintKitPattern(
+      canvas,
+      const Rect.fromLTWH(115, 28, 290, 552),
+      pattern,
+      trim,
+    );
+    canvas
       ..drawPath(_cuffs(), Paint()..color = trim)
       ..drawPath(_collar(), Paint()..color = trim)
       ..restore()
@@ -139,5 +153,7 @@ class _KitJerseyPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_KitJerseyPainter oldDelegate) =>
-      oldDelegate.body != body || oldDelegate.trim != trim;
+      oldDelegate.body != body ||
+      oldDelegate.trim != trim ||
+      oldDelegate.pattern != pattern;
 }

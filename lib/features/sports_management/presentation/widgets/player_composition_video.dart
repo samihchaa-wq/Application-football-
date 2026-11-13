@@ -361,17 +361,14 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
     try {
       selectedKit =
           (await ref.read(matchKitSnapshotProvider(matchId).future))?.kit;
-    } catch (_) {
-      // Migration historique pas encore appliquée : repli sur Infos.
-    }
-    if (selectedKit == null) {
-      try {
+      if (selectedKit == null) {
         final info = await ref.read(matchInfoProvider(matchId).future);
         selectedKit =
             (JerseyOption.fromId(info.jerseyNote) ?? JerseyOption.france).kit;
-      } catch (_) {
-        // Ne pas inventer une couleur en cas de fiche match indisponible.
       }
+    } catch (_) {
+      // Historique indisponible : rester neutre, ne pas réhabiller un ancien
+      // match avec les couleurs actuelles par simple repli réseau.
     }
     return buildCompositionPresentationData(
       kit: selectedKit,

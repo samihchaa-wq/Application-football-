@@ -192,16 +192,13 @@ Future<void> showCompositionPresentation(
       transitionDuration: const Duration(milliseconds: 250),
       reverseTransitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, animation, secondaryAnimation) {
-        final page = CompositionPresentationPage(
+        return CompositionPresentationPage(
           data: data,
           background: debugPresentationBackground ?? background,
           preview: preview,
           landing: landsOnPage ? landing : null,
           endsOnPage: onPage,
         );
-        return data.kit == null
-            ? page
-            : CompositionKitScope(kit: data.kit!, child: page);
       },
       transitionsBuilder: (context, animation, secondaryAnimation, child) =>
           FadeTransition(opacity: animation, child: child),
@@ -452,7 +449,9 @@ class _CompositionPresentationPageState
     // pas de page à part entière, donc pas de barre ni d'écusson d'accueil.
     // Posée sur la vraie page, celle-ci reste affichée dessous : elle est
     // tue pour les lecteurs d'écran (VoiceOver) tant que la vidéo est là.
-    return BlockSemantics(child: _buildPlayer(context));
+    final player = BlockSemantics(child: _buildPlayer(context));
+    final kit = widget.data.kit;
+    return kit == null ? player : CompositionKitScope(kit: kit, child: player);
   }
 
   Widget _buildPlayer(BuildContext context) {

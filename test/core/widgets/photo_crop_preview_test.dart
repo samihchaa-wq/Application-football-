@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import 'package:as_grinta/core/club/club_kits.dart';
+import 'package:as_grinta/core/widgets/kit_portrait.dart';
 import 'package:as_grinta/core/storage/avatar_image.dart';
 import 'package:as_grinta/core/widgets/photo_crop_preview.dart';
 import 'package:flutter/material.dart';
@@ -76,6 +78,8 @@ Future<Uint8List?> _crop(
 }
 
 void main() {
+  setUp(ClubKits.reset);
+  tearDown(ClubKits.reset);
   testWidgets(
     'une photo détourée garde sa transparence au lieu d’un fond blanc',
     (tester) async {
@@ -137,13 +141,26 @@ void main() {
   );
 
   testWidgets(
-    'ni l’ovale ni la couronne du patron ne sont enregistrés dans la photo',
+    'ni le maillot, ni l’ovale, ni la couronne ne sont enregistrés dans la photo',
     (tester) async {
+      ClubKits.setFromJson([
+        for (final kit in ClubKits.all)
+          kit.copyWith(dressPlayers: true).toJson(),
+      ]);
       final solid = img.Image(width: 600, height: 600);
       img.fill(solid, color: img.ColorRgb8(40, 120, 200));
       final exported = await _crop(
         tester,
         Uint8List.fromList(img.encodeJpg(solid, quality: 95)),
+        beforeExport: () async {
+          expect(find.byType(KitPortrait), findsOneWidget);
+          await tester.tap(find.byKey(const ValueKey('portrait-kit-preview')));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('Extérieur').last);
+          await tester.pumpAndSettle();
+          expect(tester.widget<KitPortrait>(find.byType(KitPortrait)).kit.label,
+              'Extérieur');
+        },
       );
 
       expect(exported, isNotNull);

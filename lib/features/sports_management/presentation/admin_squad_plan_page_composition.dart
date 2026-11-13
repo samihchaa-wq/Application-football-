@@ -687,17 +687,14 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
     try {
       selectedKit =
           (await ref.read(matchKitSnapshotProvider(matchId).future))?.kit;
-    } catch (_) {
-      // Si la migration historique manque, l'aperçu lit Infos.
-    }
-    if (selectedKit == null) {
-      try {
+      if (selectedKit == null) {
         final info = await ref.read(matchInfoProvider(matchId).future);
         selectedKit =
             (JerseyOption.fromId(info.jerseyNote) ?? JerseyOption.france).kit;
-      } catch (_) {
-        // Un aperçu sans fiche match reste neutre plutôt que faussement coloré.
       }
+    } catch (_) {
+      // Historique indisponible : rester neutre, ne pas réhabiller un ancien
+      // match avec les couleurs actuelles par simple repli réseau.
     }
     if (!mounted) return;
     await showCompositionPresentation(

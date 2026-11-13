@@ -17,6 +17,9 @@ void main() {
                 body: const Color(0xFFAA0000),
                 goalkeeperBody: const Color(0xFF001122),
                 goalkeeperTrim: const Color(0xFFFFFF00),
+                pattern: KitPattern.stripes,
+                goalkeeperPattern: KitPattern.hoops,
+                dressPlayers: true,
               )
             : kit,
     ];
@@ -41,6 +44,9 @@ void main() {
     expect(snapshot.kit.body, const Color(0xFFAA0000));
     expect(snapshot.kit.goalkeeperBody, const Color(0xFF001122));
     expect(snapshot.kit.goalkeeperTrim, const Color(0xFFFFFF00));
+    expect(snapshot.kit.pattern, KitPattern.stripes);
+    expect(snapshot.kit.goalkeeperPattern, KitPattern.hoops);
+    expect(snapshot.kit.dressPlayers, isTrue);
     expect(snapshot.team1Kit!.slot, JerseyOption.france);
     expect(snapshot.team2Kit!.slot, JerseyOption.orange);
     expect(snapshot.allKits.length, 3);

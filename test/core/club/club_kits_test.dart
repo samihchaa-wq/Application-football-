@@ -126,6 +126,9 @@ void main() {
       'trim': '#FFFFFF',
       'goalkeeper_body': '#168A52',
       'goalkeeper_trim': '#FFFFFF',
+      'pattern': 'plain',
+      'goalkeeper_pattern': 'plain',
+      'dress_players': false,
       'enabled': true,
     });
   });

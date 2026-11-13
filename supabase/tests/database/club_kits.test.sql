@@ -230,6 +230,49 @@ select is(
   'le club suspendu reste inchangé'
 );
 
+-- Nouveaux portraits : option explicite, modèle champ/gardien et anciens clients.
+select pg_temp.act_as('1f000000-0000-0000-0000-00000000000a');
+set local role authenticated;
+select is(
+  public.admin_update_club_kits(
+    jsonb_set(jsonb_set(jsonb_set(pg_temp.kits(), '{0,pattern}', '"stripes"'),
+      '{0,goalkeeper_pattern}', '"hoops"'), '{0,dress_players}', 'true')
+  ) -> 0 ->> 'pattern', 'stripes', 'le modèle des joueurs est enregistré'
+);
+select is(
+  (select kits -> 0 ->> 'goalkeeper_pattern' from public.clubs), 'hoops',
+  'le gardien possède son propre modèle'
+);
+select is(
+  public.admin_update_club_kits(pg_temp.kits()) -> 0 ->> 'dress_players', 'true',
+  'un ancien client conserve l option de portrait activée'
+);
+select is(
+  (select kits -> 0 ->> 'pattern' from public.clubs), 'stripes',
+  'un ancien client conserve aussi les modèles'
+);
+select throws_ok(
+  $$select public.admin_update_club_kits(jsonb_set(pg_temp.kits(), '{0,pattern}', '"unknown"'))$$,
+  '22023', null, 'un modèle inconnu est refusé'
+);
+select throws_ok(
+  $$select public.admin_update_club_kits(jsonb_set(pg_temp.kits(), '{0,goalkeeper_pattern}', 'null'))$$,
+  '22023', null, 'un modèle gardien null est refusé'
+);
+select throws_ok(
+  $$select public.admin_update_club_kits(jsonb_set(pg_temp.kits(), '{0,dress_players}', '"true"'))$$,
+  '22023', null, 'une fausse valeur booléenne est refusée'
+);
+select is(
+  public.admin_update_club_kits(jsonb_set(pg_temp.kits(), '{0,dress_players}', 'false'))
+    -> 0 ->> 'dress_players', 'false', 'la désactivation explicite est conservée'
+);
+reset role;
+select is(
+  (select kits from public.clubs where id = (select id from test_clubs where label = 'b')),
+  null, 'les nouveaux réglages ne modifient pas le club B'
+);
+
 -- Contrat de la fonction : propriétaire, chemin de recherche, droits.
 select is(
   (select pg_get_userbyid(proowner)::text from pg_proc
