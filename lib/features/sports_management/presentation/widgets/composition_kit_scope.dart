@@ -37,12 +37,14 @@ class MatchCompositionKitScope extends ConsumerWidget {
     required this.child,
   });
 
-  final String matchId;
+  final String? matchId;
   final Widget child;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final info = ref.watch(matchInfoProvider(matchId));
+    final id = matchId;
+    if (id == null) return child;
+    final info = ref.watch(matchInfoProvider(id));
     if (info.isLoading || info.hasError) return child;
     final selection =
         JerseyOption.fromId(info.valueOrNull?.jerseyNote) ?? JerseyOption.france;
