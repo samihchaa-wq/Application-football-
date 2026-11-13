@@ -681,12 +681,22 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
       }
     }
     if (!mounted) return;
+    ClubKit? selectedKit;
+    try {
+      final info = await ref.read(matchInfoProvider(matchId).future);
+      selectedKit =
+          (JerseyOption.fromId(info.jerseyNote) ?? JerseyOption.france).kit;
+    } catch (_) {
+      // Un aperçu sans fiche match reste neutre plutôt que faussement coloré.
+    }
+    if (!mounted) return;
     await showCompositionPresentation(
       context,
       preview: preview,
       landing: landing,
       returnToPage: returnToPage,
       data: buildCompositionPresentationData(
+        kit: selectedKit,
         formationCode: composition.formationCode,
         field: field,
         bench: bench,
