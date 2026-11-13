@@ -834,16 +834,15 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
     final showPhoto = hasPhoto && url != null;
     final visualSize = showPhoto ? size : fallbackSize;
     final kit = widget.kit ?? CompositionKitScope.maybeOf(context);
-    final photo = showPhoto ? _photo(url) : _initials(visualSize);
-    // Les petites pastilles d'effectif restent lisibles et sans maillot.
-    // Ne jamais habiller des initiales ou une photo non disponible.
-    final avatar = showPhoto && size >= 44 && kit?.dressPlayers == true
-        ? KitPortrait(
-            kit: kit!,
-            isGoalkeeper: widget.isGoalkeeper,
-            child: photo,
-          )
-        : photo;
+    // L'habillage est ajouté seulement quand une trame photo a été décodée.
+    // Le réseau peut afficher des initiales pendant le chargement : celles-ci
+    // restent sans maillot ; c'est vrai aussi en cas d'erreur de téléchargement.
+    final portraitKit = showPhoto && size >= 44 && kit?.dressPlayers == true
+        ? kit
+        : null;
+    final avatar = showPhoto
+        ? _photo(url, kit: portraitKit)
+        : _initials(visualSize);
 
     return SizedBox(
       width: size,
@@ -882,7 +881,7 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
     );
   }
 
-  Widget _photo(String url) {
+  Widget _photo(String url, {ClubKit? kit}) {
     final fallbackSize =
         widget.size * widget.fallbackScale.clamp(.5, 1).toDouble();
     return Image.network(
@@ -893,6 +892,14 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
       fit: BoxFit.cover,
       gaplessPlayback: true,
       filterQuality: FilterQuality.medium,
+      frameBuilder: (context, child, frame, wasSynchronouslyLoaded) =>
+          frame == null || kit == null
+              ? child
+              : KitPortrait(
+                  kit: kit,
+                  isGoalkeeper: widget.isGoalkeeper,
+                  child: child,
+                ),
       // Les vues HTML créent un overlay de composition par avatar sur le Web.
       // Sur iOS, la grille d'effectif pouvait ainsi dépasser les ressources de
       // WebKit et faire recharger toute la page. Supabase autorise le chargement
