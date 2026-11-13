@@ -685,11 +685,18 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
     if (!mounted) return;
     ClubKit? selectedKit;
     try {
-      final info = await ref.read(matchInfoProvider(matchId).future);
-      selectedKit =
-          (JerseyOption.fromId(info.jerseyNote) ?? JerseyOption.france).kit;
+      selectedKit = (await ref.read(matchKitSnapshotProvider(matchId).future))?.kit;
     } catch (_) {
-      // Un aperçu sans fiche match reste neutre plutôt que faussement coloré.
+      // Si la migration historique manque, l'aperçu lit Infos.
+    }
+    if (selectedKit == null) {
+      try {
+        final info = await ref.read(matchInfoProvider(matchId).future);
+        selectedKit =
+            (JerseyOption.fromId(info.jerseyNote) ?? JerseyOption.france).kit;
+      } catch (_) {
+        // Un aperçu sans fiche match reste neutre plutôt que faussement coloré.
+      }
     }
     if (!mounted) return;
     await showCompositionPresentation(
