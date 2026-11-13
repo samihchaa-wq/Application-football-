@@ -50,6 +50,12 @@ jobs:
           }
           python3 tool/check_commercial_deploy.py
 
+      # Audit read-only : détecte les migrations absentes, inconnues
+      # ou rétroactives AVANT tout appel qui écrit dans Supabase.
+      - name: Verify production migration registry (read-only)
+        shell: bash
+        run: python3 tool/check_commercial_migration_state.py
+
       - name: Apply pending migrations
         if: inputs.migrations
         run: python3 tool/commercial_supabase_setup.py migrations
