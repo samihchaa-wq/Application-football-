@@ -62,7 +62,7 @@ void main() {
     picture.dispose();
   });
 
-  testWidgets('joueur et gardien portent leur modèle sur toute la vignette',
+  testWidgets('aucun maillot n’est superposé aux avatars joueur et gardien',
       (tester) async {
     final kit = ClubKits.of(JerseyOption.orange).copyWith(
       dressPlayers: true,
@@ -79,22 +79,12 @@ void main() {
             photoUrl: null, name: 'Camille', size: 58, isGoalkeeper: true),
       ]),
     ))));
-    final painters = tester
-        .widgetList<CustomPaint>(find.descendant(
-          of: find.byType(KitPortrait),
-          matching: find.byType(CustomPaint),
-        ))
-        .map((widget) => widget.painter)
-        .whereType<PortraitJerseyPainter>()
-        .toList();
-    expect(painters.map((painter) => painter.body),
-        [kit.body, kit.goalkeeperBody]);
-    expect(painters.map((painter) => painter.pattern),
-        [KitPattern.sash, KitPattern.hoops]);
+    expect(find.byType(KitPortrait), findsNothing);
     expect(find.byIcon(Icons.checkroom), findsNothing);
+    expect(find.byType(PlayerAvatar), findsNWidgets(2));
   });
 
-  testWidgets('option désactivée : le portrait garde son affichage existant',
+  testWidgets('sans habillage, aucune icône maillot n’est ajoutée',
       (tester) async {
     await tester.pumpWidget(MaterialApp(
         home: Scaffold(
@@ -103,6 +93,6 @@ void main() {
       child: const PlayerAvatar(photoUrl: null, name: 'Alex', size: 58),
     ))));
     expect(find.byType(KitPortrait), findsNothing);
-    expect(find.byIcon(Icons.checkroom), findsOneWidget);
+    expect(find.byIcon(Icons.checkroom), findsNothing);
   });
 }
