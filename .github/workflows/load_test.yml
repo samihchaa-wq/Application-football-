@@ -39,7 +39,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Verify load runner propagates pgbench errors
-        run: python3 -m unittest discover -s supabase/tests/load -p 'test_run_script.py' -v
+        run: python3 -m unittest discover -s supabase/tests/load -p 'test_*.py' -v
 
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf # v2
