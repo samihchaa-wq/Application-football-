@@ -14,7 +14,7 @@ RUNNER = Path(__file__).with_name("run.sh")
 
 class LoadRunnerExitStatusTests(unittest.TestCase):
     def _run_with_fake_database(
-        self, *, fail_phase: str = "", progress_only: bool = False, db_url: str = "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+        self, *, fail_phase: str = "", progress_only: bool = False, zero_exit_failure: bool = False, db_url: str = "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
     ) -> subprocess.CompletedProcess[str]:
         with tempfile.TemporaryDirectory() as folder:
             fake_bin = Path(folder)
@@ -30,6 +30,9 @@ class LoadRunnerExitStatusTests(unittest.TestCase):
                 "print('progress: irrelevant line')\n"
                 "if os.environ.get('PROGRESS_ONLY') != '1':\n"
                 "    print('result: ' + phase)\n"
+                "    print('number of transactions actually processed: 250')\n"
+                "    print('number of failed transactions: ' + ('2' if os.environ.get('ZERO_EXIT_FAILURE') == '1' else '0'))\n"
+                "    print('tps = 12.5 (without initial connection time)')\n"
                 "sys.exit(17 if os.environ.get('FAIL_PHASE') == phase else 0)\n",
                 encoding="utf-8",
             )
@@ -39,6 +42,7 @@ class LoadRunnerExitStatusTests(unittest.TestCase):
                 PATH=f"{fake_bin}{os.pathsep}{environment.get('PATH', '')}",
                 FAIL_PHASE=fail_phase,
                 PROGRESS_ONLY="1" if progress_only else "0",
+                ZERO_EXIT_FAILURE="1" if zero_exit_failure else "0",
                 DB_URL=db_url,
             )
             return subprocess.run(
@@ -77,10 +81,16 @@ class LoadRunnerExitStatusTests(unittest.TestCase):
         self.assertIn("base PostgreSQL sur localhost", run.stderr)
         self.assertNotIn("result: read", run.stdout)
 
-    def test_empty_filtered_output_is_not_failure(self) -> None:
+    def test_empty_filtered_output_is_failure(self) -> None:
         run = self._run_with_fake_database(progress_only=True)
-        self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
+        self.assertEqual(run.returncode, 1, run.stdout + run.stderr)
         self.assertNotIn("progress:", run.stdout)
+
+    def test_zero_exit_with_failed_transactions_is_failure(self) -> None:
+        run = self._run_with_fake_database(zero_exit_failure=True)
+        self.assertEqual(run.returncode, 1, run.stdout + run.stderr)
+        self.assertIn("Au moins une transaction a échoué", run.stderr)
+        self.assertNotIn("result: write", run.stdout)
 
 
 if __name__ == "__main__":
