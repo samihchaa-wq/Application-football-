@@ -685,7 +685,8 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
     if (!mounted) return;
     ClubKit? selectedKit;
     try {
-      selectedKit = (await ref.read(matchKitSnapshotProvider(matchId).future))?.kit;
+      selectedKit =
+          (await ref.read(matchKitSnapshotProvider(matchId).future))?.kit;
     } catch (_) {
       // Si la migration historique manque, l'aperçu lit Infos.
     }

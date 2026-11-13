@@ -649,9 +649,8 @@ class _InternalTeamCompositionViewState
         final team2 = entries.where((entry) => entry.teamNo == 2).toList();
         // En lecture historique, les deux équipes doivent garder les
         // couleurs fixées le jour du match, gardiens compris.
-        final kitHistory = ref
-            .watch(matchKitSnapshotProvider(widget.matchId))
-            .valueOrNull;
+        final kitHistory =
+            ref.watch(matchKitSnapshotProvider(widget.matchId)).valueOrNull;
         final frozenTeam1Kit = widget.editable ? null : kitHistory?.team1Kit;
         final frozenTeam2Kit = widget.editable ? null : kitHistory?.team2Kit;
         final benchCounts =

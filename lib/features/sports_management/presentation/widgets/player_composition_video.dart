@@ -359,7 +359,8 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
     }
     ClubKit? selectedKit;
     try {
-      selectedKit = (await ref.read(matchKitSnapshotProvider(matchId).future))?.kit;
+      selectedKit =
+          (await ref.read(matchKitSnapshotProvider(matchId).future))?.kit;
     } catch (_) {
       // Migration historique pas encore appliquée : repli sur Infos.
     }
