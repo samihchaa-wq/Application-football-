@@ -63,8 +63,12 @@ abstract final class AppTheme {
     final nextBright = primary == null
         ? defaultPrimaryBright
         : _withLightness(primary, .66, .76);
-    final nextAccent =
-        secondary == null ? defaultAccent : _withLightness(secondary, .52, 1);
+    final nextAccent = secondary == null
+        ? defaultAccent
+        : _readableOn(
+            _withLightness(secondary, .52, 1),
+            selectedSurface,
+          );
     if (nextPrimary == _primary &&
         nextBright == _primaryBright &&
         nextAccent == _accent) {
@@ -77,6 +81,35 @@ abstract final class AppTheme {
   }
 
   static void resetClubColors() => applyClubColors();
+
+  /// Fond d'un onglet ou d'un choix sélectionné. Le texte sélectionné y est
+  /// écrit avec [accent] : il doit rester lisible quelle que soit la couleur
+  /// secondaire du club.
+  static const Color selectedSurface = Color(0xFF17457A);
+
+  /// Contraste minimal (WCAG AA, texte normal) visé pour [accent].
+  static const double minAccentContrast = 4.5;
+
+  /// Éclaircit [color] jusqu'à atteindre [minAccentContrast] sur [surface].
+  /// Exemple : un club bleu (#1A4AC0) donnait un texte bleu sur fond bleu,
+  /// presque illisible dans les onglets sélectionnés.
+  static Color _readableOn(Color color, Color surface) {
+    var hsl = HSLColor.fromColor(color);
+    while (contrastRatio(hsl.toColor(), surface) < minAccentContrast &&
+        hsl.lightness < .97) {
+      hsl = hsl.withLightness((hsl.lightness + .02).clamp(0, .97));
+    }
+    return hsl.toColor();
+  }
+
+  /// Rapport de contraste WCAG entre deux couleurs (de 1 à 21).
+  static double contrastRatio(Color a, Color b) {
+    final la = a.computeLuminance();
+    final lb = b.computeLuminance();
+    final hi = la > lb ? la : lb;
+    final lo = la > lb ? lb : la;
+    return (hi + .05) / (lo + .05);
+  }
 
   static Color _withLightness(Color color, double min, double max) {
     final hsl = HSLColor.fromColor(color.withValues(alpha: 1));
@@ -375,7 +408,7 @@ abstract final class AppTheme {
           ),
           backgroundColor: WidgetStateProperty.resolveWith((states) {
             return states.contains(WidgetState.selected)
-                ? const Color(0xFF17457A)
+                ? selectedSurface
                 : surfaceHigh;
           }),
           foregroundColor: WidgetStateProperty.resolveWith((states) {
