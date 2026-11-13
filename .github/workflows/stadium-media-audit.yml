@@ -30,5 +30,8 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: petit-filet-stadium-review
-          path: build/stadium-media-audit/
+          path: |
+            build/stadium-media-audit/
+            assets/composition/stade.mp4
+            assets/composition/stade-720.mp4
           retention-days: 14
