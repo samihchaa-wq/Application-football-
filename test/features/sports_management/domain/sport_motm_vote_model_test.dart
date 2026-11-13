@@ -1,7 +1,24 @@
+import 'package:as_grinta/core/club/club_rules.dart';
 import 'package:as_grinta/features/sports_management/domain/sport_motm_vote.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  tearDown(ClubRules.reset);
+
+  test('voter pour soi suit le réglage du club', () {
+    const self = {
+      'participant_id': 'participant-1',
+      'display_name': 'Moi',
+      'is_guest': false,
+      'is_goalkeeper': false,
+      'is_self': true,
+      'can_choose': false,
+    };
+    expect(SportMotmCandidate.fromJson(self).canChoose, isFalse);
+    ClubRules.set({ClubRules.motmSelfVoteKey: 1});
+    expect(SportMotmCandidate.fromJson(self).canChoose, isTrue);
+  });
+
   test('masque les résultats pendant un scrutin ouvert', () {
     final vote = SportMotmVote.fromJson({
       'match_id': 'match-1',

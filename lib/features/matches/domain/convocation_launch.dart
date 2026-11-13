@@ -1,3 +1,5 @@
+import 'package:as_grinta/core/club/club_rules.dart';
+
 enum ConvocationLaunchMode { automatic, custom, now }
 
 extension ConvocationLaunchModeApi on ConvocationLaunchMode {
@@ -8,7 +10,7 @@ extension ConvocationLaunchModeApi on ConvocationLaunchMode {
       };
 }
 
-/// Mirrors the historical default used by Supabase: J-6 at 12:00.
+/// Ouverture automatique réglée par le club (J-6 à 12 h par défaut).
 ///
 /// This value is only used for display. Supabase remains authoritative and
 /// resolves the final timestamp in Europe/Paris when the match is persisted.
@@ -16,8 +18,8 @@ DateTime defaultConvocationLaunchAt(DateTime kickoffAt) => DateTime(
       kickoffAt.year,
       kickoffAt.month,
       kickoffAt.day,
-      12,
-    ).subtract(const Duration(days: 6));
+      ClubRules.featuresOpenHour,
+    ).subtract(Duration(days: ClubRules.featuresOpenDays));
 
 DateTime suggestedCustomConvocationLaunchAt({
   required DateTime kickoffAt,

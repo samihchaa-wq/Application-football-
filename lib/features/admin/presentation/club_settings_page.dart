@@ -481,15 +481,77 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     return 'other';
   }
 
-  String _ruleCategory(ClubRule rule) {
-    if (rule.key == ClubRules.waitlistModeKey ||
-        rule.key == ClubRules.featuresOpenDaysKey ||
-        rule.key == ClubRules.featuresOpenHourKey) {
-      return 'squad';
+  /// Section des Réglages où chaque règle est rangée : sous la
+  /// fonctionnalité qu'elle règle.
+  static const Map<String, String> _ruleSections = {
+    ClubRules.featuresOpenDaysKey: 'squad',
+    ClubRules.featuresOpenHourKey: 'squad',
+    'notify_availability_open': 'squad',
+    'notify_availability_reminders': 'squad',
+    ClubRules.waitlistModeKey: 'squad',
+    'notify_convocation': 'squad',
+    'notify_composition': 'squad',
+    ClubRules.correctionWindowHoursKey: 'matches',
+    'match_duration_minutes': 'matches',
+    ClubRules.livePilotModeKey: 'matches',
+    'notify_live_kickoff': 'matches',
+    'notify_live_goals': 'matches',
+    'notify_match_changes': 'matches',
+    'notify_prediction_reminder': 'predictions',
+    'motm_window_hours': 'rewards',
+    ClubRules.motmSelfVoteKey: 'rewards',
+    'notify_motm_open': 'rewards',
+    'notify_motm_result': 'rewards',
+    'notify_badges': 'rewards',
+    ClubRules.wrappedMusicKey: 'rewards',
+    'notify_admin_signups': 'members',
+  };
+
+  /// Fonctionnalité dont dépend une règle : quand elle est désactivée, la
+  /// règle reste visible mais grisée.
+  static ClubModule? _ruleModule(String key) {
+    if (key.startsWith('prediction_') ||
+        key.startsWith('odds_') ||
+        key == 'notify_prediction_reminder') {
+      return ClubModule.predictions;
     }
-    if (rule.key == ClubRules.correctionWindowHoursKey) return 'matches';
-    if (rule.key.startsWith('prediction_')) return 'predictions';
+    if (key == ClubRules.livePilotModeKey ||
+        key == 'notify_live_kickoff' ||
+        key == 'notify_live_goals') {
+      return ClubModule.liveMode;
+    }
+    if (key.startsWith('motm_') || key.startsWith('notify_motm_')) {
+      return ClubModule.manOfTheMatch;
+    }
+    if (key == 'notify_badges') return ClubModule.badges;
+    if (key == ClubRules.wrappedMusicKey) return ClubModule.seasonWrapped;
+    return null;
+  }
+
+  String _ruleCategory(ClubRule rule) {
+    final section = _ruleSections[rule.key];
+    if (section != null) return section;
+    if (rule.key.startsWith('prediction_') || rule.key.startsWith('odds_')) {
+      return 'predictions';
+    }
     return 'other';
+  }
+
+  bool _ruleLocked(ClubRule rule) {
+    final module = _ruleModule(rule.key);
+    return _pendingRules.contains(rule.key) ||
+        (module != null && !_modules.isEnabled(module));
+  }
+
+  String _ruleInfo(ClubRule rule) {
+    final module = _ruleModule(rule.key);
+    final lines = [
+      rule.description,
+      'Valeur par défaut : ${_ruleValueLabel(rule, rule.defaultValue)}',
+      if (module != null && !_modules.isEnabled(module))
+        'Sans effet tant que « ${module.label} » est désactivé.',
+    ];
+    return lines.join('\n\n');
   }
 
   bool _isRelevantRule(ClubRule rule) =>
@@ -518,46 +580,105 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           if (_isRelevantRule(rule) && _ruleCategory(rule) == category)
             if (rule.key == ClubRules.waitlistModeKey)
               _waitlistModeTile(rule)
+            else if (rule.unit == ClubRules.boolUnit)
+              _boolRuleTile(rule)
+            else if (rule.unit == ClubRules.modeUnit)
+              _modeRuleTile(rule)
             else
-              ListTile(
-                key: ValueKey('club-rule-${rule.key}'),
-                contentPadding: EdgeInsets.zero,
-                title: _labelWithInfo(
-                  'rule-${rule.key}',
-                  rule.label,
-                  '${rule.description}\n\nValeur par défaut : ${_ruleValueLabel(rule, rule.defaultValue)}',
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      key: ValueKey('club-rule-${rule.key}-minus'),
-                      tooltip: 'Diminuer',
-                      icon: const Icon(Icons.remove_circle_outline),
-                      onPressed: _pendingRules.contains(rule.key) ||
-                              rule.value <= rule.min
-                          ? null
-                          : () => _setRule(rule, rule.value - 1),
-                    ),
-                    Text(_ruleValueLabel(rule, rule.value)),
-                    IconButton(
-                      key: ValueKey('club-rule-${rule.key}-plus'),
-                      tooltip: 'Augmenter',
-                      icon: const Icon(Icons.add_circle_outline),
-                      onPressed: _pendingRules.contains(rule.key) ||
-                              rule.value >= rule.max
-                          ? null
-                          : () => _setRule(rule, rule.value + 1),
-                    ),
-                  ],
-                ),
-              ),
+              _numberRuleTile(rule),
       ];
 
-  String _ruleValueLabel(ClubRule rule, int value) =>
-      rule.unit == ClubRules.multiplierUnit
-          ? ClubRules.formatMultiplier(value)
-          : '$value ${rule.unit}';
+  Widget _boolRuleTile(ClubRule rule) => SwitchListTile.adaptive(
+        key: ValueKey('club-rule-${rule.key}'),
+        contentPadding: EdgeInsets.zero,
+        title: _labelWithInfo('rule-${rule.key}', rule.label, _ruleInfo(rule)),
+        value: rule.value == 1,
+        onChanged:
+            _ruleLocked(rule) ? null : (value) => _setRule(rule, value ? 1 : 0),
+      );
+
+  Widget _modeRuleTile(ClubRule rule) {
+    final labels = ClubRules.modeLabels[rule.key] ??
+        [for (var i = rule.min; i <= rule.max; i++) '$i'];
+    final locked = _ruleLocked(rule);
+    return Padding(
+      key: ValueKey('club-rule-${rule.key}'),
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _labelWithInfo('rule-${rule.key}', rule.label, _ruleInfo(rule)),
+          DropdownButton<int>(
+            key: ValueKey('club-rule-${rule.key}-select'),
+            value: rule.value.clamp(0, labels.length - 1),
+            isExpanded: true,
+            items: [
+              for (var i = 0; i < labels.length; i++)
+                DropdownMenuItem(value: i, child: Text(labels[i])),
+            ],
+            onChanged: locked
+                ? null
+                : (selected) {
+                    if (selected == null || selected == rule.value) return;
+                    _setRule(rule, selected);
+                  },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _numberRuleTile(ClubRule rule) {
+    final step = ClubRules.stepFor(rule.key);
+    final locked = _ruleLocked(rule);
+    return ListTile(
+      key: ValueKey('club-rule-${rule.key}'),
+      contentPadding: EdgeInsets.zero,
+      title: _labelWithInfo('rule-${rule.key}', rule.label, _ruleInfo(rule)),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            key: ValueKey('club-rule-${rule.key}-minus'),
+            tooltip: 'Diminuer',
+            icon: const Icon(Icons.remove_circle_outline),
+            onPressed: locked || rule.value <= rule.min
+                ? null
+                : () => _setRule(
+                      rule,
+                      (rule.value - step).clamp(rule.min, rule.max),
+                    ),
+          ),
+          Text(_ruleValueLabel(rule, rule.value)),
+          IconButton(
+            key: ValueKey('club-rule-${rule.key}-plus'),
+            tooltip: 'Augmenter',
+            icon: const Icon(Icons.add_circle_outline),
+            onPressed: locked || rule.value >= rule.max
+                ? null
+                : () => _setRule(
+                      rule,
+                      (rule.value + step).clamp(rule.min, rule.max),
+                    ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _ruleValueLabel(ClubRule rule, int value) {
+    if (rule.unit == ClubRules.multiplierUnit) {
+      return ClubRules.formatMultiplier(value);
+    }
+    if (rule.unit == ClubRules.boolUnit) return value == 1 ? 'oui' : 'non';
+    if (rule.unit == ClubRules.modeUnit) {
+      final labels = ClubRules.modeLabels[rule.key];
+      if (labels != null && value >= 0 && value < labels.length) {
+        return labels[value];
+      }
+    }
+    return '$value ${rule.unit}';
+  }
 
   Widget _waitlistModeTile(ClubRule rule) {
     final current = WaitlistMode.fromValue(rule.value);
@@ -865,6 +986,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
                 ),
               ],
             ),
+            ..._rulesFor('members'),
           ],
         ),
         _section('subscription', 'Abonnement', Icons.credit_card_outlined, [

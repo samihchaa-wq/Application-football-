@@ -17,9 +17,34 @@ abstract final class ClubRules {
   static const String predictionPointsOneScoreKey =
       'prediction_points_one_score';
   static const String predictionPointsWinnerKey = 'prediction_points_winner';
+  static const String oddsModeKey = 'odds_mode';
+  static const String livePilotModeKey = 'live_pilot_mode';
+  static const String motmSelfVoteKey = 'motm_self_vote';
+  static const String wrappedMusicKey = 'wrapped_music';
 
   /// Unité des règles enregistrées en dixièmes de multiplicateur (20 = × 2).
   static const String multiplierUnit = '×';
+
+  /// Unité des règles oui/non (1 = oui, 0 = non) : un interrupteur.
+  static const String boolUnit = 'bool';
+
+  /// Unité des règles à choix : une liste déroulante.
+  static const String modeUnit = 'mode';
+
+  /// Libellés des choix des règles à choix (index = valeur enregistrée).
+  /// La liste d'attente a son propre menu, plus détaillé ([WaitlistMode]).
+  static const Map<String, List<String>> modeLabels = {
+    oddsModeKey: ['Calculées automatiquement', 'Sans cotes (barème seul)'],
+    livePilotModeKey: ['Coach seulement', 'Coach et administrateurs'],
+  };
+
+  /// Pas des boutons +/− : 1 par défaut, plus grand pour les longues durées.
+  static int stepFor(String key) => switch (key) {
+        'odds_form_memory_days' => 30,
+        'odds_h2h_memory_days' => 90,
+        'match_duration_minutes' => 5,
+        _ => 1,
+      };
 
   static const Map<String, int> defaults = {
     featuresOpenDaysKey: 6,
@@ -31,6 +56,10 @@ abstract final class ClubRules {
     predictionPointsGoalDifferenceKey: 15,
     predictionPointsOneScoreKey: 15,
     predictionPointsWinnerKey: 10,
+    oddsModeKey: 0,
+    livePilotModeKey: 0,
+    motmSelfVoteKey: 0,
+    wrappedMusicKey: 1,
   };
 
   static bool _liveEnabled = true;
@@ -74,6 +103,19 @@ abstract final class ClubRules {
       _get(predictionPointsOneScoreKey) / 10;
   static double get predictionWinnerMultiplier =>
       _get(predictionPointsWinnerKey) / 10;
+
+  /// Vrai quand le club joue sans cotes : chaque issue vaut 1, seul le
+  /// barème compte. Les cotes ne sont alors pas affichées.
+  static bool get oddsDisabled => _get(oddsModeKey) == 1;
+
+  /// Vrai quand les administrateurs peuvent aussi piloter le direct.
+  static bool get adminsCanPilotLive => _get(livePilotModeKey) == 1;
+
+  /// Vrai quand un joueur peut voter pour lui-même à l'Étoile du match.
+  static bool get motmSelfVoteAllowed => _get(motmSelfVoteKey) == 1;
+
+  /// Faux quand le club a coupé la musique du bilan de saison.
+  static bool get wrappedMusicEnabled => _get(wrappedMusicKey) == 1;
 
   /// « × 1,5 » pour une règle enregistrée en dixièmes (15).
   static String formatMultiplier(int tenths) {

@@ -1,3 +1,5 @@
+import 'package:as_grinta/core/club/club_rules.dart';
+
 enum SportMotmVoteState {
   unavailable,
   draft,
@@ -38,7 +40,9 @@ class SportMotmCandidate {
       isGuest: json['is_guest'] == true,
       isGoalkeeper: json['is_goalkeeper'] == true,
       isSelf: json['is_self'] == true,
-      canChoose: json['can_choose'] == true,
+      // Le serveur refuse le vote pour soi, sauf si le club l'autorise.
+      canChoose: json['can_choose'] == true ||
+          (json['is_self'] == true && ClubRules.motmSelfVoteAllowed),
       goals: (json['goals'] as num?)?.toInt() ?? 0,
       assists: (json['assists'] as num?)?.toInt() ?? 0,
       cleanSheet:
