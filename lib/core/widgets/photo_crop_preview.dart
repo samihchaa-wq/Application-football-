@@ -206,8 +206,7 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
                           child: InteractiveViewer(
                             transformationController: _transformationController,
                             constrained: false,
-                            boundaryMargin:
-                                const EdgeInsets.all(_cropSize * 4),
+                            boundaryMargin: const EdgeInsets.all(_cropSize * 4),
                             minScale: 0.05,
                             maxScale: 8,
                             panEnabled: true,
