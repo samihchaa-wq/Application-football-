@@ -72,6 +72,32 @@ select is(
   (select kits -> 0 ->> 'body' from public.clubs), '#AA0000',
   'les couleurs sont enregistrées en majuscules'
 );
+select is(
+  (select kits -> 0 ->> 'goalkeeper_body' from public.clubs), '#168A52',
+  'les anciens clients gardent une couleur de gardien par défaut'
+);
+select is(
+  public.admin_update_club_kits(
+    jsonb_set(
+      jsonb_set(pg_temp.kits(), '{0,goalkeeper_body}', '"#111111"'),
+      '{0,goalkeeper_trim}', '"#fbe80c"'
+    )
+  ) -> 0 ->> 'goalkeeper_trim',
+  '#FBE80C',
+  'l’administrateur peut choisir une couleur distincte de gardien'
+);
+select is(
+  (select kits -> 0 ->> 'goalkeeper_body' from public.clubs),
+  '#111111',
+  'la couleur gardien du club A est persistée'
+);
+select throws_ok(
+  $select public.admin_update_club_kits(
+      jsonb_set(pg_temp.kits(), '{0,goalkeeper_body}', '"noir"')
+  )$,
+  '22023', null,
+  'le serveur refuse une couleur gardien non hexadécimale'
+);
 select throws_ok(
   $$select public.admin_update_club_kits(jsonb_build_array(pg_temp.kits() -> 0, pg_temp.kits() -> 1))$$,
   '22023', null,
