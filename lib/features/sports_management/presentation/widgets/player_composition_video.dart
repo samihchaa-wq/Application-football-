@@ -1,8 +1,11 @@
 import 'package:as_grinta/core/club/club_identity.dart';
+import 'package:as_grinta/core/club/club_kits.dart';
 import 'dart:async';
 
 import 'package:as_grinta/core/providers/supabase_provider.dart';
 import 'package:as_grinta/core/widgets/match_detail_header_card.dart';
+import 'package:as_grinta/features/matches/data/match_info_repository.dart';
+import 'package:as_grinta/features/matches/domain/jersey_option.dart';
 import 'package:as_grinta/features/matches/presentation/widgets/upcoming_match_fixture_header.dart';
 import 'package:as_grinta/features/sports_management/data/match_availability_board_repository.dart';
 import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
@@ -51,6 +54,7 @@ CompositionPresentationData buildCompositionPresentationData({
   String? fallbackOpponent,
   DateTime? fallbackKickoffAt,
   CompositionPresentationCoach? coach,
+  ClubKit? kit,
 }) {
   final opponent = fixture?.opponentName ?? fallbackOpponent ?? 'Adversaire';
   final grintaIsHome = fixture?.grintaIsHome ?? true;
@@ -68,6 +72,7 @@ CompositionPresentationData buildCompositionPresentationData({
         : calendarMatchTypeLabel(fixture.matchType, fixture.championshipRound),
     address: fixture?.address,
     formationCode: formationCode,
+    kit: kit,
   );
 }
 
@@ -353,7 +358,16 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
     } catch (_) {
       // Les portraits France restent toujours disponibles en repli.
     }
+    ClubKit? selectedKit;
+    try {
+      final info = await ref.read(matchInfoProvider(matchId).future);
+      selectedKit =
+          (JerseyOption.fromId(info.jerseyNote) ?? JerseyOption.france).kit;
+    } catch (_) {
+      // Ne pas inventer une couleur en cas de fiche match indisponible.
+    }
     return buildCompositionPresentationData(
+      kit: selectedKit,
       formationCode: composition.formationCode,
       field: withMatchKitPhotos(
           composition.entriesFor(MatchCompositionZone.field), kitPhotos),
