@@ -32,6 +32,23 @@ grant select on private.waitlist_auto_activation,
   private.waitlist_auto_processed_matches to postgres;
 alter table private.waitlist_auto_activation enable row level security;
 alter table private.waitlist_auto_processed_matches enable row level security;
+
+-- Conformite au contrat de securite multiclub (club_isolation.test.sql).
+-- L'activation est une configuration globale technique ; les roles clients
+-- n'y ont aucun droit SQL et la restriction deny leur ferme l'acces.
+create policy club_isolation on private.waitlist_auto_activation
+  as restrictive for all to public using (true) with check (true);
+create policy deny_client_access on private.waitlist_auto_activation
+  as restrictive for all to anon, authenticated
+  using (false) with check (false);
+
+create policy club_isolation on private.waitlist_auto_processed_matches
+  as restrictive for all to public
+  using (club_id = (select private.current_club_id()))
+  with check (club_id = (select private.current_club_id()));
+create policy club_scope_access on private.waitlist_auto_processed_matches
+  for all to club_scope using (true) with check (true);
+
 -- Comme toutes les tables avec club_id, le registre a une politique de
 -- cloisonnement restrictive, y compris si les droits evoluent plus tard.
 create policy club_isolation on private.waitlist_auto_processed_matches
