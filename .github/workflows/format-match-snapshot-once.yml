@@ -1,0 +1,43 @@
+name: Format match snapshots one-off
+
+on:
+  push:
+    branches: [feature/match-kit-history-snapshots-20261113]
+    paths: ['.github/workflows/format-match-snapshot-once.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.repository == 'samihchaa-wq/Application-football-' && github.ref == 'refs/heads/feature/match-kit-history-snapshots-20261113'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: true
+          fetch-depth: 1
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
+        with:
+          channel: stable
+          flutter-version: 3.47.9
+      - name: Resolve locked language version
+        run: flutter pub get --enforce-lockfile
+      - name: Apply exact Flutter CI formatter
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(git ls-files '*.dart')
+          dart format --output=write "${files[@]}"
+      - name: Commit formatted Dart on feature branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -- '*.dart'
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'style(history): canonical Dart formatting'
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
