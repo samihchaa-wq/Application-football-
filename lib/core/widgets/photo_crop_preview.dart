@@ -268,9 +268,20 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
               ),
               child: Padding(
                 padding: const EdgeInsets.all(3),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(13),
-                  child: _photoFrame(interactive: true, guide: true),
+                // Le repère et l'export utilisent toujours un carré logique
+                // de 300 px ; FittedBox l'adapte à chaque largeur d'écran.
+                // Sans cette mise à l'échelle commune, le visage glisserait
+                // entre le cadrage affiché et le fichier exporté.
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: SizedBox(
+                    width: _cropSize,
+                    height: _cropSize,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(13),
+                      child: _photoFrame(interactive: true, guide: true),
+                    ),
+                  ),
                 ),
               ),
             ),
