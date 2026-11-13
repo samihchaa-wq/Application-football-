@@ -212,9 +212,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          clubModulesProvider.overrideWith(
-            (ref) async => const ClubModules.allEnabled(),
-          ),
+          clubModulesProvider.overrideWith((ref) => repository.fetchModules()),
           clubRepositoryProvider.overrideWithValue(repository),
           hasUnseenBadgeProvider.overrideWith((ref) => false),
         ],
