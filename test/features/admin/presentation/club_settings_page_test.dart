@@ -58,8 +58,10 @@ void main() {
   }
 
   Future<void> openSection(WidgetTester tester, String section) async {
+    // Deux éléments internes peuvent partager une PageStorageKey :
+    // scrollUntilVisible exige un seul widget à cibler.
     final tile =
-        find.byKey(PageStorageKey<String>('club-settings-section-$section'));
+        find.byKey(PageStorageKey<String>('club-settings-section-$section')).first;
     await tester.scrollUntilVisible(tile, 260);
     await tester.tap(tile);
     await tester.pumpAndSettle();
