@@ -167,9 +167,10 @@ class _AdminWaitlistPageState extends ConsumerState<AdminWaitlistPage> {
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(
                 'Ton club est en mode « ${ClubRules.waitlistMode.label} » : '
-                'ce classement ne sert pas pour l’instant. Il reprendra si '
-                'tu reviens au mode « Par présence l’an dernier » dans les '
-                'réglages du club.',
+                'les +1 de cette saison restent acquis. '
+                '${ClubRules.waitlistMode == WaitlistMode.arrivalOrder ? '
+                '« À égalité de +1, l’heure de réponse départage les joueurs. » : '
+                '« L’admin choisit les convocations ; ce classement lui sert de repère. »'}',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ),
