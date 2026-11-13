@@ -3,6 +3,8 @@ import "./weather_refresh_test.ts";
 import {
   classifyPushFailure,
   executePushDelivery,
+  executeValidatedPushDelivery,
+  invalidPushSubscriptionReason,
   MAX_PUSH_DELIVERY_ATTEMPTS,
   PUSH_DELIVERY_TTL_SECONDS,
   pushRetryDelayMs,
@@ -98,3 +100,68 @@ Deno.test(
     assertEquals(PUSH_DELIVERY_TTL_SECONDS, 86_400);
   },
 );
+
+
+function base64Url(bytes: number[]): string {
+  return btoa(String.fromCharCode(...bytes))
+    .replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+}
+
+function validWebPushKeys() {
+  return {
+    p256dh: base64Url([4, ...Array(64).fill(42)]),
+    auth: base64Url(Array(16).fill(7)),
+  };
+}
+
+Deno.test("accepte les clés Web Push ayant le format navigateur P-256", () => {
+  assertEquals(invalidPushSubscriptionReason(validWebPushKeys()), null);
+});
+
+Deno.test("rejette les p256dh incorrects et les secrets auth malformés", () => {
+  const valid = validWebPushKeys();
+  for (const invalid of [
+    { ...valid, p256dh: "" },
+    { ...valid, p256dh: "not-a-valid-key" },
+    { ...valid, p256dh: base64Url([4, ...Array(63).fill(1)]) },
+    { ...valid, p256dh: base64Url([3, ...Array(64).fill(1)]) },
+    { ...valid, auth: "!!!" },
+    { ...valid, auth: base64Url(Array(15).fill(7)) },
+  ]) {
+    if (invalidPushSubscriptionReason(invalid) === null) {
+      throw new Error("Expected invalid Web Push keys to be rejected");
+    }
+  }
+});
+
+Deno.test("ne contacte pas le service push pour un abonnement impossible", async () => {
+  let called = 0;
+  const outcome = await executeValidatedPushDelivery(
+    { ...validWebPushKeys(), p256dh: "bad" },
+    async () => {
+      called++;
+      return { statusCode: 201 };
+    },
+  );
+  assertEquals(outcome.success, false);
+  assertEquals(outcome.attempts, 0);
+  assertEquals(called, 0);
+  if (!outcome.success) {
+    assertEquals(outcome.failureClass, "expired");
+    assertEquals(outcome.statusCode, null);
+  }
+});
+
+Deno.test("préserve la livraison d'une souscription bien formée", async () => {
+  let called = 0;
+  const outcome = await executeValidatedPushDelivery(
+    validWebPushKeys(),
+    async () => {
+      called++;
+      return { statusCode: 201 };
+    },
+  );
+  assertEquals(outcome.success, true);
+  assertEquals(outcome.attempts, 1);
+  assertEquals(called, 1);
+});
