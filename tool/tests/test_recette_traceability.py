@@ -42,7 +42,7 @@ class RecetteTraceabilityTest(unittest.TestCase):
         grid = GRID.read_text(encoding="utf-8")
         self.assertIn("RPC SQL publiques", grid)
         self.assertIn("Non vérifié", grid)
-        self.assertIn("ne vaut ni", grid)
+        self.assertIn("Ce registre n\'est PAS une validation E2E", grid)
 
 
 if __name__ == "__main__":
