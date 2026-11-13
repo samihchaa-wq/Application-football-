@@ -21,6 +21,11 @@ create table private.waitlist_auto_processed_matches (
   processed_at timestamptz not null default now(),
   credited_count integer not null default 0 check (credited_count >= 0)
 );
+-- Les fonctions existantes sont SECURITY DEFINER sous le role club_scope :
+-- ce role doit posseder les tables privees pour que RLS n'ecarte pas
+-- silencieusement ses lignes, sans rien ouvrir aux utilisateurs.
+alter table private.waitlist_auto_activation owner to club_scope;
+alter table private.waitlist_auto_processed_matches owner to club_scope;
 alter table private.waitlist_auto_activation enable row level security;
 alter table private.waitlist_auto_processed_matches enable row level security;
 revoke all on private.waitlist_auto_activation,
