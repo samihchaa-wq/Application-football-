@@ -79,7 +79,13 @@ void main() {
       )!;
       expect(badge.numChannels, 4);
       expect(badge.getPixel(0, 0).a, 0);
-      expect(badge.getPixel(badge.width ~/ 2, badge.height ~/ 2).a, 255);
+      // Le ballon du logo a des coutures transparentes : on vérifie qu'une
+      // vraie silhouette opaque existe, pas un pixel précis.
+      var opaque = 0;
+      for (final pixel in badge) {
+        if (pixel.a == 255) opaque++;
+      }
+      expect(opaque, greaterThan(badge.width * badge.height * 0.15));
     });
 
     test(
