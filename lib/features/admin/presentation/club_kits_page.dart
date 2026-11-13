@@ -7,8 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Maillots du club, réservés aux administrateurs : jusqu'à trois maillots,
-/// chacun avec son nom, ses deux couleurs, et proposé ou non au choix pour un
-/// match.
+/// chacun avec les couleurs des joueurs et du gardien, et proposé ou non
+/// au choix pour un match.
 class ClubKitsPage extends ConsumerStatefulWidget {
   const ClubKitsPage({super.key});
 
@@ -166,13 +166,27 @@ class _KitEditor extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Opacity(
-                  opacity: kit.enabled ? 1 : .4,
-                  child: SizedBox(
-                    width: 64,
-                    height: 74,
-                    child: KitJersey(kit: preview),
-                  ),
+                Column(
+                  children: [
+                    Opacity(
+                      opacity: kit.enabled ? 1 : .4,
+                      child: SizedBox(
+                        width: 54,
+                        height: 62,
+                        child: KitJersey(kit: preview),
+                      ),
+                    ),
+                    const Text('Joueurs'),
+                    Opacity(
+                      opacity: kit.enabled ? 1 : .4,
+                      child: SizedBox(
+                        width: 54,
+                        height: 62,
+                        child: KitJersey(kit: preview, isGoalkeeper: true),
+                      ),
+                    ),
+                    const Text('Gardien'),
+                  ],
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -204,6 +218,8 @@ class _KitEditor extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
+            Text('Joueurs', style: Theme.of(context).textTheme.titleSmall),
+            const SizedBox(height: 8),
             _ColorChoice(
               label: 'Couleur du maillot',
               keyPrefix: 'kit-body-${kit.slot.id}',
@@ -220,6 +236,26 @@ class _KitEditor extends StatelessWidget {
               palette: palette,
               enabled: enabled,
               onPick: (color) => onChanged(kit.copyWith(trim: color)),
+            ),
+            const Divider(height: 28),
+            Text('Gardien', style: Theme.of(context).textTheme.titleSmall),
+            const SizedBox(height: 8),
+            _ColorChoice(
+              label: 'Couleur du maillot de gardien',
+              keyPrefix: 'kit-goalkeeper-body-${kit.slot.id}',
+              current: kit.goalkeeperBody,
+              palette: palette,
+              enabled: enabled,
+              onPick: (color) => onChanged(kit.copyWith(goalkeeperBody: color)),
+            ),
+            const SizedBox(height: 12),
+            _ColorChoice(
+              label: 'Manches et col du gardien',
+              keyPrefix: 'kit-goalkeeper-trim-${kit.slot.id}',
+              current: kit.goalkeeperTrim,
+              palette: palette,
+              enabled: enabled,
+              onPick: (color) => onChanged(kit.copyWith(goalkeeperTrim: color)),
             ),
           ],
         ),

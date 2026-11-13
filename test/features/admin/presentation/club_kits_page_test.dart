@@ -49,6 +49,28 @@ void main() {
     expect(find.text('Maillots enregistrés.'), findsOneWidget);
   });
 
+  testWidgets('l’admin peut choisir et enregistrer la couleur du gardien',
+      (tester) async {
+    await pumpPage(tester);
+    await tester.tap(
+      find.byKey(const ValueKey('kit-goalkeeper-body-france-#000000')),
+    );
+    // Une action d'utilisateur par frame : reconstruire les callbacks
+    // de la deuxième couleur sur le maillot déjà modifié.
+    await tester.pump();
+    await tester.tap(
+      find.byKey(const ValueKey('kit-goalkeeper-trim-france-#FBE80C')),
+    );
+    await tester.tap(find.byKey(const ValueKey('club-kits-save')));
+    await tester.pumpAndSettle();
+
+    final kit = repository.saved!.first;
+    expect(kit.toJson()['goalkeeper_body'], '#000000');
+    expect(kit.toJson()['goalkeeper_trim'], '#FBE80C');
+    expect(kit.toJson()['body'], colorToHex(kit.body));
+    expect(ClubKits.of(JerseyOption.france).goalkeeperBody, kit.goalkeeperBody);
+  });
+
   testWidgets('au moins un maillot doit rester proposé', (tester) async {
     await pumpPage(tester);
     for (final slot in ['france', 'orange', 'blue']) {
