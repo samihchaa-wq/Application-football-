@@ -75,6 +75,12 @@ def mk_user(api, service, anon, club, label):
                           "user_metadata": {"first_name": "QA", "last_name": label}})
     ok(code, "Création GoTrue")
     uid = str(uuid.UUID(json.loads(body)["id"]))
+    # Le service Auth peut d'abord insérer le compte, puis associer le club
+    # dans raw_app_meta_data. Forcer ici cette étape SERVEUR en local afin
+    # de reproduire le parcours de register-account (jamais depuis le client).
+    sql(f"update auth.users set raw_app_meta_data = "
+        f"coalesce(raw_app_meta_data, '{{}}'::jsonb) || "
+        f"jsonb_build_object('club_id', '{club}') where id='{uid}'")
     sql(f"update public.profiles set role='admin',status='active' where id='{uid}'")
     if sql(f"select count(*) from public.profiles where id='{uid}' and club_id='{club}' and status='active' and role='admin'") != "1":
         raise AssertionError("Profil ou rattachement du compte Auth incorrect.")
@@ -95,6 +101,9 @@ def smoke(status_file: Path):
         raise RuntimeError("Clés éphémères locales non trouvées.")
     alpha = str(uuid.UUID(sql("select (public.create_club('QA Alpha HTTP', 'QAA')).id")))
     bravo = str(uuid.UUID(sql("select (public.create_club('QA Bravo HTTP', 'QAB')).id")))
+    # Supabase seed a un club local par défaut : le désactiver pour les
+    # comptes QA, afin qu'aucun profil ne soit créé dans le mauvais club.
+    sql("delete from private.local_default_club")
     ua, ta = mk_user(api, service, anon, alpha, "alpha")
     ub, tb = mk_user(api, service, anon, bravo, "bravo")
 
