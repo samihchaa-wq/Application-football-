@@ -15,7 +15,7 @@ class AppPreferences {
   /// rempli.
   final bool predictionNotifications;
 
-  /// Prévenir à l'ouverture du vote Homme du match et à son résultat.
+  /// Prévenir à l'ouverture du vote de l’Étoile du match et à son résultat.
   final bool motmVoteNotifications;
 
   /// Ancien réglage « Passage en convoqué ». Le passage convoqué ↔ liste

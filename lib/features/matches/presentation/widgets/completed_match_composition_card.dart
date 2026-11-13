@@ -18,7 +18,7 @@ class CompletedPlayerSummary {
   final String name;
   final int goals;
 
-  /// Homme du match : une couronne 👑 suit son prénom dans la liste.
+  /// Étoile du match : une couronne 👑 suit son prénom dans la liste.
   final bool isMotm;
 
   /// Photo du joueur, quand l'archive la connaît. Sans elle, la pastille
@@ -262,7 +262,7 @@ class CompletedPlayersList extends StatelessWidget {
           Semantics(
             label: [
               players[index].name,
-              if (players[index].isMotm) 'Homme du match',
+              if (players[index].isMotm) 'Étoile du match',
               if (players[index].goals > 0)
                 '${players[index].goals} '
                     '${players[index].goals == 1 ? 'but' : 'buts'}',

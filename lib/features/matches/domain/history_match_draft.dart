@@ -183,7 +183,7 @@ class HistoryMatchDraft {
   }
 
   /// Ajoute ou retire un joueur de l'effectif. Le retirer efface aussi ses
-  /// buts, son titre d'homme du match et son poste.
+  /// buts, son titre d'Étoile du match et son poste.
   HistoryMatchDraft togglePresent(HistoryPlayer player) {
     if (present.contains(player)) {
       return HistoryMatchDraft(

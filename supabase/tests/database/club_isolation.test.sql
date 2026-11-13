@@ -93,6 +93,17 @@ select is(
   'Alpha ne voit que ses badges'
 );
 
+select lives_ok(
+  $$select public.log_client_incident('incident-alpha', 'test', 'test', '0')$$,
+  'un membre d’Alpha signale un incident de l’application'
+);
+select is(
+  (select count(*) from public.admin_recent_client_incidents()
+   where reference = 'incident-alpha'),
+  1::bigint,
+  'l’administrateur d’Alpha voit les incidents de son club'
+);
+
 reset role;
 
 -- ---------------------------------------------------------------------------
@@ -124,6 +135,53 @@ select is(
    where profile_id = '1c000000-0000-0000-0000-00000000000a'),
   0::bigint,
   'les classements de Bravo ne contiennent pas les membres d’Alpha'
+);
+select is(
+  (select count(*) from public.admin_recent_client_incidents()
+   where reference = 'incident-alpha'),
+  0::bigint,
+  'l’administrateur de Bravo ne voit pas les incidents d’Alpha'
+);
+
+select throws_ok(
+  $$insert into storage.objects (id, bucket_id, name, owner, owner_id, metadata)
+    values (
+      '3c000000-0000-0000-0000-00000000000b',
+      'profile-photos',
+      '1c000000-0000-0000-0000-00000000000a/intrus.png',
+      '1c000000-0000-0000-0000-00000000000b',
+      '1c000000-0000-0000-0000-00000000000b',
+      '{"mimetype":"image/png","size":10}'::jsonb
+    )$$,
+  '42501',
+  null,
+  'l’administrateur de Bravo ne peut pas déposer dans le dossier photo d’un membre d’Alpha'
+);
+select throws_ok(
+  $$insert into storage.objects (id, bucket_id, name, owner, owner_id, metadata)
+    select
+      '3c000000-0000-0000-0000-00000000000c',
+      'badge-images',
+      'club-logos/' || id || '/logo.png',
+      '1c000000-0000-0000-0000-00000000000b',
+      '1c000000-0000-0000-0000-00000000000b',
+      '{"mimetype":"image/png","size":10}'::jsonb
+    from test_clubs where label = 'a'$$,
+  '42501',
+  null,
+  'l’administrateur de Bravo ne peut pas déposer dans le dossier logo d’Alpha'
+);
+select lives_ok(
+  $$insert into storage.objects (id, bucket_id, name, owner, owner_id, metadata)
+    values (
+      '3c000000-0000-0000-0000-00000000000d',
+      'profile-photos',
+      '1c000000-0000-0000-0000-00000000000b/avatar.png',
+      '1c000000-0000-0000-0000-00000000000b',
+      '1c000000-0000-0000-0000-00000000000b',
+      '{"mimetype":"image/png","size":10}'::jsonb
+    )$$,
+  'l’administrateur de Bravo dépose dans son propre dossier photo'
 );
 
 with touched as (
@@ -178,6 +236,79 @@ select is(
   'chaque club garde sa propre ligne, intacte'
 );
 
+-- Journal des incidents : la purge quotidienne passe dans chaque club, sans
+-- compte connecté, comme la tâche planifiée.
+insert into private.client_incident_log (reference, operation, error_type, app_version, created_at, club_id)
+select 'ancien-' || label, 'test', 'test', '0', now() - interval '120 days', id from test_clubs;
+insert into private.client_incident_log (reference, operation, error_type, app_version, created_at, club_id)
+select 'recent-' || label, 'test', 'test', '0', now(), id from test_clubs;
+select set_config('request.jwt.claims', '', true);
+select is(
+  private.purge_client_incident_log_all_clubs(now()),
+  2,
+  'la purge supprime les incidents anciens des deux clubs'
+);
+select is(
+  (select count(*) from private.client_incident_log where reference like 'recent-%'),
+  2::bigint,
+  'la purge garde les incidents récents des deux clubs'
+);
+
+-- Fichiers : chaque sens, chaque sorte de dossier, et les chemins mal formés.
+insert into public.season_players (id, season_id, first_name, last_name, club_id)
+values ('5c000000-0000-0000-0000-00000000000a', '2c000000-0000-0000-0000-00000000000a', 'Joueur', 'Alpha',
+        (select id from test_clubs where label = 'a'));
+
+create temporary table storage_cases (
+  actor text, bucket text, path text, allowed boolean
+) on commit drop;
+grant select on storage_cases to authenticated;
+insert into storage_cases
+select 'b', 'profile-photos', '1c000000-0000-0000-0000-00000000000a/x.png', false union all
+select 'b', 'profile-photos', 'season/5c000000-0000-0000-0000-00000000000a/x.png', false union all
+select 'b', 'profile-photos', 'guest/x.png', false union all
+select 'b', 'profile-photos', 'x.png', false union all
+select 'b', 'profile-photos', 'pas-un-uuid/x.png', false union all
+select 'a', 'profile-photos', 'season/5c000000-0000-0000-0000-00000000000a/x.png', true union all
+select 'a', 'profile-photos', '1c000000-0000-0000-0000-00000000000b/x.png', false union all
+select 'a', 'badge-images', 'club-logos/' || (select id from test_clubs where label = 'b') || '/x.png', false union all
+select 'a', 'badge-images', 'club-logos/' || (select id from test_clubs where label = 'a') || '/x.png', true;
+
+-- Renvoie 'ok' si le dépôt passe, sinon le code d'erreur exact. Un refus
+-- n'est compté comme bon que s'il vient de la règle de cloisonnement (42501).
+create function pg_temp.storage_try(p_actor text, p_bucket text, p_path text) returns text
+language plpgsql as $$
+declare
+  v_user uuid := ('1c000000-0000-0000-0000-00000000000' || p_actor)::uuid;
+  v_state text;
+begin
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', v_user, 'role', 'authenticated', 'aud', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  begin
+    insert into storage.objects (bucket_id, name, owner, owner_id, metadata)
+    values (p_bucket, p_path, v_user, v_user, '{"mimetype":"image/png","size":10}'::jsonb);
+    execute 'reset role';
+    return 'ok';
+  exception when others then
+    get stacked diagnostics v_state = returned_sqlstate;
+    execute 'reset role';
+    return v_state;
+  end;
+end;
+$$;
+
+select is(
+  (select coalesce(string_agg(format('%s %s/%s => %s', actor, bucket, path, outcome), ', '), '')
+   from (
+     select actor, bucket, path, allowed, pg_temp.storage_try(actor, bucket, path) as outcome
+     from storage_cases
+   ) tried
+   where outcome is distinct from case when allowed then 'ok' else '42501' end),
+  '',
+  'chaque dépôt de fichier n’est accepté que dans un dossier de son propre club, et chaque refus vient de la règle de cloisonnement'
+);
+
 -- Aucune table métier n'échappe au cloisonnement.
 select is(
   (
@@ -193,8 +324,8 @@ select is(
         'private.registration_attempts',
         'private.prediction_reminder_cron_config',
         'private.sport_waitlist_engine_activation',
-        'private.client_incident_log',
         'private.platform_operators',
+        'private.client_incident_log_unassigned',
         'private.email_confirmations',
         'private.email_attempts'
       )

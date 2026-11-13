@@ -247,7 +247,7 @@ class SeasonWrapped {
             rank: goalsRank,
           ),
           SeasonWrappedStat(
-            label: 'Homme du match',
+            label: 'Étoile du match',
             value: '$motm',
             rank: motmRank,
           ),
@@ -410,7 +410,7 @@ SeasonWrapped demoSeasonWrapped(String seasonName) {
     'badges': [
       {'code': 'matches_played__50', 'name': 'Fidèle', 'emoji': '📅'},
       {'code': 'clean_sheets__10', 'name': 'Mur', 'emoji': '🧱'},
-      {'code': 'motm__first', 'name': 'Homme du match', 'emoji': '⭐'},
+      {'code': 'motm__first', 'name': 'Étoile du match', 'emoji': '⭐'},
       {'code': 'season_top_scorer', 'name': 'Meilleur buteur', 'emoji': '🥇'},
     ],
   });

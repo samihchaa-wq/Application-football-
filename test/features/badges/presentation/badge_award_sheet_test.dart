@@ -25,6 +25,13 @@ class _FakeBadgeAdminRepository implements BadgeAdminRepository {
   Future<List<AdminPerson>> fetchActiveProfiles() => throw UnimplementedError();
 
   @override
+  Future<int> updateBadgeThreshold({
+    required String badgeCode,
+    required int threshold,
+  }) =>
+      throw UnimplementedError();
+
+  @override
   Future<void> createCustomBadge({
     required String name,
     required Uint8List imageBytes,

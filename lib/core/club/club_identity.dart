@@ -14,7 +14,7 @@ abstract final class ClubIdentity {
 
   /// Nom de l'application elle-même, quand aucun club n'est en jeu (écran de
   /// connexion, titre de l'onglet…).
-  static const String appName = 'Lucarne';
+  static const String appName = 'Petit Filet';
 
   static final ValueNotifier<int> _revision = ValueNotifier<int>(0);
   static String _name = defaultName;

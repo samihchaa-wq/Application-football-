@@ -7,10 +7,12 @@ import 'package:as_grinta/features/admin/presentation/club_subscription_section.
 import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/club/presentation/club_identity_sync.dart';
 import 'package:as_grinta/features/club/presentation/club_rules_sync.dart';
+import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 /// Réglages du club, réservés à ses administrateurs : nom, invitation des
 /// joueurs, fonctionnalités à activer ou non.
@@ -24,14 +26,18 @@ class ClubSettingsPage extends ConsumerStatefulWidget {
 class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   final _nameController = TextEditingController();
   final _shortNameController = TextEditingController();
+  final _homeAddressController = TextEditingController();
 
   Club? _club;
   ClubModules _modules = const ClubModules.allEnabled();
   List<ClubRule> _rules = const [];
+  int _usualSquadSize = 14;
   final Set<String> _pendingRules = {};
   Object? _loadError;
   bool _loading = true;
   bool _savingIdentity = false;
+  bool _savingHomeAddress = false;
+  bool _savingUsualSquadSize = false;
   bool _renewingCode = false;
   bool _savingColors = false;
   bool _savingLogo = false;
@@ -64,6 +70,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   void dispose() {
     _nameController.dispose();
     _shortNameController.dispose();
+    _homeAddressController.dispose();
     super.dispose();
   }
 
@@ -77,6 +84,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       final club = await repository.fetchMyClub();
       final modules = await repository.fetchModules();
       final rules = await repository.fetchRules();
+      final homeAddress = await repository.fetchHomeAddress();
+      final usualSquadSize = await repository.fetchUsualSquadSize();
       if (!mounted) return;
       setState(() {
         _club = club;
@@ -84,6 +93,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
         _rules = rules;
         _nameController.text = club.name;
         _shortNameController.text = club.shortName;
+        _homeAddressController.text = homeAddress ?? '';
+        _usualSquadSize = usualSquadSize;
         _loading = false;
       });
     } catch (error) {
@@ -138,6 +149,51 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       if (mounted) _showMessage('Le nom du club n’a pas pu être enregistré.');
     } finally {
       if (mounted) setState(() => _savingIdentity = false);
+    }
+  }
+
+  Future<void> _saveHomeAddress() async {
+    final address = _homeAddressController.text.trim();
+    if (address.length > 200 || address.contains(RegExp(r'[\r\n\t]'))) {
+      _showMessage(
+          'L’adresse doit tenir sur une ligne (200 caractères maximum).');
+      return;
+    }
+    setState(() => _savingHomeAddress = true);
+    try {
+      final saved = await ref
+          .read(clubRepositoryProvider)
+          .updateHomeAddress(address.isEmpty ? null : address);
+      if (!mounted) return;
+      _homeAddressController.text = saved ?? '';
+      _showMessage(saved == null
+          ? 'Adresse du terrain effacée.'
+          : 'Adresse du terrain enregistrée.');
+    } catch (_) {
+      if (mounted) {
+        _showMessage('L’adresse du terrain n’a pas pu être enregistrée.');
+      }
+    } finally {
+      if (mounted) setState(() => _savingHomeAddress = false);
+    }
+  }
+
+  Future<void> _saveUsualSquadSize(int value) async {
+    if (_savingUsualSquadSize || value < 1 || value > 30) return;
+    setState(() => _savingUsualSquadSize = true);
+    try {
+      final saved =
+          await ref.read(clubRepositoryProvider).updateUsualSquadSize(value);
+      if (!mounted) return;
+      setState(() => _usualSquadSize = saved);
+      // Les formulaires de futurs matchs relisent le quota du club.
+      ref.invalidate(featureFlagsControllerProvider);
+    } catch (_) {
+      if (mounted) {
+        _showMessage('Le nombre de convoqués n’a pas pu être enregistré.');
+      }
+    } finally {
+      if (mounted) setState(() => _savingUsualSquadSize = false);
     }
   }
 
@@ -376,8 +432,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           contentPadding: EdgeInsets.zero,
           title: Text(rule.label),
           subtitle: Text(
-            '${rule.description}\nPar défaut : ${rule.defaultValue} '
-            '${rule.unit}',
+            '${rule.description}\nPar défaut : '
+            '${_ruleValueLabel(rule, rule.defaultValue)}',
           ),
           isThreeLine: true,
           trailing: Row(
@@ -391,7 +447,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
                         ? null
                         : () => _setRule(rule, rule.value - 1),
               ),
-              Text('${rule.value} ${rule.unit}'),
+              Text(_ruleValueLabel(rule, rule.value)),
               IconButton(
                 key: ValueKey('club-rule-${rule.key}-plus'),
                 icon: const Icon(Icons.add_circle_outline),
@@ -407,6 +463,13 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     }
     return widgets;
   }
+
+  /// Valeur affichée d'une règle : « 15 min », ou « × 1,5 » pour un
+  /// multiplicateur du barème (enregistré en dixièmes).
+  String _ruleValueLabel(ClubRule rule, int value) =>
+      rule.unit == ClubRules.multiplierUnit
+          ? ClubRules.formatMultiplier(value)
+          : '$value ${rule.unit}';
 
   /// Choix du mode de liste d'attente : trois options expliquées, pas un
   /// compteur.
@@ -510,6 +573,36 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           ),
         ),
         const SizedBox(height: 28),
+        Text('Terrain à domicile', style: theme.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        const Text(
+          'Adresse proposée automatiquement lors de la création '
+          'd’un match à domicile. Modifiable pour chaque rencontre.',
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          key: const Key('club-settings-home-address'),
+          controller: _homeAddressController,
+          maxLength: 200,
+          keyboardType: TextInputType.streetAddress,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: const InputDecoration(
+            labelText: 'Adresse du terrain',
+            hintText: 'Rue, code postal, ville',
+            prefixIcon: Icon(Icons.place_outlined),
+          ),
+        ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: FilledButton(
+            key: const Key('club-settings-save-home-address'),
+            onPressed: _savingHomeAddress ? null : _saveHomeAddress,
+            child: Text(_savingHomeAddress
+                ? 'Enregistrement…'
+                : 'Enregistrer l’adresse'),
+          ),
+        ),
+        const SizedBox(height: 28),
         Text('Logo du club', style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
         const Text(
@@ -563,6 +656,16 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           'club-color-secondary',
           club.secondaryColor,
           (hex) => _setColors(secondary: hex),
+        ),
+        const SizedBox(height: 12),
+        ListTile(
+          key: const ValueKey('club-kits-entry'),
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.checkroom_rounded),
+          title: const Text('Maillots du club'),
+          subtitle: const Text('Noms et couleurs des maillots proposés.'),
+          trailing: const Icon(Icons.chevron_right_rounded),
+          onTap: () => context.push('/admin/club/maillots'),
         ),
         const SizedBox(height: 28),
         Text('Inviter des joueurs', style: theme.textTheme.titleMedium),
@@ -622,6 +725,38 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
                 ? null
                 : (value) => _setModule(module, value),
           ),
+        const SizedBox(height: 28),
+        Text('Convocations', style: theme.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        const Text(
+          'Nombre habituel de joueurs convoqués pour les nouveaux matchs. '
+          'Tu pourras toujours choisir un autre nombre pour chaque match.',
+        ),
+        ListTile(
+          key: const Key('club-usual-squad-size'),
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Joueurs convoqués par défaut'),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                key: const Key('club-usual-squad-size-minus'),
+                icon: const Icon(Icons.remove_circle_outline),
+                onPressed: _savingUsualSquadSize || _usualSquadSize <= 1
+                    ? null
+                    : () => _saveUsualSquadSize(_usualSquadSize - 1),
+              ),
+              Text('$_usualSquadSize'),
+              IconButton(
+                key: const Key('club-usual-squad-size-plus'),
+                icon: const Icon(Icons.add_circle_outline),
+                onPressed: _savingUsualSquadSize || _usualSquadSize >= 30
+                    ? null
+                    : () => _saveUsualSquadSize(_usualSquadSize + 1),
+              ),
+            ],
+          ),
+        ),
         ..._ruleSection(theme),
       ],
     );

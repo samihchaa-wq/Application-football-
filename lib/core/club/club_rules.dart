@@ -11,6 +11,15 @@ abstract final class ClubRules {
   static const String predictionCloseMinutesKey = 'prediction_close_minutes';
   static const String correctionWindowHoursKey = 'correction_window_hours';
   static const String waitlistModeKey = 'waitlist_mode';
+  static const String predictionPointsExactKey = 'prediction_points_exact';
+  static const String predictionPointsGoalDifferenceKey =
+      'prediction_points_goal_difference';
+  static const String predictionPointsOneScoreKey =
+      'prediction_points_one_score';
+  static const String predictionPointsWinnerKey = 'prediction_points_winner';
+
+  /// Unité des règles enregistrées en dixièmes de multiplicateur (20 = × 2).
+  static const String multiplierUnit = '×';
 
   static const Map<String, int> defaults = {
     featuresOpenDaysKey: 6,
@@ -18,6 +27,10 @@ abstract final class ClubRules {
     predictionCloseMinutesKey: 15,
     correctionWindowHoursKey: 24,
     waitlistModeKey: 0,
+    predictionPointsExactKey: 20,
+    predictionPointsGoalDifferenceKey: 15,
+    predictionPointsOneScoreKey: 15,
+    predictionPointsWinnerKey: 10,
   };
 
   static bool _liveEnabled = true;
@@ -51,6 +64,23 @@ abstract final class ClubRules {
   /// Qui passe en premier quand il y a trop de disponibles.
   static WaitlistMode get waitlistMode =>
       WaitlistMode.fromValue(_get(waitlistModeKey));
+
+  /// Barème des pronostics : multiplicateurs de la cote choisis par le club.
+  static double get predictionExactMultiplier =>
+      _get(predictionPointsExactKey) / 10;
+  static double get predictionGoalDifferenceMultiplier =>
+      _get(predictionPointsGoalDifferenceKey) / 10;
+  static double get predictionOneScoreMultiplier =>
+      _get(predictionPointsOneScoreKey) / 10;
+  static double get predictionWinnerMultiplier =>
+      _get(predictionPointsWinnerKey) / 10;
+
+  /// « × 1,5 » pour une règle enregistrée en dixièmes (15).
+  static String formatMultiplier(int tenths) {
+    final whole = tenths ~/ 10;
+    final decimal = tenths % 10;
+    return '× $whole,$decimal';
+  }
 
   /// Remplace les valeurs connues ; les clés absentes reprennent leur défaut.
   static void set(Map<String, int> values) {

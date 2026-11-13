@@ -194,7 +194,7 @@ class _MatchRow extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.only(left: 6),
               child: Tooltip(
-                message: 'Homme du match',
+                message: 'Étoile du match',
                 child: ManOfTheMatchIcon(size: 15),
               ),
             ),

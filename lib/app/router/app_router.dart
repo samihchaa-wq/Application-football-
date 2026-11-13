@@ -4,6 +4,7 @@ import 'package:as_grinta/app/router/auth_redirect.dart';
 import 'package:as_grinta/app/router/deferred_route_page.dart';
 import 'package:as_grinta/app/router/initial_app_location.dart';
 import 'package:as_grinta/app/shell/app_shell.dart';
+import 'package:as_grinta/features/admin/presentation/club_kits_page.dart';
 import 'package:as_grinta/features/admin/presentation/club_settings_page.dart';
 import 'package:as_grinta/features/matches/presentation/history_entry_page.dart';
 import 'package:as_grinta/features/admin/presentation/admin_menu_page.dart'
@@ -249,6 +250,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/admin/club',
                 builder: (_, __) => const ClubSettingsPage(),
+              ),
+              GoRoute(
+                path: '/admin/club/maillots',
+                builder: (_, __) => const ClubKitsPage(),
               ),
               GoRoute(
                 path: '/admin/history',

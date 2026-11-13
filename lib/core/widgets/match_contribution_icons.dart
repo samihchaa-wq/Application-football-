@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Icônes des faits de match d'un joueur, partagées par la composition d'un
 /// match terminé et la fiche joueur : ⚽ pour un but, un crampon pour une
-/// passe décisive, 👑 pour l'Homme du match.
+/// passe décisive, 👑 pour l'Étoile du match.
 
 /// Ballon d'un but, ajusté dans un carré de côté [size] : un emoji dessiné à
 /// une taille de police donnée déborde de cette taille, et le ballon
@@ -25,7 +25,7 @@ class GoalIcon extends StatelessWidget {
   }
 }
 
-/// Couronne de l'Homme du match.
+/// Couronne de l'Étoile du match.
 class ManOfTheMatchIcon extends StatelessWidget {
   const ManOfTheMatchIcon({super.key, this.size = 18});
 
@@ -37,7 +37,7 @@ class ManOfTheMatchIcon extends StatelessWidget {
   }
 }
 
-/// Couronne de l'Homme du match posée sur la photo d'un joueur du terrain :
+/// Couronne de l'Étoile du match posée sur la photo d'un joueur du terrain :
 /// elle commence au-dessus de la photo et descend sur la tête.
 ///
 /// Sa taille et sa place suivent le côté de la photo ([photoSize]) : l'éditeur

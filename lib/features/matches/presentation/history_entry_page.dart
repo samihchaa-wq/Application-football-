@@ -264,7 +264,7 @@ class _HistoryEntryPageState extends ConsumerState<HistoryEntryPage> {
               _section(theme, 'Joueurs présents', _presentFields(theme)),
               if (_draft.scoreFor > 0)
                 _section(theme, 'Buteurs', _scorerFields(theme)),
-              _section(theme, 'Homme du match', _motmFields(theme)),
+              _section(theme, 'Étoile du match', _motmFields(theme)),
               _compositionSection(theme),
             ],
           ),

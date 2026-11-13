@@ -23,7 +23,7 @@ void main() {
     );
   });
 
-  test('l’Homme du match est repéré dans l’effectif de secours', () {
+  test('l’Étoile du match est repéré dans l’effectif de secours', () {
     const detail = HistoricalMatchDetail(
       formation: null,
       fieldPlayers: [],

@@ -1,50 +1,40 @@
-# Relais entre assistants — Lucarne (version commerciale)
+# Relais entre assistants — Petit Filet (application commerciale)
 
-**Mis à jour le 12/11/2026, vers 16 h 14 (heure de Paris).** Ce document résume les règles stables et l'état **GitHub vérifié**. Recontrôler les PR, les checks et le registre Supabase à chaque reprise. Ne jamais déduire d'une fusion de code qu'une migration ou un déploiement distant a eu lieu.
+**Actualisé le 13 novembre 2026.** Source de vérité opérationnelle : branche `main`, PR ouvertes et contrôles GitHub sur le dernier SHA ; les états ci-dessous peuvent évoluer.
 
 ## Règles impératives
 
-1. **Seul dépôt modifiable :** `samihchaa-wq/Application-football-`. Les dépôts, bases, secrets, sites et données d'**AS Grinta original** et de **Carte soirée** sont hors périmètre absolu.
-2. **Décision propriétaire B : dépôt commercial PUBLIC maintenu.** Poursuivre l'audit de confidentialité, ne pas changer la visibilité et ne jamais publier de noms, e-mails privés ou secrets dans les PR/issues publiques.
-3. **Supabase commercial :** projet `jvxkhgdopslctpcjrhzw`, organisation commerciale Pro, Paris. **Lecture seule par défaut.** Migration, écriture, comptes réels, configuration distante, secret, Edge Function, publication et tests écrivant en ligne nécessitent l'accord explicite du propriétaire.
-4. Tout nouveau **coût** (hébergement, domaine, API ou service tiers) doit être indiqué et approuvé **avant** l'action. Aucun contact client, contrat, tarification ou engagement commercial sans décision.
-5. Les migrations **déjà appliquées** ne se réécrivent jamais. Les nouvelles ont un identifiant unique cohérent avec l'ordre des migrations présentes **et du registre SQL distant**. **Ne jamais exécuter `DROP SCHEMA install_tmp CASCADE` : instruction obsolète et dangereuse.** Le nettoyage prudent est porté par la PR #46, fusionnée en migration `20261112210000_nettoyage_securite.sql`.
-6. Une PR ne peut être fusionnée qu'après examen de ses risques et **vérification de tous les contrôles pertinents sur le HEAD exact**, sans conflit restant. Une CI verte ne garantit pas les scénarios qu'elle ne couvre pas. Aucune publication automatique du site de test.
-7. Échanges en français, directs, avec distinctions : « prévu », « documenté », « code intégré », « tests automatisés réussis », « testé en situation réelle ».
+1. **Écriture uniquement dans `samihchaa-wq/Application-football-`.** Ne jamais modifier les dépôts, données, sites ni bases Supabase d'AS Grinta original ou de Carte soirée. Le dépôt AS Grinta peut être consulté en lecture seule pour comparer ses fonctionnalités et son interface.
+2. **Dépôt commercial PUBLIC maintenu** (choix explicite B). Ne pas modifier sa visibilité ni republier de données personnelles / secrets dans les PR et issues.
+3. **Supabase commercial `jvxkhgdopslctpcjrhzw` : lecture seule par défaut.** Aucune migration, écriture, déploiement de fonctions, création de comptes tests distants, changement de secret, publication ou paiement sans accord distinct du propriétaire. Ne jamais lancer de commandes de suppression de schéma à l'aveugle, en particulier **`DROP SCHEMA install_tmp CASCADE`**, instruction obsolète et dangereuse.
+4. Migrations déjà appliquées **immuables** ; chaque correction SQL doit être une nouvelle migration à identifiant unique, compatible avec le registre des migrations de la base commerciale.
+5. Fusion de PR uniquement après revue des risques, absence de conflit et contrôles GitHub **verts sur le SHA exact**. Toute CI incomplète, échouée ou en cours bloque la fusion. Une fusion de code **ne déploie pas** automatiquement l'application : les workflows de publication Cloudflare et de configuration Supabase sont manuels.
+6. Aucune dépense ou souscription sans annonce du prix et accord préalable. Réponses françaises, directes ; distinguer : documenté, développé, CI validée, testé réellement, déployé.
 
-## Produit et décisions
+## Produit — décisions validées
 
-Nom : **Lucarne**, application **multiclub** de foot **à 11 seulement**, issue de l'ergonomie AS Grinta mais indépendante. Chaque club configure son identité, son logo, ses couleurs, ses maillots, son stade et ses règles. Conserver les emojis des badges ; libellé validé **« Étoile du match »**.
+Nom commercial **Petit Filet** (précédemment « Lucarne », changement intégré par PR #65). Application multiclub de football **à 11**, avec identité et maillots indépendants pour chaque club, « Étoile du match » et emojis de badges préservés, objectif mai 2027. Le tarif, les paiements et les opérations commerciales restent à arbitrer.
 
-**Cible mai 2027** : essai fictif à deux clubs, un club pilote, abonnement payant, 10 puis ~100 clubs. Les propositions de 10 €/joueur/an et 50 €/club/mois **ne constituent pas un tarif validé** ; Stripe non intégré.
+**Décisions prioritaires nouvelles du 13/11 :**
 
-## État GitHub vérifié le 12/11
+- Issue [#66](https://github.com/samihchaa-wq/Application-football-/issues/66) : rendre les fonctions optionnelles héritées d'AS Grinta réellement réglables/désactivables par club, avec application côté serveur et conservation de l'historique.
+- Issue [#67](https://github.com/samihchaa-wq/Application-football-/issues/67) : choisir des couleurs distinctes **joueurs et gardiens** pour chaque tenue, et afficher correctement ces couleurs avant, pendant et après chaque match, y compris en vidéo et historique.
+- Issue [#68](https://github.com/samihchaa-wq/Application-football-/issues/68), PR [#69](https://github.com/samihchaa-wq/Application-football-/pull/69) : **aucun +1 automatique en liste d'attente** ; seuls les administrateurs utilisent +/−. L'automatisation SQL commerciale **reste active tant que la migration préparée n'est pas appliquée avec autorisation**, même si la PR est fusionnée.
+- Issue [#70](https://github.com/samihchaa-wq/Application-football-/issues/70), PR [#72](https://github.com/samihchaa-wq/Application-football-/pull/72) : retrouver **exactement** l'Administration récente d'AS Grinta sur Petit Filet, hors adaptations obligatoires de sécurité multiclub. La PR est en validation Flutter/QA.
+- Issue [#71](https://github.com/samihchaa-wq/Application-football-/issues/71) : **supprimer toute inscription « AS Grinta » des tribunes/public** de la vidéo de composition, sans ajouter de texte remplaçant ; traiter `stade.mp4`, `stade-720.mp4` et le poster `stade.jpg`. Pas encore traité dans les médias.
 
-- **Fusionnées** : #23 (notifications, agenda), #24 (site de test, publication manuelle), #25 (audit fonctionnel), #46 (nettoyage et audit sécurité), **#47 (réglages multiclubs)**, #48 (liste d'attente et historique), #49 (textes juridiques), #51 (marque/stade), **#52 (logo Lucarne, licence Oswald OFL incluse)**, ainsi que #1–#22.
-- **PR #47** fusionnée après cinq workflows réussis sur le HEAD contrôlé. Corrige les notifications de modules coupés et le figement de l'effectif. Fusion du code ≠ application des migrations en ligne.
-- **PR #52** fusionnée vers 16 h 10, squash `a77dfb6cd3cd7d62ec51cfdcf7a3b14471563665` après trois checks réussis ; licence officielle Oswald ajoutée. Essais PWA Android/iOS et disponibilité de marque INPI **non démontrés**.
-- **PR #50** ouverte, **conflit de fusion avec main** à résoudre après #47/#52. Deux correctifs M00 dans sa branche : conservation du UID historique des événements iCalendar (éviter doublons) et neutralisation des maillots/identité lors du changement de compte, avec test de reset. Le HEAD modifié n'avait pas de checks PR au dernier contrôle du fait du conflit. **Rebaser sur main, préserver les correctifs #47 et relancer CI complète avant toute fusion.**
-- **PR #40** terrain à domicile et **#43** quota de convoqués (brouillons empilés). La migration `20261112060000` de #40 est antérieure aux SQL `130000`/`200000`/`210000` déjà dans main : vérifier l'ordre et le registre avant fusion. #43 n'avait pas de CI propre confirmée.
-- **PR #44** garde immutabilité des migrations / modèle qualité / consignes commerciales ; CI verte mais revue croisée nécessaire.
-- **PR #29** contient le tableau des missions et le [relais complet daté](https://github.com/samihchaa-wq/Application-football-/blob/pilotage/tableau-chantier-20261112/docs/RELAIS_CLAUDE_20261112.md) ; à consulter avant chaque passage.
-- PR #26, #30–#36, #41 : audits, maintenance et corrections en revue, sans validation de lancement.
+## Intégrations vérifiées pendant le 13/11
 
-**État technique distant :** le répertoire des migrations GitHub sur `main` allait jusqu'à `20261112210000` lors du contrôle. Le dernier état appliqué sur **Supabase commercial** n'a pas été relu directement à l'occasion de ce relais ; le propriétaire mentionne trois exécutions autorisées réussies de mise en route et des fonctions Edge configurées. **Vérifier en lecture seule les faits distants avant de conclure ou de planifier un SQL.**
+Fusionnées : #65 (nom Petit Filet), #33 (tests de charge fiables), #44 (garde migrations et conventions), #62/#64 (journal et indicateurs agents), #26 (registre QA), #29 (tableau de pilotage), #34 (identité), #35 (stratégie). Elles rejoignent les PR métier #23–#25, #46–#52 et #55–#60 précédemment fusionnées. **Les noms/références présents dans des documents datés sont historiques et non un état de production.**
 
-**Site de test :** https://samihchaa-wq.github.io/Application-football-/ — workflow manuel ; pas une solution de SaaS commercial payant. Aucun déploiement depuis les fusions #47/#52 n'a été déclenché par M00.
+Restent à vérifier sur GitHub avant intégration : PR #69 (+1 manuel), #72 (écran Administration), #36 (juridique) ainsi que les documents historiques #30/#31/#41/#53. **Ne pas considérer cette liste exhaustive après cette date : interroger GitHub.**
 
-## Risques et prérequis restants
+## GO/NO-GO et coordination
 
-**P0 sécurité :** cloisonnement réel A/B non démontré sur la base commerciale, journal d'incidents potentiellement global, autorisations d'admins de clubs suspendus ; voir [issue #37](https://github.com/samihchaa-wq/Application-football-/issues/37). Les ~157 avertissements concernant les fonctions serveur ne sont pas 157 failles démontrées. Ne pas exposer de données historiques personnelles en public.
+- **P0** : séparation réelle des clubs A/B avec permissions admin/RPC/RLS/Storage/Edge, contrôle d'un admin suspendu, sécurité des sauvegardes, restauration DB + objets Storage, RGPD/consentement.
+- **P1** : tests smartphone/PWA, fiabilité des notifications et des e-mails, cohérence maillots, compositions et gestion des saisons ; vérifier la désactivation serveur des modules.
+- **P2** : pilote volontaires, documents juridiques relus (SIRET, identité de l'éditeur), disponibilité de la marque et du domaine, paiement, hébergement adapté sans dépenses non autorisées.
+- Site de test GitHub Pages existant ; publication commerciale sur Cloudflare uniquement par workflow **manuel**. Vérifier tout changement de configuration avant usage.
+- Les cinq automatisations de coordination couvrent les neuf missions M01–M09 ; utiliser `docs/CHANTIER.md` et les PR/issues pour communiquer. Ne pas déclarer « fait » sans résultat vérifiable.
 
-**P0 sauvegardes :** restauration non démontrée ; dumps SQL séparés pouvant ne pas correspondre au même instant ; Supabase Storage non couvert ; vérifier les accès et secrets avant activation. [PR #32](https://github.com/samihchaa-wq/Application-football-/pull/32), [#31](https://github.com/samihchaa-wq/Application-football-/pull/31).
-
-**P1 QA :** PR [#33](https://github.com/samihchaa-wq/Application-football-/pull/33) (tests de charge non-faux-verts), suites de tests #47/#50, vérification de transition compte A→B, UID calendrier, sessions de vrais mobiles ; aucune recette terrain exhaustive prouvée. [PR #26](https://github.com/samihchaa-wq/Application-football-/pull/26).
-
-**Juridique** : cinq textes et accord de création de club en #49, mais identité éditoriale/SIRET, droits des médias, politique de rétention des notifications, motifs d'absence, hébergement SaaS, contrats et recherche de marque restent à valider avec un juriste. [Issue #39](https://github.com/samihchaa-wq/Application-football-/issues/39).
-
-**Configuration du propriétaire :** 2FA GitHub/Supabase, secret Supabase à durée réduite et permissions vérifiées, configuration Auth et e-mail d'envoi, protection de main [issue #45](https://github.com/samihchaa-wq/Application-football-/issues/45), essais Club A/Club B avec son autorisation, choix de la règle des rappels de pronostics, décision de prix plus tard. **Aucun nouveau coût sans accord préalable.**
-
-## Coordination
-
-Les 9 missions sont réparties entre 5 automatisations horaires ; elles rédigent des preuves dans les PR/issues GitHub et n'activent pas directement les anciennes conversations. Le chef M00 centralise les priorités et les décisions. Le document [RELAIS_CLAUDE_20261112.md](https://github.com/samihchaa-wq/Application-football-/blob/pilotage/tableau-chantier-20261112/docs/RELAIS_CLAUDE_20261112.md) est le relais détaillé et cordial à reprendre, en vérifiant qu'aucune nouvelle fusion ou migration n'a eu lieu entre-temps.
+**Ce document ne vaut ni autorisation de déploiement ni certification du lancement.**

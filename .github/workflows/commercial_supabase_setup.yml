@@ -69,11 +69,31 @@ jobs:
       - name: Deploy Edge Functions and their settings
         if: inputs.functions
         shell: bash
+        env:
+          # Adresse définitive (Cloudflare) si elle est réglée, sinon GitHub Pages.
+          COMMERCIAL_APP_URL: ${{ vars.COMMERCIAL_APP_URL }}
+          # Envoi des e-mails de compte (mot de passe oublié, confirmation
+          # d'adresse) par l'API Brevo. Facultatif : sans ces deux réglages,
+          # l'appli dit franchement que l'envoi n'est pas configuré.
+          MAIL_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          MAIL_FROM_EMAIL: ${{ vars.MAIL_FROM_EMAIL }}
+          MAIL_FROM_NAME: ${{ vars.MAIL_FROM_NAME }}
         run: |
           set -euo pipefail
-          app_url=$(jq -r .PUBLIC_APP_URL config/production.json)
+          app_url="${COMMERCIAL_APP_URL:-$(jq -r .PUBLIC_APP_URL config/production.json)}"
           domain=$(jq -r .USERNAME_DOMAIN config/production.json)
           supabase secrets set --project-ref "$SUPABASE_PROJECT_REF" \
             "PUBLIC_APP_URL=$app_url" "USERNAME_DOMAIN=$domain"
+          if [ -n "${MAIL_API_KEY:-}" ] && [ -n "${MAIL_FROM_EMAIL:-}" ]; then
+            supabase secrets set --project-ref "$SUPABASE_PROJECT_REF" \
+              "MAIL_API_KEY=$MAIL_API_KEY" "MAIL_FROM_EMAIL=$MAIL_FROM_EMAIL" \
+              "MAIL_FROM_NAME=${MAIL_FROM_NAME:-Petit Filet}"
+            echo "Envoi des e-mails : réglé (expéditeur $MAIL_FROM_EMAIL)."
+          elif [ -n "${MAIL_API_KEY:-}" ] || [ -n "${MAIL_FROM_EMAIL:-}" ]; then
+            echo '::error::Il faut à la fois le secret BREVO_API_KEY et la variable MAIL_FROM_EMAIL.'
+            exit 1
+          else
+            echo '::warning::Envoi des e-mails non configuré (BREVO_API_KEY et MAIL_FROM_EMAIL absents) : « mot de passe oublié » ne marchera pas.'
+          fi
           supabase functions deploy --project-ref "$SUPABASE_PROJECT_REF" --use-api
           supabase functions list --project-ref "$SUPABASE_PROJECT_REF"

@@ -1,22 +1,34 @@
-> **Dépôt de la version publique multi-clubs.** Copie de AS-Grinta du
-> 10/11/2026. Ce dépôt n'a **pas encore de production** : ne jamais le brancher
-> sur la base Supabase d'AS Grinta, ne jamais y déployer quoi que ce soit.
-> Les règles ci-dessous viennent du dépôt d'origine ; celles qui parlent de
-> « production » s'appliqueront à la future base de ce dépôt, pas à celle
-> d'AS Grinta. Les workflows sont désactivés dans `.github/workflows-disabled/`.
+> **Dépôt commercial : `samihchaa-wq/Application-football-`.** Copie historique
+> d'AS Grinta, mais infrastructure **distincte**, jamais reliée au dépôt, à la
+> base ni au site de l'application originale.
+>
+> **Projet Supabase commercial unique : `jvxkhgdopslctpcjrhzw`**, accessible
+> uniquement en lecture sans accord explicite pour des écritures, migrations,
+> comptes, secrets ou déclenchements distants. Ne jamais toucher à AS Grinta ni
+> Carte soirée. Ne jamais créer de coûts ni déployer sans accord.
+>
+> Certains workflows commerciaux sont actifs dans `.github/workflows/`.
+> La présence d'un workflow vert n'est pas une preuve de test réellement exécuté.
+> Lire `docs/HANDOFF.md` sur `main` et `docs/CHANTIER.md` dans la PR #29
+> tant qu'elle n'est pas fusionnée. Les documents peuvent être périmés :
+> vérifier les faits sur GitHub et Supabase commercial en lecture seule.
+>
+> Le contrat technique et métier ci-dessous provient de l'application
+> historique : il sert de référence fonctionnelle **à vérifier**, pas de
+> preuve d'un déploiement commercial ni d'autorisation d'accéder à l'original.
 
-# AS-Grinta — instructions obligatoires pour les agents
+# Application football — instructions obligatoires pour les agents
 
-## Source de vérité
+## Source de vérité (version commerciale)
 
-La **production actuelle** est la référence fonctionnelle de AS Grinta.
+Pour toute conclusion sur la version commerciale :
 
-Pour toute conclusion sur une fonctionnalité :
+1. vérifier le code de la branche cible et son chemin d'exécution effectif ;
+2. examiner les schémas et objets de la **base commerciale** en lecture seule ;
+3. obtenir des preuves dans les tests CI et, si autorisé, dans un environnement de test isolé ;
+4. distinguer explicitement « implémenté », « testé en CI », « testé en conditions réelles » et « déployé ».
 
-1. vérifier ce qui fonctionne réellement en production ;
-2. vérifier le schéma et les objets Supabase distants ;
-3. vérifier que le code GitHub actuel est réellement appelé ;
-4. utiliser l’historique Git/PR uniquement pour comprendre pourquoi un élément existe.
+Une validation de l'application originale **ne vaut pas validation commerciale**.
 
 Ne jamais conclure qu’une fonctionnalité existe simplement parce que son code est présent dans le dépôt.
 
@@ -26,7 +38,7 @@ Les migrations dans `supabase/migrations/` sont un historique immuable. Une migr
 
 La documentation explique le contrat attendu mais ne remplace jamais une vérification de production. Les documents courants de référence sont listés dans `README.md`.
 
-## État fonctionnel actuel à préserver
+## Contrat fonctionnel historique à préserver après vérification
 
 - Rôles actifs : `pronostiqueur` et `admin`. L’ancien rôle `moderateur` n’existe plus.
 - Le module `sports_management` est en production.
