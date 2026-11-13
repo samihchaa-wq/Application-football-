@@ -7,7 +7,7 @@ Décision produit du 13 novembre 2026. Cette livraison introduit **l'habillage e
 - **Info / choix du maillot / réglages :** le composant `KitJersey` est un simple pictogramme avec les couleurs du club, le col et le motif. Aucune texture de tissu ni portrait n'y est simulé.
 - **Compositions avant, Live, après match et vidéo :** quand l'option `dress_players` est activée dans les réglages, les portraits réutilisent `KitPortrait`, le maillot du match et les couleurs du gardien si besoin. Les photographies d'origine ne sont **jamais réenregistrées avec une tenue**.
 - **Fiche joueur :** hors contexte d'un match particulier, la première tenue proposée du club sert d'aperçu, avec la même option `dress_players`. Aucun historique n'est reconstitué avec une couleur actuelle.
-- **Petites pastilles (< 44 px) et joueurs sans photo :** restent neutres pour la lisibilité ; pas de faux visage.
+- **Petites pastilles (< 44 px), joueurs sans photo ou photos en cours de chargement / en erreur :** restent neutres pour la lisibilité ; pas de faux visage habillé. Le maillot s'ajoute à la première trame photo réellement décodée.
 - **Patron de photo :** la photo est découpée au-dessus du col dans l'aperçu pour éviter que les anciennes épaules ne traversent le maillot. Le découpage, les repères et le jersey sont seulement visuels ; le PNG/JPEG exporté conserve les pixels photo et la transparence.
 
 ## Portée et limites vérifiables
