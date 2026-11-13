@@ -16,7 +16,7 @@ Décision utilisateur du 14 novembre 2026 : **la photo affichée d'un joueur doi
 ## Portée et limites
 
 - Cette évolution change **le rendu UI**, pas les fichiers stockés, ni le schéma SQL. Elle n'applique pas automatiquement un maillot à un export JPEG ou PNG téléchargé hors de l'application.
-- Pour la photographie du profil, le rôle gardien n'est pas déduit d'une position absente des informations du profil : par défaut la tenue de joueur de champ est utilisée. Les écrans qui savent qu'un joueur est gardien passent `isGoalkeeper` au composant.
+- Le profil personnel et la rubrique « Plus » utilisent `AuthProfile.isGoalkeeper` pour afficher la **tenue de gardien** lorsqu'il s'agit d'un gardien. Les autres écrans qui connaissent le poste transmettent aussi `isGoalkeeper`. Les archives qui ne contiennent pas cette information conservent le modèle joueur de champ.
 - Le modèle de tissu reste le modèle procédural existant, amélioré en PR #109 ; le **photoréalisme n'a pas été confirmé visuellement** sur une véritable galerie de photos ni sur Safari iPhone.
 - Le support de **maillots en nombre illimité** nécessite une migration/domaines distincts, non compris.
 - Aucun changement distant Supabase, aucune modification d'AS Grinta originale et aucune publication Cloudflare automatique.
