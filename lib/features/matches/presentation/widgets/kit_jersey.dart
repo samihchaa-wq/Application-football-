@@ -20,7 +20,9 @@ class KitJersey extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       label: semanticLabel ??
-          (isGoalkeeper ? 'Maillot gardien ${kit.label}' : 'Maillot ${kit.label}'),
+          (isGoalkeeper
+              ? 'Maillot gardien ${kit.label}'
+              : 'Maillot ${kit.label}'),
       image: true,
       child: AspectRatio(
         aspectRatio: _KitJerseyPainter.width / _KitJerseyPainter.height,
