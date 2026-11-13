@@ -112,8 +112,7 @@ void main() {
     expect(path.contains(const Offset(90, 132)), isTrue);
     expect(path.contains(const Offset(90, 141)), isFalse);
     expect(path.contains(const Offset(12, 138)), isFalse);
-    expect(find.byKey(const ValueKey('portrait-jersey-field')),
-        findsOneWidget);
+    expect(find.byKey(const ValueKey('portrait-jersey-field')), findsOneWidget);
   });
 
   testWidgets('aucun maillot n’est superposé aux avatars joueur et gardien',
