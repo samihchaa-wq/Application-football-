@@ -90,9 +90,18 @@ class MatchInfoTab extends ConsumerWidget {
                               ),
                             ),
                             SizedBox(
-                              width: 34,
+                              width: 32,
                               height: 38,
                               child: KitJersey(kit: jersey.kit),
+                            ),
+                            const SizedBox(width: 4),
+                            SizedBox(
+                              width: 32,
+                              height: 38,
+                              child: KitJersey(
+                                kit: jersey.kit,
+                                isGoalkeeper: true,
+                              ),
                             ),
                             const SizedBox(width: 8),
                             Flexible(
