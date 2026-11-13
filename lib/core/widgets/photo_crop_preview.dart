@@ -342,9 +342,9 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
         );
 }
 
-/// Patron de cadrage, en pointillés : un ovale pour le visage, du haut du
-/// front (13 % du côté de la photo) au menton (55 %), et la ligne des
-/// épaules.
+/// Patron de cadrage : seul le contour du visage est en pointillés (front
+/// à 13 %, menton à 55 %). Le maillot dessine déjà les épaules et les manches :
+/// superposer des pointillés sur sa poitrine nuisait à l'aperçu naturel.
 ///
 /// Sur le terrain, la couronne descend jusqu'à 20 % de la photo : sur un
 /// visage cadré dans l'ovale, elle couvre le haut du front, comme portée.
@@ -359,12 +359,7 @@ class _FramingGuidePainter extends CustomPainter {
     final h = size.height;
     final face = Path()
       ..addOval(Rect.fromLTRB(w * .33, h * .13, w * .67, h * .55));
-    final shoulders = Path()
-      ..moveTo(0, h * .84)
-      ..cubicTo(w * .06, h * .74, w * .20, h * .69, w * .39, h * .655)
-      ..moveTo(w, h * .84)
-      ..cubicTo(w * .94, h * .74, w * .80, h * .69, w * .61, h * .655);
-    final dashes = _dashed(face)..addPath(_dashed(shoulders), Offset.zero);
+    final dashes = _dashed(face);
     // Un liseré sombre sous le trait blanc : le patron reste visible sur un
     // maillot clair comme sur un fond sombre.
     final halo = Paint()
