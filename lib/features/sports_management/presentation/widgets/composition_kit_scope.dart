@@ -1,4 +1,5 @@
 import 'package:as_grinta/core/club/club_kits.dart';
+import 'package:as_grinta/core/club/match_kit_snapshot.dart';
 import 'package:as_grinta/features/matches/data/match_info_repository.dart';
 import 'package:as_grinta/features/matches/domain/jersey_option.dart';
 import 'package:flutter/material.dart';
@@ -44,6 +45,12 @@ class MatchCompositionKitScope extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final id = matchId;
     if (id == null) return child;
+    // Pour les matchs démarrés/terminés : toujours la tenue du jour J,
+    // pas celle configurée aujourd'hui dans Administration.
+    final snapshot = ref.watch(matchKitSnapshotProvider(id)).valueOrNull;
+    if (snapshot != null) {
+      return CompositionKitScope(kit: snapshot.kit, child: child);
+    }
     final info = ref.watch(matchInfoProvider(id));
     if (info.isLoading || info.hasError) return child;
     final selection = JerseyOption.fromId(info.valueOrNull?.jerseyNote) ??
