@@ -56,17 +56,25 @@ class FeatureFlagsController extends AsyncNotifier<FeatureFlagsSnapshot> {
   bool _disposed = false;
   int _watchFailureCount = 0;
   int _generation = 0;
+  bool _sessionReady = false;
+  String? _sessionIdentity;
 
-  bool _isCurrent(int generation) => !_disposed && generation == _generation;
+  bool _isCurrent(int generation) =>
+      !_disposed &&
+      generation == _generation &&
+      (!_sessionReady ||
+          ref.read(clubSessionIdentityProvider) == _sessionIdentity);
 
   @override
   Future<FeatureFlagsSnapshot> build() async {
     final generation = ++_generation;
     _disposed = false;
     final sessionReady = ref.watch(featureFlagsSessionReadyProvider);
+    _sessionReady = sessionReady;
     // Le booléen peut rester vrai pendant A → B. Cette dépendance annule
     // aussi les abonnements et réponses tardives de l'ancien compte.
-    if (sessionReady) ref.watch(clubSessionIdentityProvider);
+    _sessionIdentity =
+        sessionReady ? ref.watch(clubSessionIdentityProvider) : null;
     _watchRetryTimer?.cancel();
     _configurationTimer?.cancel();
     _watchRetryTimer = null;

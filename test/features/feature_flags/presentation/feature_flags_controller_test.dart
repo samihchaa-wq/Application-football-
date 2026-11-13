@@ -277,6 +277,47 @@ void main() {
     expect(repository.watchCount, 1);
   });
 
+  test('une réponse A dans la même boucle que la connexion B est écartée',
+      () async {
+    final session = StateProvider<String?>((ref) => 'a');
+    final repository = _PendingFeatureFlagsRepository();
+    final seenByB = <bool>[];
+    final container = ProviderContainer(overrides: [
+      featureFlagsRepositoryProvider.overrideWithValue(repository),
+      featureFlagsSessionReadyProvider.overrideWithValue(true),
+      clubSessionIdentityProvider.overrideWith((ref) => ref.watch(session)),
+    ]);
+    addTearDown(container.dispose);
+    final subscription =
+        container.listen(featureFlagsControllerProvider, (_, next) {
+      if (container.read(session) == 'b' &&
+          !next.isLoading &&
+          next.valueOrNull?.sourceAvailable == true) {
+        seenByB.add(next.valueOrNull!.sportsManagement.enabled);
+      }
+    });
+    addTearDown(subscription.close);
+    await pumpEventQueue();
+    repository.pending[0]
+        .complete(_snapshot(enabled: true, updatedAt: DateTime.utc(2026)));
+    await pumpEventQueue();
+    final refreshA =
+        container.read(featureFlagsControllerProvider.notifier).refresh();
+    await pumpEventQueue();
+
+    container.read(session.notifier).state = 'b';
+    // Pas d'attente ici : la réponse arrive avant la reconstruction différée
+    // des providers. Le changement de compte est déjà effectif.
+    repository.pending[1]
+        .complete(_snapshot(enabled: true, updatedAt: DateTime.utc(2027)));
+    await pumpEventQueue();
+    repository.pending[2]
+        .complete(_snapshot(enabled: false, updatedAt: DateTime.utc(2026)));
+    await refreshA;
+    await pumpEventQueue();
+    expect(seenByB, [false]);
+  });
+
   test('une actualisation A en vol ne réactive pas les flags chez B', () async {
     final session = StateProvider<String?>((ref) => 'a');
     final repository = _PendingFeatureFlagsRepository();
