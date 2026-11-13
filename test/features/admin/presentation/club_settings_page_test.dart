@@ -57,20 +57,39 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> openSection(WidgetTester tester, String section) async {
+    final tile =
+        find.byKey(PageStorageKey<String>('club-settings-section-$section'));
+    await tester.scrollUntilVisible(tile, 260);
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('la page montre le nom, le code et les fonctionnalités',
       (tester) async {
     await pumpPage(tester);
 
     expect(find.widgetWithText(TextField, 'Nom du club'), findsOneWidget);
+    expect(find.text('Identité et maillots'), findsOneWidget);
+    expect(find.text('Matchs et convocations'), findsOneWidget);
+    expect(find.text('Pronostics et votes'), findsOneWidget);
+    expect(find.text('Statistiques et récompenses'), findsOneWidget);
+    expect(find.text('Abonnement et stockage'), findsOneWidget);
+
+    await openSection(tester, 'invitations');
     expect(find.text('ABCDEFGH'), findsOneWidget);
-    for (final module in ClubModule.values) {
-      expect(find.text(module.label), findsOneWidget);
-    }
+    await openSection(tester, 'matches');
+    expect(find.text(ClubModule.weather.label), findsOneWidget);
+    await openSection(tester, 'predictions');
+    expect(find.text(ClubModule.predictions.label), findsOneWidget);
+    await openSection(tester, 'rewards');
+    expect(find.text(ClubModule.badges.label), findsOneWidget);
   });
 
   testWidgets('l’admin voit son essai, ses joueurs facturés et son espace',
       (tester) async {
     await pumpPage(tester);
+    await openSection(tester, 'subscription');
 
     expect(find.text('Essai gratuit : encore 5 jours'), findsOneWidget);
     expect(find.textContaining('24 joueurs'), findsOneWidget);
@@ -81,6 +100,7 @@ void main() {
   testWidgets('désactiver une fonctionnalité l’enregistre côté serveur',
       (tester) async {
     await pumpPage(tester);
+    await openSection(tester, 'matches');
 
     await tester.tap(find.byKey(const ValueKey('club-module-weather')));
     await tester.pumpAndSettle();
@@ -121,6 +141,7 @@ void main() {
   testWidgets('adresse du terrain propre au club et effaçable', (tester) async {
     repository.homeAddress = 'Rue du Stade, Toulouse';
     await pumpPage(tester);
+    await openSection(tester, 'matches');
 
     final field = find.byKey(const Key('club-settings-home-address'));
     expect(tester.widget<TextField>(field).controller!.text,
@@ -143,6 +164,7 @@ void main() {
 
   testWidgets('le quota habituel est réglable de 1 à 30', (tester) async {
     await pumpPage(tester);
+    await openSection(tester, 'matches');
     final plus = find.byKey(const Key('club-usual-squad-size-plus'));
     await tester.ensureVisible(plus);
     expect(find.text('14'), findsOneWidget);
@@ -161,6 +183,7 @@ void main() {
   testWidgets('changer le code demande confirmation puis affiche le nouveau',
       (tester) async {
     await pumpPage(tester);
+    await openSection(tester, 'invitations');
 
     await tester.tap(find.text('Changer le code'));
     await tester.pumpAndSettle();
@@ -199,8 +222,9 @@ void main() {
   testWidgets('la page affiche les règles du club et enregistre un changement',
       (tester) async {
     await pumpPage(tester);
+    await openSection(tester, 'predictions');
 
-    expect(find.text('Règles du club'), findsOneWidget);
+    expect(find.text('Pronostics et votes'), findsOneWidget);
     expect(find.text('Fermeture des pronostics'), findsOneWidget);
 
     await tester.ensureVisible(
@@ -220,6 +244,7 @@ void main() {
       (tester) async {
     repository.ruleValues['waitlist_mode'] = 0;
     await pumpPage(tester);
+    await openSection(tester, 'matches');
 
     expect(find.text('Par présence l’an dernier'), findsOneWidget);
     expect(find.text('Ordre d’arrivée'), findsOneWidget);
@@ -248,7 +273,13 @@ void main() {
       'waitlist_cutoff_hour': 12,
     });
     await pumpPage(tester);
+    await openSection(tester, 'matches');
 
+    expect(find.textContaining('Aucun +1 n’est automatique.'), findsNothing);
+    await tester.tap(find.byTooltip(
+      'Informations : Liste d’attente : qui passe en premier',
+    ));
+    await tester.pumpAndSettle();
     expect(find.textContaining('Aucun +1 n’est automatique.'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('club-rule-waitlist_cutoff_days')),
@@ -260,6 +291,20 @@ void main() {
     );
     // Les trois règles de convocation restent disponibles.
     expect(find.text('Par choix'), findsOneWidget);
+  });
+
+  testWidgets('les descriptions sont accessibles par i uniquement',
+      (tester) async {
+    await pumpPage(tester);
+    await openSection(tester, 'matches');
+
+    expect(find.text(ClubModule.weather.description), findsNothing);
+    await tester.tap(find.byTooltip('Informations : Météo du match'));
+    await tester.pumpAndSettle();
+    expect(find.text(ClubModule.weather.description), findsOneWidget);
+    await tester.tap(find.text('Fermer'));
+    await tester.pumpAndSettle();
+    expect(find.text(ClubModule.weather.description), findsNothing);
   });
 
   testWidgets('retirer le logo rétablit l’écusson neutre', (tester) async {
