@@ -1,0 +1,55 @@
+name: "QA - restore fake database data and private Storage bytes"
+
+# Only disposable local Supabase CLI. No production credentials, no artifact
+# with private data, no requests to the commercial project's domain.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tool/qa/local_restore_drill.py'
+      - 'tool/qa/test_local_restore_safety.py'
+      - '.github/workflows/local_restore_drill.yml'
+      - 'supabase/migrations/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: local-restore-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  restore-local:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Test refusal of remote restore and manifest tampering
+        run: python3 -m unittest discover -s tool/qa -p 'test_local_restore_safety.py' -v
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf # v2
+        with:
+          version: 2.111.0
+
+      - name: Start disposable database and private Storage
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase start 2>&1 | tail -8
+
+      - name: Encrypt, delete and restore fictional data and file bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          supabase status -o env > "$RUNNER_TEMP/supabase-local.env"
+          python3 tool/qa/local_restore_drill.py "$RUNNER_TEMP/supabase-local.env"
+          rm -f "$RUNNER_TEMP/supabase-local.env"
+
+      - name: Stop disposable database
+        if: always()
+        run: supabase stop --no-backup || true
