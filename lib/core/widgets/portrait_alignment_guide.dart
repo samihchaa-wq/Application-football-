@@ -100,7 +100,7 @@ class _AlignmentPainter extends CustomPainter {
       final direction = line / length;
       for (double d = 0; d < length; d += 11) {
         canvas.drawLine(a + direction * d,
-            a + direction * (d + 5).clamp(0, length), dash);
+            a + direction * (d + 5).clamp(0, length).toDouble(), dash);
       }
     }
 
