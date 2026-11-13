@@ -156,7 +156,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     final address = _homeAddressController.text.trim();
     if (address.length > 200 || address.contains(RegExp(r'[\r\n\t]'))) {
       _showMessage(
-          'L’adresse doit tenir sur une ligne (200 caractères maximum).');
+        'L’adresse doit tenir sur une ligne (200 caractères maximum).',
+      );
       return;
     }
     setState(() => _savingHomeAddress = true);
@@ -166,9 +167,11 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           .updateHomeAddress(address.isEmpty ? null : address);
       if (!mounted) return;
       _homeAddressController.text = saved ?? '';
-      _showMessage(saved == null
-          ? 'Adresse du terrain effacée.'
-          : 'Adresse du terrain enregistrée.');
+      _showMessage(
+        saved == null
+            ? 'Adresse du terrain effacée.'
+            : 'Adresse du terrain enregistrée.',
+      );
     } catch (_) {
       if (mounted) {
         _showMessage('L’adresse du terrain n’a pas pu être enregistrée.');
@@ -217,8 +220,12 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     }
   }
 
-  Widget _colorRow(String label, String keyPrefix, String? current,
-      void Function(String hex) onPick) {
+  Widget _colorRow(
+    String label,
+    String keyPrefix,
+    String? current,
+    void Function(String hex) onPick,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -403,122 +410,188 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     }
   }
 
-  List<Widget> _ruleSection(ThemeData theme) {
-    if (_rules.isEmpty) return const [];
-    final widgets = <Widget>[
-      const SizedBox(height: 28),
-      Text('Règles du club', style: theme.textTheme.titleMedium),
-      const SizedBox(height: 8),
-      const Text(
-        'Les horaires et délais propres à ton club. Les changements '
-        's’appliquent à tous les membres, pour les matchs à venir.',
+  void _showInfo(String title, String description) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(title),
+        content: SingleChildScrollView(child: Text(description)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Fermer'),
+          ),
+        ],
       ),
-    ];
-    String? group;
-    for (final rule in _rules) {
-      // Depuis le passage des +1 en attribution 100 % manuelle, ces deux
-      // limites temporelles n'ont plus d'effet et ne sont plus proposees.
-      if (rule.key == 'waitlist_cutoff_days' ||
-          rule.key == 'waitlist_cutoff_hour') {
-        continue;
-      }
-      if (rule.group != group) {
-        group = rule.group;
-        widgets
-          ..add(const SizedBox(height: 16))
-          ..add(Text(rule.group, style: theme.textTheme.titleSmall));
-      }
-      if (rule.key == ClubRules.waitlistModeKey) {
-        widgets.add(_waitlistModeTile(rule));
-        continue;
-      }
-      widgets.add(
-        ListTile(
-          key: ValueKey('club-rule-${rule.key}'),
-          contentPadding: EdgeInsets.zero,
-          title: Text(rule.label),
-          subtitle: Text(
-            '${rule.description}\nPar défaut : '
-            '${_ruleValueLabel(rule, rule.defaultValue)}',
-          ),
-          isThreeLine: true,
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                key: ValueKey('club-rule-${rule.key}-minus'),
-                icon: const Icon(Icons.remove_circle_outline),
-                onPressed:
-                    _pendingRules.contains(rule.key) || rule.value <= rule.min
-                        ? null
-                        : () => _setRule(rule, rule.value - 1),
-              ),
-              Text(_ruleValueLabel(rule, rule.value)),
-              IconButton(
-                key: ValueKey('club-rule-${rule.key}-plus'),
-                icon: const Icon(Icons.add_circle_outline),
-                onPressed:
-                    _pendingRules.contains(rule.key) || rule.value >= rule.max
-                        ? null
-                        : () => _setRule(rule, rule.value + 1),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-    return widgets;
+    );
   }
 
-  /// Valeur affichée d'une règle : « 15 min », ou « × 1,5 » pour un
-  /// multiplicateur du barème (enregistré en dixièmes).
+  Widget _infoButton(String key, String title, String description) =>
+      IconButton(
+        key: ValueKey('club-info-$key'),
+        tooltip: 'Informations : $title',
+        icon: const Icon(Icons.info_outline_rounded, size: 20),
+        onPressed: () => _showInfo(title, description),
+      );
+
+  Widget _labelWithInfo(String key, String label, String description) => Row(
+        children: [
+          Expanded(child: Text(label)),
+          _infoButton(key, label, description),
+        ],
+      );
+
+  Widget _section(
+    String key,
+    String title,
+    IconData icon,
+    List<Widget> children, {
+    bool expanded = false,
+  }) =>
+      Card(
+        clipBehavior: Clip.antiAlias,
+        margin: const EdgeInsets.only(bottom: 10),
+        child: ExpansionTile(
+          key: ValueKey('club-section-$key'),
+          initiallyExpanded: expanded,
+          leading: Icon(icon),
+          title: Text(title),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: children,
+            ),
+          ],
+        ),
+      );
+
+  String _moduleCategory(ClubModule module) {
+    if (module == ClubModule.weather || module == ClubModule.liveMode) {
+      return 'matches';
+    }
+    if (module == ClubModule.predictions) return 'predictions';
+    if (module == ClubModule.statistics ||
+        module == ClubModule.manOfTheMatch ||
+        module == ClubModule.badges ||
+        module == ClubModule.seasonWrapped) {
+      return 'rewards';
+    }
+    return 'other';
+  }
+
+  String _ruleCategory(ClubRule rule) {
+    if (rule.key == ClubRules.waitlistModeKey ||
+        rule.key == ClubRules.featuresOpenDaysKey ||
+        rule.key == ClubRules.featuresOpenHourKey) {
+      return 'squad';
+    }
+    if (rule.key == ClubRules.correctionWindowHoursKey) return 'matches';
+    if (rule.key.startsWith('prediction_')) return 'predictions';
+    return 'other';
+  }
+
+  bool _isRelevantRule(ClubRule rule) =>
+      rule.key != 'waitlist_cutoff_days' && rule.key != 'waitlist_cutoff_hour';
+
+  List<Widget> _modulesFor(String category) => [
+        for (final module in ClubModule.values)
+          if (_moduleCategory(module) == category)
+            SwitchListTile.adaptive(
+              key: ValueKey('club-module-${module.key}'),
+              contentPadding: EdgeInsets.zero,
+              title: _labelWithInfo(
+                'module-${module.key}',
+                module.label,
+                '${module.description}\n\nLa désactivation conserve les données existantes.',
+              ),
+              value: _modules.isEnabled(module),
+              onChanged: _pendingModules.contains(module)
+                  ? null
+                  : (value) => _setModule(module, value),
+            ),
+      ];
+
+  List<Widget> _rulesFor(String category) => [
+        for (final rule in _rules)
+          if (_isRelevantRule(rule) && _ruleCategory(rule) == category)
+            if (rule.key == ClubRules.waitlistModeKey)
+              _waitlistModeTile(rule)
+            else
+              ListTile(
+                key: ValueKey('club-rule-${rule.key}'),
+                contentPadding: EdgeInsets.zero,
+                title: _labelWithInfo(
+                  'rule-${rule.key}',
+                  rule.label,
+                  '${rule.description}\n\nValeur par défaut : ${_ruleValueLabel(rule, rule.defaultValue)}',
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      key: ValueKey('club-rule-${rule.key}-minus'),
+                      tooltip: 'Diminuer',
+                      icon: const Icon(Icons.remove_circle_outline),
+                      onPressed: _pendingRules.contains(rule.key) ||
+                              rule.value <= rule.min
+                          ? null
+                          : () => _setRule(rule, rule.value - 1),
+                    ),
+                    Text(_ruleValueLabel(rule, rule.value)),
+                    IconButton(
+                      key: ValueKey('club-rule-${rule.key}-plus'),
+                      tooltip: 'Augmenter',
+                      icon: const Icon(Icons.add_circle_outline),
+                      onPressed: _pendingRules.contains(rule.key) ||
+                              rule.value >= rule.max
+                          ? null
+                          : () => _setRule(rule, rule.value + 1),
+                    ),
+                  ],
+                ),
+              ),
+      ];
+
   String _ruleValueLabel(ClubRule rule, int value) =>
       rule.unit == ClubRules.multiplierUnit
           ? ClubRules.formatMultiplier(value)
           : '$value ${rule.unit}';
 
-  /// Choix du mode de liste d'attente : trois options expliquées, pas un
-  /// compteur.
   Widget _waitlistModeTile(ClubRule rule) {
     final current = WaitlistMode.fromValue(rule.value);
     final pending = _pendingRules.contains(rule.key);
-    return Column(
+    final info = [
+      rule.description,
+      for (final mode in WaitlistMode.values)
+        '${mode.label} : ${mode.description}',
+      'Les +1 sont attribués et retirés uniquement par les admins. '
+          'Aucun +1 n’est automatique.',
+    ].join('\n\n');
+    return Padding(
       key: ValueKey('club-rule-${rule.key}'),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 8, bottom: 4),
-          child: Text(rule.label),
-        ),
-        RadioGroup<WaitlistMode>(
-          groupValue: current,
-          onChanged: (selected) {
-            if (pending || selected == null || selected == current) return;
-            _setRule(rule, selected.value);
-          },
-          child: Column(
-            children: [
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _labelWithInfo('rule-${rule.key}', rule.label, info),
+          DropdownButton<WaitlistMode>(
+            key: ValueKey('club-rule-${rule.key}-select'),
+            value: current,
+            isExpanded: true,
+            items: [
               for (final mode in WaitlistMode.values)
-                RadioListTile<WaitlistMode>(
-                  key: ValueKey('club-rule-${rule.key}-${mode.value}'),
-                  contentPadding: EdgeInsets.zero,
-                  value: mode,
-                  enabled: !pending,
-                  title: Text(mode.label),
-                  subtitle: Text(mode.description),
-                ),
+                DropdownMenuItem(value: mode, child: Text(mode.label)),
             ],
+            onChanged: pending
+                ? null
+                : (selected) {
+                    if (selected == null || selected == current) return;
+                    _setRule(rule, selected.value);
+                  },
           ),
-        ),
-        const Padding(
-          padding: EdgeInsets.only(top: 8),
-          child: Text(
-            'Les +1 de la liste d’attente sont attribués ou retirés '
-            'uniquement par un administrateur, avec les boutons + et − '
-            'de la liste. Aucun +1 n’est automatique.',
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -540,10 +613,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Impossible de charger les réglages du club.',
-                textAlign: TextAlign.center,
-              ),
+              const Text('Impossible de charger les réglages du club.'),
               const SizedBox(height: 12),
               FilledButton(onPressed: _load, child: const Text('Réessayer')),
             ],
@@ -551,227 +621,253 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
         ),
       );
     }
-
     final theme = Theme.of(context);
     return ListView(
-      padding: const EdgeInsets.all(16),
+      key: const Key('club-settings-list'),
+      padding: const EdgeInsets.all(12),
       children: [
-        Text('Mon club', style: theme.textTheme.titleMedium),
-        const SizedBox(height: 12),
-        TextField(
-          key: const Key('club-settings-name'),
-          controller: _nameController,
-          textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(
-            labelText: 'Nom du club',
-            prefixIcon: Icon(Icons.shield_outlined),
-          ),
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          key: const Key('club-settings-short-name'),
-          controller: _shortNameController,
-          textCapitalization: TextCapitalization.characters,
-          decoration: const InputDecoration(
-            labelText: 'Nom court',
-            helperText: 'Affiché là où la place manque. 2 à 12 caractères.',
-            prefixIcon: Icon(Icons.short_text),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: FilledButton(
-            onPressed: _savingIdentity ? null : _saveIdentity,
-            child: Text(_savingIdentity ? 'Enregistrement…' : 'Enregistrer'),
-          ),
-        ),
-        const SizedBox(height: 28),
-        Text('Terrain à domicile', style: theme.textTheme.titleMedium),
-        const SizedBox(height: 8),
-        const Text(
-          'Adresse proposée automatiquement lors de la création '
-          'd’un match à domicile. Modifiable pour chaque rencontre.',
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          key: const Key('club-settings-home-address'),
-          controller: _homeAddressController,
-          maxLength: 200,
-          keyboardType: TextInputType.streetAddress,
-          textCapitalization: TextCapitalization.sentences,
-          decoration: const InputDecoration(
-            labelText: 'Adresse du terrain',
-            hintText: 'Rue, code postal, ville',
-            prefixIcon: Icon(Icons.place_outlined),
-          ),
-        ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: FilledButton(
-            key: const Key('club-settings-save-home-address'),
-            onPressed: _savingHomeAddress ? null : _saveHomeAddress,
-            child: Text(_savingHomeAddress
-                ? 'Enregistrement…'
-                : 'Enregistrer l’adresse'),
-          ),
-        ),
-        const SizedBox(height: 28),
-        Text('Logo du club', style: theme.textTheme.titleMedium),
-        const SizedBox(height: 8),
-        const Text(
-          'Ton écusson remplace l’écusson neutre dans toute l’application. '
-          'Image JPEG, PNG ou WebP, de préférence carrée avec un fond '
-          'transparent.',
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Image(image: ClubIdentity.crestImage, width: 56, height: 56),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Wrap(
-                spacing: 12,
-                runSpacing: 8,
-                children: [
-                  FilledButton.tonalIcon(
-                    key: const Key('club-logo-pick'),
-                    onPressed: _savingLogo ? null : _pickLogo,
-                    icon: const Icon(Icons.image_outlined, size: 18),
-                    label: Text(_savingLogo ? 'Envoi…' : 'Choisir un logo'),
+        _section(
+            'identity',
+            'Identité et maillots',
+            Icons.shield_outlined,
+            [
+              const SizedBox(height: 12),
+              TextField(
+                key: const Key('club-settings-name'),
+                controller: _nameController,
+                textCapitalization: TextCapitalization.words,
+                decoration: const InputDecoration(
+                  labelText: 'Nom du club',
+                  prefixIcon: Icon(Icons.shield_outlined),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                key: const Key('club-settings-short-name'),
+                controller: _shortNameController,
+                textCapitalization: TextCapitalization.characters,
+                decoration: InputDecoration(
+                  labelText: 'Nom court',
+                  suffixIcon: _infoButton(
+                    'short-name',
+                    'Nom court',
+                    'Utilisé quand la place manque (2 à 12 caractères).',
                   ),
-                  if (club.logoPath != null)
-                    OutlinedButton(
-                      key: const Key('club-logo-remove'),
-                      onPressed: _savingLogo ? null : _removeLogo,
-                      child: const Text('Retirer'),
+                  prefixIcon: Icon(Icons.short_text),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: FilledButton(
+                  onPressed: _savingIdentity ? null : _saveIdentity,
+                  child:
+                      Text(_savingIdentity ? 'Enregistrement…' : 'Enregistrer'),
+                ),
+              ),
+              _labelWithInfo(
+                'logo',
+                'Écusson du club',
+                'Écusson affiché dans l’application. Image JPEG, PNG ou WebP, de préférence carrée.',
+              ),
+              const SizedBox(height: 8),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Image(image: ClubIdentity.crestImage, width: 56, height: 56),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Wrap(
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: [
+                        FilledButton.tonalIcon(
+                          key: const Key('club-logo-pick'),
+                          onPressed: _savingLogo ? null : _pickLogo,
+                          icon: const Icon(Icons.image_outlined, size: 18),
+                          label:
+                              Text(_savingLogo ? 'Envoi…' : 'Choisir un logo'),
+                        ),
+                        if (club.logoPath != null)
+                          OutlinedButton(
+                            key: const Key('club-logo-remove'),
+                            onPressed: _savingLogo ? null : _removeLogo,
+                            child: const Text('Retirer'),
+                          ),
+                      ],
                     ),
+                  ),
                 ],
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 28),
-        Text('Couleurs du club', style: theme.textTheme.titleMedium),
-        const SizedBox(height: 8),
-        const Text(
-          'L’application s’habille à ces couleurs pour tous les membres.',
-        ),
-        const SizedBox(height: 12),
-        _colorRow(
-          'Couleur principale',
-          'club-color-primary',
-          club.primaryColor,
-          (hex) => _setColors(primary: hex),
-        ),
-        const SizedBox(height: 14),
-        _colorRow(
-          'Couleur secondaire',
-          'club-color-secondary',
-          club.secondaryColor,
-          (hex) => _setColors(secondary: hex),
-        ),
-        const SizedBox(height: 12),
-        ListTile(
-          key: const ValueKey('club-kits-entry'),
-          contentPadding: EdgeInsets.zero,
-          leading: const Icon(Icons.checkroom_rounded),
-          title: const Text('Maillots du club'),
-          subtitle: const Text('Noms et couleurs des maillots proposés.'),
-          trailing: const Icon(Icons.chevron_right_rounded),
-          onTap: () => context.push('/admin/club/maillots'),
-        ),
-        const SizedBox(height: 28),
-        Text('Inviter des joueurs', style: theme.textTheme.titleMedium),
-        const SizedBox(height: 8),
-        const Text(
-          'Partage le lien, ou donne le code : le joueur crée son compte, puis '
-          'tu le valides dans Administration.',
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Icon(Icons.key_outlined, color: AppTheme.primaryBright),
-            const SizedBox(width: 12),
-            SelectableText(
-              club.inviteCode,
-              key: const Key('club-settings-invite-code'),
-              style: theme.textTheme.headlineSmall?.copyWith(letterSpacing: 2),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 12,
-          runSpacing: 8,
-          children: [
-            FilledButton.tonalIcon(
-              onPressed: _copyInviteLink,
-              icon: const Icon(Icons.link, size: 18),
-              label: const Text('Copier le lien d’inscription'),
-            ),
-            OutlinedButton.icon(
-              onPressed: _renewingCode ? null : _renewInviteCode,
-              icon: const Icon(Icons.autorenew_rounded, size: 18),
-              label: const Text('Changer le code'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 28),
-        const ClubSubscriptionSection(),
-        const SizedBox(height: 28),
-        Text('Fonctionnalités', style: theme.textTheme.titleMedium),
-        const SizedBox(height: 8),
-        const Text(
-          'Désactive ce dont ton club ne se sert pas : l’entrée disparaît pour '
-          'tous les membres. Rien n’est effacé, tu peux réactiver à tout '
-          'moment.',
-        ),
-        const SizedBox(height: 4),
-        for (final module in ClubModule.values)
-          SwitchListTile.adaptive(
-            key: ValueKey('club-module-${module.key}'),
-            contentPadding: EdgeInsets.zero,
-            title: Text(module.label),
-            subtitle: Text(module.description),
-            value: _modules.isEnabled(module),
-            onChanged: _pendingModules.contains(module)
-                ? null
-                : (value) => _setModule(module, value),
-          ),
-        const SizedBox(height: 28),
-        Text('Convocations', style: theme.textTheme.titleMedium),
-        const SizedBox(height: 8),
-        const Text(
-          'Nombre habituel de joueurs convoqués pour les nouveaux matchs. '
-          'Tu pourras toujours choisir un autre nombre pour chaque match.',
-        ),
-        ListTile(
-          key: const Key('club-usual-squad-size'),
-          contentPadding: EdgeInsets.zero,
-          title: const Text('Joueurs convoqués par défaut'),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                key: const Key('club-usual-squad-size-minus'),
-                icon: const Icon(Icons.remove_circle_outline),
-                onPressed: _savingUsualSquadSize || _usualSquadSize <= 1
-                    ? null
-                    : () => _saveUsualSquadSize(_usualSquadSize - 1),
+              _labelWithInfo(
+                'colors',
+                'Couleurs du club',
+                'Couleurs de l’interface pour tous les membres du club.',
               ),
-              Text('$_usualSquadSize'),
-              IconButton(
-                key: const Key('club-usual-squad-size-plus'),
-                icon: const Icon(Icons.add_circle_outline),
-                onPressed: _savingUsualSquadSize || _usualSquadSize >= 30
-                    ? null
-                    : () => _saveUsualSquadSize(_usualSquadSize + 1),
+              const SizedBox(height: 8),
+              const SizedBox(height: 12),
+              _colorRow(
+                'Couleur principale',
+                'club-color-primary',
+                club.primaryColor,
+                (hex) => _setColors(primary: hex),
+              ),
+              const SizedBox(height: 14),
+              _colorRow(
+                'Couleur secondaire',
+                'club-color-secondary',
+                club.secondaryColor,
+                (hex) => _setColors(secondary: hex),
+              ),
+              const SizedBox(height: 12),
+              ListTile(
+                key: const ValueKey('club-kits-entry'),
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.checkroom_rounded),
+                title: _labelWithInfo(
+                  'kits',
+                  'Maillots du club',
+                  'Choisis les tenues des joueurs et des gardiens. Elles sont '
+                      'utilisées dans les compositions et les matchs.',
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => context.push('/admin/club/maillots'),
               ),
             ],
+            expanded: true),
+        _section('squad', 'Effectif et convocations', Icons.groups_outlined, [
+          const SizedBox(height: 8),
+          ListTile(
+            key: const Key('club-usual-squad-size'),
+            contentPadding: EdgeInsets.zero,
+            title: _labelWithInfo(
+              'quota',
+              'Convoqués par défaut',
+              'Nombre prévu à la création d’un match (1 à 30). Peut être modifié par rencontre.',
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  key: const Key('club-usual-squad-size-minus'),
+                  icon: const Icon(Icons.remove_circle_outline),
+                  onPressed: _savingUsualSquadSize || _usualSquadSize <= 1
+                      ? null
+                      : () => _saveUsualSquadSize(_usualSquadSize - 1),
+                ),
+                Text('$_usualSquadSize'),
+                IconButton(
+                  key: const Key('club-usual-squad-size-plus'),
+                  icon: const Icon(Icons.add_circle_outline),
+                  onPressed: _savingUsualSquadSize || _usualSquadSize >= 30
+                      ? null
+                      : () => _saveUsualSquadSize(_usualSquadSize + 1),
+                ),
+              ],
+            ),
           ),
+          ..._rulesFor('squad'),
+        ]),
+        _section('matches', 'Matchs et direct', Icons.sports_soccer_outlined, [
+          const SizedBox(height: 8),
+          const SizedBox(height: 12),
+          TextField(
+            key: const Key('club-settings-home-address'),
+            controller: _homeAddressController,
+            maxLength: 200,
+            keyboardType: TextInputType.streetAddress,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: InputDecoration(
+              labelText: 'Adresse du terrain',
+              suffixIcon: _infoButton(
+                'home-address',
+                'Terrain à domicile',
+                'Proposé par défaut pour les matchs à domicile. Modifiable par match.',
+              ),
+              hintText: 'Rue, code postal, ville',
+              prefixIcon: Icon(Icons.place_outlined),
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FilledButton(
+              key: const Key('club-settings-save-home-address'),
+              onPressed: _savingHomeAddress ? null : _saveHomeAddress,
+              child: Text(
+                _savingHomeAddress
+                    ? 'Enregistrement…'
+                    : 'Enregistrer l’adresse',
+              ),
+            ),
+          ),
+          ..._modulesFor('matches'),
+          ..._rulesFor('matches'),
+        ]),
+        _section('predictions', 'Pronostics', Icons.emoji_events_outlined, [
+          ..._modulesFor('predictions'),
+          ..._rulesFor('predictions'),
+        ]),
+        _section(
+          'rewards',
+          'Statistiques et récompenses',
+          Icons.bar_chart_rounded,
+          [..._modulesFor('rewards'), ..._rulesFor('rewards')],
         ),
-        ..._ruleSection(theme),
+        if (ClubModule.values.any((m) => _moduleCategory(m) == 'other') ||
+            _rules.any(
+              (r) => _isRelevantRule(r) && _ruleCategory(r) == 'other',
+            ))
+          _section('other', 'Autres réglages', Icons.tune_rounded, [
+            ..._modulesFor('other'),
+            ..._rulesFor('other'),
+          ]),
+        _section(
+          'members',
+          'Membres et invitations',
+          Icons.person_add_alt_1_outlined,
+          [
+            _labelWithInfo(
+              'invite',
+              'Code d’invitation',
+              'Lien ou code à donner aux futurs membres. L’administrateur valide ensuite les inscriptions.',
+            ),
+            const SizedBox(height: 8),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(Icons.key_outlined, color: AppTheme.primaryBright),
+                const SizedBox(width: 12),
+                SelectableText(
+                  club.inviteCode,
+                  key: const Key('club-settings-invite-code'),
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    letterSpacing: 2,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              children: [
+                FilledButton.tonalIcon(
+                  onPressed: _copyInviteLink,
+                  icon: const Icon(Icons.link, size: 18),
+                  label: const Text('Copier le lien d’inscription'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: _renewingCode ? null : _renewInviteCode,
+                  icon: const Icon(Icons.autorenew_rounded, size: 18),
+                  label: const Text('Changer le code'),
+                ),
+              ],
+            ),
+          ],
+        ),
+        _section('subscription', 'Abonnement', Icons.credit_card_outlined, [
+          const ClubSubscriptionSection(),
+        ]),
       ],
     );
   }
