@@ -3,7 +3,8 @@ begin;
 set local search_path = public, extensions, pg_catalog;
 select no_plan();
 
--- Les trois modes de liste d'attente réglables par le club.
+-- Contrat actuel : trois modes de classement, aucun crédit automatique.
+-- Nom historique de test conservé pour éviter de perdre la couverture.
 --
 -- Classement de saison : Alice n°1, Bruno n°2, Chloé n°3, Damien n°4.
 -- Deux places pour quatre disponibles. Ordre d'arrivée des réponses :
@@ -93,33 +94,74 @@ where player.id = participant.season_player_id
   and participant.match_id = current_setting('test.match')::uuid;
 
 
--- Les tests peuvent uniquement modifier leur transaction : simulation d'un
--- coup d'envoi apres activation, sans toucher a la base commerciale.
+-- Simuler les conditions qui créditaient autrefois les joueurs.
+-- Les changements restent dans la transaction locale de test.
 update private.waitlist_auto_activation
 set activated_at = now() - interval '2 days'
 where singleton;
 
 select private.recompute_match_convocations_internal(
-  current_setting('test.match')::uuid, false
-);
-select is(pg_temp.effectif(current_setting('test.match')::uuid),
+  current_setting('test.match')::uuid, false);
+select is(
+  pg_temp.effectif(current_setting('test.match')::uuid),
   'Alice not_convoked / Bruno not_convoked / Chloé convoked / Damien convoked',
-  'initialement les deux joueurs les moins prioritaires attendent');
-
+  'les deux premiers joueurs restent en attente'
+);
 select is(
   private.finalize_match_waitlist_turns_internal(
     current_setting('test.match')::uuid, true), 0,
-  'meme avec force=true, jamais de credit avant le coup d envoi');
+  'aucun credit avant le coup d envoi meme en forçant'
+);
 
 update public.matches
 set match_date = ((now() - interval '1 day') at time zone 'Europe/Paris')::date,
     match_time = ((now() - interval '1 day') at time zone 'Europe/Paris')::time
 where id = current_setting('test.match')::uuid;
-
 select is(
   private.finalize_match_waitlist_turns_internal(
-    current_setting('test.match')::uuid, false), 2,
-  'deux joueurs disponibles en attente gagnent chacun +1 au coup d envoi');
+    current_setting('test.match')::uuid, false), 0,
+  'aucun credit au coup d envoi'
+);
+select is(
+  private.finalize_match_waitlist_turns_internal(
+    current_setting('test.match')::uuid, false), 0,
+  'aucun credit a la deuxieme finalisation'
+);
+select is(
+  (select string_agg(p.first_name || '=' || e.manual_waitlist_count,
+                     ' / ' order by p.position)
+   from public.sport_waitlist_entries e
+   join public.season_players p on p.id = e.season_player_id
+   where e.season_id='f5820000-0000-0000-0000-000000000001'),
+  'Alice=0 / Bruno=0 / Chloé=0 / Damien=0',
+  'les compteurs restent tous nuls sans administrateur'
+);
+select is(
+  (select count(*)::integer from private.waitlist_auto_processed_matches
+   where match_id=current_setting('test.match')::uuid),
+  0, 'aucune trace de traitement automatique'
+);
+select is(
+  (select count(*)::integer from private.sport_waitlist_passage_ledger
+   where match_id=current_setting('test.match')::uuid
+     and credited_at is not null),
+  0, 'aucun point ajoute dans le journal de passage'
+);
+
+-- Deux +1 sont maintenant donnes volontairement par l'administrateur.
+select pg_temp.as_admin();
+set local role authenticated;
+select lives_ok(
+  $$select public.admin_set_waitlist_manual_count(
+    'f5840000-0000-0000-0000-000000000001', 1
+  )$$, 'l admin credite Alice'
+);
+select lives_ok(
+  $$select public.admin_set_waitlist_manual_count(
+    'f5840000-0000-0000-0000-000000000002', 1
+  )$$, 'l admin credite Bruno'
+);
+reset role;
 select is(
   (select string_agg(p.first_name || '=' || e.manual_waitlist_count,
                      ' / ' order by p.position)
@@ -127,22 +169,16 @@ select is(
    join public.season_players p on p.id=e.season_player_id
    where e.season_id='f5820000-0000-0000-0000-000000000001'),
   'Alice=1 / Bruno=1 / Chloé=0 / Damien=0',
-  'les credits sont uniquement attribues aux joueurs presents en attente');
+  'seules les attributions admin mettent les compteurs a 1'
+);
 select is(
-  private.finalize_match_waitlist_turns_internal(
-    current_setting('test.match')::uuid, false), 0,
-  'deux executions du meme match ne creditent jamais deux fois');
-select is(
-  (select credited_count from private.waitlist_auto_processed_matches
-   where match_id=current_setting('test.match')::uuid),
-  2, 'un seul traitement enregistre deux credits');
-select is(
-  (select count(*)::integer from private.sport_waitlist_passage_ledger
-   where match_id=current_setting('test.match')::uuid
-     and credited_at is not null), 2,
-  'deux traces individuelles permettent un audit par match');
+  (select count(*)::integer from private.sport_admin_audit_log
+   where action='set_waitlist_manual_count'
+     and actor_profile_id='f5810000-0000-0000-0000-000000000001'),
+  2, 'les deux changements sont traces dans le journal admin'
+);
 
--- Match suivant : les +1 permanents priment sur les presences precedentes.
+-- Match suivant : les crédits ADMIN donnent la priorité en mode présence.
 select pg_temp.as_admin();
 set local role authenticated;
 select set_config('test.match2',
@@ -162,15 +198,15 @@ select public.admin_override_match_availability(
   ('f5840000-0000-0000-0000-000000000004'::uuid)
 ) player(id);
 reset role;
-
 select private.recompute_match_convocations_internal(
   current_setting('test.match2')::uuid, false);
-select is(pg_temp.effectif(current_setting('test.match2')::uuid),
+select is(
+  pg_temp.effectif(current_setting('test.match2')::uuid),
   'Alice convoked / Bruno convoked / Chloé not_convoked / Damien not_convoked',
-  'en mode presence an dernier les +1 priment pour le match suivant');
+  'mode presence : les credits admin passent en premier'
+);
 
--- Ordre d'arrivee : Chloé et Damien ont repondu les premiers, mais
--- Alice et Bruno ont un +1 et restent prioritaires.
+-- Mode ordre d'arrivée : les credits admin restent prioritaires.
 select pg_temp.as_admin();
 set local role authenticated;
 select public.admin_set_club_rule('waitlist_mode', 1);
@@ -183,28 +219,28 @@ set availability_updated_at =
   ) then now() - interval '1 hour'
   else now() - interval '4 hours' end
 where match_id=current_setting('test.match2')::uuid;
-
 select private.recompute_match_convocations_internal(
   current_setting('test.match2')::uuid, false);
-select is(pg_temp.effectif(current_setting('test.match2')::uuid),
+select is(
+  pg_temp.effectif(current_setting('test.match2')::uuid),
   'Alice convoked / Bruno convoked / Chloé not_convoked / Damien not_convoked',
-  'ordre arrivee : +1 l emporte sur une reponse plus ancienne');
+  'mode arrivee : les credits admin priment sur l anciennete des reponses'
+);
 
--- Par choix : les quatre presents sont convoques initialement, mais l'admin
--- peut placer Damien en attente et lui donner ainsi +1 au coup d'envoi.
+-- Mode admin : tous disponibles, une mise en attente ne crédite personne.
 select pg_temp.as_admin();
 set local role authenticated;
 select public.admin_set_club_rule('waitlist_mode', 2);
 reset role;
 select private.recompute_match_convocations_internal(
   current_setting('test.match2')::uuid, false);
-select is(pg_temp.effectif(current_setting('test.match2')::uuid),
+select is(
+  pg_temp.effectif(current_setting('test.match2')::uuid),
   'Alice convoked / Bruno convoked / Chloé convoked / Damien convoked',
-  'par choix : tout le monde est initialement convoque');
-
+  'mode par choix : tous les disponibles sont initialement convoques'
+);
 update public.match_sport_participants
-set convocation_status='not_convoked',
-    convocation_manual_override=true
+set convocation_status='not_convoked', convocation_manual_override=true
 where match_id=current_setting('test.match2')::uuid
   and season_player_id='f5840000-0000-0000-0000-000000000004';
 select private.recompute_match_convocations_internal(
@@ -215,22 +251,35 @@ set match_date=((now() - interval '1 minute') at time zone 'Europe/Paris')::date
 where id=current_setting('test.match2')::uuid;
 select is(
   private.finalize_match_waitlist_turns_internal(
-    current_setting('test.match2')::uuid, false), 1,
-  'par choix, le joueur place en attente par admin recoit +1');
+    current_setting('test.match2')::uuid, false), 0,
+  'meme en mode par choix, aucun point automatique'
+);
 select is(
   (select manual_waitlist_count from public.sport_waitlist_entries
-   where season_player_id='f5840000-0000-0000-0000-000000000004'), 1,
-  'le credit en attente est ajoute sans consommation des autres credits');
+   where season_player_id='f5840000-0000-0000-0000-000000000004'),
+  0, 'Damien en attente ne recoit aucun +1 sans intervention admin'
+);
 
-select is(
-  (select manual_waitlist_count from public.sport_waitlist_entries
-   where season_player_id='f5840000-0000-0000-0000-000000000004'), 1,
-  'le +1 reste acquis apres le match meme si on demande une annulation');
+-- En revanche l'admin peut crediter Damien, sans effet de retrait automatique.
+select pg_temp.as_admin();
+set local role authenticated;
+select lives_ok(
+  $$select public.admin_set_waitlist_manual_count(
+    'f5840000-0000-0000-0000-000000000004', 1
+  )$$, 'l admin donne +1 a Damien'
+);
+reset role;
 select is(
   private.void_match_waitlist_credits(current_setting('test.match2')::uuid), 0,
-  'la fonction de retrait ne consomme jamais le credit');
+  'un retrait automatique sur annulation reste neutre'
+);
+select is(
+  (select manual_waitlist_count from public.sport_waitlist_entries
+   where season_player_id='f5840000-0000-0000-0000-000000000004'),
+  1, 'le compteur manuel de Damien est conserve'
+);
 
--- Aucun rattrapage retroactif de matchs passes avant installation.
+-- Aucune finalisation d'un match ancien ne crédite, même forcée.
 select pg_temp.as_admin();
 set local role authenticated;
 select set_config('test.match3',
@@ -242,19 +291,50 @@ select set_config('test.match3',
     'domicile', 2.10, 3.20, 2.90, 2
   )::text, true);
 reset role;
-update public.matches set match_date=((now() - interval '3 days') at time zone 'Europe/Paris')::date,
+update public.matches
+set match_date=((now() - interval '3 days') at time zone 'Europe/Paris')::date,
     match_time=((now() - interval '3 days') at time zone 'Europe/Paris')::time
 where id=current_setting('test.match3')::uuid;
 select is(
   private.finalize_match_waitlist_turns_internal(
     current_setting('test.match3')::uuid, true), 0,
-  'match anterieur a l activation jamais credite retroactivement');
+  'pas de credit retroactif sur un ancien match'
+);
 select ok(
   not exists (select 1 from private.waitlist_auto_processed_matches
               where match_id=current_setting('test.match3')::uuid),
-  'aucune trace de traitement retroactif');
-select is(private.process_due_waitlist_credits(), 0,
-  'cron idempotent : aucun match passe ou deja traite ne recrédite');
+  'pas de traitement automatique retroactif enregistre'
+);
+select is(
+  private.process_due_waitlist_credits(), 0,
+  'appel direct au cron historique sans effet sur les compteurs'
+);
+select ok(
+  not exists (select 1 from cron.job where jobname='waitlist-credit'),
+  'le cron n est plus planifie'
+);
+
+-- Un joueur du même club ne peut ni ajouter ni retirer de +1.
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"f5810000-0000-0000-0000-000000000002","role":"authenticated","aud":"authenticated"}',
+  true);
+set local role authenticated;
+select throws_ok(
+  $$select public.admin_set_waitlist_manual_count(
+    'f5840000-0000-0000-0000-000000000001', 99
+  )$$,
+  '42501',
+  'Active administrator role required',
+  'le profil joueur ne peut pas modifier un compteur'
+);
+reset role;
+select is(
+  (select manual_waitlist_count from public.sport_waitlist_entries
+   where season_player_id='f5840000-0000-0000-0000-000000000001'),
+  1,
+  'le refus de permission n a pas modifie le +1 admin'
+);
 
 select * from finish();
 rollback;
