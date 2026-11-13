@@ -26,7 +26,7 @@ for file in assets/composition/stade.mp4 assets/composition/stade-720.mp4; do
   done
   # Contact sheet compacte, utile pour comparer les deux encodages.
   ffmpeg -hide_banner -loglevel error -y \
-    -framerate 1 -pattern_type glob -i "$out/$name-[0-4].jpg" \
+    -framerate 1 -pattern_type glob -i "$out/$name-*.jpg" \
     -frames:v 1 -vf 'tile=5x1' "$out/$name-planche.jpg"
   printf '\n' >> "$report"
 done
