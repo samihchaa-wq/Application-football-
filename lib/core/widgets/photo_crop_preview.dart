@@ -308,7 +308,7 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w400,
                     )),
               ],
             ),
@@ -369,7 +369,7 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 11,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w400,
                     )),
               ),
             ],
@@ -423,7 +423,7 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
               style: TextStyle(
                   color: Colors.white,
                   fontSize: 14,
-                  fontWeight: FontWeight.w700)),
+                  fontWeight: FontWeight.w400)),
           const SizedBox(height: 8),
           Center(
             child: Container(
@@ -483,7 +483,7 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: isCompact ? 18 : 23,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ),
