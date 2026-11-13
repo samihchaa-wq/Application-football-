@@ -324,6 +324,8 @@ select is(
         'private.registration_attempts',
         'private.prediction_reminder_cron_config',
         'private.sport_waitlist_engine_activation',
+        -- Singleton global non lie a un club : identique a l activation moteur.
+        'private.waitlist_auto_activation',
         'private.platform_operators',
         'private.client_incident_log_unassigned',
         'private.email_confirmations',
