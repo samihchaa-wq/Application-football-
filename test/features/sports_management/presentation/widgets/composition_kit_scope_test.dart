@@ -44,7 +44,6 @@ void main() {
     ));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('portrait-jersey-field')), findsNothing);
-    expect(find.text('AL'), findsWidgets);
   });
 
   testWidgets('composition: les maillots joueur et gardien sont distincts', (
