@@ -294,6 +294,7 @@ class _ProfileHeaderCard extends StatelessWidget {
                       photoUrl: profile?.photoUrl,
                       name: profile?.displayName ?? '',
                       lastName: profile?.lastName,
+                      isGoalkeeper: profile?.isGoalkeeper == true,
                       size: 56,
                     ),
                   ),
