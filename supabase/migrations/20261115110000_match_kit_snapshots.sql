@@ -176,6 +176,19 @@ as $$
 begin
   if TG_TABLE_NAME = 'matches' then
     perform private.capture_match_kit_snapshot(new.id);
+  elsif TG_TABLE_NAME = 'match_internal_compositions' then
+    -- Ne PAS figer les couleurs pendant la préparation d'un match !
+    -- Compléter seulement une feuille déjà figée (Live commencé), ou
+    -- la première saisie d'un ancien match terminé.
+    if exists (
+      select 1 from public.match_kit_snapshots s
+      where s.match_id = new.match_id
+    ) or exists (
+      select 1 from public.matches m
+      where m.id = new.match_id and m.status in ('termine','archive')
+    ) then
+      perform private.capture_match_kit_snapshot(new.match_id);
+    end if;
   else
     perform private.capture_match_kit_snapshot(new.match_id);
   end if;
