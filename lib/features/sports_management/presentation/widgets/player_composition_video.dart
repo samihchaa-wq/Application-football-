@@ -1,5 +1,6 @@
 import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/club/club_kits.dart';
+import 'package:as_grinta/core/club/match_kit_snapshot.dart';
 
 import 'dart:async';
 
@@ -358,11 +359,18 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
     }
     ClubKit? selectedKit;
     try {
-      final info = await ref.read(matchInfoProvider(matchId).future);
-      selectedKit =
-          (JerseyOption.fromId(info.jerseyNote) ?? JerseyOption.france).kit;
+      selectedKit = (await ref.read(matchKitSnapshotProvider(matchId).future))?.kit;
     } catch (_) {
-      // Ne pas inventer une couleur en cas de fiche match indisponible.
+      // Migration historique pas encore appliquée : repli sur Infos.
+    }
+    if (selectedKit == null) {
+      try {
+        final info = await ref.read(matchInfoProvider(matchId).future);
+        selectedKit =
+            (JerseyOption.fromId(info.jerseyNote) ?? JerseyOption.france).kit;
+      } catch (_) {
+        // Ne pas inventer une couleur en cas de fiche match indisponible.
+      }
     }
     return buildCompositionPresentationData(
       kit: selectedKit,
