@@ -25,6 +25,22 @@ les tenues du club ne réhabille donc pas rétroactivement les matchs figés.
 Les portraits alternatifs existants restent disponibles ; leur sélection suit
 le maillot historique lorsqu'un snapshot existe.
 
+## Ajustement visuel du 13/11 — coupe du haut de maillot
+
+Le retour sur smartphone montrait un grand demi-cercle coloré, un col trop
+épais et des pointillés traversant la poitrine. Le modèle de rendu partagé
+(`PortraitJerseyPainter`) a été repris : épaules en pente, silhouette de
+manches courtes, emmanchures discrètes, liserés de manches et col rond fin.
+Les seuls pointillés du recadrage restent ceux de l'ovale du visage.
+
+Cette correction ne change ni les couleurs et motifs enregistrés, ni le choix
+du maillot par match, ni les portraits stockés. Elle est visible sur toutes les
+surfaces qui utilisent `KitPortrait` (aperçu, compositions et vidéo), après
+intégration et nouvelle publication de l'application. Des tests de pixels
+vérifient notamment le cou dégagé et la pente des épaules ; **le rendu exact
+sur téléphone reste à valider visuellement**, surtout avec de vraies photos
+aux proportions variées.
+
 ## Périmètre et activation
 
 Migration additive `20261116030000_portraits_match_kits.sql` : validation des
