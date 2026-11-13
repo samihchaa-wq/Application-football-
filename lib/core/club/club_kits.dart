@@ -67,13 +67,19 @@ class ClubKit {
       other.label == label &&
       other.body == body &&
       other.trim == trim &&
-        other.goalkeeperBody == goalkeeperBody &&
-        other.goalkeeperTrim == goalkeeperTrim &&
+      other.goalkeeperBody == goalkeeperBody &&
+      other.goalkeeperTrim == goalkeeperTrim &&
       other.enabled == enabled;
 
   @override
   int get hashCode => Object.hash(
-        slot, label, body, trim, goalkeeperBody, goalkeeperTrim, enabled,
+        slot,
+        label,
+        body,
+        trim,
+        goalkeeperBody,
+        goalkeeperTrim,
+        enabled,
       );
 }
 
@@ -213,8 +219,11 @@ abstract final class ClubKits {
           ? AppTheme.parseHex(item['goalkeeper_trim']?.toString())
           : defaultGoalkeeperTrimFor(slot);
       final label = item['label']?.toString().trim() ?? '';
-      if (body == null || trim == null || goalkeeperBody == null ||
-          goalkeeperTrim == null || label.isEmpty) {
+      if (body == null ||
+          trim == null ||
+          goalkeeperBody == null ||
+          goalkeeperTrim == null ||
+          label.isEmpty) {
         return null;
       }
       bySlot[slot] = ClubKit(
