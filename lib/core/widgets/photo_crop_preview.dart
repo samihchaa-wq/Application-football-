@@ -187,7 +187,6 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
     }
   }
 
-
   static const _background = Color(0xFF080F19);
   static const _panel = Color(0xFF111C2B);
   static const _outline = Color(0xFF3A4A5D);
@@ -319,17 +318,13 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
         ),
       );
 
-  Widget _example(String label, bool correct, Alignment alignment) =>
-      Expanded(
+  Widget _example(String label, bool correct, Alignment alignment) => Expanded(
         child: Container(
           decoration: BoxDecoration(
-            color: correct
-                ? const Color(0xFF115A28)
-                : const Color(0xFF622425),
+            color: correct ? const Color(0xFF115A28) : const Color(0xFF622425),
             border: Border.all(
-                color: correct
-                    ? const Color(0xFF55DE58)
-                    : const Color(0xFFFF6262),
+                color:
+                    correct ? const Color(0xFF55DE58) : const Color(0xFFFF6262),
                 width: 2),
             borderRadius: BorderRadius.circular(12),
           ),
@@ -338,8 +333,8 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
               AspectRatio(
                 aspectRatio: 1,
                 child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(9)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(9)),
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
