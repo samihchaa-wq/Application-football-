@@ -84,10 +84,6 @@ class _PhotoCropDialog extends StatefulWidget {
 class _PhotoCropDialogState extends State<_PhotoCropDialog> {
   static const double _cropSize = 180;
 
-  /// Écart entre le bord du cadre coloré et la photo : la marge intérieure
-  /// de 6 plus le filet de 1.
-  static const double _frameInset = 7;
-
   /// Le rendu est calculé à la taille de stockage, pas à un multiple arbitraire
   /// de l'aperçu : c'est ce qui décide du poids réel de la photo à télécharger.
   static const double _exportScale = avatarStorageSide / _cropSize;
@@ -97,12 +93,6 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
   double _childHeight = _cropSize;
   bool _ready = false;
   bool _busy = false;
-  late ClubKit? _kit = widget.kits.isEmpty
-      ? null
-      : widget.kits.firstWhere(
-          (kit) => kit.slot == widget.initialKit?.slot,
-          orElse: () => widget.kits.first,
-        );
 
   @override
   void initState() {
