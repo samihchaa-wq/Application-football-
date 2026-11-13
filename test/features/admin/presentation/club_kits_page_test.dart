@@ -53,7 +53,7 @@ void main() {
       (tester) async {
     await pumpPage(tester);
     await tester.tap(
-      find.byKey(const ValueKey('kit-goalkeeper-body-france-#111111')),
+      find.byKey(const ValueKey('kit-goalkeeper-body-france-#000000')),
     );
     await tester.tap(
       find.byKey(const ValueKey('kit-goalkeeper-trim-france-#FBE80C')),
@@ -62,7 +62,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final kit = repository.saved!.first;
-    expect(kit.toJson()['goalkeeper_body'], '#111111');
+    expect(kit.toJson()['goalkeeper_body'], '#000000');
     expect(kit.toJson()['goalkeeper_trim'], '#FBE80C');
     expect(kit.toJson()['body'], colorToHex(kit.body));
     expect(ClubKits.of(JerseyOption.france).goalkeeperBody, kit.goalkeeperBody);
