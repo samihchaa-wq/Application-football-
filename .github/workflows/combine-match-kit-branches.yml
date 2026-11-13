@@ -1,0 +1,31 @@
+name: Combine match kit feature branches (one-off)
+
+on:
+  push:
+    branches: [feature/match-kit-history-snapshots-20261113]
+    paths: ['.github/workflows/combine-match-kit-branches.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  merge:
+    if: github.repository == 'samihchaa-wq/Application-football-' && github.ref == 'refs/heads/feature/match-kit-history-snapshots-20261113'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout ONLY commercial snapshot feature branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - name: Integrate validated visual branch without touching main
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REF_NAME}" = 'feature/match-kit-history-snapshots-20261113'
+          git fetch origin feature/composition-kit-colors-phases-20261113
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git merge --no-ff --no-edit origin/feature/composition-kit-colors-phases-20261113
+          git push origin "HEAD:${GITHUB_REF_NAME}"
