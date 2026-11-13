@@ -121,10 +121,10 @@ class PortraitJerseyPainter extends CustomPainter {
       final offset = i * .016;
       final stripe = Path()
         ..moveTo(.392 - offset * .5, .648 + offset)
-        ..cubicTo(.325 - offset, .657 + offset, .263 - offset,
-            .674 + offset, .208 - offset, .697 + offset)
-        ..cubicTo(.12 - offset, .72 + offset, .05 - offset,
-            .754 + offset, -.035, .807 + offset);
+        ..cubicTo(.325 - offset, .657 + offset, .263 - offset, .674 + offset,
+            .208 - offset, .697 + offset)
+        ..cubicTo(.12 - offset, .72 + offset, .05 - offset, .754 + offset,
+            -.035, .807 + offset);
       final stripePaint = Paint()
         ..color = trim
         ..style = PaintingStyle.stroke
