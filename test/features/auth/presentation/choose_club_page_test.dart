@@ -107,7 +107,7 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('le nom connu de Facebook est prérempli', (tester) async {
+  testWidgets('le nom connu du compte est prérempli', (tester) async {
     await pumpPage(tester);
 
     expect(find.widgetWithText(TextField, 'Fab'), findsOneWidget);

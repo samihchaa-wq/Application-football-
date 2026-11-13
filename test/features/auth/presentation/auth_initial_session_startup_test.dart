@@ -81,9 +81,6 @@ class _StartupAuthRepository implements AuthRepository {
   bool get currentUserHasNoClub => false;
 
   @override
-  Future<void> signInWithFacebook() async {}
-
-  @override
   ({String firstName, String lastName}) get suggestedNames =>
       (firstName: '', lastName: '');
 

@@ -1,5 +1,4 @@
 import 'package:as_grinta/app/shell/module_navigation.dart';
-import 'package:as_grinta/app/shell/player_preview_banner.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/club/data/club_subscription.dart';
@@ -188,7 +187,6 @@ class _AppShellState extends ConsumerState<AppShell>
             bottom: !useRail,
             child: Column(
               children: [
-                const PlayerPreviewBanner(),
                 Expanded(
                   child: useRail
                       ? Row(

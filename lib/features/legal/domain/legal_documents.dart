@@ -116,8 +116,7 @@ const LegalDocument termsOfUse = LegalDocument(
           'administratrice.',
       'Tu t’engages à donner des informations exactes et à garder ton mot de '
           'passe secret. Tu es responsable des actions faites depuis ton '
-          'compte. Si tu te connectes avec Facebook, Facebook transmet ton nom '
-          'et ton adresse e-mail à l’application.',
+          'compte.',
       'L’utilisation de l’application est gratuite pour les membres.',
     ]),
     LegalSection('4. Mineurs', [
@@ -222,8 +221,6 @@ const LegalDocument privacyPolicy = LegalDocument(
           'l’historique des notifications reçues.',
       '• Journaux techniques : erreurs de l’application, adresse IP et dates '
           'de connexion, pour la sécurité et le dépannage.',
-      '• Connexion avec Facebook (si tu la choisis) : Facebook transmet ton '
-          'nom et ton adresse e-mail.',
       'Aucune donnée n’est vendue, ni utilisée pour de la publicité ou du '
           'profilage.',
     ]),
@@ -248,8 +245,8 @@ const LegalDocument privacyPolicy = LegalDocument(
           'assistance demandée, sécurité, obligation légale.',
       'Prestataires techniques de l’éditeur : Supabase (hébergement des '
           'données, à Paris), GitHub (mise en ligne du site), Brevo (envoi '
-          'des e-mails, France), Meta (seulement si tu te connectes avec '
-          'Facebook), Google (polices de caractères de secours) et le service '
+          'des e-mails, France), Google (polices de caractères de secours) et '
+          'le service '
           'de notifications de ton navigateur (Google, Apple ou Mozilla), qui '
           'ne voit passer que des messages chiffrés.',
     ]),
@@ -468,8 +465,7 @@ const LegalDocument clubDataProcessingAgreement = LegalDocument(
       'Le club autorise l’éditeur à faire appel aux prestataires suivants : '
           'Supabase Inc. (hébergement des données, Paris), GitHub Inc. (mise '
           'en ligne du site et sauvegardes chiffrées), Brevo / Sendinblue SAS '
-          '(e-mails, France), Meta Platforms Ireland (connexion Facebook, si '
-          'le membre la choisit), et les services de notification des '
+          '(e-mails, France) et les services de notification des '
           'navigateurs (Google, Apple, Mozilla).',
       'L’éditeur leur impose des obligations de protection équivalentes. Il '
           'prévient le club au moins 30 jours avant d’en ajouter ou d’en '

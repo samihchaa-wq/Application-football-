@@ -38,14 +38,14 @@ void main() {
     // affichage court, partagée entre les Statistiques et la fiche d'un
     // match archivé : elles doivent rester d'accord sur le même cas réel.
     test('firstNameOf isole le premier mot', () {
-      expect(firstNameOf('Xavier Grossin'), 'Xavier');
-      expect(firstNameOf('  Milan   Collet  '), 'Milan');
+      expect(firstNameOf('Xavier Gaillon'), 'Xavier');
+      expect(firstNameOf('  Marius   Carrel  '), 'Marius');
       expect(firstNameOf('Solo'), 'Solo');
       expect(firstNameOf(''), '');
     });
 
     test('lastNameInitialOf renvoie la première lettre du nom', () {
-      expect(lastNameInitialOf('Xavier Grossin'), 'G');
+      expect(lastNameInitialOf('Xavier Gaillon'), 'G');
       expect(lastNameInitialOf('Xavier Lacaze'), 'L');
       expect(lastNameInitialOf('Jean Paul Deux Mots'), 'P');
     });

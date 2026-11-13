@@ -17,7 +17,7 @@ values
   ),
   (
     'd1000000-0000-0000-0000-000000000002',
-    'initiale-cesar@example.invalid',
+    'initiale-cavel@example.invalid',
     '{"first_name":"Julien"}'::jsonb
   ),
   (
@@ -60,7 +60,7 @@ values
   (
     'd4000000-0000-0000-0000-000000000001',
     'd2000000-0000-0000-0000-000000000001',
-    'Julien', 'Cesar', false, true, 1,
+    'Julien', 'Cavel', false, true, 1,
     'd1000000-0000-0000-0000-000000000002'
   ),
   (
@@ -72,7 +72,7 @@ values
   (
     'd4000000-0000-0000-0000-000000000003',
     'd2000000-0000-0000-0000-000000000001',
-    'Milan', 'Collet', false, true, 3,
+    'Marius', 'Carrel', false, true, 3,
     'd1000000-0000-0000-0000-000000000004'
   ),
   (

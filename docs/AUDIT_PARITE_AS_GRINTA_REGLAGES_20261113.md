@@ -1,5 +1,7 @@
 # Petit Filet — parité fonctionnelle AS Grinta et refonte des réglages
 
+> **Mise à jour du 13/11/2026 :** les +1 de la liste d'attente sont désormais **automatiques au coup d'envoi** et permanents sur la saison (PR #86, [nouvelle règle](changes/credits-attente-permanents-20261113.md)). Les mentions de +1 « manuels » ci-dessous décrivent la décision précédente, remplacée.
+
 **Date : 13 novembre 2026.** Périmètre : dépôt commercial `samihchaa-wq/Application-football-`. Source AS Grinta lue **sans aucune écriture**. Aucun accès en écriture à Supabase, aucun déploiement, aucun test E2E réel.
 
 ## Méthode et bilan vérifiable
@@ -18,7 +20,7 @@
 | Comptes, joueurs, effectifs, matchs, calendrier, compositions, simulation, Live, statistiques et historiques | **Conserver** | Structures présentes dans les deux dépôts ; tests de parcours et droits multiclub encore nécessaires |
 | Création et appartenance à un club, invitation, validation, rôles et suspension | **Modifier** | Flux spécifiques au multiclub déjà codés ; tester utilisateur A/B et refus serveur |
 | Nom, écusson, couleurs de l'application, maillots joueurs/gardien, terrain à domicile | **Paramétrable** | Écrans et dépôts commerciaux présents ; vérifier propagation aux compositions, vidéo, historique |
-| Quota de convocations, mode d'attente, ouverture des fonctions, règles de pronostics, fenêtre de correction | **Paramétrable** | RPC et interface présents ; les +1 restent **manuels** et les anciens réglages temporels de +1 sont masqués |
+| Quota de convocations, mode d'attente, ouverture des fonctions, règles de pronostics, fenêtre de correction | **Paramétrable** | RPC et interface présents ; les +1 sont **automatiques au coup d’envoi** et permanents sur la saison (PR #86) |
 | Pronostics, statistiques, Étoile du match, Live, badges, bilan, météo | **Activable/désactivable** | **Sept** interrupteurs existants regroupés par domaine. Ne pas ajouter d'autres interrupteurs sans règles serveur correspondantes |
 | Animation vidéo et portraits personnels | **Conserver / adapter** | Présentation à conserver, mais retirer l'identité AS Grinta des médias (issue #71) et vérifier les droits ; ne pas réintroduire les ressources du club original |
 | Saison personnalisée, fuseau hors Paris, formation par défaut, autres formats que football à 11, clips individuels | **À étudier / adapter** | Pas prouvé comme fonctions complètes du commercial. Ne pas inventer de réglage inopérant : décision produit, serveur et tests avant développement |
@@ -31,7 +33,7 @@
 - Sept catégories repliables : **Identité et maillots ; Effectif et convocations ; Matchs et direct ; Pronostics ; Statistiques et récompenses ; Membres et invitations ; Abonnement**.
 - Une huitième catégorie **Autres réglages** apparaît automatiquement en présence de clés/modules nouveaux, pour éviter de masquer silencieusement un réglage inconnu.
 - Chaque module/règle a un intitulé court, une commande directe et un petit **i** qui ouvre une fenêtre d'explication. Pas de description permanente. Valeur par défaut des règles visible dans l'aide.
-- La liste d'attente utilise une **liste déroulante à trois modes** au lieu de trois blocs d'explication ; l'aide confirme l'attribution **manuelle** des +1.
+- La liste d'attente utilise une **liste déroulante à trois modes** au lieu de trois blocs d'explication ; l'aide explique les +1 automatiques (PR #86).
 - Les mêmes RPC de lecture/écriture, identifiants de clés et bornes sont conservés. Pas de migration, pas de modification des données ou des droits.
 - Test Flutter existant adapté à la navigation par catégories, au mode de liste d'attente et à l'aide contextuelle : `test/features/admin/presentation/club_settings_page_test.dart`.
 

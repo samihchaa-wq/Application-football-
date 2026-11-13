@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:as_grinta/features/admin/data/admin_repository.dart';
 import 'package:as_grinta/features/auth/data/auth_repository.dart';
 import 'package:as_grinta/features/auth/domain/auth_profile.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
@@ -43,14 +44,19 @@ const _destinations = [
   '/waitlist',
   '/admin/waitlist',
   '/admin',
+  '/admin/stadiums',
+  '/admin/club',
+  '/admin/history',
 ];
 
 Future<_FakeAuthRepository> _pumpMorePage(
   WidgetTester tester, {
   required AuthProfile profile,
   required bool sportsEnabled,
+  _FakeClubAdminRepository? clubRepository,
 }) async {
   final repository = _FakeAuthRepository(profile);
+  final club = clubRepository ?? _FakeClubAdminRepository();
   final router = GoRouter(
     initialLocation: '/more',
     routes: [
@@ -71,6 +77,10 @@ Future<_FakeAuthRepository> _pumpMorePage(
           (ref) => AuthController(repository),
         ),
         sportsManagementEnabledProvider.overrideWithValue(sportsEnabled),
+        adminRepositoryProvider.overrideWithValue(club),
+        adminDashboardProvider.overrideWith(
+          (ref) => ref.read(adminRepositoryProvider).fetchDashboard(),
+        ),
       ],
       child: MaterialApp.router(routerConfig: router),
     ),
@@ -83,8 +93,8 @@ void main() {
   testWidgets('an admin sees the account card and both setting groups', (
     tester,
   ) async {
-    // Grand écran de téléphone : avec le groupe « Aperçu » et les réglages
-    // du club, la page dépasse la petite fenêtre de test par défaut.
+    // Grand écran de téléphone : avec les réglages du club, la page dépasse
+    // la petite fenêtre de test par défaut.
     tester.view
       ..physicalSize = const Size(1170, 3000)
       ..devicePixelRatio = 3;
@@ -103,16 +113,19 @@ void main() {
     for (final title in [
       'Indisponibilité',
       'Liste d’attente',
+      'Effectif',
       'Équipes & stades',
       'Réglages du club',
-      'Administration',
-      'Saisons',
+      'Ajouter des matchs passés',
+      'Finir la saison',
     ]) {
       expect(find.text(title), findsOneWidget, reason: title);
     }
 
-    // La gestion des saisons ajoute une ligne : le bouton de déconnexion
-    // reste présent, mais nécessite maintenant un défilement sur téléphone.
+    expect(find.text('Administration'), findsNothing);
+    expect(find.text('Saisons'), findsNothing);
+    // Le bouton de déconnexion reste présent, après un défilement sur
+    // téléphone.
     await tester.scrollUntilVisible(
       find.text('Se déconnecter'),
       160,
@@ -138,36 +151,77 @@ void main() {
     );
   });
 
-  testWidgets('an admin can look at the app as a player', (tester) async {
+  testWidgets('an admin opens the stadiums directly from Paramètres', (
+    tester,
+  ) async {
     tester.view
       ..physicalSize = const Size(1170, 2532)
       ..devicePixelRatio = 3;
     addTearDown(tester.view.reset);
     await _pumpMorePage(tester, profile: _admin, sportsEnabled: true);
 
-    expect(find.text('APERÇU'), findsOneWidget);
-    final toggle = find.byKey(const ValueKey('player-preview-switch'));
-    expect(toggle, findsOneWidget);
-
-    await tester.tap(toggle);
+    expect(find.text('Réglages'), findsNothing);
+    expect(find.text('Équipes & stades'), findsOneWidget);
+    await tester.ensureVisible(find.text('Équipes & stades'));
+    await tester.tap(find.text('Équipes & stades'));
     await tester.pumpAndSettle();
-
-    // La page devient celle d'un joueur ; seul l'interrupteur reste en plus.
-    expect(find.text('CLUB · ADMIN'), findsNothing);
-    expect(find.text('Administration'), findsNothing);
-    expect(find.text('Équipes & stades'), findsNothing);
-    expect(toggle, findsOneWidget);
-
-    await tester.tap(find.text('Liste d’attente'));
-    await tester.pumpAndSettle();
-    expect(find.text('page /waitlist'), findsOneWidget);
+    expect(find.text('page /admin/stadiums'), findsOneWidget);
   });
 
-  testWidgets('a player never sees the preview switch', (tester) async {
-    await _pumpMorePage(tester, profile: _player, sportsEnabled: true);
+  testWidgets('finir la saison demande confirmation depuis Paramètres',
+      (tester) async {
+    tester.view
+      ..physicalSize = const Size(1170, 3000)
+      ..devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    final club = _FakeClubAdminRepository();
+    await _pumpMorePage(
+      tester,
+      profile: _admin,
+      sportsEnabled: true,
+      clubRepository: club,
+    );
+    await tester.ensureVisible(find.text('Finir la saison'));
+    await tester.tap(find.text('Finir la saison'));
+    await tester.pumpAndSettle();
+    expect(find.text('Finir la saison ?'), findsOneWidget);
+    await tester.tap(find.text('Annuler'));
+    await tester.pumpAndSettle();
+    expect(club.seasonStatusChanges, isEmpty);
 
-    expect(find.text('APERÇU'), findsNothing);
-    expect(find.byKey(const ValueKey('player-preview-switch')), findsNothing);
+    await tester.tap(find.text('Finir la saison'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirmer'));
+    await tester.pumpAndSettle();
+    expect(club.seasonStatusChanges, [('s-1', 'archived')]);
+    expect(find.text('Créer une saison'), findsOneWidget);
+  });
+
+  testWidgets(
+      'après avoir fini la saison, on peut en créer une depuis Paramètres',
+      (tester) async {
+    tester.view
+      ..physicalSize = const Size(1170, 3000)
+      ..devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    final club = _FakeClubAdminRepository()..seasons = const [];
+    await _pumpMorePage(
+      tester,
+      profile: _admin,
+      sportsEnabled: true,
+      clubRepository: club,
+    );
+    await tester.ensureVisible(find.text('Créer une saison'));
+    await tester.tap(find.text('Créer une saison'));
+    await tester.pumpAndSettle();
+    expect(find.text('Nouvelle saison'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField).last, '2027-2028');
+    await tester.tap(find.widgetWithText(FilledButton, 'Créer'));
+    await tester.pumpAndSettle();
+
+    expect(club.createdSeasons, ['2027-2028']);
+    expect(find.text('Finir la saison'), findsOneWidget);
   });
 
   testWidgets('a player without sports management only sees their account', (
@@ -184,8 +238,10 @@ void main() {
     expect(find.text('Se déconnecter'), findsOneWidget);
 
     expect(find.text('CLUB · ADMIN'), findsNothing);
+    expect(find.text('Effectif'), findsNothing);
+    expect(find.text('Réglages du club'), findsNothing);
     expect(find.text('Équipes & stades'), findsNothing);
-    expect(find.text('Administration'), findsNothing);
+    expect(find.text('Finir la saison'), findsNothing);
     expect(find.text('Indisponibilité'), findsNothing);
     expect(find.text('Liste d’attente'), findsNothing);
   });
@@ -274,9 +330,6 @@ class _FakeAuthRepository implements AuthRepository {
   bool get currentUserHasNoClub => false;
 
   @override
-  Future<void> signInWithFacebook() async {}
-
-  @override
   ({String firstName, String lastName}) get suggestedNames =>
       (firstName: '', lastName: '');
 
@@ -331,4 +384,44 @@ class _FakeAuthRepository implements AuthRepository {
     required String password,
   }) async =>
       'test-user';
+}
+
+class _FakeClubAdminRepository implements AdminRepository {
+  List<AdminSeasonItem> seasons = const [
+    AdminSeasonItem(id: 's-1', name: '2026-2027', status: 'open'),
+  ];
+  final seasonStatusChanges = <(String, String)>[];
+  final createdSeasons = <String>[];
+
+  @override
+  Future<AdminDashboardData> fetchDashboard() async => AdminDashboardData(
+        profiles: const [],
+        seasons: seasons,
+        openSeasonId: seasons.where((s) => s.status == 'open').firstOrNull?.id,
+      );
+
+  @override
+  Future<void> setSeasonStatus(String seasonId, String status) async {
+    seasonStatusChanges.add((seasonId, status));
+    seasons = [
+      for (final season in seasons)
+        if (season.id == seasonId)
+          AdminSeasonItem(id: season.id, name: season.name, status: status)
+        else
+          season,
+    ];
+  }
+
+  @override
+  Future<String> createSeason(String name) async {
+    createdSeasons.add(name);
+    seasons = [
+      AdminSeasonItem(id: 'new', name: name, status: 'open'),
+      ...seasons,
+    ];
+    return 'new';
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

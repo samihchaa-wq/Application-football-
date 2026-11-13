@@ -98,7 +98,7 @@ Mesurer les contrastes de texte normal (objectif WCAG AA 4,5:1), grands titres (
 | Maillots | `docs/branding/maillots/*.svg`, `assets/images/jerseys/*.png` | README les qualifie de dessins originaux sans marque ; à corroborer si besoin |
 | Badges, images utilisateurs, joueurs | Code et Storage prévus | Vérifier propriété des illustrations et droit à l'image des personnes avec fil 07 |
 | Police Oswald | `assets/fonts/` | Fichier licence OFL présent ; conserver notice |
-| Bande-son bilan | `assets/audio/README.md` | Fichier prévu mais non présent ; ne pas ajouter de piste non licenciée |
+| Bande-son bilan | `assets/audio/README.md` | Piste synthétisée par le projet ajoutée le 13/11 (sans droits tiers) |
 
 Aucune conclusion juridique définitive ne peut résulter de la seule présence d'un fichier dans GitHub.
 

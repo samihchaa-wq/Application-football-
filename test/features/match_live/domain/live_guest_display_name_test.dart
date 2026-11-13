@@ -19,7 +19,7 @@ void main() {
             'participant_id': 'guest-participant',
             'season_player_id': null,
             'guest_player_id': 'guest-1',
-            'display_name': 'Roman Yassinski (Invité)',
+            'display_name': 'Roman Yvelin (Invité)',
             'is_guest': true,
             'is_goalkeeper': false,
             'zone': 'field',
@@ -60,7 +60,7 @@ void main() {
       'guests': [
         {
           'guest_player_id': 'guest-1',
-          'display_name': 'Roman Yassinski (Invité)',
+          'display_name': 'Roman Yvelin (Invité)',
           'is_guest': true,
         },
       ],
@@ -76,9 +76,9 @@ void main() {
       'event_type': 'substitution',
       'minute': 20,
       'half': 1,
-      'scorer_name': 'Roman Yassinski (Invité)',
+      'scorer_name': 'Roman Yvelin (Invité)',
       'assist_name': 'François Dupont',
-      'player_in_name': 'Roman Yassinski (Invité)',
+      'player_in_name': 'Roman Yvelin (Invité)',
       'player_out_name': 'François Dupont',
     });
 

@@ -124,17 +124,6 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
           ),
           const SizedBox(height: 12),
           OutlinedButton.icon(
-            key: const Key('sign-in-facebook'),
-            onPressed: authState.isLoading
-                ? null
-                : () => ref
-                    .read(authControllerProvider.notifier)
-                    .signInWithFacebook(),
-            icon: const Icon(Icons.facebook),
-            label: const Text('Continuer avec Facebook'),
-          ),
-          const SizedBox(height: 12),
-          OutlinedButton.icon(
             onPressed:
                 authState.isLoading ? null : () => context.go('/auth/register'),
             icon: const Icon(Icons.person_add_alt_outlined),
