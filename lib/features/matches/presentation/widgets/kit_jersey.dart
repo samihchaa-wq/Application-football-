@@ -2,9 +2,9 @@ import 'package:as_grinta/core/club/club_kits.dart';
 import 'package:as_grinta/core/widgets/kit_pattern_paint.dart';
 import 'package:flutter/material.dart';
 
-/// Dessin d'un maillot aux couleurs choisies par le club : corps d'une
-/// couleur, manches et col de l'autre. Remplace les trois illustrations fixes
-/// d'AS Grinta, avec la même silhouette.
+/// Pictogramme simple et lisible pour « Info maillots », le choix du match
+/// et l'administration : couleurs et motif, sans simulation de textile.
+/// Le portrait habillé utilise séparément KitPortrait et son rendu naturel.
 class KitJersey extends StatelessWidget {
   const KitJersey({
     required this.kit,
@@ -119,15 +119,7 @@ class _KitJerseyPainter extends CustomPainter {
         : _shade(body, luminance > .5 ? .35 : .18);
 
     canvas
-      ..drawPath(
-        shirt,
-        Paint()
-          ..shader = LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [body, _shade(body, .05)],
-          ).createShader(const Rect.fromLTWH(0, 0, width, height)),
-      )
+      ..drawPath(shirt, Paint()..color = body)
       ..save()
       ..clipPath(shirt);
     paintKitPattern(
