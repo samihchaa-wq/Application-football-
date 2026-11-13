@@ -16,7 +16,6 @@ import 'package:as_grinta/features/badges/presentation/badge_emblem_body.dart';
 import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/players/data/player_card_repository.dart';
 import 'package:as_grinta/features/players/data/player_stat_ranking.dart';
-import 'package:as_grinta/features/players/presentation/hero_photo_margin.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:as_grinta/features/statistics/data/statistics_repository.dart';
 import 'package:as_grinta/features/statistics/presentation/stats_hub_page.dart';
@@ -254,18 +253,13 @@ class _Hero extends ConsumerWidget {
   final String? profileId;
   final bool isGoalkeeper;
 
-  /// Part vide, à droite, du carré de la photo telle qu'elle s'affiche (voir
-  /// [photoClearRightShare]). Tant que la photo n'est pas là, ou sans photo,
-  /// l'avatar montre ses initiales dans un carré plus petit, centré.
-  double _photoClearRight(WidgetRef ref) {
-    const initials = (1 - _heroInitialsScale) / 2;
+  /// Le maillot remplit la largeur du bas du portrait, contrairement à
+  /// une photo détourée brute : ne pas décaler le prénom en analysant
+  /// l'ancien fond transparent à droite du cou. Seules les initiales
+  /// de repli, affichées en plus petit, demandent un petit ajustement.
+  double _photoClearRight() {
     final url = photoUrl?.trim();
-    if (url == null || url.isEmpty) return initials;
-    return ref.watch(heroPhotoClearRightProvider(url)).when(
-          data: (share) => share ?? 0,
-          loading: () => initials,
-          error: (_, __) => initials,
-        );
+    return url == null || url.isEmpty ? (1 - _heroInitialsScale) / 2 : 0;
   }
 
   @override
@@ -327,7 +321,7 @@ class _Hero extends ConsumerWidget {
                   // le badge : une photo détourée ne remplit pas son carré.
                   child: Transform.translate(
                     offset: Offset(
-                      -_photoClearRight(ref) * _heroPhotoSize / 2,
+                      -_photoClearRight() * _heroPhotoSize / 2,
                       0,
                     ),
                     child: Column(
