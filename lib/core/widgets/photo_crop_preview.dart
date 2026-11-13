@@ -256,8 +256,11 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: widget.previewBorderColor),
                       ),
+                      // Un petit arrondi de carte (14 px) préserve les angles du buste.
+                      // L'ancien rayon 45 px transformait le bas du maillot
+                      // en une forme ovale artificielle.
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(_cropSize * 0.25),
+                        borderRadius: BorderRadius.circular(14),
                         child: SizedBox(
                           width: _cropSize,
                           height: _cropSize,
@@ -308,7 +311,7 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
                       height: _cropSize,
                       child: IgnorePointer(
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(_cropSize * 0.25),
+                          borderRadius: BorderRadius.circular(14),
                           child: const CustomPaint(
                             painter: _FramingGuidePainter(),
                           ),
@@ -342,9 +345,9 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
         );
 }
 
-/// Patron de cadrage, en pointillés : un ovale pour le visage, du haut du
-/// front (13 % du côté de la photo) au menton (55 %), et la ligne des
-/// épaules.
+/// Patron de cadrage : seul le contour du visage est en pointillés (front
+/// à 13 %, menton à 55 %). Le maillot dessine déjà les épaules et les manches :
+/// superposer des pointillés sur sa poitrine nuisait à l'aperçu naturel.
 ///
 /// Sur le terrain, la couronne descend jusqu'à 20 % de la photo : sur un
 /// visage cadré dans l'ovale, elle couvre le haut du front, comme portée.
@@ -359,12 +362,7 @@ class _FramingGuidePainter extends CustomPainter {
     final h = size.height;
     final face = Path()
       ..addOval(Rect.fromLTRB(w * .33, h * .13, w * .67, h * .55));
-    final shoulders = Path()
-      ..moveTo(0, h * .84)
-      ..cubicTo(w * .06, h * .74, w * .20, h * .69, w * .39, h * .655)
-      ..moveTo(w, h * .84)
-      ..cubicTo(w * .94, h * .74, w * .80, h * .69, w * .61, h * .655);
-    final dashes = _dashed(face)..addPath(_dashed(shoulders), Offset.zero);
+    final dashes = _dashed(face);
     // Un liseré sombre sous le trait blanc : le patron reste visible sur un
     // maillot clair comme sur un fond sombre.
     final halo = Paint()

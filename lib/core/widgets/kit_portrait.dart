@@ -48,27 +48,30 @@ class _HeadClipper extends CustomClipper<Path> {
   const _HeadClipper();
 
   @override
-  Path getClip(Size size) => Path()
-    ..lineTo(size.width, 0)
-    ..lineTo(size.width, size.height * .62)
-    ..lineTo(size.width * .61, size.height * .62)
-    ..lineTo(size.width * .61, size.height * .67)
-    ..quadraticBezierTo(
-      size.width * .5,
-      size.height * .74,
-      size.width * .39,
-      size.height * .67,
-    )
-    ..lineTo(size.width * .39, size.height * .62)
-    ..lineTo(0, size.height * .62)
-    ..close();
+  Path getClip(Size size) {
+    final w = size.width;
+    final h = size.height;
+    // La photo reste visible dans le col : menton et cou ne sont jamais
+    // remplacés par un dessin de maillot.
+    return Path()
+      ..lineTo(w, 0)
+      ..lineTo(w, h * .635)
+      ..lineTo(w * .608, h * .635)
+      ..lineTo(w * .608, h * .658)
+      ..cubicTo(w * .588, h * .695, w * .553, h * .715, w * .5, h * .715)
+      ..cubicTo(w * .447, h * .715, w * .412, h * .695, w * .392, h * .658)
+      ..lineTo(w * .392, h * .635)
+      ..lineTo(0, h * .635)
+      ..close();
+  }
 
   @override
   bool shouldReclip(_HeadClipper oldClipper) => false;
 }
 
-/// Coordonnées partagées avec l'ovale/couronne du patron : front à 13 %, menton
-/// à 55 %, col à 62 %. Ne recouvre jamais le visage placé dans l'ovale.
+/// Repères communs à l'aperçu et aux compositions : visage entre 13 et 55 %,
+/// base du cou vers 63 %, col près de 71 %. La silhouette conserve le haut
+/// du buste et des manches réalistes sans recouvrir le visage.
 class PortraitJerseyPainter extends CustomPainter {
   const PortraitJerseyPainter({
     required this.body,
@@ -84,56 +87,100 @@ class PortraitJerseyPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     canvas.save();
     canvas.scale(size.width, size.height);
+
+    // Épaules en pente, emmanchures et manches courtes. Les anciennes courbes
+    // jusqu'aux bords formaient un demi-cercle, pas un haut de maillot.
     final shirt = Path()
-      ..moveTo(.39, .62)
-      ..cubicTo(.20, .65, .06, .73, 0, .84)
-      ..lineTo(0, 1)
-      ..lineTo(1, 1)
-      ..lineTo(1, .84)
-      ..cubicTo(.94, .73, .80, .65, .61, .62)
-      ..lineTo(.61, .67)
-      ..quadraticBezierTo(.50, .74, .39, .67)
+      ..moveTo(.392, .635)
+      ..cubicTo(.334, .641, .276, .659, .218, .686)
+      ..cubicTo(.113, .711, .03, .761, -.018, .82)
+      ..lineTo(-.045, 1.02)
+      ..lineTo(1.045, 1.02)
+      ..lineTo(1.018, .82)
+      ..cubicTo(.97, .761, .887, .711, .782, .686)
+      ..cubicTo(.724, .659, .666, .641, .608, .635)
+      ..lineTo(.608, .658)
+      ..cubicTo(.588, .695, .553, .715, .5, .715)
+      ..cubicTo(.447, .715, .412, .695, .392, .658)
       ..close();
+
     canvas.save();
     canvas.clipPath(shirt);
     canvas.drawPath(shirt, Paint()..color = body);
     paintKitPattern(
       canvas,
-      const Rect.fromLTWH(.12, .62, .76, .38),
+      const Rect.fromLTWH(.12, .635, .76, .365),
       pattern,
       trim,
     );
-    // Manches, coutures et col donnent du relief sans remplacer les couleurs.
-    final cuffs = Path()
-      ..moveTo(0, .85)
-      ..lineTo(.17, .80)
-      ..lineTo(.20, .86)
-      ..lineTo(0, .93)
-      ..close()
-      ..moveTo(1, .85)
-      ..lineTo(.83, .80)
-      ..lineTo(.80, .86)
-      ..lineTo(1, .93)
+
+    // Les bandes de finition sont placées sur les manches, et non au milieu
+    // d'une forme ovale. Le haut des bras reste majoritairement couleur corps.
+    final leftCuff = Path()
+      ..moveTo(-.014, .852)
+      ..cubicTo(.045, .825, .11, .819, .173, .844)
+      ..lineTo(.161, .883)
+      ..cubicTo(.10, .859, .044, .865, -.019, .9)
       ..close();
-    canvas.drawPath(cuffs, Paint()..color = trim);
+    final cuffPaint = Paint()..color = trim;
+    canvas.drawPath(leftCuff, cuffPaint);
+    canvas.save();
+    canvas.translate(1, 0);
+    canvas.scale(-1, 1);
+    canvas.drawPath(leftCuff, cuffPaint);
+    canvas.restore();
+
+    // Une couture fine sépare chaque manche du corps, symétriquement.
+    final sleeveSeam = Path()
+      ..moveTo(.22, .686)
+      ..cubicTo(.245, .747, .258, .79, .253, .845);
+    final seamPaint = Paint()
+      ..color = const Color(0x50000000)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = .009
+      ..strokeCap = StrokeCap.round;
+    canvas.drawPath(sleeveSeam, seamPaint);
+    canvas.save();
+    canvas.translate(1, 0);
+    canvas.scale(-1, 1);
+    canvas.drawPath(sleeveSeam, seamPaint);
+    canvas.restore();
+
     canvas.drawRect(
-      const Rect.fromLTWH(0, .62, 1, .38),
+      const Rect.fromLTWH(0, .63, 1, .37),
       Paint()
         ..shader = const LinearGradient(
-          colors: [Color(0x22000000), Color(0x00FFFFFF), Color(0x33000000)],
-        ).createShader(const Rect.fromLTWH(0, .62, 1, .38)),
+          colors: [
+            Color(0x19000000),
+            Color(0x08FFFFFF),
+            Color(0x00000000),
+            Color(0x08FFFFFF),
+            Color(0x19000000),
+          ],
+        ).createShader(const Rect.fromLTWH(0, .63, 1, .37)),
     );
     canvas.restore();
+
+    // Col rond ajusté : liseré fin, posé contre le cou photographié.
+    final collar = Path()
+      ..moveTo(.392, .658)
+      ..cubicTo(.414, .695, .449, .724, .5, .724)
+      ..cubicTo(.551, .724, .586, .695, .608, .658);
     canvas.drawPath(
-      Path()
-        ..moveTo(.39, .62)
-        ..lineTo(.39, .67)
-        ..quadraticBezierTo(.50, .74, .61, .67)
-        ..lineTo(.61, .62),
+      collar,
+      Paint()
+        ..color = const Color(0x64000000)
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = .027,
+    );
+    canvas.drawPath(
+      collar,
       Paint()
         ..color = trim
         ..style = PaintingStyle.stroke
-        ..strokeWidth = .035,
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = .017,
     );
     canvas.restore();
   }
