@@ -92,7 +92,19 @@ class JerseyOptionTile extends StatelessWidget {
           children: [
             Positioned.fill(
               bottom: 20,
-              child: Center(child: KitJersey(kit: option.kit)),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Flexible(child: KitJersey(kit: option.kit)),
+                  const SizedBox(width: 2),
+                  Flexible(
+                    child: KitJersey(
+                      kit: option.kit,
+                      isGoalkeeper: true,
+                    ),
+                  ),
+                ],
+              ),
             ),
             Positioned(
               left: 0,
