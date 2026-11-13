@@ -1,0 +1,37 @@
+name: Stadium media visual audit
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'assets/composition/stade.mp4'
+      - 'assets/composition/stade-720.mp4'
+      - 'assets/composition/stade.jpg'
+      - 'scripts/audit_stadium_media.sh'
+      - '.github/workflows/stadium-media-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  frames:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          command -v ffmpeg
+          command -v ffprobe
+      - name: Sample frames and poster
+        run: bash scripts/audit_stadium_media.sh build/stadium-media-audit
+      - name: Upload contact sheets and source metadata
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: petit-filet-stadium-review
+          path: |
+            build/stadium-media-audit/
+            assets/composition/stade.mp4
+            assets/composition/stade-720.mp4
+          retention-days: 14
