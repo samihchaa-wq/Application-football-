@@ -387,32 +387,32 @@ class _FakeClubRepository implements ClubRepository {
   final Map<String, int> ruleValues = {'prediction_close_minutes': 15};
 
   List<ClubRule> _rules() => [
-    for (final entry in ruleValues.entries)
-      if (entry.key == 'waitlist_mode')
-        ClubRule(
-          key: entry.key,
-          label: 'Liste d’attente : qui passe en premier',
-          description: 'Quand il y a trop de disponibles.',
-          unit: 'mode',
-          group: 'Liste d’attente',
-          defaultValue: 0,
-          min: 0,
-          max: 2,
-          value: entry.value,
-        )
-      else
-        ClubRule(
-          key: entry.key,
-          label: 'Fermeture des pronostics',
-          description: 'Minutes avant le coup d’envoi.',
-          unit: 'min',
-          group: 'Pronostics',
-          defaultValue: 15,
-          min: 0,
-          max: 240,
-          value: entry.value,
-        ),
-  ];
+        for (final entry in ruleValues.entries)
+          if (entry.key == 'waitlist_mode')
+            ClubRule(
+              key: entry.key,
+              label: 'Liste d’attente : qui passe en premier',
+              description: 'Quand il y a trop de disponibles.',
+              unit: 'mode',
+              group: 'Liste d’attente',
+              defaultValue: 0,
+              min: 0,
+              max: 2,
+              value: entry.value,
+            )
+          else
+            ClubRule(
+              key: entry.key,
+              label: 'Fermeture des pronostics',
+              description: 'Minutes avant le coup d’envoi.',
+              unit: 'min',
+              group: 'Pronostics',
+              defaultValue: 15,
+              min: 0,
+              max: 240,
+              value: entry.value,
+            ),
+      ];
 
   @override
   Future<List<ClubRule>> fetchRules() async => _rules();
