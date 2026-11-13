@@ -53,7 +53,7 @@ class GrintaAuthSurface extends StatelessWidget {
                               label: ClubIdentity.appName,
                               child: Image.asset(
                                 'assets/images/petit_filet_logo.webp',
-                                height: 138,
+                                height: 150,
                                 fit: BoxFit.contain,
                                 filterQuality: FilterQuality.high,
                               ),

@@ -1,38 +1,31 @@
 # Identité Petit Filet
 
-Logo du produit, redessiné en vecteur le 12/11/2026 d'après l'esquisse de
-Samih (but, ballon en pleine lucarne, traînée verte).
+Logo du produit fourni par Samih le 13/11/2026 : monogramme « PF » bleu
+marine, ballon cerclé de blanc, traînée jaune, mots « Petit » (bleu) et
+« Filet » (jaune) avec halo lumineux.
 
-- `logo_clair.svg` : logo complet sur fond blanc (magasins d'applis, documents).
-- `logo_sombre.svg` : logo complet sur le fond bleu nuit de l'appli.
-- `logo_sombre_transparent.svg` : idem sans fond, exporté en
-  `web/petit_filet_logo.webp` (écran de démarrage) et
-  `assets/images/petit_filet_logo.webp` (écran de connexion).
-- `icone.svg` : icône sans texte → `web/icons/Icon-192.png`, `Icon-512.png`,
-  `web/favicon.svg`, `web/favicon.png`.
-- `icone_maskable.svg` : marge de sécurité Android → `Icon-maskable-512.png`.
-- `badge.svg` : silhouette blanche des notifications Android →
-  `web/icons/notification-badge-96.png`.
-- `gen2.py` : génère tous les SVG (police Oswald intégrée, vert `#2EE57A`).
+**Le logo n'est pas redessiné** (demande explicite de Samih) : toutes les
+images de l'appli sont tirées de l'image d'origine `logo_original.png`
+(1536 × 1024) par `tool/branding/petit_filet_assets.py`.
 
-## Licence de la police du logo
+| Fichier de l'appli | Contenu |
+| --- | --- |
+| `web/icons/Icon-192.png`, `Icon-512.png`, `web/favicon.png`, `web/favicon.svg` | image d'origine entière (halo estompé au bord), posée sur un carré noir |
+| `web/icons/Icon-maskable-512.png` | idem avec 10 % de marge (découpe ronde d'Android) |
+| `web/petit_filet_logo.webp` (démarrage), `assets/images/petit_filet_logo.webp` (connexion) | image d'origine, noir rendu transparent de façon exacte, halo estompé sur les 60 px du bord pour ne pas laisser d'arête |
+| `web/icons/notification-badge-96.png` | ballon du logo en silhouette blanche (Android n'utilise que la transparence) |
 
-Le générateur `gen2.py` intègre la police **Oswald** dans le code. Les trois
-logos SVG contenant les mots « PETIT FILET » embarquent également cette police au
-format `@font-face`. Leur redistribution est soumise à la licence libre
-**SIL Open Font License 1.1 (OFL-1.1)**.
+Pour régénérer après un changement de logo : remplacer `logo_original.png`
+puis lancer `python3 tool/branding/petit_filet_assets.py`.
 
-- Titulaire du droit : **Copyright 2016 The Oswald Project Authors**.
-- Projet source : https://github.com/googlefonts/OswaldFont
-- Texte de licence redistribué avec les fichiers : [OFL-Oswald.txt](OFL-Oswald.txt)
-- Licence officielle de référence : https://github.com/google/fonts/blob/main/ofl/oswald/OFL.txt
-- Oswald peut être utilisée dans un produit commercial sous réserve du
-  respect de la licence, notamment de la conservation des notices lorsqu'une
-  copie de la police est redistribuée.
+## Limites connues
 
-Cette notice couvre **la police Oswald seulement** ; elle ne constitue pas
-une vérification de disponibilité de la marque « Petit Filet », des droits sur les
-autres ressources graphiques, ni des usages particuliers du logo.
+- Le logo d'origine est une image en pixels, avec un flou volontaire : il ne
+  peut pas être agrandi au-delà de sa taille sans perte.
+- En icône carrée, le logo entier (texte compris) est petit ; à 32-64 px
+  (onglet du navigateur) on ne distingue plus que le ballon et les couleurs.
+- Le logo semble généré par une IA : les droits d'usage commercial et la
+  disponibilité de la marque ne sont pas vérifiés ici.
 
 L'écusson neutre `assets/images/club_crest.webp` reste celui des clubs qui
 n'ont pas envoyé de logo : ce n'est pas le logo du produit.
