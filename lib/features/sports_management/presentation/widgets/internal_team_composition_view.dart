@@ -17,6 +17,7 @@ import 'package:as_grinta/features/sports_management/domain/player_position_prof
 import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
 import 'package:as_grinta/features/sports_management/domain/internal_team_formation.dart';
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart'
     show CompositionPlayerTile, PlayerAvatar, SubstituteHistoryBadge;
 import 'package:as_grinta/features/sports_management/presentation/widgets/formation_pitch_editor.dart';
@@ -652,7 +653,9 @@ class _InternalTeamCompositionViewState
                 composition.team2FormationCode != expectedTeam2Code);
 
         final terrainEntries = _terrainTeam == 1 ? team1 : team2;
-        final terrainCard = _InternalTeamCard(
+        final terrainCard = CompositionKitScope(
+          kit: (_terrainTeam == 1 ? _team1Jersey : _team2Jersey).kit,
+          child: _InternalTeamCard(
           name: _terrainTeam == 1
               ? (_team1Controller.text.isEmpty
                   ? composition.team1Name
@@ -677,6 +680,7 @@ class _InternalTeamCompositionViewState
           onRemoveFromField: (moving) =>
               _moveClassicToBench(_terrainTeam, moving),
           finishedBenchCounts: benchCounts,
+          ),
         );
 
         return Column(
