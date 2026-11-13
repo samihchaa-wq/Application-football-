@@ -1,12 +1,9 @@
--- Extension additive des maillots : chaque tenue possède désormais deux
--- couleurs distinctes pour le gardien en plus de celles des joueurs.
---
--- La forme JSONB clubs.kits reste un tableau des mêmes trois emplacements.
--- Les anciennes tenues et les anciens clients sans clés goalkeeper_* restent
--- compatibles ; aucun effacement de données, aucune réécriture des matchs.
--- Attention : historique des couleurs par match = chantier distinct.
---
--- Cette migration est à tester localement ; NE PAS appliquer sans revue.
+-- Couleurs du gardien distinctes des joueurs, par tenue et par club.
+-- Migration additive : mêmes trois identifiants de tenue et données existantes.
+-- Les anciens clients sans goalkeeper_* reçoivent des valeurs par défaut ;
+-- aucune table, saison ou ancienne migration n'est effacée.
+-- Écriture limitée à l'administrateur du club actif (contrôles RPC existants).
+
 create or replace function public.admin_update_club_kits(p_kits jsonb)
 returns jsonb
 language plpgsql security definer
@@ -46,7 +43,7 @@ begin
        or coalesce(v_item ->> 'trim', '') !~ '^#[0-9A-Fa-f]{6}$' then
       raise exception 'Couleur de maillot invalide.' using errcode = '22023';
     end if;
-    -- Gardien : anciens clients / anciennes tenues conservent un repli stable.
+    -- Les anciens clients restent compatibles : couleurs gardien de repli.
     v_goalkeeper_body := coalesce(
       v_item ->> 'goalkeeper_body',
       case v_item ->> 'slot'
@@ -56,86 +53,8 @@ begin
       end
     );
     v_goalkeeper_trim := coalesce(v_item ->> 'goalkeeper_trim', '#FFFFFF');
-    if v_goalkeeper_body !~ '^#[0-9A-Fa-f]{6}
-      raise exception 'État du maillot invalide.' using errcode = '22023';
-    end if;
-    if (v_item ->> 'enabled')::boolean then
-      v_enabled_count := v_enabled_count + 1;
-    end if;
-
-    v_slots := v_slots || (v_item ->> 'slot');
-    v_clean := v_clean || jsonb_build_array(jsonb_build_object(
-      'slot', v_item ->> 'slot',
-      'label', v_label,
-      'body', upper(v_item ->> 'body'),
-      'trim', upper(v_item ->> 'trim'),
-      'goalkeeper_body', upper(v_goalkeeper_body),
-      'goalkeeper_trim', upper(v_goalkeeper_trim),
-      'enabled', (v_item ->> 'enabled')::boolean
-    ));
-  end loop;
-
-  if v_enabled_count = 0 then
-    raise exception 'Au moins un maillot doit être proposé.' using errcode = '22023';
-  end if;
-
-  update public.clubs
-  set kits = v_clean
-  where id = (select private.current_club_id())
-  returning * into v_club;
-
-  if v_club.id is null then
-    raise exception 'Club introuvable.' using errcode = 'P0002';
-  end if;
-
-  return v_club.kits;
-end;
-$$;
-
-alter function public.admin_update_club_kits(jsonb) owner to club_scope;
-revoke all on function public.admin_update_club_kits(jsonb) from public, anon;
-grant execute on function public.admin_update_club_kits(jsonb)
-  to authenticated, service_role, club_scope;
-
-       or v_goalkeeper_trim !~ '^#[0-9A-Fa-f]{6}
-      raise exception 'État du maillot invalide.' using errcode = '22023';
-    end if;
-    if (v_item ->> 'enabled')::boolean then
-      v_enabled_count := v_enabled_count + 1;
-    end if;
-
-    v_slots := v_slots || (v_item ->> 'slot');
-    v_clean := v_clean || jsonb_build_array(jsonb_build_object(
-      'slot', v_item ->> 'slot',
-      'label', v_label,
-      'body', upper(v_item ->> 'body'),
-      'trim', upper(v_item ->> 'trim'),
-      'enabled', (v_item ->> 'enabled')::boolean
-    ));
-  end loop;
-
-  if v_enabled_count = 0 then
-    raise exception 'Au moins un maillot doit être proposé.' using errcode = '22023';
-  end if;
-
-  update public.clubs
-  set kits = v_clean
-  where id = (select private.current_club_id())
-  returning * into v_club;
-
-  if v_club.id is null then
-    raise exception 'Club introuvable.' using errcode = 'P0002';
-  end if;
-
-  return v_club.kits;
-end;
-$$;
-
-alter function public.admin_update_club_kits(jsonb) owner to club_scope;
-revoke all on function public.admin_update_club_kits(jsonb) from public, anon;
-grant execute on function public.admin_update_club_kits(jsonb)
-  to authenticated, service_role, club_scope;
- then
+    if v_goalkeeper_body !~ '^#[0-9A-Fa-f]{6}$'
+       or v_goalkeeper_trim !~ '^#[0-9A-Fa-f]{6}$' then
       raise exception 'Couleur de gardien invalide.' using errcode = '22023';
     end if;
     if jsonb_typeof(v_item -> 'enabled') <> 'boolean' then
@@ -151,6 +70,8 @@ grant execute on function public.admin_update_club_kits(jsonb)
       'label', v_label,
       'body', upper(v_item ->> 'body'),
       'trim', upper(v_item ->> 'trim'),
+      'goalkeeper_body', upper(v_goalkeeper_body),
+      'goalkeeper_trim', upper(v_goalkeeper_trim),
       'enabled', (v_item ->> 'enabled')::boolean
     ));
   end loop;
