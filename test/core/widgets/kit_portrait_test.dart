@@ -62,6 +62,60 @@ void main() {
     picture.dispose();
   });
 
+  test('le col est plus large et laisse le vrai cou visible', () async {
+    final recorder = ui.PictureRecorder();
+    const PortraitJerseyPainter(
+      body: Colors.red,
+      trim: Colors.yellow,
+      pattern: KitPattern.plain,
+    ).paint(Canvas(recorder), const Size(180, 180));
+    final picture = recorder.endRecording();
+    final raster = await picture.toImage(180, 180);
+    final bytes = (await raster.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    ))!
+        .buffer
+        .asUint8List();
+
+    int channel(int x, int y, int component) =>
+        bytes[(y * 180 + x) * 4 + component];
+
+    // Au-dessus du col, seule la photo réelle du cou doit être visible.
+    // L'ancien anneau étroit peignait déjà cette zone en jaune.
+    expect(channel(90, 132, 3), 0);
+    expect(channel(90, 141, 3), 255);
+    // Épaule : de la matière rouge ombrée, pas trois grosses bandes jaunes
+    // systématiquement collées sur chaque maillot uni.
+    expect(channel(30, 141, 3), 255);
+    expect(channel(30, 141, 0), greaterThan(channel(30, 141, 1) + 40));
+
+    raster.dispose();
+    picture.dispose();
+  });
+
+  testWidgets('le patron découpe la photo exactement au bord intérieur du col',
+      (tester) async {
+    final kit = ClubKits.of(JerseyOption.france);
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: SizedBox.square(
+          dimension: 180,
+          child: KitPortrait(
+            kit: kit,
+            child: const ColoredBox(color: Colors.blue),
+          ),
+        ),
+      ),
+    ));
+    final clip = tester.widget<ClipPath>(find.byType(ClipPath));
+    final path = clip.clipper!.getClip(const Size(180, 180));
+    expect(path.contains(const Offset(90, 132)), isTrue);
+    expect(path.contains(const Offset(90, 141)), isFalse);
+    expect(path.contains(const Offset(12, 138)), isFalse);
+    expect(find.byKey(const ValueKey('portrait-jersey-field')),
+        findsOneWidget);
+  });
+
   testWidgets('aucun maillot n’est superposé aux avatars joueur et gardien',
       (tester) async {
     final kit = ClubKits.of(JerseyOption.orange).copyWith(
