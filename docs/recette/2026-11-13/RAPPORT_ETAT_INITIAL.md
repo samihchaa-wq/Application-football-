@@ -30,13 +30,17 @@ Présence technique : 257 signatures de fonctions `public` ; 8 fonctions Edge d�
 | Niveau | Élément | Reproduction / preuve | Attendu | Obtenu | Capture | Cause probable / correction |
 |---|---|---|---|---|---|---|
 | Bloquant pour la recette | Parcours E2E impossible dans cette session | Ouvrir le site avec un navigateur interactif et les comptes fictifs | Une saison de 30 rencontres jouée et documentée | Site accessible par HTTP, mais interface Flutter non pilotable par les outils disponibles | Non disponible | Exécuter sur navigateur/Flutter local complet + compte de test |
-| Gênant, fonction absente du code identifié | Match « coupe » | Vérifier enum `match_model.dart` et formulaire | Créer un match de coupe prévu dans les 30 cas | L'audit et le formulaire listent championnat, amical, entre nous ; écran **non vérifié** | Non disponible | Spécifier intégration de « coupe » dans modèles, UI, SQL, classement, tests ; PR distincte |
+| Gênant, fonction absente du code identifié | Match « coupe » | Vérifier enum `match_model.dart` et formulaire | Créer un match de coupe prévu dans les 30 cas | Le modèle et le formulaire ne présentent pas Coupe ; le CHECK SQL commercial n'autorise que `amical`, `championnat`, `entre_nous` ; **aucune création Coupe testée** | Non disponible | Spécifier intégration de « coupe » dans modèles, UI, SQL, classement, tests ; PR distincte |
 | Gênant, préparation | 25 joueurs requis, statuts en attente/archivé/invité | SELECT effectif 2026-2027 du Club A | Au moins 25, plus les statuts variés | 21 joueurs de saison, tous les profils actifs | Non disponible | Compléter jeu de données par UI normale uniquement |
 | Gênant, préparation | 300 historiques et 30 matchs à jouer | SELECT objets historiques et matchs | 300 historiques + 30 cycles réels | 2 fiches historiques globales et 2 matchs à venir pour A | Non disponible | Saisie normale via application, relever la durée |
 | À vérifier | Couleurs des tenues dans anciens matchs | Publier composition, changer couleurs, revenir en arrière | Le maillot du match passé est figé | 0 snapshot enregistré en base ; **le comportement reste inconnu** | Non disponible | Vérifier déploiement de la migration et parcours ; PR ciblée seulement après reproduction |
 | À vérifier | Version du site | Comparer SHA main et dernier déploiement Pages validé | Tester même version que main | Dernier run de publication trouvé sur `f64576a` ; main est `2dc59830` | Non disponible | Vérifier le SHA effectivement servi ; publier séparément uniquement avec accord |
 
 **Aucun correctif n'est déclaré appliqué sans test rouge→vert.** Ce tableau sépare les lacunes de préparation, les points documentés et les véritables bugs qui restent à reproduire.
+
+## Clôture : périmètre technique confirmé sans exécution
+
+Le déclencheur de saison refuse l'archivage avec des matchs encore à venir ou en fenêtre de correction. Après archivage, un déclencheur attribue les titres et recalcule les badges dans la transaction ; un second met les bilans individuels en file d'attente. Le cron `process-season-wrapped-jobs` est actif toutes les cinq minutes ; le fichier `assets/audio/wrapped.mp3` existe. **Aucun de ces résultats n'a été testé par une véritable clôture**, ni dans le Club Test A ni sur une copie. Voir `CLOTURE_CODE_ET_TESTS.md`.
 
 ## Actions réellement menées
 
