@@ -79,7 +79,10 @@ void main() {
 
     expect(find.byIcon(Icons.checkroom), findsNothing);
     expect(find.byKey(const ValueKey('composition-kit-field')), findsNothing);
-    expect(find.byKey(const ValueKey('composition-kit-goalkeeper')), findsNothing);
+    expect(
+      find.byKey(const ValueKey('composition-kit-goalkeeper')),
+      findsNothing,
+    );
     expect(find.byType(PlayerAvatar), findsNWidgets(2));
   });
 
