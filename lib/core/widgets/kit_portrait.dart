@@ -115,38 +115,83 @@ class PortraitJerseyPainter extends CustomPainter {
       trim,
     );
 
-    // Discrètes bandes de haut d'épaule, arrêtées au bord de l'avatar.
-    // Aucun ourlet de manche ni tracé de bras ne doit apparaître.
-    final shoulderTrim = Path()
-      ..moveTo(.216, .686)
-      ..cubicTo(.135, .707, .045, .752, -.025, .794);
-    final stripePaint = Paint()
-      ..color = trim
+    // Trois bandes fines sur le DESSUS des épaules, comme le modèle validé.
+    // Elles suivent la pente des épaules, jamais les manches ou les bras.
+    for (var i = 0; i < 3; i++) {
+      final offset = i * .016;
+      final stripe = Path()
+        ..moveTo(.392 - offset * .5, .648 + offset)
+        ..cubicTo(.325 - offset, .657 + offset, .263 - offset,
+            .674 + offset, .208 - offset, .697 + offset)
+        ..cubicTo(.12 - offset, .72 + offset, .05 - offset,
+            .754 + offset, -.035, .807 + offset);
+      final stripePaint = Paint()
+        ..color = trim
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = .009
+        ..strokeCap = StrokeCap.round;
+      canvas.drawPath(stripe, stripePaint);
+      canvas.save();
+      canvas.translate(1, 0);
+      canvas.scale(-1, 1);
+      canvas.drawPath(stripe, stripePaint);
+      canvas.restore();
+    }
+
+    // Modelé textile non destructif : volume de poitrine, ombre aux
+    // emmanchures et micro-plis très discrets. Le motif reste visible dessous.
+    final shading = Paint()
+      ..shader = const RadialGradient(
+        center: Alignment(0, -.32),
+        radius: .88,
+        colors: [
+          Color(0x17FFFFFF),
+          Color(0x00000000),
+          Color(0x36000000),
+        ],
+        stops: [0, .57, 1],
+      ).createShader(const Rect.fromLTWH(0, .60, 1, .58));
+    canvas.drawRect(const Rect.fromLTWH(0, .63, 1, .37), shading);
+
+    final foldPaint = Paint()
+      ..color = const Color(0x24000000)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = .012;
-    canvas.drawPath(shoulderTrim, stripePaint);
-    canvas.save();
-    canvas.translate(1, 0);
-    canvas.scale(-1, 1);
-    canvas.drawPath(shoulderTrim, stripePaint);
+      ..strokeWidth = .011
+      ..strokeCap = StrokeCap.round;
+    for (final mirror in [false, true]) {
+      canvas.save();
+      if (mirror) {
+        canvas.translate(1, 0);
+        canvas.scale(-1, 1);
+      }
+      canvas.drawPath(
+        Path()
+          ..moveTo(.20, .755)
+          ..cubicTo(.27, .79, .31, .825, .33, .91),
+        foldPaint,
+      );
+      canvas.drawPath(
+        Path()
+          ..moveTo(.28, .77)
+          ..cubicTo(.34, .805, .355, .84, .36, .875),
+        Paint()
+          ..color = const Color(0x15FFFFFF)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = .008,
+      );
+      canvas.restore();
+    }
+
+    // Grain de tissu discret, indépendant de la couleur choisie par le club.
+    final weave = Paint()
+      ..color = const Color(0x0BFFFFFF)
+      ..strokeWidth = .0013;
+    for (var y = .74; y < 1; y += .009) {
+      canvas.drawLine(Offset(0, y), Offset(1, y), weave);
+    }
     canvas.restore();
 
-    canvas.drawRect(
-      const Rect.fromLTWH(0, .63, 1, .37),
-      Paint()
-        ..shader = const LinearGradient(
-          colors: [
-            Color(0x19000000),
-            Color(0x08FFFFFF),
-            Color(0x00000000),
-            Color(0x08FFFFFF),
-            Color(0x19000000),
-          ],
-        ).createShader(const Rect.fromLTWH(0, .63, 1, .37)),
-    );
-    canvas.restore();
-
-    // Col rond ajusté : liseré fin, posé contre le cou photographié.
+    // Col en trois couches, légèrement en relief, et non un trait plat.
     final collar = Path()
       ..moveTo(.392, .658)
       ..cubicTo(.414, .695, .449, .724, .5, .724)
@@ -154,10 +199,10 @@ class PortraitJerseyPainter extends CustomPainter {
     canvas.drawPath(
       collar,
       Paint()
-        ..color = const Color(0x64000000)
+        ..color = const Color(0x88000000)
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
-        ..strokeWidth = .027,
+        ..strokeWidth = .039,
     );
     canvas.drawPath(
       collar,
@@ -165,7 +210,15 @@ class PortraitJerseyPainter extends CustomPainter {
         ..color = trim
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
-        ..strokeWidth = .017,
+        ..strokeWidth = .026,
+    );
+    canvas.drawPath(
+      collar,
+      Paint()
+        ..color = const Color(0x55FFFFFF)
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = .004,
     );
     canvas.restore();
   }
