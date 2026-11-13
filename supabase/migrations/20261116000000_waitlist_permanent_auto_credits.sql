@@ -103,7 +103,7 @@ begin
    where e.season_id = p_season_id
      and e.season_player_id = r.season_player_id;
 end;
-$function$
+$function$;
 
 -- En mode ordre d'arrivee : credits +1 d'abord, anciennete de la reponse
 -- ensuite. Les deux autres modes ne changent pas de principe.
@@ -141,7 +141,7 @@ begin
 
   return v_rank;
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION private.recompute_match_convocations_internal(p_match_id uuid, p_reset_overrides boolean DEFAULT false)
  RETURNS jsonb
@@ -336,7 +336,7 @@ begin
     'over_limit_count', greatest(0, v_convoked - v_limit)
   );
 end;
-$function$
+$function$;
 
 -- Fonction centralisee de credit. Le p_force historique ne permet PAS de
 -- passer outre le coup d'envoi ou la date d'activation.
