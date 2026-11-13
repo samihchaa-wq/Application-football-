@@ -1,0 +1,50 @@
+name: Format composition kit branch (once)
+
+on:
+  push:
+    branches:
+      - feature/composition-kit-colors-phases-20261113
+    paths:
+      - '.github/workflows/format-composition-kit-branch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.repository == 'samihchaa-wq/Application-football-' && github.ref == 'refs/heads/feature/composition-kit-colors-phases-20261113'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: true
+
+      - name: Setup Dart formatter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
+        with:
+          channel: stable
+          flutter-version: 3.47.9
+
+      - name: Format changed Dart files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only origin/main...HEAD -- 'lib/**/*.dart' 'test/**/*.dart' > /tmp/dartfiles
+          if test -s /tmp/dartfiles; then
+            mapfile -t files < /tmp/dartfiles
+            dart format "${files[@]}"
+            git add -- "${files[@]}"
+          fi
+
+      - name: Commit changes to feature branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "style(composition): apply Dart formatter to kit phase changes"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
