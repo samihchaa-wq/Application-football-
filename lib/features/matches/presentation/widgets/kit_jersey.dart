@@ -5,20 +5,30 @@ import 'package:flutter/material.dart';
 /// couleur, manches et col de l'autre. Remplace les trois illustrations fixes
 /// d'AS Grinta, avec la même silhouette.
 class KitJersey extends StatelessWidget {
-  const KitJersey({required this.kit, this.semanticLabel, super.key});
+  const KitJersey({
+    required this.kit,
+    this.isGoalkeeper = false,
+    this.semanticLabel,
+    super.key,
+  });
 
   final ClubKit kit;
+  final bool isGoalkeeper;
   final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: semanticLabel ?? 'Maillot ${kit.label}',
+      label: semanticLabel ??
+          (isGoalkeeper ? 'Maillot gardien ${kit.label}' : 'Maillot ${kit.label}'),
       image: true,
       child: AspectRatio(
         aspectRatio: _KitJerseyPainter.width / _KitJerseyPainter.height,
         child: CustomPaint(
-          painter: _KitJerseyPainter(body: kit.body, trim: kit.trim),
+          painter: _KitJerseyPainter(
+            body: isGoalkeeper ? kit.goalkeeperBody : kit.body,
+            trim: isGoalkeeper ? kit.goalkeeperTrim : kit.trim,
+          ),
         ),
       ),
     );
