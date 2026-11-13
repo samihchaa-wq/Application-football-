@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import base64
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -20,6 +21,31 @@ PERSONAL_PROJECT_REFS = {
     "yqfewxadpyulgxehhpcu",  # Carte soirée : production privée
 }
 PROJECT_HOST = re.compile(r"^([a-z0-9]{20})\.supabase\.co$")
+# Adresse définitive (domaine propre ou *.pages.dev), fournie par le workflow
+# Cloudflare via la variable d'environnement COMMERCIAL_PUBLIC_URL.
+CUSTOM_URL_ENV = "COMMERCIAL_PUBLIC_URL"
+FORBIDDEN_HOST_PARTS = ("grinta", "github.io")
+
+
+def custom_public_url_problem(url: str) -> str | None:
+    """Raison du refus d'une adresse publique définitive, ou None si elle convient."""
+    parsed = urlsplit(url)
+    host = (parsed.hostname or "").lower()
+    if (
+        parsed.scheme != "https"
+        or not host
+        or "." not in host
+        or parsed.path != "/"
+        or parsed.query
+        or parsed.fragment
+        or parsed.username
+        or parsed.password
+        or parsed.port
+    ):
+        return "L'adresse publique doit être https://domaine/ (racine, sans port ni paramètre)."
+    if any(part in host for part in FORBIDDEN_HOST_PARTS):
+        return "L'adresse publique ne doit viser ni AS Grinta ni GitHub Pages."
+    return None
 
 
 def _jwt_role(token: str) -> str | None:
@@ -34,8 +60,14 @@ def _jwt_role(token: str) -> str | None:
         return None
 
 
-def check(config: object) -> list[str]:
-    """Liste des anomalies empêchant la publication. Aucun secret n'est retourné."""
+def check(config: object, custom_public_url: str | None = None) -> list[str]:
+    """Liste des anomalies empêchant la publication. Aucun secret n'est retourné.
+
+    custom_public_url : adresse définitive autorisée en plus de GitHub Pages
+    (par défaut lue dans COMMERCIAL_PUBLIC_URL ; vide = GitHub Pages seulement).
+    """
+    if custom_public_url is None:
+        custom_public_url = os.environ.get(CUSTOM_URL_ENV, "").strip() or None
     if not isinstance(config, dict):
         return ["La configuration de production doit être un objet JSON."]
 
@@ -70,7 +102,14 @@ def check(config: object) -> list[str]:
     else:
         errors.append("Utiliser uniquement une clé publique Supabase valide, jamais une clé secrète.")
 
-    if config.get("PUBLIC_APP_URL") != EXPECTED_PUBLIC_URL:
+    public_url = config.get("PUBLIC_APP_URL")
+    if custom_public_url:
+        problem = custom_public_url_problem(custom_public_url)
+        if problem:
+            errors.append(problem)
+        elif public_url != custom_public_url:
+            errors.append("PUBLIC_APP_URL doit être l'adresse définitive configurée.")
+    elif public_url != EXPECTED_PUBLIC_URL:
         errors.append("PUBLIC_APP_URL doit cibler Application-football-, pas AS Grinta.")
 
     domain = config.get("USERNAME_DOMAIN")

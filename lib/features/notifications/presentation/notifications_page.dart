@@ -4,6 +4,7 @@ import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
 import 'package:as_grinta/core/widgets/grinta_loader.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/match_live/presentation/widgets/match_live_notification_bell.dart';
 import 'package:as_grinta/features/notifications/presentation/notification_history_view.dart';
 import 'package:as_grinta/features/preferences/data/preferences_repository.dart';
@@ -158,6 +159,14 @@ class _OptionalNotificationsCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final preferencesAsync = ref.watch(appPreferencesProvider);
+    // Une fonctionnalité coupée par le club n'envoie plus rien : sa cloche
+    // disparaît aussi.
+    final predictionsEnabled =
+        ref.watch(clubModuleEnabledProvider(ClubModule.predictions));
+    final motmEnabled =
+        ref.watch(clubModuleEnabledProvider(ClubModule.manOfTheMatch));
+    final badgesEnabled =
+        ref.watch(clubModuleEnabledProvider(ClubModule.badges));
     // Un appareil qui ne sait pas recevoir est déjà signalé par l'encadré du
     // haut : seules les cloches passent en gris ici.
     final deviceNote =
@@ -191,24 +200,26 @@ class _OptionalNotificationsCard extends ConsumerWidget {
               ),
               data: (preferences) => Column(
                 children: [
-                  _BellToggleTile(
-                    title: 'Rappel pronostic',
-                    value: preferences.predictionNotifications,
-                    onChanged: (value) => _update(
-                      context,
-                      ref,
-                      preferences.copyWith(predictionNotifications: value),
+                  if (predictionsEnabled)
+                    _BellToggleTile(
+                      title: 'Rappel pronostic',
+                      value: preferences.predictionNotifications,
+                      onChanged: (value) => _update(
+                        context,
+                        ref,
+                        preferences.copyWith(predictionNotifications: value),
+                      ),
                     ),
-                  ),
-                  _BellToggleTile(
-                    title: 'Vote Homme du match',
-                    value: preferences.motmVoteNotifications,
-                    onChanged: (value) => _update(
-                      context,
-                      ref,
-                      preferences.copyWith(motmVoteNotifications: value),
+                  if (motmEnabled)
+                    _BellToggleTile(
+                      title: 'Vote de l’Étoile du match',
+                      value: preferences.motmVoteNotifications,
+                      onChanged: (value) => _update(
+                        context,
+                        ref,
+                        preferences.copyWith(motmVoteNotifications: value),
+                      ),
                     ),
-                  ),
                   _BellToggleTile(
                     title: 'Composition en ligne',
                     value: preferences.compositionNotifications,
@@ -218,11 +229,12 @@ class _OptionalNotificationsCard extends ConsumerWidget {
                       preferences.copyWith(compositionNotifications: value),
                     ),
                   ),
-                  _BellToggleTile(
-                    title: 'Badge débloqué',
-                    value: preferences.badgeNotifications,
-                    onChanged: (value) => _updateBadges(context, ref, value),
-                  ),
+                  if (badgesEnabled)
+                    _BellToggleTile(
+                      title: 'Badge débloqué',
+                      value: preferences.badgeNotifications,
+                      onChanged: (value) => _updateBadges(context, ref, value),
+                    ),
                 ],
               ),
             ),
@@ -459,9 +471,10 @@ const _testNotificationOptions = <_TestNotificationOption>[
   _TestNotificationOption('match_cancelled', 'Match annulé'),
   _TestNotificationOption('match_rescheduled_date', 'Match reporté'),
   _TestNotificationOption('match_rescheduled_time', 'Horaire modifié'),
-  _TestNotificationOption('motm_open', 'Vote Homme du match'),
-  _TestNotificationOption('motm_result_general', 'Résultat Homme du match'),
-  _TestNotificationOption('motm_result_winner', 'Élu Homme du match'),
+  _TestNotificationOption('motm_open', 'Vote de l’Étoile du match'),
+  _TestNotificationOption(
+      'motm_result_general', 'Résultat de l’Étoile du match'),
+  _TestNotificationOption('motm_result_winner', 'Tu es l’Étoile du match'),
   _TestNotificationOption('badge_unlocked', 'Badge débloqué'),
   _TestNotificationOption('badges_unlocked', 'Plusieurs badges débloqués'),
   _TestNotificationOption(

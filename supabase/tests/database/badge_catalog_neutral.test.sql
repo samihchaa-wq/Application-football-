@@ -20,7 +20,7 @@ select is(
 
 select is(
   (select name from private.badge_templates where code = 'title_top_scorer__1'),
-  'Meilleur buteur',
+  'Machine à buts',
   'les titres de saison ont des noms neutres'
 );
 

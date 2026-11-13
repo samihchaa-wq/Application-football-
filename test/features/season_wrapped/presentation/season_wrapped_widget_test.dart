@@ -290,7 +290,7 @@ void main() {
     expect(find.byType(WrappedRankBadge), findsOneWidget);
   });
 
-  testWidgets('les buts et l’homme du match ne partagent plus un écran',
+  testWidgets('les buts et l’Étoile du match ne partagent plus un écran',
       (tester) async {
     tester.view.physicalSize = const Size(1200, 3000);
     tester.view.devicePixelRatio = 1;
@@ -305,12 +305,12 @@ void main() {
     await _allerA(tester, _ecranButs);
     expect(find.text('BUTS'), findsOneWidget);
     expect(find.text('5'), findsOneWidget);
-    expect(find.text('HOMME DU MATCH'), findsNothing);
+    expect(find.text('ÉTOILE DU MATCH'), findsNothing);
     // Un seul chiffre par écran, donc un seul classement.
     expect(find.byType(WrappedRankBadge), findsOneWidget);
 
     await _avancer(tester, _ecranHdm - _ecranButs);
-    expect(find.text('HOMME DU MATCH'), findsOneWidget);
+    expect(find.text('ÉTOILE DU MATCH'), findsOneWidget);
     expect(find.text('BUTS'), findsNothing);
     expect(find.textContaining('anonyme'), findsOneWidget);
   });
@@ -333,7 +333,7 @@ void main() {
       'L’ÉQUIPE QUAND TU ÉTAIS LÀ',
       'POURCENTAGE DE VICTOIRES',
       'BUTS',
-      'HOMME DU MATCH',
+      'ÉTOILE DU MATCH',
       'MATCHS SANS ENCAISSER',
       'TON POSTE',
       'DÉLAI MOYEN DE RÉPONSE',

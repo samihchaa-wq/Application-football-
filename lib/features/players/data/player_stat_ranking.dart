@@ -18,7 +18,7 @@ enum PlayerStat {
         PlayerStat.winRate => 'Victoires',
         PlayerStat.goals => 'Buts',
         PlayerStat.assists => 'Passes D.',
-        PlayerStat.manOfTheMatch => 'Homme du match',
+        PlayerStat.manOfTheMatch => 'Étoile du match',
         PlayerStat.goalsPerMatch => 'Buts / match',
       };
 
@@ -28,7 +28,7 @@ enum PlayerStat {
         PlayerStat.winRate => '% V',
         PlayerStat.goals => 'B',
         PlayerStat.assists => 'PD',
-        PlayerStat.manOfTheMatch => 'HDM',
+        PlayerStat.manOfTheMatch => 'ÉTM',
         PlayerStat.goalsPerMatch => 'B/M',
       };
 

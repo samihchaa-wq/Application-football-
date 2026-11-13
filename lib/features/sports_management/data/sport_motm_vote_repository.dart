@@ -15,7 +15,7 @@ class SportMotmVoteRepository {
     );
     if (response == null) return null;
     if (response is! Map) {
-      throw const FormatException('Scrutin Homme du match invalide.');
+      throw const FormatException('Scrutin de l’Étoile du match invalide.');
     }
     return SportMotmVote.fromJson(Map<String, dynamic>.from(response));
   }

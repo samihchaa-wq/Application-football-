@@ -33,7 +33,7 @@ class CommercialPreflightTests(unittest.TestCase):
         return f"{encoded({'alg': 'HS256'})}.{encoded({'role': role})}.signature"
 
     def test_valid_publication(self) -> None:
-        self.assertEqual(check(self.valid), [])
+        self.assertEqual(check(self.valid, custom_public_url=""), [])
 
     def test_valid_legacy_anon_key(self) -> None:
         self.valid["SUPABASE_ANON_KEY"] = self.jwt("anon")
@@ -71,6 +71,33 @@ class CommercialPreflightTests(unittest.TestCase):
     def test_wrong_pages_destination_is_forbidden(self) -> None:
         self.valid["PUBLIC_APP_URL"] = "https://samihchaa-wq.github.io/AS-Grinta/"
         self.assertTrue(check(self.valid))
+
+    def test_custom_domain_is_accepted_when_configured(self) -> None:
+        for url in ("https://petitfilet.fr/", "https://petit-filet-app.pages.dev/"):
+            with self.subTest(url=url):
+                self.valid["PUBLIC_APP_URL"] = url
+                self.assertEqual(check(self.valid, custom_public_url=url), [])
+
+    def test_custom_domain_must_match_build_config(self) -> None:
+        self.assertTrue(check(self.valid, custom_public_url="https://petitfilet.fr/"))
+
+    def test_custom_domain_without_configuration_is_refused(self) -> None:
+        self.valid["PUBLIC_APP_URL"] = "https://petitfilet.fr/"
+        self.assertTrue(check(self.valid, custom_public_url=""))
+
+    def test_bad_custom_domains_are_refused(self) -> None:
+        for url in (
+            "http://petitfilet.fr/",
+            "https://petitfilet.fr/app/",
+            "https://petitfilet.fr",
+            "https://petitfilet.fr:8443/",
+            "https://asgrinta.fr/",
+            "https://samihchaa-wq.github.io/",
+            "https://localhost/",
+        ):
+            with self.subTest(url=url):
+                self.valid["PUBLIC_APP_URL"] = url
+                self.assertTrue(check(self.valid, custom_public_url=url))
 
     def test_missing_username_domain_is_forbidden(self) -> None:
         self.valid["USERNAME_DOMAIN"] = ""

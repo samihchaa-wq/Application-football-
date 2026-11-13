@@ -145,7 +145,7 @@ def main() -> int:
         # est posé dans une zone que le compte ne peut pas modifier.
         '"club_for_invite_code"',
         "app_metadata: { club_id: club.id }",
-        '"promote_club_founder"',
+        '"found_club"',
         '"discard_empty_club"',
     ):
         require(marker in register, f"register-account: garde absente: {marker}")
@@ -230,7 +230,7 @@ def main() -> int:
         "callerClient.auth.getUser(accessToken)",
         '"consume_registration_rate_limit"',
         '"club_for_invite_code"',
-        '"promote_club_founder"',
+        '"found_club"',
         "app_metadata: { club_id: club.id }",
     ):
         require(marker in claim_club, f"claim-club: garde absente: {marker}")

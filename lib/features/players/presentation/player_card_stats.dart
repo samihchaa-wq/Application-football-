@@ -279,7 +279,7 @@ const _evolutionStats = [
   (stat: PlayerStat.matches, label: 'Matchs'),
   (stat: PlayerStat.winRate, label: '% Victoires'),
   (stat: PlayerStat.goals, label: 'Buts'),
-  (stat: PlayerStat.manOfTheMatch, label: 'HDM'),
+  (stat: PlayerStat.manOfTheMatch, label: 'ÉTM'),
   (stat: PlayerStat.goalsPerMatch, label: 'Buts / match'),
 ];
 

@@ -258,7 +258,7 @@ class PlayerCardRepository {
 
   Future<List<PlayerMatchLine>> _recentMatches(List<String> ids) async {
     // Même définition de « match joué » que les statistiques : présent,
-    // auteur d'une ligne de stats ou élu homme du match.
+    // auteur d'une ligne de stats ou élu Étoile du match.
     final results = await Future.wait([
       _client
           .from('match_player_stats')

@@ -42,8 +42,8 @@ flutter:
 
   assets:
     - assets/images/club_crest.webp
+    - assets/images/petit_filet_logo.webp
     - assets/images/icons/
-    - assets/images/jerseys/
     - assets/composition/
 
   # La condensée de stade du bilan de saison : elle porte les chiffres et les

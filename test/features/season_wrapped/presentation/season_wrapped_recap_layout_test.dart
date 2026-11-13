@@ -6,14 +6,14 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets(
-    'le récapitulatif garde Homme du match entier et relie les lignes',
+    'le récapitulatif garde Étoile du match entier et relie les lignes',
     (tester) async {
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
 
       const stat = SeasonWrappedStat(
-        label: 'Homme du match',
+        label: 'Étoile du match',
         value: '2',
         rank: 3,
       );
@@ -36,7 +36,7 @@ void main() {
       );
       await tester.pump();
 
-      final labelFinder = find.text('HOMME DU MATCH');
+      final labelFinder = find.text('ÉTOILE DU MATCH');
       expect(labelFinder, findsOneWidget);
       expect(tester.widget<Text>(labelFinder).overflow, isNull);
       expect(

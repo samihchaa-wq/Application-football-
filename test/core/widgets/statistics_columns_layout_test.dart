@@ -4,7 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Les huit en-têtes de la table des statistiques joueurs, dans l'ordre réel.
-const _labels = ['J', 'B', 'PD', 'CS', 'HDM', 'G', 'N', 'P'];
+const _labels = ['J', 'B', 'PD', 'CS', 'ÉTM', 'G', 'N', 'P'];
 
 /// Doit rester aligné sur `_playerColumnWidth` de la page Statistiques.
 const _columnWidth = 64.0;
@@ -24,7 +24,7 @@ void main() {
                     SortableHeaderCell(
                       label: label,
                       flex: 1,
-                      active: label == 'HDM',
+                      active: label == 'ÉTM',
                       descending: true,
                       onTap: () {},
                     ),
@@ -60,7 +60,7 @@ void main() {
             body: Row(
               children: [
                 SortableHeaderCell(
-                  label: 'HDM',
+                  label: 'ÉTM',
                   flex: 1,
                   active: true,
                   descending: true,
@@ -83,7 +83,7 @@ void main() {
 
       expect(find.byType(Icon), findsNothing);
       expect(
-        tester.widget<Text>(find.text('HDM')).style?.color,
+        tester.widget<Text>(find.text('ÉTM')).style?.color,
         isNot(tester.widget<Text>(find.text('B')).style?.color),
       );
     },

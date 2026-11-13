@@ -5,6 +5,7 @@ import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/matches/data/match_info_repository.dart';
 import 'package:as_grinta/features/matches/domain/jersey_option.dart';
 import 'package:as_grinta/features/matches/presentation/match_encounter_route.dart';
+import 'package:as_grinta/features/matches/presentation/widgets/kit_jersey.dart';
 import 'package:as_grinta/features/weather/presentation/match_weather_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -91,9 +92,16 @@ class MatchInfoTab extends ConsumerWidget {
                             SizedBox(
                               width: 34,
                               height: 38,
-                              child: Image.asset(
-                                jersey.assetPath,
-                                fit: BoxFit.contain,
+                              child: KitJersey(kit: jersey.kit),
+                            ),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                jersey.label,
+                                style: const TextStyle(
+                                  fontSize: 15.5,
+                                  fontWeight: FontWeight.w400,
+                                ),
                               ),
                             ),
                           ],

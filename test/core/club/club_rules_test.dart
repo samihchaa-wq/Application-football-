@@ -32,6 +32,12 @@ void main() {
     expect(matchFeaturesOpenAt(kickoff), DateTime.utc(2026, 12, 17, 17));
   });
 
+  test('le délai de correction du résultat suit la règle du club', () {
+    expect(ClubRules.correctionWindow, const Duration(hours: 24));
+    ClubRules.set({ClubRules.correctionWindowHoursKey: 72});
+    expect(ClubRules.correctionWindow, const Duration(hours: 72));
+  });
+
   test('un changement incrémente la révision, une valeur identique non', () {
     final before = ClubRules.revision.value;
     ClubRules.set({ClubRules.featuresOpenDaysKey: 6});
@@ -50,5 +56,16 @@ void main() {
 
     ClubRules.reset();
     expect(isMatchLiveTooEarly(kickoff, now: during), isFalse);
+  });
+
+  test('le mode de liste d’attente suit le réglage du club', () {
+    expect(ClubRules.waitlistMode, WaitlistMode.lastSeasonAttendance);
+    ClubRules.set({ClubRules.waitlistModeKey: 1});
+    expect(ClubRules.waitlistMode, WaitlistMode.arrivalOrder);
+    ClubRules.set({ClubRules.waitlistModeKey: 2});
+    expect(ClubRules.waitlistMode, WaitlistMode.adminChoice);
+    // Une valeur inconnue retombe sur la règle d'origine.
+    ClubRules.set({ClubRules.waitlistModeKey: 9});
+    expect(ClubRules.waitlistMode, WaitlistMode.lastSeasonAttendance);
   });
 }

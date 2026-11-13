@@ -13,7 +13,7 @@ import 'package:flutter/material.dart';
 /// transparentes.
 ///
 /// Un patron est posé sur l'aperçu (ovale du visage, épaules, couronne de
-/// l'Homme du match à sa place sur le terrain) pour cadrer tous les joueurs
+/// l'Étoile du match à sa place sur le terrain) pour cadrer tous les joueurs
 /// de la même façon. Il n'est jamais enregistré dans l'image.
 ///
 /// L'export est calculé directement depuis l'image source et la matrice de
