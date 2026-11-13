@@ -613,7 +613,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       children: [
         _section('identity', 'Identité et maillots',
           Icons.shield_outlined, [
-const SizedBox(height: 12),
+        const SizedBox(height: 12),
         TextField(
           key: const Key('club-settings-name'),
           controller: _nameController,
@@ -695,7 +695,9 @@ const SizedBox(height: 8),
           key: const ValueKey('club-kits-entry'),
           contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.checkroom_rounded),
-          title: const Text('Maillots du club'),
+          title: _labelWithInfo('kits', 'Maillots du club',
+            'Choisis les tenues des joueurs et des gardiens. Elles sont '
+            'utilisées dans les compositions et les matchs.'),
           trailing: const Icon(Icons.chevron_right_rounded),
           onTap: () => context.push('/admin/club/maillots'),
         ),
