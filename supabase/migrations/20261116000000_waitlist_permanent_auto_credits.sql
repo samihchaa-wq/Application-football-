@@ -26,6 +26,10 @@ create table private.waitlist_auto_processed_matches (
 -- silencieusement ses lignes, sans rien ouvrir aux utilisateurs.
 alter table private.waitlist_auto_activation owner to club_scope;
 alter table private.waitlist_auto_processed_matches owner to club_scope;
+-- Le coordonnateur cron s'execute comme postgres : lecture seule des
+-- registres necessaire pour parcourir tous les matchs.
+grant select on private.waitlist_auto_activation,
+  private.waitlist_auto_processed_matches to postgres;
 alter table private.waitlist_auto_activation enable row level security;
 alter table private.waitlist_auto_processed_matches enable row level security;
 revoke all on private.waitlist_auto_activation,
@@ -467,19 +471,23 @@ begin
 end;
 $function$;
 
--- Le cron attribue les credits ; les lectures de listes ne le font pas.
--- 100 matchs par passage pour eviter une transaction sans limite.
+-- Seul le coordonnateur cron utilise SECURITY INVOKER pour reperer
+-- tous les clubs sous le role PostgreSQL proprietaire des tables et
+-- contournant RLS. Chaque credit individuel reste SECURITY DEFINER
+-- sous club_scope, avec son app.club_id fixe par le coordonnateur.
+-- Les lectures de liste des utilisateurs n'entrainent aucun credit.
 create or replace function private.process_due_waitlist_credits()
 returns integer
-language plpgsql security definer
+language plpgsql security invoker
 set search_path to ''
 as $function$
 declare
   v_match record;
   v_total integer := 0;
+  v_old_club_setting text := coalesce(current_setting('app.club_id', true), '');
 begin
   for v_match in
-    select m.id
+    select m.id, m.club_id
     from public.matches m
     join public.match_sport_workflows w on w.match_id = m.id
     cross join private.waitlist_auto_activation a
@@ -494,9 +502,11 @@ begin
     order by m.kickoff_at, m.id
     limit 100
   loop
+    perform set_config('app.club_id', v_match.club_id::text, true);
     v_total := v_total
       + private.finalize_match_waitlist_turns_internal(v_match.id, false);
   end loop;
+  perform set_config('app.club_id', v_old_club_setting, true);
   return v_total;
 end;
 $function$;
