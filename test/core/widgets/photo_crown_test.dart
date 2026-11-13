@@ -83,6 +83,11 @@ void main() {
       );
       await tester.tap(find.text('recadrer'));
       await tester.pumpAndSettle();
+      // Le décodage de l'image s'effectue hors de l'horloge simulée.
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 200)),
+      );
+      await tester.pumpAndSettle();
       expect(find.byType(InteractiveViewer), findsOneWidget);
       expect(find.text('👑'), findsNothing);
     },
