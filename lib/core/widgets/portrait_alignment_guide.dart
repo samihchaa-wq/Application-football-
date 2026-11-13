@@ -37,7 +37,7 @@ class PortraitAlignmentGuide extends StatelessWidget {
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 9,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ),
