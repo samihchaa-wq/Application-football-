@@ -1,12 +1,20 @@
 # Musique du bilan de saison
 
-Déposer ici la piste jouée en fond du bilan, nommée `wrapped.mp3`.
+`wrapped.mp3` est jouée en boucle en fond du bilan de saison.
 
-Contraintes :
+## Origine et droits
 
-- boucler proprement (la piste est jouée en boucle) ;
-- viser une minute à une minute trente ;
-- rester sous deux mégaoctets, sinon l'ouverture du bilan traîne sur un
-  réseau lent.
+La piste est **entièrement synthétisée par un programme** (`tool/generate_wrapped_music.py`) :
+aucun échantillon, aucune boucle ni aucun morceau existant n'est utilisé. Elle
+appartient donc au projet et peut être utilisée commercialement sans licence ni
+mention.
 
-Tant que le fichier est absent, le bilan s'ouvre simplement sans musique.
+Pour la régénérer :
+
+```
+python3 tool/generate_wrapped_music.py
+ffmpeg -i wrapped.wav -codec:a libmp3lame -b:a 128k assets/audio/wrapped.mp3
+```
+
+Contraintes : boucler proprement, durée d'une minute environ (64 s, 120 BPM),
+moins de deux mégaoctets.

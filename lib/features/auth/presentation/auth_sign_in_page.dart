@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/config/app_config.dart';
 import 'package:as_grinta/core/widgets/grinta_auth_surface.dart';
 import 'package:as_grinta/core/widgets/grinta_loader.dart';
 import 'package:as_grinta/core/widgets/grinta_status_banner.dart';
@@ -122,17 +123,19 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
                 : const Icon(Icons.login_rounded),
             label: Text(authState.isLoading ? 'Connexion…' : 'Se connecter'),
           ),
-          const SizedBox(height: 12),
-          OutlinedButton.icon(
-            key: const Key('sign-in-facebook'),
-            onPressed: authState.isLoading
-                ? null
-                : () => ref
-                    .read(authControllerProvider.notifier)
-                    .signInWithFacebook(),
-            icon: const Icon(Icons.facebook),
-            label: const Text('Continuer avec Facebook'),
-          ),
+          if (AppConfig.facebookLoginEnabled) ...[
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              key: const Key('sign-in-facebook'),
+              onPressed: authState.isLoading
+                  ? null
+                  : () => ref
+                      .read(authControllerProvider.notifier)
+                      .signInWithFacebook(),
+              icon: const Icon(Icons.facebook),
+              label: const Text('Continuer avec Facebook'),
+            ),
+          ],
           const SizedBox(height: 12),
           OutlinedButton.icon(
             onPressed:

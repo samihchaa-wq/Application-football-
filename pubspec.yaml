@@ -45,6 +45,7 @@ flutter:
     - assets/images/petit_filet_logo.webp
     - assets/images/icons/
     - assets/composition/
+    - assets/audio/wrapped.mp3
 
   # La condensée de stade du bilan de saison : elle porte les chiffres et les
   # titres. Licence SIL OFL dans assets/fonts.
