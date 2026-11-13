@@ -9,19 +9,19 @@ import 'package:flutter_test/flutter_test.dart';
 // effectifs entièrement fictifs. Aucun historique de club n'est embarqué.
 
 Map<String, String> _syntheticSquad(String club) => {
-  '$club-gardien': 'GB',
-  '$club-lateral-g': 'DG',
-  '$club-central-g': 'DCG',
-  '$club-central-d': 'DCD',
-  '$club-lateral-d': 'DD',
-  '$club-milieu-g': 'MDG',
-  '$club-milieu-d': 'MDD',
-  '$club-meneur': 'MOC',
-  '$club-ailier-g': 'AG',
-  '$club-avant-centre': 'BU',
-  '$club-ailier-d': 'AD',
-  '$club-reserve-moc': 'MOC',
-};
+      '$club-gardien': 'GB',
+      '$club-lateral-g': 'DG',
+      '$club-central-g': 'DCG',
+      '$club-central-d': 'DCD',
+      '$club-lateral-d': 'DD',
+      '$club-milieu-g': 'MDG',
+      '$club-milieu-d': 'MDD',
+      '$club-meneur': 'MOC',
+      '$club-ailier-g': 'AG',
+      '$club-avant-centre': 'BU',
+      '$club-ailier-d': 'AD',
+      '$club-reserve-moc': 'MOC',
+    };
 
 List<SimulationCandidate> _convocation(String club) {
   final squad = _syntheticSquad(club);
@@ -70,7 +70,8 @@ String? _starterAt(SimulatedComposition composition, String slot) {
 
 List<String> _selected(SimulatedComposition composition) =>
     composition.placements
-        .map((placement) => '${placement.slot.label}:${placement.candidate.participantId}')
+        .map((placement) =>
+            '${placement.slot.label}:${placement.candidate.participantId}')
         .toList();
 
 void main() {
