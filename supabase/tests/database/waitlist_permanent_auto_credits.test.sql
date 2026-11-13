@@ -112,7 +112,8 @@ select is(
   'meme avec force=true, jamais de credit avant le coup d envoi');
 
 update public.matches
-set kickoff_at = now() - interval '1 minute'
+set match_date = ((now() - interval '1 minute') at time zone 'Europe/Paris')::date,
+    match_time = ((now() - interval '1 minute') at time zone 'Europe/Paris')::time
 where id = current_setting('test.match')::uuid;
 
 select is(
@@ -209,7 +210,8 @@ where match_id=current_setting('test.match2')::uuid
 select private.recompute_match_convocations_internal(
   current_setting('test.match2')::uuid, false);
 update public.matches
-set kickoff_at=now() - interval '1 minute'
+set match_date=((now() - interval '1 minute') at time zone 'Europe/Paris')::date,
+    match_time=((now() - interval '1 minute') at time zone 'Europe/Paris')::time
 where id=current_setting('test.match2')::uuid;
 select is(
   private.finalize_match_waitlist_turns_internal(
@@ -220,15 +222,13 @@ select is(
    where season_player_id='f5840000-0000-0000-0000-000000000004'), 1,
   'le credit en attente est ajoute sans consommation des autres credits');
 
-update public.matches set status='annule'
-where id=current_setting('test.match2')::uuid;
 select is(
   (select manual_waitlist_count from public.sport_waitlist_entries
    where season_player_id='f5840000-0000-0000-0000-000000000004'), 1,
-  'annuler apres le coup d envoi ne retire pas le +1 permanent');
+  'le +1 reste acquis apres le match meme si on demande une annulation');
 select is(
   private.void_match_waitlist_credits(current_setting('test.match2')::uuid), 0,
-  'ancienne fonction de retrait neutralisee');
+  'la fonction de retrait ne consomme jamais le credit');
 
 -- Aucun rattrapage retroactif de matchs passes avant installation.
 select pg_temp.as_admin();
@@ -242,7 +242,8 @@ select set_config('test.match3',
     'domicile', 2.10, 3.20, 2.90, 2
   )::text, true);
 reset role;
-update public.matches set kickoff_at=now() - interval '3 hours'
+update public.matches set match_date=((now() - interval '3 hours') at time zone 'Europe/Paris')::date,
+    match_time=((now() - interval '3 hours') at time zone 'Europe/Paris')::time
 where id=current_setting('test.match3')::uuid;
 select is(
   private.finalize_match_waitlist_turns_internal(
