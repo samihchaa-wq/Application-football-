@@ -72,8 +72,8 @@ void main() {
       ],
     );
 
-    expect(clubAHistory.keys, {'club-a-joueur-1'});
-    expect(clubBHistory.keys, {'club-b-joueur-1'});
+    expect(clubAHistory.keys, unorderedEquals(['club-a-joueur-1']));
+    expect(clubBHistory.keys, unorderedEquals(['club-b-joueur-1']));
     expect(clubAHistory['club-a-joueur-1']!.mainSlotLabel, 'MOC');
     expect(clubBHistory['club-b-joueur-1']!.mainSlotLabel, 'DCG');
   });
@@ -144,9 +144,8 @@ void main() {
 
   test('aucun joueur de champ n’est placé gardien par défaut', () {
     final slots = formationForCode('4-2-1-3').slots;
-    final withoutGoalkeeper = clubSquad('club-c')
-        .where((entry) => !entry.isGoalkeeper)
-        .toList();
+    final withoutGoalkeeper =
+        clubSquad('club-c').where((entry) => !entry.isGoalkeeper).toList();
     final result = simulateComposition(
       slots: slots,
       candidates: withoutGoalkeeper,
