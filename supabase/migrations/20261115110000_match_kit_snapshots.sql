@@ -28,6 +28,13 @@ using (
   and (select private.is_active_profile())
 );
 
+-- Defense in depth: a restrictive policy ensures that future permissive
+-- policies cannot accidentally expose another club's snapshots.
+create policy club_isolation
+on public.match_kit_snapshots as restrictive for all to authenticated
+using (club_id = (select private.current_club_id()))
+with check (club_id = (select private.current_club_id()));
+
 comment on table public.match_kit_snapshots is
   'Couleurs des trois maillots figées au Live ou à la fin du match. Lecture seule pour les membres du club, pas de modification depuis le client.';
 
