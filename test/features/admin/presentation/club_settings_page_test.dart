@@ -64,8 +64,9 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('la page montre le nom, le code et les fonctionnalités',
-      (tester) async {
+  testWidgets('la page montre le nom, le code et les fonctionnalités', (
+    tester,
+  ) async {
     await pumpPage(tester);
 
     expect(find.widgetWithText(TextField, 'Nom du club'), findsOneWidget);
@@ -79,8 +80,9 @@ void main() {
     }
   });
 
-  testWidgets('l’admin voit son essai, ses joueurs facturés et son espace',
-      (tester) async {
+  testWidgets('l’admin voit son essai, ses joueurs facturés et son espace', (
+    tester,
+  ) async {
     await pumpPage(tester);
 
     await openSection(tester, 'subscription');
@@ -90,8 +92,9 @@ void main() {
     expect(find.text('50\u00a0Mo utilisés sur 200\u00a0Mo.'), findsOneWidget);
   });
 
-  testWidgets('désactiver une fonctionnalité l’enregistre côté serveur',
-      (tester) async {
+  testWidgets('désactiver une fonctionnalité l’enregistre côté serveur', (
+    tester,
+  ) async {
     await pumpPage(tester);
 
     await openSection(tester, 'matches');
@@ -119,8 +122,9 @@ void main() {
     expect(find.text('Nom du club enregistré.'), findsOneWidget);
   });
 
-  testWidgets('un nom trop court est refusé sans appel au serveur',
-      (tester) async {
+  testWidgets('un nom trop court est refusé sans appel au serveur', (
+    tester,
+  ) async {
     await pumpPage(tester);
 
     await tester.enterText(find.byKey(const Key('club-settings-name')), 'X');
@@ -137,8 +141,10 @@ void main() {
     await openSection(tester, 'matches');
 
     final field = find.byKey(const Key('club-settings-home-address'));
-    expect(tester.widget<TextField>(field).controller!.text,
-        'Rue du Stade, Toulouse');
+    expect(
+      tester.widget<TextField>(field).controller!.text,
+      'Rue du Stade, Toulouse',
+    );
 
     await tester.ensureVisible(field);
     await tester.enterText(field, '  12 avenue des Sports, Lille  ');
@@ -173,8 +179,9 @@ void main() {
     expect(repository.usualSquadSize, 14);
   });
 
-  testWidgets('changer le code demande confirmation puis affiche le nouveau',
-      (tester) async {
+  testWidgets('changer le code demande confirmation puis affiche le nouveau', (
+    tester,
+  ) async {
     await pumpPage(tester);
     await openSection(tester, 'members');
 
@@ -195,8 +202,9 @@ void main() {
     );
   });
 
-  testWidgets('le bouton des badges disparaît quand le club les désactive',
-      (tester) async {
+  testWidgets('le bouton des badges disparaît quand le club les désactive', (
+    tester,
+  ) async {
     repository.modules['badges'] = false;
     await tester.pumpWidget(
       ProviderScope(
@@ -212,28 +220,34 @@ void main() {
     expect(find.byType(IconButton), findsNothing);
   });
 
-  testWidgets('la page affiche les règles du club et enregistre un changement',
-      (tester) async {
-    await pumpPage(tester);
+  testWidgets(
+    'la page affiche les règles du club et enregistre un changement',
+    (tester) async {
+      await pumpPage(tester);
 
-    await openSection(tester, 'predictions');
-    expect(find.text('Fermeture des pronostics'), findsOneWidget);
+      await openSection(tester, 'predictions');
+      expect(find.text('Fermeture des pronostics'), findsOneWidget);
 
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('club-rule-prediction_close_minutes-plus')),
-    );
-    await tester.tap(
-      find.byKey(const ValueKey('club-rule-prediction_close_minutes-plus')),
-    );
-    await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('club-rule-prediction_close_minutes-plus')),
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('club-rule-prediction_close_minutes-plus')),
+      );
+      await tester.pumpAndSettle();
 
-    expect(repository.ruleValues['prediction_close_minutes'], 16);
-    expect(find.text('16 min'), findsOneWidget);
-    expect(ClubRules.predictionCloseBeforeKickoff, const Duration(minutes: 16));
-  });
+      expect(repository.ruleValues['prediction_close_minutes'], 16);
+      expect(find.text('16 min'), findsOneWidget);
+      expect(
+        ClubRules.predictionCloseBeforeKickoff,
+        const Duration(minutes: 16),
+      );
+    },
+  );
 
-  testWidgets('le mode de liste d’attente se choisit parmi trois options',
-      (tester) async {
+  testWidgets('le mode de liste d’attente se choisit parmi trois options', (
+    tester,
+  ) async {
     repository.ruleValues['waitlist_mode'] = 0;
     await pumpPage(tester);
     await openSection(tester, 'squad');
@@ -257,8 +271,9 @@ void main() {
     expect(ClubRules.waitlistMode, WaitlistMode.arrivalOrder);
   });
 
-  testWidgets('les +1 sont manuels et les heures auto ne sont plus proposées',
-      (tester) async {
+  testWidgets('les +1 sont manuels et les heures auto ne sont plus proposées', (
+    tester,
+  ) async {
     repository.ruleValues.addAll({
       'waitlist_mode': 0,
       'waitlist_cutoff_days': 1,
@@ -283,19 +298,24 @@ void main() {
     );
     // Les trois règles de convocation restent disponibles.
     await tester.tap(find.text('Fermer'));
-    expect(find.byKey(const ValueKey('club-rule-waitlist_mode-select')),
-        findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('club-rule-waitlist_mode-select')),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('l’aide d’une fonction apparaît uniquement après appui sur i',
-      (tester) async {
+  testWidgets('l’aide d’une fonction apparaît uniquement après appui sur i', (
+    tester,
+  ) async {
     await pumpPage(tester);
     await openSection(tester, 'matches');
     expect(find.text(ClubModule.weather.description), findsNothing);
     await tester.tap(find.byKey(const ValueKey('club-info-module-weather')));
     await tester.pumpAndSettle();
-    expect(find.text(ClubModule.weather.description, skipOffstage: false),
-        findsNothing);
+    expect(
+      find.text(ClubModule.weather.description, skipOffstage: false),
+      findsNothing,
+    );
     expect(find.textContaining('météo prévue'), findsOneWidget);
     await tester.tap(find.text('Fermer'));
     await tester.pumpAndSettle();
@@ -321,8 +341,9 @@ void main() {
     expect(find.byKey(const Key('club-logo-remove')), findsNothing);
   });
 
-  testWidgets('choisir une couleur l’enregistre et habille l’application',
-      (tester) async {
+  testWidgets('choisir une couleur l’enregistre et habille l’application', (
+    tester,
+  ) async {
     await pumpPage(tester);
     expect(AppTheme.primary, AppTheme.defaultPrimary);
 
@@ -366,32 +387,32 @@ class _FakeClubRepository implements ClubRepository {
   final Map<String, int> ruleValues = {'prediction_close_minutes': 15};
 
   List<ClubRule> _rules() => [
-        for (final entry in ruleValues.entries)
-          if (entry.key == 'waitlist_mode')
-            ClubRule(
-              key: entry.key,
-              label: 'Liste d’attente : qui passe en premier',
-              description: 'Quand il y a trop de disponibles.',
-              unit: 'mode',
-              group: 'Liste d’attente',
-              defaultValue: 0,
-              min: 0,
-              max: 2,
-              value: entry.value,
-            )
-          else
-            ClubRule(
-              key: entry.key,
-              label: 'Fermeture des pronostics',
-              description: 'Minutes avant le coup d’envoi.',
-              unit: 'min',
-              group: 'Pronostics',
-              defaultValue: 15,
-              min: 0,
-              max: 240,
-              value: entry.value,
-            ),
-      ];
+    for (final entry in ruleValues.entries)
+      if (entry.key == 'waitlist_mode')
+        ClubRule(
+          key: entry.key,
+          label: 'Liste d’attente : qui passe en premier',
+          description: 'Quand il y a trop de disponibles.',
+          unit: 'mode',
+          group: 'Liste d’attente',
+          defaultValue: 0,
+          min: 0,
+          max: 2,
+          value: entry.value,
+        )
+      else
+        ClubRule(
+          key: entry.key,
+          label: 'Fermeture des pronostics',
+          description: 'Minutes avant le coup d’envoi.',
+          unit: 'min',
+          group: 'Pronostics',
+          defaultValue: 15,
+          min: 0,
+          max: 240,
+          value: entry.value,
+        ),
+  ];
 
   @override
   Future<List<ClubRule>> fetchRules() async => _rules();
