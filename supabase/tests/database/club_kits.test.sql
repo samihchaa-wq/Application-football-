@@ -92,9 +92,9 @@ select is(
   'la couleur gardien du club A est persistée'
 );
 select throws_ok(
-  $select public.admin_update_club_kits(
+  $$select public.admin_update_club_kits(
       jsonb_set(pg_temp.kits(), '{0,goalkeeper_body}', '"noir"')
-  )$,
+  )$$,
   '22023', null,
   'le serveur refuse une couleur gardien non hexadécimale'
 );
