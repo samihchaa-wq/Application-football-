@@ -82,7 +82,7 @@ Configuration** :
 - Redirect URLs : ajoute `https://app.<domaine>/**` (garde l'adresse GitHub
   Pages tant que des tests y tournent).
 
-Sans ce réglage, les liens « mot de passe oublié » et la connexion Facebook
+Sans ce réglage, les liens « mot de passe oublié »
 renvoient vers une mauvaise adresse.
 
 ## Étape 7 : envoyer les e-mails depuis ton domaine (Brevo)
@@ -121,17 +121,9 @@ Pour les faire passer aussi par Brevo : Brevo > SMTP et API > onglet **SMTP**
 Settings > Activer (hôte `smtp-relay.brevo.com`, port `587`, identifiant et
 clé SMTP Brevo, expéditeur `contact@<domaine>`, nom `Petit Filet`).
 
-## Étape 8 (plus tard) : connexion Facebook
+## Étape 8 : connexion Facebook (abandonnée)
 
-À faire quand l'adresse définitive marche. developers.facebook.com > Créer une
-app > « Authentifier les utilisateurs avec Facebook Login ». Facebook demande
-une URL de politique de confidentialité et de suppression des données : celles
-de l'appli. Copie l'identifiant et la clé secrète de l'app dans Supabase >
-Authentication > Providers > Facebook, et colle dans Facebook l'adresse de
-retour affichée par Supabase. Claude peut te guider écran par écran le moment
-venu.
-
----
+Retirée de l'appli le 13/11/2026 sur décision de Samih. Rien à configurer.
 
 ## Ce qui est vérifié automatiquement à chaque publication
 

@@ -12,13 +12,6 @@ abstract final class AppConfig {
     defaultValue: 'dev',
   );
 
-  /// Bouton « Continuer avec Facebook ». Masqué tant que la connexion
-  /// Facebook n'est pas configurée sur Supabase (fournisseur activé et
-  /// inscriptions OAuth autorisées) : sinon le bouton mènerait à une erreur.
-  static const bool facebookLoginEnabled = bool.fromEnvironment(
-    'FACEBOOK_LOGIN_ENABLED',
-  );
-
   static void validate() {
     final missing = <String>[
       if (supabaseUrl.isEmpty) 'SUPABASE_URL',

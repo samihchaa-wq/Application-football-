@@ -51,7 +51,7 @@ class AuthState {
   final bool isAuthenticated;
   final bool hasSession;
 
-  /// Connecté (par Facebook, par exemple) mais rattaché à aucun club : la
+  /// Connecté mais rattaché à aucun club : la
   /// personne doit encore rejoindre un club ou en créer un.
   final bool needsClub;
   final AuthProfile? profile;
@@ -224,7 +224,7 @@ class AuthController extends StateNotifier<AuthState> {
 
       final hasSession = _repository.hasSession;
       if (profile == null && hasSession && _repository.currentUserHasNoClub) {
-        // Compte créé par Facebook : il n'a pas encore de club, donc pas de
+        // Compte sans club, donc pas de
         // profil. Ce n'est pas une panne.
         _profileFromCache = false;
         unawaited(_profileCache?.remember(null));
@@ -342,21 +342,7 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
-  /// Ouvre la connexion Facebook. Sur le web, la page quitte l'application
-  /// puis y revient une fois la connexion faite.
-  Future<void> signInWithFacebook() async {
-    state = state.copyWith(clearError: true);
-    try {
-      await _repository.signInWithFacebook();
-    } catch (error, stackTrace) {
-      AppLogger.error('auth.facebook_sign_in', error, stackTrace);
-      state = state.copyWith(
-        error: 'La connexion avec Facebook n’a pas pu démarrer.',
-      );
-    }
-  }
-
-  /// Prénom et nom proposés par Facebook, pour préremplir l'inscription.
+  /// Prénom et nom connus du compte, pour préremplir l'inscription.
   ({String firstName, String lastName}) get suggestedNames =>
       _repository.suggestedNames;
 

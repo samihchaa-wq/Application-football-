@@ -9,7 +9,7 @@ import 'package:as_grinta/features/legal/domain/legal_documents.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Dernière étape d'une connexion par Facebook : le compte n'a pas encore de
+/// Compte connecté sans club : le compte n'a pas encore de
 /// club. La personne en rejoint un avec un code d'invitation, ou en crée un.
 class ChooseClubPage extends ConsumerStatefulWidget {
   const ChooseClubPage({super.key});

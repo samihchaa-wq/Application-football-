@@ -145,16 +145,7 @@ class AuthRepository {
     return clubId == null || '$clubId'.isEmpty;
   }
 
-  Future<void> signInWithFacebook() async {
-    final redirect = AppConfig.publicAppUrl.trim();
-    await _client.auth.signInWithOAuth(
-      OAuthProvider.facebook,
-      redirectTo: redirect.isEmpty ? null : redirect,
-      scopes: 'email,public_profile',
-    );
-  }
-
-  /// Prénom et nom connus de Facebook (peuvent être vides).
+  /// Prénom et nom connus du compte de connexion (peuvent être vides).
   ({String firstName, String lastName}) get suggestedNames {
     final metadata = _client.auth.currentUser?.userMetadata ?? const {};
     String text(String key) => '${metadata[key] ?? ''}'.trim();

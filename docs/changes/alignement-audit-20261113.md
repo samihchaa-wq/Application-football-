@@ -28,6 +28,6 @@ L'ouverture du mode live suit le réglage « Fermeture des pronostics » : c'est
 
 La piste d'AS Grinta avait été retirée sans remplaçant : le bilan s'ouvrait sans musique. Une piste de 64 s, **synthétisée par programme** (`tool/generate_wrapped_music.py`, aucun échantillon externe, donc sans droits à payer), est ajoutée dans `assets/audio/wrapped.mp3`. Elle n'a pas été écoutée par un humain avant fusion : à valider à l'oreille.
 
-## Bouton « Continuer avec Facebook »
+## Connexion Facebook retirée
 
-Vérifié le 13/11 sur la base commerciale (réglages publics d'authentification) : le fournisseur Facebook est **désactivé** et les inscriptions directes sont **fermées** (choix de sécurité). Le bouton menait donc à une erreur. Il est masqué tant que `FACEBOOK_LOGIN_ENABLED` n'est pas mis à `true` à la construction de l'appli. Pour l'activer : créer une appli sur developers.facebook.com, saisir ses identifiants dans Supabase (Authentication > Providers > Facebook), décider comment autoriser la création de compte par Facebook malgré les inscriptions fermées, puis ajouter `"FACEBOOK_LOGIN_ENABLED": true` à la configuration de production.
+Vérifié le 13/11 sur la base commerciale : le fournisseur Facebook n'était pas activé et les inscriptions directes sont fermées, donc le bouton menait à une erreur. Décision de Samih (13/11) : retirer complètement Facebook. Le bouton, le code de connexion côté appli et les mentions de Facebook/Meta dans les textes légaux sont supprimés. L'écran « choisir un club » d'un compte connecté sans club est conservé (filet de sécurité), ainsi que la fonction serveur `claim-club`.

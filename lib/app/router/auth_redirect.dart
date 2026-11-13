@@ -32,7 +32,7 @@ String? resolveAuthRedirect({
     return _loadingRedirect(uri, location);
   }
 
-  // Connecté par Facebook mais sans club : seule l'étape « rejoindre ou créer
+  // Connecté mais sans club : seule l'étape « rejoindre ou créer
   // un club » est accessible.
   if (authState.needsClub) {
     return location == '/auth/choose-club' ? null : '/auth/choose-club';
