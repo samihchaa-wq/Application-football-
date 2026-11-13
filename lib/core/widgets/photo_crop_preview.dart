@@ -239,5 +239,4 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
       ],
     );
   }
-
 }
