@@ -19,7 +19,7 @@ void main() {
       'formation': '4-1-4-1',
       'field_players': [
         {
-          'name': 'Milan Collet',
+          'name': 'Marius Carrel',
           'position_label': 'Avant-centre',
           'x_pct': 50.0,
           'y_pct': 5.0,
@@ -28,12 +28,12 @@ void main() {
         vacantSlot('Poste laissé vide'),
       ],
       'bench_players': ['Poste laissé vide', 'Julio Vasseur'],
-      'present_names': ['Poste laissé vide', 'Milan Collet'],
+      'present_names': ['Poste laissé vide', 'Marius Carrel'],
       'scorers': [
-        {'name': 'Milan Collet', 'goals': 3},
+        {'name': 'Marius Carrel', 'goals': 3},
         {'name': 'Poste laissé vide', 'goals': 1},
       ],
-      'motm_names': ['Poste laissé vide', 'Milan Collet'],
+      'motm_names': ['Poste laissé vide', 'Marius Carrel'],
       'photo_urls': {'Poste laissé vide': 'photo.jpg'},
     });
 
@@ -43,13 +43,13 @@ void main() {
     expect(vacant.name, isEmpty);
     expect(vacant.photoUrl, isNull);
     expect(vacant.xPct, 10.0);
-    expect(detail.fieldPlayers.first.name, 'Milan');
+    expect(detail.fieldPlayers.first.name, 'Marius');
     expect(detail.fieldPlayers.first.isVacant, isFalse);
 
     expect(detail.benchPlayers.map((p) => p.name), ['Julio']);
-    expect(detail.presentNames, ['Milan']);
-    expect(detail.scorers.map((s) => s.name), ['Milan']);
-    expect(detail.motmNames, ['Milan']);
+    expect(detail.presentNames, ['Marius']);
+    expect(detail.scorers.map((s) => s.name), ['Marius']);
+    expect(detail.motmNames, ['Marius']);
     expect(detail.hasComposition, isTrue);
   });
 
@@ -64,7 +64,7 @@ void main() {
         'field_players': [
           vacantSlot(variant),
           {
-            'name': 'Milan Collet',
+            'name': 'Marius Carrel',
             'position_label': 'Avant-centre',
             'x_pct': 50.0,
             'y_pct': 5.0,
@@ -123,7 +123,7 @@ void main() {
         vacantSlot('Poste laissé vide'),
         vacantSlot('Poste laissé vide'),
       ],
-      'present_names': ['Milan Collet'],
+      'present_names': ['Marius Carrel'],
     });
 
     expect(detail.hasComposition, isFalse);

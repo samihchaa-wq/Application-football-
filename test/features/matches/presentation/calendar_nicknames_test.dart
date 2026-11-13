@@ -53,9 +53,9 @@ void main() {
     test('deux appellations identiques reçoivent l’initiale du nom', () {
       final detail = historicalMatchDetailFromRow(
         _archiveRow(
-          names: ['Julien Cesar', 'Julien Durand'],
+          names: ['Julien Cavel', 'Julien Durand'],
           identities: {
-            'Julien Cesar': {'name': 'Julien', 'last_initial': 'C'},
+            'Julien Cavel': {'name': 'Julien', 'last_initial': 'C'},
             'Julien Durand': {'name': 'Julien', 'last_initial': 'D'},
           },
         ),
@@ -70,12 +70,12 @@ void main() {
     test('les buteurs portent la même appellation que le terrain', () {
       final detail = historicalMatchDetailFromRow(
         _archiveRow(
-          names: ['Milan Collet'],
+          names: ['Marius Carrel'],
           identities: {
-            'Milan Collet': {'name': 'Pipo', 'last_initial': 'C'},
+            'Marius Carrel': {'name': 'Pipo', 'last_initial': 'C'},
           },
           scorers: [
-            {'name': 'Milan Collet', 'goals': 2},
+            {'name': 'Marius Carrel', 'goals': 2},
           ],
         ),
       );
@@ -87,10 +87,10 @@ void main() {
     test('l’effectif de secours garde chaque joueur sous son surnom', () {
       final detail = historicalMatchDetailFromRow(
         _archiveRow(
-          names: ['Philippe Collet', 'Milan Collet'],
+          names: ['Philippe Carrel', 'Marius Carrel'],
           identities: {
-            'Philippe Collet': {'name': 'Coach', 'last_initial': 'C'},
-            'Milan Collet': {'name': 'Pipo', 'last_initial': 'C'},
+            'Philippe Carrel': {'name': 'Coach', 'last_initial': 'C'},
+            'Marius Carrel': {'name': 'Pipo', 'last_initial': 'C'},
           },
         ),
       );

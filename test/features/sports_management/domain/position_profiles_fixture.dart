@@ -5,7 +5,7 @@ import 'package:as_grinta/features/sports_management/domain/player_position_prof
 
 const Map<String, PlayerPositionProfile> kTestPositionProfiles =
     <String, PlayerPositionProfile>{
-  'a0a105a2-5041-4555-90bd-a75140ad701c': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000001': PlayerPositionProfile(
     displayName: 'Joueur 1',
     appearances: 20,
     totalWeight: 16.7782,
@@ -18,7 +18,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('DG', 1.7071),
     ],
   ),
-  'a595c2c2-be69-430c-8dd5-6bbaa2dd7a65': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000002': PlayerPositionProfile(
     displayName: 'Joueur 2',
     appearances: 18,
     totalWeight: 18.0000,
@@ -31,7 +31,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('MOC', 1.0000),
     ],
   ),
-  '9af382c3-7df3-4109-8c07-601754f19f89': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000003': PlayerPositionProfile(
     displayName: 'Joueur 3',
     appearances: 18,
     totalWeight: 18.0000,
@@ -40,7 +40,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('AG', 1.0000),
     ],
   ),
-  '2c40dbe5-a804-4b9f-9256-432ab85ce495': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000004': PlayerPositionProfile(
     displayName: 'Joueur 4',
     appearances: 37,
     totalWeight: 30.5563,
@@ -51,7 +51,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('GB', 1.4142),
     ],
   ),
-  'c1fe7ae2-3dea-4981-9510-a61826e5341a': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000005': PlayerPositionProfile(
     displayName: 'Joueur 5',
     appearances: 16,
     totalWeight: 15.7071,
@@ -62,7 +62,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('AD', 1.0000),
     ],
   ),
-  '298bb51f-7e2f-4479-8fb9-254ceaf47ed8': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000006': PlayerPositionProfile(
     displayName: 'Joueur 6',
     appearances: 9,
     totalWeight: 9.0000,
@@ -75,7 +75,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('MOG', 1.0000),
     ],
   ),
-  '2e059d08-d036-4ca3-9b38-f144418e1eb8': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000007': PlayerPositionProfile(
     displayName: 'Joueur 7',
     appearances: 4,
     totalWeight: 0.3902,
@@ -84,7 +84,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('DCG', 0.1768),
     ],
   ),
-  'b981ee78-b071-4d9d-a16a-6198aa177491': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000008': PlayerPositionProfile(
     displayName: 'Joueur 8',
     appearances: 43,
     totalWeight: 15.9069,
@@ -97,7 +97,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('BU', 1.2071),
     ],
   ),
-  '46ba5817-0a5b-4373-b144-a3708ffbf190': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000009': PlayerPositionProfile(
     displayName: 'Joueur 9',
     appearances: 3,
     totalWeight: 0.2652,
@@ -107,7 +107,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('GB', 0.0884),
     ],
   ),
-  '16aa496f-798f-4d39-b5db-361fb3288022': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000010': PlayerPositionProfile(
     displayName: 'Joueur 10',
     appearances: 40,
     totalWeight: 11.7301,
@@ -117,7 +117,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('DCG', 1.4786),
     ],
   ),
-  '114677c4-abaf-4ab8-8909-7f8077885723': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000011': PlayerPositionProfile(
     displayName: 'Joueur 11',
     appearances: 4,
     totalWeight: 1.0000,
@@ -127,7 +127,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('AG', 0.2500),
     ],
   ),
-  'e29ddb1f-2b1c-42da-9cf8-15cb93628b08': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000012': PlayerPositionProfile(
     displayName: 'Joueur 12',
     appearances: 4,
     totalWeight: 0.5000,
@@ -136,7 +136,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('MG', 0.2500),
     ],
   ),
-  '1343e65c-63fa-4f8f-af56-56d3136962b5': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000013': PlayerPositionProfile(
     displayName: 'Joueur 13',
     appearances: 132,
     totalWeight: 60.8582,
@@ -149,7 +149,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('AG', 2.5000),
     ],
   ),
-  '5f09a6cc-b306-427e-b5c2-37551e058245': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000014': PlayerPositionProfile(
     displayName: 'Joueur 14',
     appearances: 11,
     totalWeight: 1.2437,
@@ -162,7 +162,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('MG', 0.0884),
     ],
   ),
-  '0cd558f5-b283-4e7c-bc3d-ac09f63655f8': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000015': PlayerPositionProfile(
     displayName: 'Joueur 15',
     appearances: 58,
     totalWeight: 26.7029,
@@ -174,7 +174,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('BUG', 1.3692),
     ],
   ),
-  'a26bcec5-af3f-42ee-8a66-1b954bc8f8f6': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000016': PlayerPositionProfile(
     displayName: 'Joueur 16',
     appearances: 14,
     totalWeight: 1.8750,
@@ -187,7 +187,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('GB', 0.1250),
     ],
   ),
-  '3145408a-d9cb-4a41-907e-fb054cc2a1b5': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000017': PlayerPositionProfile(
     displayName: 'Joueur 17',
     appearances: 9,
     totalWeight: 0.9808,
@@ -196,7 +196,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('BUD', 0.0754),
     ],
   ),
-  'aaa132f5-1fca-47dc-a875-5c2aaa4a9ae9': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000018': PlayerPositionProfile(
     displayName: 'Joueur 18',
     appearances: 38,
     totalWeight: 24.7886,
@@ -209,7 +209,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('DCG', 2.2071),
     ],
   ),
-  'a1cac6b7-ef09-493f-9d3e-7078fcaa3d97': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000019': PlayerPositionProfile(
     displayName: 'Joueur 19',
     appearances: 72,
     totalWeight: 33.7520,
@@ -219,7 +219,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('DG', 1.3839),
     ],
   ),
-  '6f81ca4f-cfd3-4711-a2e5-8f8112a2375d': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000020': PlayerPositionProfile(
     displayName: 'Joueur 20',
     appearances: 75,
     totalWeight: 37.6003,
@@ -229,7 +229,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('MDG', 2.0152),
     ],
   ),
-  '36d6011f-b24f-4264-b43a-ea5f93147c93': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000021': PlayerPositionProfile(
     displayName: 'Joueur 21',
     appearances: 88,
     totalWeight: 29.1662,
@@ -241,7 +241,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('MOC', 1.2071),
     ],
   ),
-  'b9f696f7-297d-4891-96f1-34a974c0f7a1': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000022': PlayerPositionProfile(
     displayName: 'Joueur 22',
     appearances: 93,
     totalWeight: 53.5490,
@@ -254,7 +254,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('MOC', 2.5607),
     ],
   ),
-  '226b8676-de68-4486-b5f6-dda7526018be': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000023': PlayerPositionProfile(
     displayName: 'Joueur 23',
     appearances: 32,
     totalWeight: 4.2696,
@@ -266,7 +266,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('DCG', 0.2134),
     ],
   ),
-  'cb653166-360c-4545-b63c-42c240a84007': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000024': PlayerPositionProfile(
     displayName: 'Joueur 24',
     appearances: 13,
     totalWeight: 1.5303,
@@ -279,7 +279,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('AG', 0.0884),
     ],
   ),
-  'cfcdf327-0654-43bf-a729-3186ad39045d': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000025': PlayerPositionProfile(
     displayName: 'Joueur 25',
     appearances: 15,
     totalWeight: 10.6066,
@@ -290,7 +290,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('AG', 0.7071),
     ],
   ),
-  '5c681291-ec75-47ed-8bee-1b538b69cefe': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000026': PlayerPositionProfile(
     displayName: 'Joueur 26',
     appearances: 123,
     totalWeight: 68.3272,
@@ -301,7 +301,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('MOC', 2.9142),
     ],
   ),
-  'f1fb2521-e9a9-43e3-b7f2-0359808890d0': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000027': PlayerPositionProfile(
     displayName: 'Joueur 27',
     appearances: 6,
     totalWeight: 0.7500,
@@ -311,7 +311,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('DD', 0.1250),
     ],
   ),
-  '4bbdab69-6f29-430d-8c05-eb8bc4b1e547': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000028': PlayerPositionProfile(
     displayName: 'Joueur 28',
     appearances: 14,
     totalWeight: 14.0000,
@@ -321,7 +321,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('MOG', 1.0000),
     ],
   ),
-  'b26acaab-3d33-4371-a80f-5692ffb6d026': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000029': PlayerPositionProfile(
     displayName: 'Joueur 29',
     appearances: 109,
     totalWeight: 46.7369,
@@ -332,7 +332,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('DG', 2.0695),
     ],
   ),
-  '257e639d-0621-4015-acef-d69e74e45bb2': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000030': PlayerPositionProfile(
     displayName: 'Joueur 30',
     appearances: 11,
     totalWeight: 1.1553,
@@ -343,7 +343,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('GB', 0.1250),
     ],
   ),
-  'bd469e77-23a2-4be4-98e4-2e85923fac69': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000031': PlayerPositionProfile(
     displayName: 'Joueur 31',
     appearances: 110,
     totalWeight: 49.4271,
@@ -355,7 +355,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('MCD', 2.1209),
     ],
   ),
-  '44626628-08b5-4b91-b021-f15372b71538': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000032': PlayerPositionProfile(
     displayName: 'Joueur 32',
     appearances: 50,
     totalWeight: 20.1495,
@@ -368,7 +368,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('MC', 1.5607),
     ],
   ),
-  '89f24276-dac0-4046-87a3-6c28e48fef3a': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000033': PlayerPositionProfile(
     displayName: 'Joueur 33',
     appearances: 117,
     totalWeight: 60.9381,
@@ -376,7 +376,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('GB', 60.9381),
     ],
   ),
-  'c5ba5eda-9cb3-4ec5-aa68-eef33b84a3ad': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000034': PlayerPositionProfile(
     displayName: 'Joueur 34',
     appearances: 98,
     totalWeight: 47.3387,
@@ -388,7 +388,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('DG', 2.2589),
     ],
   ),
-  'efeecb6e-53b1-4f9d-b0b4-44a1013571a2': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000035': PlayerPositionProfile(
     displayName: 'Joueur 35',
     appearances: 35,
     totalWeight: 5.7254,
@@ -398,7 +398,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('MDG', 0.2500),
     ],
   ),
-  '0d8871eb-b369-4578-8ba6-17790623fceb': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000036': PlayerPositionProfile(
     displayName: 'Joueur 36',
     appearances: 41,
     totalWeight: 20.7708,
@@ -411,7 +411,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('MDC', 1.4142),
     ],
   ),
-  '7fe67f9b-75c0-4606-8030-021b00900cc1': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000037': PlayerPositionProfile(
     displayName: 'Joueur 37',
     appearances: 119,
     totalWeight: 59.2179,
@@ -421,7 +421,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('DC', 4.2463),
     ],
   ),
-  '665fcf3b-eace-4ae0-97a8-498f9bf918f5': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000038': PlayerPositionProfile(
     displayName: 'Joueur 38',
     appearances: 71,
     totalWeight: 17.2157,
@@ -430,7 +430,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('AG', 0.7071),
     ],
   ),
-  'c0db4bc0-7725-4721-834b-0850e3c1e2a3': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000039': PlayerPositionProfile(
     displayName: 'Joueur 39',
     appearances: 63,
     totalWeight: 23.2959,
@@ -441,7 +441,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('AG', 3.3107),
     ],
   ),
-  '51a58cdb-30fa-4dce-8c30-c4957a7f8776': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000040': PlayerPositionProfile(
     displayName: 'Joueur 40',
     appearances: 4,
     totalWeight: 0.3094,
@@ -450,7 +450,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('GB', 0.0884),
     ],
   ),
-  '35ad373d-fb20-482d-85e7-f7e7eaf93404': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000041': PlayerPositionProfile(
     displayName: 'Joueur 41',
     appearances: 3,
     totalWeight: 1.9142,
@@ -458,7 +458,7 @@ const Map<String, PlayerPositionProfile> kTestPositionProfiles =
       PlayerPositionSample('GB', 1.9142),
     ],
   ),
-  'db3112de-05f3-43c9-aa0c-46a87a07d409': PlayerPositionProfile(
+  '00000000-0000-4000-8000-000000000042': PlayerPositionProfile(
     displayName: 'Joueur 42',
     appearances: 36,
     totalWeight: 18.2279,

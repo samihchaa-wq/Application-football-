@@ -1,5 +1,7 @@
 # Matrice 164 fonctionnalités — règles et options par club
 
+> **Mise à jour du 13/11/2026 :** les +1 de la liste d'attente sont désormais **automatiques au coup d'envoi** et permanents sur la saison (PR #86, [nouvelle règle](changes/credits-attente-permanents-20261113.md)). Les mentions de +1 « manuels » ci-dessous décrivent la décision précédente, remplacée.
+
 Établie le 13 novembre 2026 après comparaison GitHub AS Grinta (lecture seule) / Petit Filet. **Inventaire de décisions et preuves, pas déclaration de recette terminée.**
 
 ## Résumé
@@ -92,7 +94,7 @@ Les modules obligatoires (authentification, sécurité, cloisonnement, intégrit
 | E06 | Quota convoqués, remplaçants et coach | Paramétrer | usual_squad_size | Valider plage, défaut AS Grinta, persistance club A/B et droits admin. | P0 |
 | E07 | Liste d'attente par priorité saison précédente | Paramétrer | waitlist_mode | Valider plage, défaut AS Grinta, persistance club A/B et droits admin. | P0 |
 | E08 | Liste d'attente à 3 modes | Paramétrer | waitlist_mode (3 choix) | Valider plage, défaut AS Grinta, persistance club A/B et droits admin. | P0 |
-| E09 | Passages +1 et compteur en attente | Paramétrer | +1 manuels admin, pas de paramètre d’automatisme | Aucun +1 automatique : verrouiller le comportement côté serveur et afficher dans l’aide i. | P0 |
+| E09 | Passages +1 et compteur en attente | Paramétrer | +1 automatiques au coup d’envoi, permanents sur la saison (PR #86) | Comportement serveur testé ; expliqué dans l’aide i. Ancienne règle « admin uniquement » remplacée. | P0 |
 | E10 | Réorganisation manuelle / forcée par admin | Paramétrer | Non démontré individuellement | Valider plage, défaut AS Grinta, persistance club A/B et droits admin. | P0 |
 | E11 | Départ, retour, promotion, rétrogradation | Garder | Non démontré individuellement | Vérifier parcours réel et conserver comportement actuel. | P0 |
 | E12 | Effectif publié, gel T-15, exception justifiée | Paramétrer | Règles temporelles, gel match selon serveur | Valider plage, défaut AS Grinta, persistance club A/B et droits admin. | P0 |

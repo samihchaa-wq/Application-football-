@@ -71,9 +71,9 @@ void main() {
 
     test('le prénom officiel est capitalisé sans surnom', () {
       const profile = LinkableProfile(
-        id: 'romain-serrano',
+        id: 'romain-sablier',
         firstName: 'romain',
-        lastName: 'Serrano',
+        lastName: 'Sablier',
         surnom: '',
         username: 'romains2',
       );

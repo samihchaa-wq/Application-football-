@@ -3,8 +3,8 @@ import 'package:as_grinta/features/sports_management/domain/football_formation.d
 import 'package:as_grinta/features/sports_management/domain/player_position_history.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Romain Serrano : MDC très marqué dans l'archive.
-const String romainSerrano = 'bd469e77-23a2-4be4-98e4-2e85923fac69';
+/// Joueur d'essai au poste MDC très marqué dans le fichier de postes.
+const String joueurMdc = '00000000-0000-4000-8000-000000000031';
 
 /// Un joueur inconnu de l'archive, comme une recrue.
 const String recrue = 'recrue-sans-archive';
@@ -83,8 +83,8 @@ void main() {
       );
 
       expect(
-        merged[romainSerrano]!.mainSlotLabel,
-        kTestPositionProfiles[romainSerrano]!.mainSlotLabel,
+        merged[joueurMdc]!.mainSlotLabel,
+        kTestPositionProfiles[joueurMdc]!.mainSlotLabel,
       );
     });
 
@@ -101,14 +101,14 @@ void main() {
     });
 
     test('quelques matchs ne renversent pas un poste très marqué', () {
-      final avant = kTestPositionProfiles[romainSerrano]!;
+      final avant = kTestPositionProfiles[joueurMdc]!;
       final merged = mergePlayerPositionProfiles(
         archive: kTestPositionProfiles,
-        history: repeated(romainSerrano, 'DCD', times: 3, year: 2026),
+        history: repeated(joueurMdc, 'DCD', times: 3, year: 2026),
       );
 
       expect(avant.mainSlotLabel, 'MDC');
-      expect(merged[romainSerrano]!.mainSlotLabel, 'MDC');
+      expect(merged[joueurMdc]!.mainSlotLabel, 'MDC');
     });
 
     test('un changement de poste durable finit par faire basculer le profil',
@@ -116,26 +116,26 @@ void main() {
       final merged = mergePlayerPositionProfiles(
         archive: kTestPositionProfiles,
         history: [
-          ...repeated(romainSerrano, 'DCD', times: 20, year: 2026),
-          ...repeated(romainSerrano, 'DCD', times: 20, year: 2027),
+          ...repeated(joueurMdc, 'DCD', times: 20, year: 2026),
+          ...repeated(joueurMdc, 'DCD', times: 20, year: 2027),
         ],
       );
 
-      expect(merged[romainSerrano]!.mainSlotLabel, 'DCD');
+      expect(merged[joueurMdc]!.mainSlotLabel, 'DCD');
       expect(
-        merged[romainSerrano]!.secondarySlotLabel,
-        kTestPositionProfiles[romainSerrano]!.mainSlotLabel,
+        merged[joueurMdc]!.secondarySlotLabel,
+        kTestPositionProfiles[joueurMdc]!.mainSlotLabel,
       );
     });
 
     test('les matchs joués s’ajoutent au compteur de titularisations', () {
-      final avant = kTestPositionProfiles[romainSerrano]!.appearances;
+      final avant = kTestPositionProfiles[joueurMdc]!.appearances;
       final merged = mergePlayerPositionProfiles(
         archive: kTestPositionProfiles,
-        history: repeated(romainSerrano, 'MDC', times: 5, year: 2026),
+        history: repeated(joueurMdc, 'MDC', times: 5, year: 2026),
       );
 
-      expect(merged[romainSerrano]!.appearances, avant + 5);
+      expect(merged[joueurMdc]!.appearances, avant + 5);
     });
 
     test('les postes fusionnés restent triés et bornés', () {
@@ -143,11 +143,11 @@ void main() {
         archive: kTestPositionProfiles,
         history: [
           for (final slot in matchSheetSlotPositions.keys)
-            played(romainSerrano, slot, year: 2026),
+            played(joueurMdc, slot, year: 2026),
         ],
       );
 
-      final samples = merged[romainSerrano]!.samples;
+      final samples = merged[joueurMdc]!.samples;
       expect(samples.length, lessThanOrEqualTo(6));
       for (var index = 1; index < samples.length; index += 1) {
         expect(
@@ -158,18 +158,18 @@ void main() {
     });
 
     test('un joueur polyvalent peut se fixer un poste', () {
-      // Aki Salabee n'a aucun poste dominant dans l'archive ; une série de
+      // Le joueur d'essai n°1 n'a aucun poste dominant ; une série de
       // titularisations au même poste doit finir par lui en donner un.
-      const aki = 'a0a105a2-5041-4555-90bd-a75140ad701c';
-      expect(kTestPositionProfiles[aki]!.isVersatile, isTrue);
+      const polyvalent = '00000000-0000-4000-8000-000000000001';
+      expect(kTestPositionProfiles[polyvalent]!.isVersatile, isTrue);
 
       final merged = mergePlayerPositionProfiles(
         archive: kTestPositionProfiles,
-        history: repeated(aki, 'MDC', times: 15, year: 2027),
+        history: repeated(polyvalent, 'MDC', times: 15, year: 2027),
       );
 
-      expect(merged[aki]!.isVersatile, isFalse);
-      expect(merged[aki]!.mainSlotLabel, 'MDC');
+      expect(merged[polyvalent]!.isVersatile, isFalse);
+      expect(merged[polyvalent]!.mainSlotLabel, 'MDC');
     });
   });
 }

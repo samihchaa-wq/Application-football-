@@ -15,34 +15,34 @@ PlayerPositionProfile profile(String displayName, {int appearances = 10}) {
 void main() {
   group('normalizePlayerName', () {
     test('met en minuscules et resserre les espaces', () {
-      expect(normalizePlayerName('  Romain   SERRANO '), 'romain serrano');
+      expect(normalizePlayerName('  Romain   SABLIER '), 'romain sablier');
     });
 
     test('conserve les accents, comme la base', () {
-      expect(normalizePlayerName('Frédéric Hermet'), 'frédéric hermet');
+      expect(normalizePlayerName('Frédéric Hamelin'), 'frédéric hamelin');
     });
   });
 
   group('realignPlayerPositionProfiles', () {
     final archive = <String, PlayerPositionProfile>{
-      'ancien-romain': profile('Romain Serrano'),
+      'ancien-romain': profile('Romain Sablier'),
       'stable-flo': profile('Flo Aubertin'),
     };
 
     test('déplace un profil sur l’identité qui porte désormais son histoire',
         () {
       final realigned = realignPlayerPositionProfiles(
-        identitiesByName: const {'romain serrano': 'nouveau-romain'},
+        identitiesByName: const {'romain sablier': 'nouveau-romain'},
         archive: archive,
       );
 
-      expect(realigned['nouveau-romain']?.displayName, 'Romain Serrano');
+      expect(realigned['nouveau-romain']?.displayName, 'Romain Sablier');
       expect(realigned.containsKey('ancien-romain'), isFalse);
     });
 
     test('laisse intacts les profils dont l’identité n’a pas bougé', () {
       final realigned = realignPlayerPositionProfiles(
-        identitiesByName: const {'romain serrano': 'nouveau-romain'},
+        identitiesByName: const {'romain sablier': 'nouveau-romain'},
         archive: archive,
       );
 
@@ -111,7 +111,7 @@ void main() {
       final relabelled = relabelPlayerPositionProfilesForDisplay(
         profiles: <String, PlayerPositionProfile>{
           'luka-id': profile('Luka Barral'),
-          'milan-id': profile('Milan Collet'),
+          'milan-id': profile('Marius Carrel'),
         },
         displayNamesByPlayerId: const {
           'luka-id': 'Lulu',

@@ -6,7 +6,7 @@ select no_plan();
 insert into auth.users(id, email, raw_user_meta_data)
 values
   (
-    '89f24276-dac0-4046-87a3-6c28e48fef3a',
+    '00000000-0000-4000-8000-000000000033',
     'badge-authorized@example.invalid',
     '{"first_name":"Badge","last_name":"Authorized"}'::jsonb
   ),
@@ -21,13 +21,13 @@ set role = 'admin',
     status = 'active',
     updated_at = now()
 where id in (
-  '89f24276-dac0-4046-87a3-6c28e48fef3a',
+  '00000000-0000-4000-8000-000000000033',
   'ba6e0000-0000-0000-0000-000000000001'
 );
 
 select set_config(
   'request.jwt.claims',
-  '{"sub":"89f24276-dac0-4046-87a3-6c28e48fef3a","role":"authenticated","aud":"authenticated"}',
+  '{"sub":"00000000-0000-4000-8000-000000000033","role":"authenticated","aud":"authenticated"}',
   true
 );
 set local role authenticated;
