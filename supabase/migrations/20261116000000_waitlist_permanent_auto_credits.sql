@@ -49,12 +49,9 @@ create policy club_isolation on private.waitlist_auto_processed_matches
 create policy club_scope_access on private.waitlist_auto_processed_matches
   for all to club_scope using (true) with check (true);
 
--- Comme toutes les tables avec club_id, le registre a une politique de
--- cloisonnement restrictive, y compris si les droits evoluent plus tard.
-create policy club_isolation on private.waitlist_auto_processed_matches
-  as restrictive for all to public
-  using (club_id = (select private.current_club_id()))
-  with check (club_id = (select private.current_club_id()));
+-- Le trigger de gouvernance multiclub pose automatiquement la politique
+-- restrictive club_isolation sur toute nouvelle table avec club_id.
+-- Ne pas la creer une seconde fois.
 revoke all on private.waitlist_auto_activation,
   private.waitlist_auto_processed_matches from public, anon, authenticated;
 
