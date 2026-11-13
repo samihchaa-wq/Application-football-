@@ -215,19 +215,24 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
                   filterQuality: FilterQuality.high,
                 ),
               )
-            : AnimatedBuilder(
-                animation: _transformationController,
-                builder: (context, child) => Transform(
-                  alignment: Alignment.topLeft,
-                  transform: _transformationController.value,
-                  child: child,
-                ),
-                child: Image.memory(
-                  widget.bytes,
-                  width: _childWidth,
-                  height: _childHeight,
-                  fit: BoxFit.fill,
-                  filterQuality: FilterQuality.high,
+            : OverflowBox(
+                alignment: Alignment.topLeft,
+                maxWidth: double.infinity,
+                maxHeight: double.infinity,
+                child: AnimatedBuilder(
+                  animation: _transformationController,
+                  builder: (context, child) => Transform(
+                    alignment: Alignment.topLeft,
+                    transform: _transformationController.value,
+                    child: child,
+                  ),
+                  child: Image.memory(
+                    widget.bytes,
+                    width: _childWidth,
+                    height: _childHeight,
+                    fit: BoxFit.fill,
+                    filterQuality: FilterQuality.high,
+                  ),
                 ),
               );
 
