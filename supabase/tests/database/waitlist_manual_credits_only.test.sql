@@ -2,18 +2,18 @@ begin;
 set local search_path = public, extensions, pg_catalog;
 select no_plan();
 
--- Aucune tâche programmée ne doit attribuer un +1.
+-- Le cron attribue les +1 uniquement aux matchs passes depuis l activation.
 select ok(
-  not exists (select 1 from cron.job where jobname = 'waitlist-credit'),
-  'Le cron de credit automatique a ete supprime'
+  exists (select 1 from cron.job where jobname = 'waitlist-credit'),
+  'Le cron de credit automatique a ete reactive'
 );
 
--- Les points d'entree historiques doivent rester apppelables mais ne jamais
--- accorder ou retirer des credits (lecture admin, cron, match annule/reporte).
+-- Sans match eligible, le cron ne produit rien. Lecture, annulation et
+-- fausse ID ne doivent jamais ajouter ou retirer de credit.
 select is(
   private.process_due_waitlist_credits(),
   0,
-  'Le traitement cron devient sans effet'
+  'Le traitement cron ne credite rien sans match eligible'
 );
 select is(
   private.finalize_due_waitlist_turns_for_season(
@@ -27,7 +27,7 @@ select is(
     '00000000-0000-0000-0000-000000000000'::uuid, true
   ),
   0,
-  'Aucun match ne peut credit automatiquement, meme en forçant'
+  'Un identifiant de match inexistant ne peut etre force'
 );
 select is(
   private.void_match_waitlist_credits(
@@ -49,7 +49,7 @@ select is(
    where p.oid =
       'private.finalize_match_waitlist_turns_internal(uuid,boolean)'::regprocedure),
   'club_scope',
-  'La fonction neutralisee conserve son proprietaire'
+  'La fonction de credit conserve son proprietaire'
 );
 
 select * from finish();
