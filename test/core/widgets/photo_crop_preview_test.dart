@@ -79,6 +79,32 @@ Future<Uint8List?> _crop(
 void main() {
   setUp(ClubKits.reset);
   tearDown(ClubKits.reset);
+
+  testWidgets(
+    'le patron validé affiche guides, conseils, exemples et aperçu final',
+    (tester) async {
+      final exported = await _crop(
+        tester,
+        _photo(400, 400),
+        beforeExport: () async {
+          expect(find.text('Ajouter la photo du joueur'), findsOneWidget);
+          expect(find.text('Patron de cadrage'), findsOneWidget);
+          expect(find.text('Conseils'), findsOneWidget);
+          expect(find.text('Sommet de la tête'), findsOneWidget);
+          expect(find.text('Hauteur des yeux'), findsOneWidget);
+          expect(find.text('Base du menton'), findsOneWidget);
+          expect(find.text('Haut du maillot'), findsOneWidget);
+          expect(find.text('Correct'), findsOneWidget);
+          expect(find.text('Trop haut'), findsOneWidget);
+          expect(find.text('Décalé'), findsOneWidget);
+          expect(find.text('Aperçu final'), findsOneWidget);
+          expect(find.byType(InteractiveViewer), findsOneWidget);
+        },
+      );
+      expect(exported, isNotNull);
+    },
+  );
+
   testWidgets(
     'une photo détourée garde sa transparence au lieu d’un fond blanc',
     (tester) async {
