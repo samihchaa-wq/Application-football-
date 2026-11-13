@@ -256,8 +256,11 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: widget.previewBorderColor),
                       ),
+                      // Un petit arrondi de carte (14 px) préserve les angles du buste.
+                      // L'ancien rayon 45 px transformait le bas du maillot
+                      // en une forme ovale artificielle.
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(_cropSize * 0.25),
+                        borderRadius: BorderRadius.circular(14),
                         child: SizedBox(
                           width: _cropSize,
                           height: _cropSize,
@@ -308,7 +311,7 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
                       height: _cropSize,
                       child: IgnorePointer(
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(_cropSize * 0.25),
+                          borderRadius: BorderRadius.circular(14),
                           child: const CustomPaint(
                             painter: _FramingGuidePainter(),
                           ),
