@@ -46,17 +46,17 @@ class _PaperTeams extends StatelessWidget {
             kit: team1Jersey.kit,
             child: _PaperTeamColumn(
               name: team1Name,
-            teamNo: 1,
-            controller: team1Controller,
-            jersey: team1Jersey,
-            unavailableJersey: team2Jersey,
-            entries: team1,
-            editable: editable,
-            hasSelectedPlayer: hasSelected,
-            selectedParticipantId: selectedParticipantId,
-            onJerseyTap: onAssignTeam1,
-            onJerseySelected: onJersey1,
-            onPlayerTap: onPlayerTap,
+              teamNo: 1,
+              controller: team1Controller,
+              jersey: team1Jersey,
+              unavailableJersey: team2Jersey,
+              entries: team1,
+              editable: editable,
+              hasSelectedPlayer: hasSelected,
+              selectedParticipantId: selectedParticipantId,
+              onJerseyTap: onAssignTeam1,
+              onJerseySelected: onJersey1,
+              onPlayerTap: onPlayerTap,
             ),
           ),
         ),
@@ -66,17 +66,17 @@ class _PaperTeams extends StatelessWidget {
             kit: team2Jersey.kit,
             child: _PaperTeamColumn(
               name: team2Name,
-            teamNo: 2,
-            controller: team2Controller,
-            jersey: team2Jersey,
-            unavailableJersey: team1Jersey,
-            entries: team2,
-            editable: editable,
-            hasSelectedPlayer: hasSelected,
-            selectedParticipantId: selectedParticipantId,
-            onJerseyTap: onAssignTeam2,
-            onJerseySelected: onJersey2,
-            onPlayerTap: onPlayerTap,
+              teamNo: 2,
+              controller: team2Controller,
+              jersey: team2Jersey,
+              unavailableJersey: team1Jersey,
+              entries: team2,
+              editable: editable,
+              hasSelectedPlayer: hasSelected,
+              selectedParticipantId: selectedParticipantId,
+              onJerseyTap: onAssignTeam2,
+              onJerseySelected: onJersey2,
+              onPlayerTap: onPlayerTap,
             ),
           ),
         ),
@@ -188,7 +188,8 @@ class _PaperTeamColumn extends StatelessWidget {
                         child: _PlayerChip(
                           entry: entries[index],
                           editable: editable,
-                          selected: selectedParticipantId ==
+                          selected:
+                              selectedParticipantId ==
                               entries[index].participantId,
                           onTap: () => onPlayerTap(entries[index]),
                         ),
@@ -271,8 +272,10 @@ class _PaperJerseyAssignmentTile extends StatelessWidget {
                     ),
                   ),
                   child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 3,
+                    ),
                     child: Text(
                       playerCountLabel,
                       style: Theme.of(context).textTheme.labelSmall,
@@ -348,7 +351,7 @@ class _InternalTeamCard extends StatelessWidget {
   final VoidCallback onAssignSelected;
   final ValueChanged<JerseyOption> onJerseySelected;
   final void Function(MatchCompositionEntry, FootballFormationSlot)
-      onDroppedOnSlot;
+  onDroppedOnSlot;
   final ValueChanged<MatchCompositionEntry> onRemoveFromField;
   final Map<String, int> finishedBenchCounts;
   final TextEditingController? controller;
@@ -389,8 +392,9 @@ class _InternalTeamCard extends StatelessWidget {
         .where((entry) => entry.zone == 'bench')
         .map(_classic)
         .toList(growable: false);
-    final waiting =
-        entries.where((entry) => entry.zone == 'available').toList();
+    final waiting = entries
+        .where((entry) => entry.zone == 'available')
+        .toList();
     final semanticName = controller?.text.trim().isNotEmpty == true
         ? controller!.text.trim()
         : name;
@@ -462,9 +466,7 @@ class _InternalTeamCard extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  entries.isEmpty
-                      ? 'Aucun joueur dans cette équipe.'
-                      : 'Le terrain sera disponible dès que l’équipe contient un joueur.',
+                  entries.isEmpty ? 'Aucun joueur dans cette équipe.' : 'Le terrain sera disponible dès que l’équipe contient un joueur.',
                   textAlign: TextAlign.center,
                 ),
               ),

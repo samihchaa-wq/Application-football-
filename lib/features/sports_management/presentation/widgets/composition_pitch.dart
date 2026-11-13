@@ -22,7 +22,8 @@ class CompositionPitch extends StatefulWidget {
     MatchCompositionEntry entry,
     MatchCompositionZone zone,
     Offset? normalizedPosition,
-  )? onMoved;
+  )?
+  onMoved;
   final ValueChanged<MatchCompositionEntry>? onPlayerTap;
 
   /// Case d'un joueur sur le terrain. Publiques pour que la vidéo de la
@@ -133,8 +134,9 @@ class _CompositionPitchState extends State<CompositionPitch> {
 
     final marker = CompositionPlayerTile(
       entry: entry,
-      onTap:
-          widget.onPlayerTap == null ? null : () => widget.onPlayerTap!(entry),
+      onTap: widget.onPlayerTap == null
+          ? null
+          : () => widget.onPlayerTap!(entry),
     );
 
     return Positioned(
@@ -251,10 +253,7 @@ class CompositionPitchWithBench extends StatelessWidget {
                 SizedBox(
                   width: benchWidth,
                   height: _pitchHeight,
-                  child: _CompositionBench(
-                    entries: bench,
-                    columns: columns,
-                  ),
+                  child: _CompositionBench(entries: bench, columns: columns),
                 ),
                 const SizedBox(width: _pitchGap),
                 SizedBox(
@@ -271,10 +270,7 @@ class CompositionPitchWithBench extends StatelessWidget {
 }
 
 class _CompositionBench extends StatelessWidget {
-  const _CompositionBench({
-    required this.entries,
-    required this.columns,
-  });
+  const _CompositionBench({required this.entries, required this.columns});
 
   final List<MatchCompositionEntry> entries;
   final int columns;
@@ -289,7 +285,8 @@ class _CompositionBench extends StatelessWidget {
         fit: BoxFit.scaleDown,
         alignment: Alignment.topCenter,
         child: SizedBox(
-          width: columns * CompositionPitchWithBench._benchCellWidth +
+          width:
+              columns * CompositionPitchWithBench._benchCellWidth +
               (columns - 1) * CompositionPitchWithBench._benchColumnGap,
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -319,9 +316,7 @@ class _CompositionBench extends StatelessWidget {
                                 height: 92,
                               );
                             }
-                            return CompositionPlayerTile(
-                              entry: entries[index],
-                            );
+                            return CompositionPlayerTile(entry: entries[index]);
                           },
                         ),
                       ),
@@ -394,7 +389,8 @@ class CompositionDropZone extends StatelessWidget {
     MatchCompositionEntry entry,
     MatchCompositionZone zone,
     Offset? normalizedPosition,
-  ) onMoved;
+  )
+  onMoved;
   final ValueChanged<MatchCompositionEntry> onPlayerTap;
   final bool acceptDrops;
 
@@ -427,9 +423,8 @@ class CompositionDropZone extends StatelessWidget {
                   Expanded(
                     child: Text(
                       '$title (${entries.length})',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w400,
-                          ),
+                      style: Theme.of(context).textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w400),
                     ),
                   ),
                 ],
@@ -712,8 +707,8 @@ class SubstituteHistoryBadge extends StatelessWidget {
         color: accent != null
             ? Colors.black
             : benchedLastTime
-                ? AppTheme.primary
-                : base,
+            ? AppTheme.primary
+            : base,
         borderRadius: BorderRadius.circular(6),
         border: accent == null
             ? Border.all(color: Colors.white70, width: .8)
@@ -829,7 +824,8 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
     final kit = CompositionKitScope.maybeOf(context);
     final bodyColor = widget.isGoalkeeper ? kit?.goalkeeperBody : kit?.body;
     final trimColor = widget.isGoalkeeper ? kit?.goalkeeperTrim : kit?.trim;
-    final border = trimColor ??
+    final border =
+        trimColor ??
         (widget.isGoalkeeper ? const Color(0xFFE59A1F) : Colors.white);
     final original = widget.photoUrl?.trim();
     final hasPhoto = original != null && original.isNotEmpty;
@@ -903,7 +899,8 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
         child: Text(
           initials,
           style: TextStyle(
-            color: color == null ||
+            color:
+                color == null ||
                     ThemeData.estimateBrightnessForColor(color) ==
                         Brightness.dark
                 ? Colors.white

@@ -101,17 +101,21 @@ class _InternalTeamCompositionViewState
     _team1Controller.text = composition.team1Name;
     _team2Controller.text = composition.team2Name;
     _syncingNames = false;
-    final team1Count =
-        composition.entries.where((entry) => entry.teamNo == 1).length;
-    final team2Count =
-        composition.entries.where((entry) => entry.teamNo == 2).length;
-    final automaticTeam1 =
-        internalDefaultFormationForPlayerCount(team1Count)?.code;
-    final automaticTeam2 =
-        internalDefaultFormationForPlayerCount(team2Count)?.code;
-    final resetTeam1 = composition.team1FormationCode != null &&
+    final team1Count = composition.entries
+        .where((entry) => entry.teamNo == 1)
+        .length;
+    final team2Count = composition.entries
+        .where((entry) => entry.teamNo == 2)
+        .length;
+    final automaticTeam1 = internalDefaultFormationForPlayerCount(team1Count)
+        ?.code;
+    final automaticTeam2 = internalDefaultFormationForPlayerCount(team2Count)
+        ?.code;
+    final resetTeam1 =
+        composition.team1FormationCode != null &&
         composition.team1FormationCode != automaticTeam1;
-    final resetTeam2 = composition.team2FormationCode != null &&
+    final resetTeam2 =
+        composition.team2FormationCode != null &&
         composition.team2FormationCode != automaticTeam2;
     _entries = [
       for (final entry in composition.entries)
@@ -210,8 +214,8 @@ class _InternalTeamCompositionViewState
       }
     }
     final teamCount = entries.where((entry) => entry.teamNo == teamNo).length;
-    final automaticCode =
-        internalDefaultFormationForPlayerCount(teamCount)?.code;
+    final automaticCode = internalDefaultFormationForPlayerCount(teamCount)
+        ?.code;
     if (teamNo == 1) {
       _team1FormationCode = automaticCode;
     } else {
@@ -342,7 +346,10 @@ class _InternalTeamCompositionViewState
       _showMessage('Composition enregistrée.');
     } catch (error, stackTrace) {
       AppLogger.error(
-          'sports.internal_composition.save_paper', error, stackTrace);
+        'sports.internal_composition.save_paper',
+        error,
+        stackTrace,
+      );
       if (mounted) _showMessage(humanizeError(error));
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -388,17 +395,18 @@ class _InternalTeamCompositionViewState
 
     setState(() => _saving = true);
     try {
-      final saved =
-          await ref.read(internalMatchCompositionRepositoryProvider).saveVisual(
-                matchId: widget.matchId,
-                team1Name: _team1Controller.text,
-                team2Name: _team2Controller.text,
-                team1JerseyId: _team1Jersey.id,
-                team2JerseyId: _team2Jersey.id,
-                team1FormationCode: _team1FormationCode!,
-                team2FormationCode: _team2FormationCode!,
-                entries: entries,
-              );
+      final saved = await ref
+          .read(internalMatchCompositionRepositoryProvider)
+          .saveVisual(
+            matchId: widget.matchId,
+            team1Name: _team1Controller.text,
+            team2Name: _team2Controller.text,
+            team1JerseyId: _team1Jersey.id,
+            team2JerseyId: _team2Jersey.id,
+            team1FormationCode: _team1FormationCode!,
+            team2FormationCode: _team2FormationCode!,
+            entries: entries,
+          );
       if (!mounted) return;
       setState(() {
         _initFrom(saved);
@@ -418,7 +426,8 @@ class _InternalTeamCompositionViewState
   Future<void> _resetComposition() async {
     final entries = _entries;
     if (entries == null || _saving) return;
-    final hasWork = entries.any(
+    final hasWork =
+        entries.any(
           (entry) => entry.teamNo != null || entry.slotLabel != null,
         ) ||
         _team1FormationCode != null ||
@@ -506,10 +515,12 @@ class _InternalTeamCompositionViewState
     }
     final requiredStarters1 = team1.length > 11 ? 11 : team1.length;
     final requiredStarters2 = team2.length > 11 ? 11 : team2.length;
-    final starters1 =
-        team1.where((entry) => entry.zone == 'field').toList(growable: false);
-    final starters2 =
-        team2.where((entry) => entry.zone == 'field').toList(growable: false);
+    final starters1 = team1
+        .where((entry) => entry.zone == 'field')
+        .toList(growable: false);
+    final starters2 = team2
+        .where((entry) => entry.zone == 'field')
+        .toList(growable: false);
     final bench1 = team1.where((entry) => entry.zone == 'bench').length;
     final bench2 = team2.where((entry) => entry.zone == 'bench').length;
     if (starters1.length != requiredStarters1 ||
@@ -546,8 +557,10 @@ class _InternalTeamCompositionViewState
   }
 
   bool _hasDuplicateSlots(List<InternalCompositionEntry> entries) {
-    final slots =
-        entries.map((entry) => entry.slotLabel).whereType<String>().toList();
+    final slots = entries
+        .map((entry) => entry.slotLabel)
+        .whereType<String>()
+        .toList();
     return slots.toSet().length != slots.length;
   }
 
@@ -600,7 +613,8 @@ class _InternalTeamCompositionViewState
                 entry.teamNo != null &&
                 entry.seasonPlayerId != null)
               entry.copyWith(
-                photoUrl: kitPhotos[entry.seasonPlayerId]?[kitPhotoColumn(
+                photoUrl:
+                    kitPhotos[entry.seasonPlayerId]?[kitPhotoColumn(
                       entry.teamNo == 1 ? _team1Jersey.id : _team2Jersey.id,
                     )] ??
                     entry.photoUrl,
@@ -608,8 +622,9 @@ class _InternalTeamCompositionViewState
             else
               entry,
         ];
-        final unassigned =
-            entries.where((entry) => entry.teamNo == null).toList();
+        final unassigned = entries
+            .where((entry) => entry.teamNo == null)
+            .toList();
         final profilesByName = <String, PlayerPositionProfile>{
           for (final profile
               in (positionArchive ?? const <String, PlayerPositionProfile>{})
@@ -618,36 +633,41 @@ class _InternalTeamCompositionViewState
         };
         List<InternalCompositionEntry> unassignedGroup(
           InternalPlayerGroup group,
-        ) =>
-            unassigned
-                .where(
-                  (entry) =>
-                      internalPlayerGroupFor(
-                        isGuest: entry.isGuest,
-                        isGoalkeeper: entry.isGoalkeeper,
-                        profile: profilesByName[
-                            normalizePlayerName(entry.displayName)],
-                      ) ==
-                      group,
-                )
-                .toList(growable: false);
-        final unassignedDefenders =
-            unassignedGroup(InternalPlayerGroup.defenders);
-        final unassignedMidfielders =
-            unassignedGroup(InternalPlayerGroup.midfielders);
-        final unassignedAttackers =
-            unassignedGroup(InternalPlayerGroup.attackers);
+        ) => unassigned
+            .where(
+              (entry) =>
+                  internalPlayerGroupFor(
+                    isGuest: entry.isGuest,
+                    isGoalkeeper: entry.isGoalkeeper,
+                    profile:
+                        profilesByName[normalizePlayerName(entry.displayName)],
+                  ) ==
+                  group,
+            )
+            .toList(growable: false);
+        final unassignedDefenders = unassignedGroup(
+          InternalPlayerGroup.defenders,
+        );
+        final unassignedMidfielders = unassignedGroup(
+          InternalPlayerGroup.midfielders,
+        );
+        final unassignedAttackers = unassignedGroup(
+          InternalPlayerGroup.attackers,
+        );
         final unassignedOther = unassignedGroup(InternalPlayerGroup.other);
         final team1 = entries.where((entry) => entry.teamNo == 1).toList();
         final team2 = entries.where((entry) => entry.teamNo == 2).toList();
         final benchCounts =
             benchCountsAsync.valueOrNull ?? const <String, int>{};
         final validation = _validation(entries);
-        final expectedTeam1Code =
-            internalDefaultFormationForPlayerCount(team1.length)?.code;
-        final expectedTeam2Code =
-            internalDefaultFormationForPlayerCount(team2.length)?.code;
-        final legacyReadOnly = !widget.editable &&
+        final expectedTeam1Code = internalDefaultFormationForPlayerCount(
+          team1.length,
+        )?.code;
+        final expectedTeam2Code = internalDefaultFormationForPlayerCount(
+          team2.length,
+        )?.code;
+        final legacyReadOnly =
+            !widget.editable &&
             (!composition.isVisualComplete ||
                 composition.team1FormationCode != expectedTeam1Code ||
                 composition.team2FormationCode != expectedTeam2Code);
@@ -656,30 +676,31 @@ class _InternalTeamCompositionViewState
         final terrainCard = CompositionKitScope(
           kit: (_terrainTeam == 1 ? _team1Jersey : _team2Jersey).kit,
           child: _InternalTeamCard(
-          name: _terrainTeam == 1
-              ? (_team1Controller.text.isEmpty
-                  ? composition.team1Name
-                  : _team1Controller.text)
-              : (_team2Controller.text.isEmpty
-                  ? composition.team2Name
-                  : _team2Controller.text),
-          controller: widget.editable
-              ? (_terrainTeam == 1 ? _team1Controller : _team2Controller)
-              : null,
-          teamNo: _terrainTeam,
-          jersey: _terrainTeam == 1 ? _team1Jersey : _team2Jersey,
-          unavailableJersey: _terrainTeam == 1 ? _team2Jersey : _team1Jersey,
-          entries: terrainEntries,
-          editable: widget.editable,
-          canReceiveSelected:
-              _selectedEntry != null && _selectedEntry!.teamNo != _terrainTeam,
-          onAssignSelected: () => _assignSelectedToTeam(_terrainTeam),
-          onJerseySelected: (jersey) => _changeJersey(_terrainTeam, jersey),
-          onDroppedOnSlot: (moving, slot) =>
-              _dropOnClassicSlot(_terrainTeam, moving, slot),
-          onRemoveFromField: (moving) =>
-              _moveClassicToBench(_terrainTeam, moving),
-          finishedBenchCounts: benchCounts,
+            name: _terrainTeam == 1
+                ? (_team1Controller.text.isEmpty
+                      ? composition.team1Name
+                      : _team1Controller.text)
+                : (_team2Controller.text.isEmpty
+                      ? composition.team2Name
+                      : _team2Controller.text),
+            controller: widget.editable
+                ? (_terrainTeam == 1 ? _team1Controller : _team2Controller)
+                : null,
+            teamNo: _terrainTeam,
+            jersey: _terrainTeam == 1 ? _team1Jersey : _team2Jersey,
+            unavailableJersey: _terrainTeam == 1 ? _team2Jersey : _team1Jersey,
+            entries: terrainEntries,
+            editable: widget.editable,
+            canReceiveSelected:
+                _selectedEntry != null &&
+                _selectedEntry!.teamNo != _terrainTeam,
+            onAssignSelected: () => _assignSelectedToTeam(_terrainTeam),
+            onJerseySelected: (jersey) => _changeJersey(_terrainTeam, jersey),
+            onDroppedOnSlot: (moving, slot) =>
+                _dropOnClassicSlot(_terrainTeam, moving, slot),
+            onRemoveFromField: (moving) =>
+                _moveClassicToBench(_terrainTeam, moving),
+            finishedBenchCounts: benchCounts,
           ),
         );
 
@@ -797,9 +818,8 @@ class _InternalTeamCompositionViewState
                 Text(
                   validation.message,
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(color: Theme.of(context).colorScheme.error),
                 ),
               const SizedBox(height: 8),
               OutlinedButton.icon(
@@ -812,10 +832,10 @@ class _InternalTeamCompositionViewState
                 onPressed: _saving
                     ? null
                     : _viewMode == 0
-                        ? _savePaper
-                        : validation.canSave
-                            ? _save
-                            : null,
+                    ? _savePaper
+                    : validation.canSave
+                    ? _save
+                    : null,
                 icon: _saving
                     ? const SizedBox(
                         width: 16,
@@ -845,12 +865,12 @@ class _InternalValidation {
 /// identité canonique et le même historique que la simulation du onze.
 final _internalBenchCountsProvider = FutureProvider.autoDispose
     .family<Map<String, int>, String>((ref, matchId) async {
-  try {
-    final history = await ref
-        .watch(matchCompositionRepositoryProvider)
-        .fetchFinishedBenchHistory(matchId);
-    return history.counts;
-  } catch (_) {
-    return const {};
-  }
-});
+      try {
+        final history = await ref
+            .watch(matchCompositionRepositoryProvider)
+            .fetchFinishedBenchHistory(matchId);
+        return history.counts;
+      } catch (_) {
+        return const {};
+      }
+    });

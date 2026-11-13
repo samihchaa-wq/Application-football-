@@ -1,4 +1,5 @@
 import 'package:as_grinta/core/club/club_identity.dart';
+
 import 'dart:async';
 
 import 'package:as_grinta/core/theme/app_spacing.dart';
@@ -96,7 +97,8 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
     if (bundle.session.state == MatchLiveState.finished) {
       if (!canEdit) {
         return const _Message(
-          message: 'Le match est terminé. En attente de la publication du '
+          message:
+              'Le match est terminé. En attente de la publication du '
               'compte rendu par le coach.',
         );
       }
@@ -154,16 +156,17 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
                             onPressed: setupControlsDisabled
                                 ? null
                                 : () => showMatchLiveAddPlayerSheet(
-                                      context,
-                                      ref,
-                                      matchId: matchId,
-                                    ),
+                                    context,
+                                    ref,
+                                    matchId: matchId,
+                                  ),
                           ),
                           _BenchAction(
                             icon: Icons.person_remove_rounded,
                             label: 'Retirer',
                             tooltip: 'Retirer un joueur du banc',
-                            onPressed: setupControlsDisabled ||
+                            onPressed:
+                                setupControlsDisabled ||
                                     lineup
                                         .entriesFor(MatchCompositionZone.bench)
                                         .isEmpty
@@ -189,8 +192,9 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
                   benchColors: {
                     for (final key in bundle.substituteCounts.keys)
                       key: switch (lastExits[key]) {
-                        final exit? =>
-                          substitutionSalvoColorAt(exit.colorIndex),
+                        final exit? => substitutionSalvoColorAt(
+                          exit.colorIndex,
+                        ),
                         null => substitutionStartColor,
                       },
                   },
@@ -288,10 +292,10 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
                     onPressed: setupControlsDisabled
                         ? null
                         : () => showMatchLiveAddPlayerSheet(
-                              context,
-                              ref,
-                              matchId: matchId,
-                            ),
+                            context,
+                            ref,
+                            matchId: matchId,
+                          ),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                     ),
@@ -419,27 +423,27 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
                   ),
                   switch (session.state) {
                     MatchLiveState.running => _MatchModeAction(
-                        icon: Icons.pause_rounded,
-                        label: 'Pause',
-                        onPressed: () => controller.setClockState('pause'),
-                      ),
+                      icon: Icons.pause_rounded,
+                      label: 'Pause',
+                      onPressed: () => controller.setClockState('pause'),
+                    ),
                     MatchLiveState.paused => _MatchModeAction(
-                        icon: Icons.play_arrow_rounded,
-                        label: 'Reprendre',
-                        onPressed: () => controller.setClockState('resume'),
-                      ),
+                      icon: Icons.play_arrow_rounded,
+                      label: 'Reprendre',
+                      onPressed: () => controller.setClockState('resume'),
+                    ),
                     MatchLiveState.halftime => _MatchModeAction(
-                        icon: Icons.play_arrow_rounded,
-                        label: '2e mi-temps',
-                        tooltip: 'Reprendre la 2e mi-temps',
-                        onPressed: () =>
-                            controller.setClockState('resume_second_half'),
-                      ),
+                      icon: Icons.play_arrow_rounded,
+                      label: '2e mi-temps',
+                      tooltip: 'Reprendre la 2e mi-temps',
+                      onPressed: () =>
+                          controller.setClockState('resume_second_half'),
+                    ),
                     _ => const _MatchModeAction(
-                        icon: Icons.pause_rounded,
-                        label: 'Pause',
-                        onPressed: null,
-                      ),
+                      icon: Icons.pause_rounded,
+                      label: 'Pause',
+                      onPressed: null,
+                    ),
                   },
                   Container(
                     width: 1,
@@ -465,11 +469,11 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
                     onPressed: setupControlsDisabled
                         ? null
                         : () => _onMatchMenu(
-                              context,
-                              'formation',
-                              lineup,
-                              controller,
-                            ),
+                            context,
+                            'formation',
+                            lineup,
+                            controller,
+                          ),
                   ),
               ],
             ),
@@ -534,7 +538,8 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
     final removed = await showMatchLiveRemovePlayerPicker(
       context,
       candidates: lineup.entriesFor(MatchCompositionZone.bench),
-      note: 'Pendant le match, seuls les joueurs du banc peuvent être '
+      note:
+          'Pendant le match, seuls les joueurs du banc peuvent être '
           'retirés. Un joueur du terrain sort par un remplacement.',
     );
     if (removed == null || !mounted) return;
@@ -617,7 +622,8 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
         maxChildSize: .92,
         builder: (_, scrollController) => Consumer(
           builder: (_, ref, __) {
-            final events = ref
+            final events =
+                ref
                     .watch(matchLiveStateProvider(matchId))
                     .valueOrNull
                     ?.events ??
@@ -723,9 +729,8 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
   }
 
   void _showMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _explainHowToSubstitute(BuildContext context) {
@@ -759,9 +764,7 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
     try {
       await controller.changeFormation(
         formationCode: nextCode,
-        entries: [
-          for (final entry in changed.entries) entry.toRpcJson(),
-        ],
+        entries: [for (final entry in changed.entries) entry.toRpcJson()],
         expectedLineupRevision: bundle.session.lineupRevision,
       );
       if (!mounted) return;
@@ -834,8 +837,9 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
       extraChoiceIcon: Icons.shield_moon_outlined,
       // Proposé seulement si le but est déjà attribué : c'est le moyen de
       // revenir en arrière sur un buteur désigné par erreur.
-      clearChoiceLabel:
-          event.needsScorer ? null : 'Effacer · buteur à désigner plus tard',
+      clearChoiceLabel: event.needsScorer
+          ? null
+          : 'Effacer · buteur à désigner plus tard',
     );
     if (choice == null) return;
     if (choice == kMatchLiveExtraChoiceId) {
@@ -863,8 +867,8 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
     final assistParticipantId = assist.answered
         ? assist.participantId
         : (choice == event.scorerParticipantId
-            ? event.assistParticipantId
-            : null);
+              ? event.assistParticipantId
+              : null);
     await controller.setEventScorer(
       event.id,
       scorerParticipantId: choice,
@@ -911,7 +915,8 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
         for (final entry in candidates)
           if (entry.participantId != scorerParticipantId) entry,
       ],
-      title: 'Passe décisive sur le but de la '
+      title:
+          'Passe décisive sur le but de la '
           '${AppFormats.ordinalFeminine(minute)} minute ?',
       icon: Icons.emoji_events_outlined,
       extraChoiceLabel: 'Aucune passe décisive',

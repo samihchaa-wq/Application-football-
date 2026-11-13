@@ -42,8 +42,9 @@ int compareMatchPredictionResultsForDisplay(
       currentProfileId != null && b.profileId == currentProfileId;
   if (aIsCurrent != bIsCurrent) return aIsCurrent ? -1 : 1;
 
-  final nameComparison =
-      a.name.trim().toLowerCase().compareTo(b.name.trim().toLowerCase());
+  final nameComparison = a.name.trim().toLowerCase().compareTo(
+    b.name.trim().toLowerCase(),
+  );
   if (nameComparison != 0) return nameComparison;
 
   // Deterministic fallback for duplicate display names.
@@ -63,10 +64,12 @@ class MatchDetailsPage extends ConsumerWidget {
     final currentProfileId = ref.watch(
       authControllerProvider.select((state) => state.profile?.id),
     );
-    final predictionsEnabled =
-        ref.watch(clubModuleEnabledProvider(ClubModule.predictions));
-    final motmEnabled =
-        ref.watch(clubModuleEnabledProvider(ClubModule.manOfTheMatch));
+    final predictionsEnabled = ref.watch(
+      clubModuleEnabledProvider(ClubModule.predictions),
+    );
+    final motmEnabled = ref.watch(
+      clubModuleEnabledProvider(ClubModule.manOfTheMatch),
+    );
 
     // Composition et faits du match sont des blocs de la liste qui ne
     // restent construits que tant qu'ils sont proches de l'écran. Sans
@@ -145,10 +148,10 @@ class MatchDetailsPage extends ConsumerWidget {
                   : null;
               final motmActionLabel =
                   vote != null && vote.isOpen && vote.isEligibleVoter
-                      ? (vote.hasVoted
-                          ? 'Vote de l’Étoile du match enregistré'
-                          : 'Voter pour l’Étoile du match')
-                      : null;
+                  ? (vote.hasVoted
+                        ? 'Vote de l’Étoile du match enregistré'
+                        : 'Voter pour l’Étoile du match')
+                  : null;
               return MatchSheetListView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
                 children: [
@@ -275,7 +278,9 @@ class _PostgameAdminActions extends ConsumerWidget {
 
     if (!sportsEnabled) return _actions(context, anchor);
 
-    return ref.watch(sportMotmVoteProvider(matchId)).when(
+    return ref
+        .watch(sportMotmVoteProvider(matchId))
+        .when(
           loading: () => const SizedBox.shrink(),
           error: (_, __) => const SizedBox.shrink(),
           data: (vote) {
@@ -490,17 +495,13 @@ class _MatchModule extends StatelessWidget {
               const SizedBox(height: 14),
               Text(
                 title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge
+                style: Theme.of(context).textTheme.titleLarge
                     ?.copyWith(fontWeight: FontWeight.w400),
               ),
               const SizedBox(height: 6),
               Text(
                 subtitle,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
+                style: Theme.of(context).textTheme.bodyMedium
                     ?.copyWith(color: AppTheme.textSecondary),
               ),
               const SizedBox(height: 12),
@@ -597,8 +598,9 @@ class _CompletedCompositionCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (!sportsEnabled) return const SizedBox.shrink();
-    final composition =
-        ref.watch(publishedMatchCompositionProvider(matchId)).valueOrNull;
+    final composition = ref
+        .watch(publishedMatchCompositionProvider(matchId))
+        .valueOrNull;
     if (composition == null) return const SizedBox.shrink();
 
     // L'après-match utilise le maillot choisi dans Infos, comme l'avant-match.
@@ -640,25 +642,27 @@ class _MotmVotesCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final composition =
-        ref.watch(publishedMatchCompositionProvider(matchId)).valueOrNull;
+    final composition = ref
+        .watch(publishedMatchCompositionProvider(matchId))
+        .valueOrNull;
     final entriesByParticipant = {
       for (final entry
           in composition?.entries ?? const <MatchCompositionEntry>[])
         entry.participantId: entry,
     };
-    final ranked = vote.candidates
-        .where((candidate) => (candidate.votesCount ?? 0) > 0)
-        .toList()
-      ..sort((a, b) {
-        final votesComparison =
-            (b.votesCount ?? 0).compareTo(a.votesCount ?? 0);
-        if (votesComparison != 0) return votesComparison;
-        return a.displayName
-            .trim()
-            .toLowerCase()
-            .compareTo(b.displayName.trim().toLowerCase());
-      });
+    final ranked =
+        vote.candidates
+            .where((candidate) => (candidate.votesCount ?? 0) > 0)
+            .toList()
+          ..sort((a, b) {
+            final votesComparison = (b.votesCount ?? 0).compareTo(
+              a.votesCount ?? 0,
+            );
+            if (votesComparison != 0) return votesComparison;
+            return a.displayName.trim().toLowerCase().compareTo(
+              b.displayName.trim().toLowerCase(),
+            );
+          });
     if (ranked.isEmpty) return const SizedBox.shrink();
 
     final rows = <Widget>[];
@@ -691,9 +695,7 @@ class _MotmVotesCard extends ConsumerWidget {
                 size: 36,
               ),
               const SizedBox(width: 12),
-              Expanded(
-                child: Text(name, overflow: TextOverflow.ellipsis),
-              ),
+              Expanded(child: Text(name, overflow: TextOverflow.ellipsis)),
               Text('$votes voix'),
             ],
           ),
@@ -736,16 +738,19 @@ class _PredictionsTable extends StatelessWidget {
   /// (voir PredictionScoring) : violet ×2, or ×1,5, vert ×1, rien à 0.
   Color? _colorFor(MatchPredictionResult prediction) {
     if (prediction.points <= 0) return null;
-    final exact = prediction.scoreGrinta == actualGrinta &&
+    final exact =
+        prediction.scoreGrinta == actualGrinta &&
         prediction.scoreOpponent == actualOpponent;
     if (exact) return const Color(0xFF9B6CFF);
     final correctWinner =
         _result(prediction.scoreGrinta, prediction.scoreOpponent) ==
-            _result(actualGrinta, actualOpponent);
+        _result(actualGrinta, actualOpponent);
     if (!correctWinner) return null;
-    final sameGap = prediction.scoreGrinta - prediction.scoreOpponent ==
+    final sameGap =
+        prediction.scoreGrinta - prediction.scoreOpponent ==
         actualGrinta - actualOpponent;
-    final oneTeamExact = prediction.scoreGrinta == actualGrinta ||
+    final oneTeamExact =
+        prediction.scoreGrinta == actualGrinta ||
         prediction.scoreOpponent == actualOpponent;
     if (sameGap || oneTeamExact) return AppTheme.reward;
     return const Color(0xFF39E784);

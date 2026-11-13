@@ -181,26 +181,22 @@ class _MatchLivePreKickoffPageState
     final controlsDisabled = _busy || _savingFormation;
 
     InputDecoration decoration(String label) => InputDecoration(
-          labelText: label,
-          border: const OutlineInputBorder(),
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 10,
-            vertical: 16,
-          ),
-        );
+      labelText: label,
+      border: const OutlineInputBorder(),
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
+    );
 
     Widget iconAction({
       required IconData icon,
       required String tooltip,
       required VoidCallback? onPressed,
-    }) =>
-        IconButton.outlined(
-          tooltip: tooltip,
-          onPressed: onPressed,
-          constraints: const BoxConstraints.tightFor(width: 48, height: 52),
-          icon: Icon(icon),
-        );
+    }) => IconButton.outlined(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      constraints: const BoxConstraints.tightFor(width: 48, height: 52),
+      icon: Icon(icon),
+    );
 
     // Une seule ligne : temps de jeu, dispositif, ajouter et retirer.
     return Row(
@@ -239,10 +235,10 @@ class _MatchLivePreKickoffPageState
           onPressed: controlsDisabled
               ? null
               : () => showMatchLiveAddPlayerSheet(
-                    context,
-                    ref,
-                    matchId: widget.matchId,
-                  ),
+                  context,
+                  ref,
+                  matchId: widget.matchId,
+                ),
         ),
         const SizedBox(width: 6),
         iconAction(

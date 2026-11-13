@@ -1,5 +1,6 @@
 import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/club/club_kits.dart';
+
 import 'dart:async';
 
 import 'package:as_grinta/core/providers/supabase_provider.dart';
@@ -35,12 +36,14 @@ String markCompositionRouteFromNotification(String route) {
       !RegExp(r'^/?matches/[^/]+/lineup$').hasMatch(uri.path)) {
     return route;
   }
-  return uri.replace(
-    queryParameters: {
-      ...uri.queryParameters,
-      'from': compositionOpenedFromNotification,
-    },
-  ).toString();
+  return uri
+      .replace(
+        queryParameters: {
+          ...uri.queryParameters,
+          'from': compositionOpenedFromNotification,
+        },
+      )
+      .toString();
 }
 
 /// Les données de la vidéo, à partir de la compo et de la fiche du match.
@@ -147,8 +150,9 @@ typedef SeasonPlayerPhotoLookup = Future<String?> Function(
   String seasonPlayerId,
 );
 
-final seasonPlayerPhotoLookupProvider =
-    Provider<SeasonPlayerPhotoLookup>((ref) {
+final seasonPlayerPhotoLookupProvider = Provider<SeasonPlayerPhotoLookup>((
+  ref,
+) {
   final client = ref.watch(supabaseClientProvider);
   return (seasonPlayerId) async {
     final row = await client
@@ -168,8 +172,9 @@ final seasonPlayerPhotoLookupProvider =
   };
 });
 
-final compositionVideoSeenStoreProvider =
-    Provider<CompositionVideoSeenStore>((ref) {
+final compositionVideoSeenStoreProvider = Provider<CompositionVideoSeenStore>((
+  ref,
+) {
   return const CompositionVideoSeenStore();
 });
 
@@ -219,10 +224,11 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
     final composition = ref
         .watch(publishedMatchCompositionProvider(widget.matchId))
         .valueOrNull;
-    final playable = composition != null &&
-        composition.entriesFor(MatchCompositionZone.field).any(
-              (entry) => !entry.isVacant,
-            );
+    final playable =
+        composition != null &&
+        composition
+            .entriesFor(MatchCompositionZone.field)
+            .any((entry) => !entry.isVacant);
     if (playable && _autoChecked != composition.version) {
       _autoChecked = composition.version;
       WidgetsBinding.instance.addPostFrameCallback(
@@ -272,9 +278,7 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
       // relance pas la vidéo.
       final router = GoRouter.maybeOf(context);
       if (router != null) {
-        router.replace(
-          '/matches/${widget.matchId}/lineup?section=composition',
-        );
+        router.replace('/matches/${widget.matchId}/lineup?section=composition');
       }
     }
     await _play(composition);
@@ -289,11 +293,7 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
       unawaited(store.markSeen(widget.matchId));
       final data = await _loadData(composition);
       if (!mounted) return;
-      await showCompositionPresentation(
-        context,
-        data: data,
-        landing: _landing,
-      );
+      await showCompositionPresentation(context, data: data, landing: _landing);
     } finally {
       if (mounted) setState(() => _playing = false);
     }
@@ -353,8 +353,9 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
     try {
       // Wait for the actual match kit instead of briefly showing France
       // when a slow connection exceeds the old four-second timeout.
-      kitPhotos =
-          await ref.read(matchKitPhotoOverridesProvider(matchId).future);
+      kitPhotos = await ref.read(
+        matchKitPhotoOverridesProvider(matchId).future,
+      );
     } catch (_) {
       // Les portraits France restent toujours disponibles en repli.
     }
@@ -370,9 +371,13 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
       kit: selectedKit,
       formationCode: composition.formationCode,
       field: withMatchKitPhotos(
-          composition.entriesFor(MatchCompositionZone.field), kitPhotos),
+        composition.entriesFor(MatchCompositionZone.field),
+        kitPhotos,
+      ),
       bench: withMatchKitPhotos(
-          composition.entriesFor(MatchCompositionZone.bench), kitPhotos),
+        composition.entriesFor(MatchCompositionZone.bench),
+        kitPhotos,
+      ),
       fixture: fixture,
       fallbackKickoffAt: kickoffAt,
       coach: coach == null

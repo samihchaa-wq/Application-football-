@@ -1,5 +1,6 @@
 import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/club/club_kits.dart';
+
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -79,27 +80,26 @@ class CompositionPresentationData {
   }
 
   CompositionPresentationPlan get plan => CompositionPresentationPlan.build(
-        field: [
-          for (final entry in field)
-            if (!entry.isVacant)
-              PresentationPerson(
-                id: entry.participantId,
-                name: entry.displayName,
-                position: entry.x == null || entry.y == null
-                    ? null
-                    : Offset(entry.x!, entry.y!),
-                isGoalkeeper: entry.isGoalkeeper,
-              ),
-        ],
-        bench: [
-          for (final entry in bench)
-            PresentationPerson(
-                id: entry.participantId, name: entry.displayName),
-        ],
-        coach: coach == null
-            ? null
-            : PresentationPerson(id: _coachId, name: coach!.name),
-      );
+    field: [
+      for (final entry in field)
+        if (!entry.isVacant)
+          PresentationPerson(
+            id: entry.participantId,
+            name: entry.displayName,
+            position: entry.x == null || entry.y == null
+                ? null
+                : Offset(entry.x!, entry.y!),
+            isGoalkeeper: entry.isGoalkeeper,
+          ),
+    ],
+    bench: [
+      for (final entry in bench)
+        PresentationPerson(id: entry.participantId, name: entry.displayName),
+    ],
+    coach: coach == null
+        ? null
+        : PresentationPerson(id: _coachId, name: coach!.name),
+  );
 
   static const _coachId = '#coach';
 }
@@ -417,18 +417,16 @@ class _CompositionPresentationPageState
     final landing = widget.landing;
     // Sur la page sans terrain où se poser : le terrain se pose au milieu.
     if (_onPage && landing == null) return;
-    final pitch =
-        (landing?.pitch ?? _pitchKey).currentContext?.findRenderObject();
+    final pitch = (landing?.pitch ?? _pitchKey).currentContext
+        ?.findRenderObject();
     if (root is! RenderBox || pitch is! RenderBox) return;
     if (!root.hasSize || !root.attached) return;
     if (!pitch.hasSize || !pitch.attached) return;
     // La vraie page est sous la vidéo, pas dedans : on passe par l'écran.
     Rect boxRect(RenderBox box) => Rect.fromPoints(
-          root.globalToLocal(box.localToGlobal(Offset.zero)),
-          root.globalToLocal(
-            box.localToGlobal(box.size.bottomRight(Offset.zero)),
-          ),
-        );
+      root.globalToLocal(box.localToGlobal(Offset.zero)),
+      root.globalToLocal(box.localToGlobal(box.size.bottomRight(Offset.zero))),
+    );
     final rect = boxRect(pitch);
     final area = landing?.area.currentContext?.findRenderObject();
     final areaRect = area is RenderBox && area.attached && area.hasSize
@@ -452,9 +450,7 @@ class _CompositionPresentationPageState
     // pas de page à part entière, donc pas de barre ni d'écusson d'accueil.
     // Posée sur la vraie page, celle-ci reste affichée dessous : elle est
     // tue pour les lecteurs d'écran (VoiceOver) tant que la vidéo est là.
-    return BlockSemantics(
-      child: _buildPlayer(context),
-    );
+    return BlockSemantics(child: _buildPlayer(context));
   }
 
   Widget _buildPlayer(BuildContext context) {
@@ -604,7 +600,8 @@ class _CompositionPresentationPageState
                                   children: [
                                     const Icon(Icons.groups_2_outlined),
                                     const SizedBox(
-                                        width: AppSpacing.contentGap),
+                                      width: AppSpacing.contentGap,
+                                    ),
                                     Expanded(
                                       child: Text(
                                         'Composition',

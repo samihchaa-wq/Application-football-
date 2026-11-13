@@ -41,48 +41,49 @@ class _LiveHeaderBar extends ConsumerWidget {
     final session = bundle.session;
     final matchId = session.matchId;
     final controller = ref.read(matchLiveStateProvider(matchId).notifier);
-    final fixture =
-        ref.watch(upcomingMatchFixtureProvider(matchId)).valueOrNull;
+    final fixture = ref
+        .watch(upcomingMatchFixtureProvider(matchId))
+        .valueOrNull;
     final opponentName = fixture?.opponentName ?? 'Adversaire';
     final grintaIsHome = fixture?.grintaIsHome ?? true;
 
     _LiveScore team(bool grinta, {bool wide = false}) => _LiveScore(
-          wide: wide,
-          shortName: grinta ? ClubIdentity.shortName : _shortName(opponentName),
-          fullName: grinta ? ClubIdentity.name : opponentName,
-          score: grinta ? session.scoreAsGrinta : session.scoreAdverse,
-          canEdit: canEdit,
-          onIncrement: () =>
-              controller.adjustScore(team: grinta ? 'us' : 'them', delta: 1),
-          onDecrement: () =>
-              controller.adjustScore(team: grinta ? 'us' : 'them', delta: -1),
-        );
+      wide: wide,
+      shortName: grinta ? ClubIdentity.shortName : _shortName(opponentName),
+      fullName: grinta ? ClubIdentity.name : opponentName,
+      score: grinta ? session.scoreAsGrinta : session.scoreAdverse,
+      canEdit: canEdit,
+      onIncrement: () =>
+          controller.adjustScore(team: grinta ? 'us' : 'them', delta: 1),
+      onDecrement: () =>
+          controller.adjustScore(team: grinta ? 'us' : 'them', delta: -1),
+    );
 
     final firstAction = switch (session.state) {
       MatchLiveState.running => (
-          tooltip: 'Pause',
-          icon: Icons.pause_rounded,
-          callback: onPause as VoidCallback?,
-          filled: false,
-        ),
+        tooltip: 'Pause',
+        icon: Icons.pause_rounded,
+        callback: onPause as VoidCallback?,
+        filled: false,
+      ),
       MatchLiveState.paused => (
-          tooltip: 'Reprendre',
-          icon: Icons.play_arrow_rounded,
-          callback: onResume as VoidCallback?,
-          filled: false,
-        ),
+        tooltip: 'Reprendre',
+        icon: Icons.play_arrow_rounded,
+        callback: onResume as VoidCallback?,
+        filled: false,
+      ),
       MatchLiveState.halftime => (
-          tooltip: 'Reprendre la 2e mi-temps',
-          icon: Icons.play_arrow_rounded,
-          callback: onResumeSecondHalf as VoidCallback?,
-          filled: true,
-        ),
+        tooltip: 'Reprendre la 2e mi-temps',
+        icon: Icons.play_arrow_rounded,
+        callback: onResumeSecondHalf as VoidCallback?,
+        filled: true,
+      ),
       _ => (
-          tooltip: 'Pause',
-          icon: Icons.pause_rounded,
-          callback: null,
-          filled: false,
-        ),
+        tooltip: 'Pause',
+        icon: Icons.pause_rounded,
+        callback: null,
+        filled: false,
+      ),
     };
     final canGoHalftime =
         session.half == 1 && session.state != MatchLiveState.halftime;
@@ -214,10 +215,7 @@ class _LiveHeaderBar extends ConsumerWidget {
                   ],
                 ),
               ),
-            if (bottom != null) ...[
-              const Divider(height: 12),
-              bottom!,
-            ],
+            if (bottom != null) ...[const Divider(height: 12), bottom!],
           ],
         ),
       ),
@@ -250,8 +248,8 @@ class _MatchModeAction extends StatelessWidget {
     final color = !enabled
         ? scheme.onSurface.withValues(alpha: .38)
         : danger
-            ? scheme.error
-            : scheme.onSurface;
+        ? scheme.error
+        : scheme.onSurface;
     return Expanded(
       child: Tooltip(
         message: tooltip ?? label,
@@ -371,15 +369,15 @@ class _BenchAction extends StatelessWidget {
 
 /// Tiret du tableau d'affichage, aligné sur les scores (sous les sigles).
 Widget _scoreDash(BuildContext context) => Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 2),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(' ', style: Theme.of(context).textTheme.labelSmall),
-          Text('–', style: Theme.of(context).textTheme.headlineSmall),
-        ],
-      ),
-    );
+  padding: const EdgeInsets.symmetric(horizontal: 2),
+  child: Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Text(' ', style: Theme.of(context).textTheme.labelSmall),
+      Text('–', style: Theme.of(context).textTheme.headlineSmall),
+    ],
+  ),
+);
 
 /// Trois premières lettres du nom, en capitales (« TOU » pour Toulouse).
 String _shortName(String name) {
@@ -421,9 +419,9 @@ class _LiveScore extends StatelessWidget {
       style:
           (wide ? theme.textTheme.displaySmall : theme.textTheme.headlineSmall)
               ?.copyWith(
-        fontWeight: FontWeight.w400,
-        fontFeatures: const [FontFeature.tabularFigures()],
-      ),
+                fontWeight: FontWeight.w400,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
     );
     final buttonSize = wide ? 36.0 : 30.0;
     final iconSize = wide ? 28.0 : 22.0;
@@ -446,8 +444,9 @@ class _LiveScore extends StatelessWidget {
           ),
         Row(
           mainAxisSize: wide ? MainAxisSize.max : MainAxisSize.min,
-          mainAxisAlignment:
-              wide ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.center,
+          mainAxisAlignment: wide
+              ? MainAxisAlignment.spaceEvenly
+              : MainAxisAlignment.center,
           children: [
             if (canEdit)
               IconButton(
@@ -522,7 +521,7 @@ class _BenchColumn extends StatelessWidget {
   final FormationMarkerMetrics metrics;
   final Set<String> pendingOutIds;
   final void Function(MatchCompositionEntry, MatchCompositionEntry)
-      onFieldPlayerDropped;
+  onFieldPlayerDropped;
 
   @override
   Widget build(BuildContext context) {
@@ -564,8 +563,8 @@ class _BenchColumn extends StatelessWidget {
                           outlineColor: candidates.isNotEmpty
                               ? theme.colorScheme.primary
                               : isPendingOut
-                                  ? theme.colorScheme.error
-                                  : Colors.transparent,
+                              ? theme.colorScheme.error
+                              : Colors.transparent,
                           entry: entry,
                           draggable: canEdit,
                           metrics: metrics,
@@ -717,11 +716,7 @@ class _Message extends StatelessWidget {
 /// (buts) et chaussures (passes décisives) comme sur la fiche d'après-match,
 /// puis le journal, sans les repères réservés au pilote.
 class MatchLiveSpectatorView extends ConsumerStatefulWidget {
-  const MatchLiveSpectatorView({
-    super.key,
-    required this.bundle,
-    this.header,
-  });
+  const MatchLiveSpectatorView({super.key, required this.bundle, this.header});
 
   final MatchLiveStateBundle bundle;
 
@@ -741,21 +736,22 @@ class _MatchLiveSpectatorViewState
   Widget build(BuildContext context) {
     final bundle = widget.bundle;
     final session = bundle.session;
-    final fixture =
-        ref.watch(upcomingMatchFixtureProvider(session.matchId)).valueOrNull;
+    final fixture = ref
+        .watch(upcomingMatchFixtureProvider(session.matchId))
+        .valueOrNull;
     final opponentName = fixture?.opponentName ?? 'Adversaire';
     final grintaIsHome = fixture?.grintaIsHome ?? true;
     final lineup = bundle.lineup;
 
     _LiveScore team(bool grinta) => _LiveScore(
-          shortName: grinta ? ClubIdentity.shortName : _shortName(opponentName),
-          fullName: grinta ? ClubIdentity.name : opponentName,
-          score: grinta ? session.scoreAsGrinta : session.scoreAdverse,
-          canEdit: false,
-          wide: true,
-          onIncrement: () {},
-          onDecrement: () {},
-        );
+      shortName: grinta ? ClubIdentity.shortName : _shortName(opponentName),
+      fullName: grinta ? ClubIdentity.name : opponentName,
+      score: grinta ? session.scoreAsGrinta : session.scoreAdverse,
+      canEdit: false,
+      wide: true,
+      onIncrement: () {},
+      onDecrement: () {},
+    );
 
     // Buts et passes décisives de chaque joueur, pour les ballons et les
     // chaussures sur la composition.
@@ -769,12 +765,12 @@ class _MatchLiveSpectatorViewState
       if (assist != null) assists[assist] = (assists[assist] ?? 0) + 1;
     }
     List<MatchCompositionEntry> withStats(MatchCompositionZone zone) => [
-          for (final entry in lineup?.entriesFor(zone) ?? const [])
-            entry.copyWith(
-              goals: goals[entry.participantId] ?? 0,
-              assists: assists[entry.participantId] ?? 0,
-            ),
-        ];
+      for (final entry in lineup?.entriesFor(zone) ?? const [])
+        entry.copyWith(
+          goals: goals[entry.participantId] ?? 0,
+          assists: assists[entry.participantId] ?? 0,
+        ),
+    ];
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(

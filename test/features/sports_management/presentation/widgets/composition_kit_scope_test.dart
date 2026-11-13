@@ -9,8 +9,9 @@ void main() {
   setUp(ClubKits.reset);
   tearDown(ClubKits.reset);
 
-  testWidgets('composition: les maillots joueur et gardien sont distincts',
-      (tester) async {
+  testWidgets('composition: les maillots joueur et gardien sont distincts', (
+    tester,
+  ) async {
     final kit = ClubKits.of(JerseyOption.france).copyWith(
       body: const Color(0xFFAA0000),
       trim: const Color(0xFFFFFFFF),
@@ -46,19 +47,20 @@ void main() {
       find.byKey(const ValueKey('composition-kit-goalkeeper')),
     );
     expect((playerMarker.decoration! as BoxDecoration).color, kit.trim);
-    expect((goalkeeperMarker.decoration! as BoxDecoration).color,
-        kit.goalkeeperTrim);
+    expect(
+      (goalkeeperMarker.decoration! as BoxDecoration).color,
+      kit.goalkeeperTrim,
+    );
     expect(find.byIcon(Icons.checkroom), findsNWidgets(2));
   });
 
-  testWidgets('deux équipes partagent le terrain, pas leurs couleurs',
-      (tester) async {
-    final home = ClubKits.of(JerseyOption.france).copyWith(
-      trim: const Color(0xFFAA0000),
-    );
-    final away = ClubKits.of(JerseyOption.orange).copyWith(
-      trim: const Color(0xFF00BB00),
-    );
+  testWidgets('deux équipes partagent le terrain, pas leurs couleurs', (
+    tester,
+  ) async {
+    final home = ClubKits.of(JerseyOption.france)
+        .copyWith(trim: const Color(0xFFAA0000));
+    final away = ClubKits.of(JerseyOption.orange)
+        .copyWith(trim: const Color(0xFF00BB00));
 
     await tester.pumpWidget(
       MaterialApp(
@@ -68,12 +70,18 @@ void main() {
               CompositionKitScope(
                 kit: home,
                 child: const PlayerAvatar(
-                    photoUrl: null, name: 'Alex', size: 58),
+                  photoUrl: null,
+                  name: 'Alex',
+                  size: 58,
+                ),
               ),
               CompositionKitScope(
                 kit: away,
                 child: const PlayerAvatar(
-                    photoUrl: null, name: 'Camille', size: 58),
+                  photoUrl: null,
+                  name: 'Camille',
+                  size: 58,
+                ),
               ),
             ],
           ),
@@ -93,8 +101,9 @@ void main() {
     );
   });
 
-  testWidgets('les photos hors composition ne reçoivent pas le maillot',
-      (tester) async {
+  testWidgets('les photos hors composition ne reçoivent pas le maillot', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(

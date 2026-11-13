@@ -47,14 +47,13 @@ class MatchCompositionKitScope extends ConsumerWidget {
     final info = ref.watch(matchInfoProvider(id));
     if (info.isLoading || info.hasError) return child;
     final selection =
-        JerseyOption.fromId(info.valueOrNull?.jerseyNote) ?? JerseyOption.france;
+        JerseyOption.fromId(info.valueOrNull?.jerseyNote) ??
+        JerseyOption.france;
 
     return ValueListenableBuilder<int>(
       valueListenable: ClubKits.revision,
-      builder: (context, _, __) => CompositionKitScope(
-        kit: selection.kit,
-        child: child,
-      ),
+      builder: (context, _, __) =>
+          CompositionKitScope(kit: selection.kit, child: child),
     );
   }
 }
