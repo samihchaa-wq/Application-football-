@@ -4,8 +4,6 @@ import 'package:as_grinta/core/utils/name_validation.dart';
 import 'package:as_grinta/core/widgets/match_contribution_icons.dart';
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/football_pitch.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
-import 'package:as_grinta/core/widgets/kit_portrait.dart';
 import 'package:flutter/material.dart';
 
 class CompositionPitch extends StatefulWidget {
