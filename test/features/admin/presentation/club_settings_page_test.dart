@@ -379,6 +379,112 @@ void main() {
 
     expect(find.byType(IconButton), findsOneWidget);
   });
+
+  void addRule(
+    String key,
+    String label,
+    String unit,
+    int defaultValue,
+    int min,
+    int max,
+  ) {
+    repository.templates[key] = ClubRule(
+      key: key,
+      label: label,
+      description: 'Description de $label.',
+      unit: unit,
+      group: 'Tests',
+      defaultValue: defaultValue,
+      min: min,
+      max: max,
+      value: defaultValue,
+    );
+    repository.ruleValues[key] = defaultValue;
+  }
+
+  testWidgets('une notification se coupe par un interrupteur, à sa place', (
+    tester,
+  ) async {
+    addRule(
+        'notify_live_goals', 'Notification : buts en direct', 'bool', 1, 0, 1);
+    addRule('notify_admin_signups', 'Notification : nouvelle inscription',
+        'bool', 1, 0, 1);
+    await pumpPage(tester);
+    await openSection(tester, 'matches');
+
+    final finder = find.byKey(const ValueKey('club-rule-notify_live_goals'));
+    await tester.ensureVisible(finder);
+    expect(tester.widget<SwitchListTile>(finder).value, isTrue);
+    // Pas de compteur +/- pour un oui/non.
+    expect(
+      find.byKey(const ValueKey('club-rule-notify_live_goals-plus')),
+      findsNothing,
+    );
+    await tester.tap(finder);
+    await tester.pumpAndSettle();
+    expect(repository.ruleValues['notify_live_goals'], 0);
+    expect(tester.widget<SwitchListTile>(finder).value, isFalse);
+
+    // L'alerte d'inscription est rangée avec les membres.
+    await openSection(tester, 'members');
+    expect(
+      find.byKey(const ValueKey('club-rule-notify_admin_signups')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('le club peut jouer sans cotes', (tester) async {
+    addRule('odds_mode', 'Cotes des pronostics', 'mode', 0, 0, 1);
+    await pumpPage(tester);
+    await openSection(tester, 'predictions');
+
+    expect(find.text('Calculées automatiquement'), findsOneWidget);
+    final select = find.byKey(const ValueKey('club-rule-odds_mode-select'));
+    await tester.ensureVisible(select);
+    await tester.tap(select);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sans cotes (barème seul)').last);
+    await tester.pumpAndSettle();
+
+    expect(repository.ruleValues['odds_mode'], 1);
+    expect(ClubRules.oddsDisabled, isTrue);
+  });
+
+  testWidgets('les longues durées avancent par grands pas', (tester) async {
+    addRule('odds_h2h_memory_days', 'Cotes : mémoire des confrontations',
+        'jours', 900, 90, 3600);
+    await pumpPage(tester);
+    await openSection(tester, 'predictions');
+
+    final plus =
+        find.byKey(const ValueKey('club-rule-odds_h2h_memory_days-plus'));
+    await tester.ensureVisible(plus);
+    await tester.tap(plus);
+    await tester.pumpAndSettle();
+    expect(repository.ruleValues['odds_h2h_memory_days'], 990);
+    expect(find.text('990 jours'), findsOneWidget);
+  });
+
+  testWidgets('un réglage est grisé quand sa fonctionnalité est désactivée', (
+    tester,
+  ) async {
+    addRule('live_pilot_mode', 'Direct : qui le pilote', 'mode', 0, 0, 1);
+    repository.modules['live_mode'] = false;
+    await pumpPage(tester);
+    await openSection(tester, 'matches');
+
+    final select =
+        find.byKey(const ValueKey('club-rule-live_pilot_mode-select'));
+    await tester.ensureVisible(select);
+    expect(tester.widget<DropdownButton<int>>(select).onChanged, isNull);
+
+    // Réactiver le mode live rend le réglage modifiable.
+    await tester
+        .ensureVisible(find.byKey(const ValueKey('club-module-live_mode')));
+    await tester.tap(find.byKey(const ValueKey('club-module-live_mode')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<DropdownButton<int>>(select).onChanged, isNotNull);
+  });
 }
 
 class _FakeClubRepository implements ClubRepository {
@@ -394,9 +500,24 @@ class _FakeClubRepository implements ClubRepository {
   int usualSquadSize = 14;
   final Map<String, int> ruleValues = {'prediction_close_minutes': 15};
 
+  /// Règles décrites comme le serveur les renvoie (libellé, unité, bornes).
+  final Map<String, ClubRule> templates = {};
+
   List<ClubRule> _rules() => [
         for (final entry in ruleValues.entries)
-          if (entry.key == 'waitlist_mode')
+          if (templates[entry.key] case final template?)
+            ClubRule(
+              key: template.key,
+              label: template.label,
+              description: template.description,
+              unit: template.unit,
+              group: template.group,
+              defaultValue: template.defaultValue,
+              min: template.min,
+              max: template.max,
+              value: entry.value,
+            )
+          else if (entry.key == 'waitlist_mode')
             ClubRule(
               key: entry.key,
               label: 'Liste d’attente : qui passe en premier',
@@ -427,7 +548,9 @@ class _FakeClubRepository implements ClubRepository {
 
   @override
   Future<List<ClubRule>> setRule(String key, int? value) async {
-    ruleValues[key] = value ?? (key == 'waitlist_mode' ? 0 : 15);
+    ruleValues[key] = value ??
+        templates[key]?.defaultValue ??
+        (key == 'waitlist_mode' ? 0 : 15);
     return _rules();
   }
 

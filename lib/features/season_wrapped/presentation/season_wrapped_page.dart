@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 
+import 'package:as_grinta/core/club/club_rules.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
 import 'package:as_grinta/core/widgets/grinta_empty_state.dart';
@@ -198,6 +199,11 @@ class _WrappedStoryState extends ConsumerState<_WrappedStory>
     super.initState();
     _music = ref.read(wrappedMusicProvider);
     _startSegment();
+    // Le club peut couper la musique du bilan pour tout le monde.
+    if (!ClubRules.wrappedMusicEnabled) {
+      _muted = true;
+      return;
+    }
     WrappedMusic.readMuted().then((muted) {
       if (!mounted) return;
       setState(() => _muted = muted);
@@ -431,7 +437,8 @@ class _WrappedStoryState extends ConsumerState<_WrappedStory>
                   color: skin.text,
                   preview: widget.preview,
                   muted: _muted,
-                  onToggleMute: _toggleMute,
+                  onToggleMute:
+                      ClubRules.wrappedMusicEnabled ? _toggleMute : null,
                   onClose: () => Navigator.of(context).maybePop(),
                 ),
               ],
@@ -570,7 +577,7 @@ class _StoryControls extends StatelessWidget {
   final Color color;
   final bool preview;
   final bool muted;
-  final VoidCallback onToggleMute;
+  final VoidCallback? onToggleMute;
   final VoidCallback onClose;
 
   @override
@@ -597,14 +604,15 @@ class _StoryControls extends StatelessWidget {
               ),
             ),
           const Spacer(),
-          IconButton(
-            key: const ValueKey('wrapped-mute-button'),
-            tooltip: muted ? 'Remettre la musique' : 'Couper la musique',
-            onPressed: onToggleMute,
-            iconSize: 20,
-            color: color,
-            icon: Icon(muted ? Icons.volume_off : Icons.volume_up),
-          ),
+          if (onToggleMute != null)
+            IconButton(
+              key: const ValueKey('wrapped-mute-button'),
+              tooltip: muted ? 'Remettre la musique' : 'Couper la musique',
+              onPressed: onToggleMute,
+              iconSize: 20,
+              color: color,
+              icon: Icon(muted ? Icons.volume_off : Icons.volume_up),
+            ),
           IconButton(
             key: const ValueKey('wrapped-close-button'),
             tooltip: 'Fermer',

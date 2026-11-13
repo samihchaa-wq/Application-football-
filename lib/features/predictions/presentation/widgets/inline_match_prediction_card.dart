@@ -1,4 +1,5 @@
 import 'package:as_grinta/core/club/club_identity.dart';
+import 'package:as_grinta/core/club/club_rules.dart';
 import 'package:as_grinta/core/theme/app_spacing.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/utils/app_errors.dart';
@@ -153,51 +154,54 @@ class _InlineMatchPredictionCardState
                   if (item.isHome) opponentPicker else grintaPicker,
                 ],
               ),
-              const SizedBox(height: AppSpacing.sectionGap),
-              const Divider(height: 1),
-              const SizedBox(height: AppSpacing.sectionGap),
-              Row(
-                children: [
-                  Expanded(
-                    child: _Odd(
-                      label: '1',
-                      value: AppFormats.odds(
-                        item.isHome ? item.oddsWin : item.oddsLoss,
-                      ),
-                      selected:
-                          item.isHome ? grinta > opponent : opponent > grinta,
-                      accent: predictionOddAccentForSide(
-                        isHomeSide: true,
-                        isGrintaHome: item.isHome,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.contentGap),
-                  Expanded(
-                    child: _Odd(
-                      label: 'N',
-                      value: AppFormats.odds(item.oddsDraw),
-                      selected: grinta == opponent,
-                      accent: const Color(0xFFE59A1F),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.contentGap),
-                  Expanded(
-                    child: _Odd(
-                      label: '2',
-                      value: AppFormats.odds(
-                        item.isHome ? item.oddsLoss : item.oddsWin,
-                      ),
-                      selected:
-                          item.isHome ? grinta < opponent : opponent < grinta,
-                      accent: predictionOddAccentForSide(
-                        isHomeSide: false,
-                        isGrintaHome: item.isHome,
+              // Club sans cotes : chaque issue vaut 1, inutile de l’afficher.
+              if (!ClubRules.oddsDisabled) ...[
+                const SizedBox(height: AppSpacing.sectionGap),
+                const Divider(height: 1),
+                const SizedBox(height: AppSpacing.sectionGap),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _Odd(
+                        label: '1',
+                        value: AppFormats.odds(
+                          item.isHome ? item.oddsWin : item.oddsLoss,
+                        ),
+                        selected:
+                            item.isHome ? grinta > opponent : opponent > grinta,
+                        accent: predictionOddAccentForSide(
+                          isHomeSide: true,
+                          isGrintaHome: item.isHome,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(width: AppSpacing.contentGap),
+                    Expanded(
+                      child: _Odd(
+                        label: 'N',
+                        value: AppFormats.odds(item.oddsDraw),
+                        selected: grinta == opponent,
+                        accent: const Color(0xFFE59A1F),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.contentGap),
+                    Expanded(
+                      child: _Odd(
+                        label: '2',
+                        value: AppFormats.odds(
+                          item.isHome ? item.oddsLoss : item.oddsWin,
+                        ),
+                        selected:
+                            item.isHome ? grinta < opponent : opponent < grinta,
+                        accent: predictionOddAccentForSide(
+                          isHomeSide: false,
+                          isGrintaHome: item.isHome,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               const SizedBox(height: AppSpacing.sectionGap),
               SizedBox(
                 width: double.infinity,
@@ -221,8 +225,11 @@ class _InlineMatchPredictionCardState
                 const SizedBox(height: AppSpacing.contentGap),
                 Text(
                   notOpenYet
-                      ? 'Disponible à partir de J−6 à 12 h, heure de Paris.'
-                      : 'Pronostic fermé : le Live est désormais ouvert.',
+                      ? 'Disponible à partir de J−${ClubRules.featuresOpenDays} '
+                          'à ${ClubRules.featuresOpenHour} h, heure de Paris.'
+                      : ClubRules.liveEnabled
+                          ? 'Pronostic fermé : le Live est désormais ouvert.'
+                          : 'Pronostic fermé.',
                   style: const TextStyle(
                     color: AppTheme.textSecondary,
                     fontSize: 12,

@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_rules.dart';
 import 'package:as_grinta/features/matches/domain/convocation_launch.dart';
 import 'package:as_grinta/features/matches/presentation/widgets/match_wheel_picker.dart';
 import 'package:flutter/material.dart';
@@ -38,7 +39,7 @@ class ConvocationLaunchPicker extends StatelessWidget {
           children: [
             Expanded(
               child: _ChoiceButton(
-                label: 'J-6',
+                label: 'J-${ClubRules.featuresOpenDays}',
                 selected: mode == ConvocationLaunchMode.automatic,
                 enabled: enabled,
                 onPressed: () => onModeChanged(ConvocationLaunchMode.automatic),

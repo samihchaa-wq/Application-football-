@@ -32,6 +32,31 @@ void main() {
     expect(matchFeaturesOpenAt(kickoff), DateTime.utc(2026, 12, 17, 17));
   });
 
+  test('les nouveaux réglages valent le comportement d’origine par défaut', () {
+    expect(ClubRules.oddsDisabled, isFalse);
+    expect(ClubRules.adminsCanPilotLive, isFalse);
+    expect(ClubRules.motmSelfVoteAllowed, isFalse);
+    expect(ClubRules.wrappedMusicEnabled, isTrue);
+
+    ClubRules.set({
+      ClubRules.oddsModeKey: 1,
+      ClubRules.livePilotModeKey: 1,
+      ClubRules.motmSelfVoteKey: 1,
+      ClubRules.wrappedMusicKey: 0,
+    });
+    expect(ClubRules.oddsDisabled, isTrue);
+    expect(ClubRules.adminsCanPilotLive, isTrue);
+    expect(ClubRules.motmSelfVoteAllowed, isTrue);
+    expect(ClubRules.wrappedMusicEnabled, isFalse);
+  });
+
+  test('pas des boutons +/− : 1 sauf pour les longues durées', () {
+    expect(ClubRules.stepFor(ClubRules.predictionCloseMinutesKey), 1);
+    expect(ClubRules.stepFor('odds_form_memory_days'), 30);
+    expect(ClubRules.stepFor('odds_h2h_memory_days'), 90);
+    expect(ClubRules.stepFor('match_duration_minutes'), 5);
+  });
+
   test('le délai de correction du résultat suit la règle du club', () {
     expect(ClubRules.correctionWindow, const Duration(hours: 24));
     ClubRules.set({ClubRules.correctionWindowHoursKey: 72});

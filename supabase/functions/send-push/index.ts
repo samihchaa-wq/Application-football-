@@ -3,6 +3,10 @@
 import { createClient } from "npm:@supabase/supabase-js@2.95.0";
 import webpush from "npm:web-push@3.6.7";
 
+import {
+  disabledNotificationKinds,
+  isNotificationKindDisabled,
+} from "./club_notification_policy.ts";
 import { optionalMatchId, targetedDeliveryLogKind } from "./delivery_log.ts";
 import {
   executePushDelivery,
@@ -290,6 +294,10 @@ Deno.serve(async (req: Request) => {
     return Response.json({ paused: true, attempted: 0, sent: 0, failed: 0 });
   }
 
+  // Réglages du club : les types de notification qu'il a coupés ne partent
+  // pas et ne sont pas rangés dans la cloche.
+  const disabledKinds = disabledNotificationKinds(config);
+
   // Buts et fin de match : la base revendique atomiquement un événement Live
   // avant l'envoi. Deux requêtes concurrentes ou un retry du cron ne peuvent
   // donc jamais produire deux notifications pour le même événement.
@@ -345,6 +353,18 @@ Deno.serve(async (req: Request) => {
         console.error("send-push live event mark failure", error);
       }
     };
+
+    if (isNotificationKindDisabled(disabledKinds, logKind)) {
+      await markDelivery(0, 0, 0);
+      return Response.json({
+        claimed: true,
+        disabled_by_club: true,
+        attempted: 0,
+        sent: 0,
+        failed: 0,
+        pruned: 0,
+      });
+    }
 
     // Rangé au moment de l'envoi (le texte d'un but peut encore changer
     // avant), pour toutes les cibles encore inscrites, téléphone ou non.
@@ -466,6 +486,14 @@ Deno.serve(async (req: Request) => {
   // Alerte admin : un nouveau compte attend une validation. Envoyée à tous
   // les admins actifs, avec un contenu fixe décrivant le joueur concerné.
   if (body.kind === "admin_pending_signup") {
+    if (isNotificationKindDisabled(disabledKinds, body.kind)) {
+      return Response.json({
+        disabled_by_club: true,
+        attempted: 0,
+        sent: 0,
+        failed: 0,
+      });
+    }
     const profileIds = Array.isArray(body.profile_ids) ? body.profile_ids : [];
     const displayName = typeof body.display_name === "string" && body.display_name.trim()
       ? body.display_name.trim()
@@ -526,6 +554,14 @@ Deno.serve(async (req: Request) => {
     if (!title || !message) {
       return new Response("title et message requis", { status: 400 });
     }
+    if (isNotificationKindDisabled(disabledKinds, body.log_kind)) {
+      return Response.json({
+        disabled_by_club: true,
+        attempted: 0,
+        sent: 0,
+        failed: 0,
+      });
+    }
     const result = await sendFixedPayloadToProfiles(
       supabase,
       profileIds,
@@ -550,6 +586,28 @@ Deno.serve(async (req: Request) => {
   }
 
   const isSportsAvailability = sportsAvailabilityKinds.has(body.kind);
+  if (isNotificationKindDisabled(disabledKinds, body.kind)) {
+    if (isSportsAvailability && body.notification_event_id) {
+      const { error } = await supabase.rpc(
+        "internal_mark_sport_notification_delivery",
+        {
+          p_event_id: body.notification_event_id,
+          p_attempted: 0,
+          p_sent: 0,
+          p_failed: 0,
+        },
+      );
+      if (error) console.error("send-push sports event mark failure", error);
+    }
+    return Response.json({
+      disabled_by_club: true,
+      attempted: 0,
+      sent: 0,
+      failed: 0,
+      pruned: 0,
+    });
+  }
+
   if (
     isSportsAvailability &&
     (!Array.isArray(body.profile_ids) || body.profile_ids.length === 0)
