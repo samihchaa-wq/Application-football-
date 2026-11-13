@@ -70,7 +70,8 @@ jobs:
             supabase/functions/register-account/password_policy_test.ts \
             supabase/functions/register-account/consent_test.ts \
             supabase/functions/register-account/username_test.ts \
-            supabase/functions/send-push/weather_refresh_test.ts
+            supabase/functions/send-push/weather_refresh_test.ts \
+            supabase/functions/manage-user/handler_test.ts
 
       - name: Start isolated Supabase database from canonical history
         shell: bash
