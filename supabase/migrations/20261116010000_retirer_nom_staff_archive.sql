@@ -19,5 +19,5 @@ as $$
   select false;
 $$;
 
-alter function private.is_known_non_player_archive_name(text) owner to postgres;
-revoke all on function private.is_known_non_player_archive_name(text) from public;
+-- Propriétaire et droits inchangés : « create or replace » garde ceux de la
+-- fonction existante (les fonctions serveur appartiennent au rôle club_scope).
