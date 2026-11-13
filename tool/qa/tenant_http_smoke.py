@@ -133,8 +133,21 @@ def smoke(status_file: Path):
         raise AssertionError("Le club A a été modifié par un autre compte.")
     if sql(f"select primary_color from public.clubs where id='{bravo}'") != "#0011BB":
         raise AssertionError("RPC B non fonctionnelle.")
-    code, _ = request(api, anon, tb, "POST", "/rest/v1/rpc/staff_validate_profile", {"p_profile_id": ua})
-    denied(code, "Validation interclub")
+    code, body = request(api, anon, tb, "POST", "/rest/v1/rpc/staff_validate_profile", {"p_profile_id": ua})
+    # PostgREST mappe SQLSTATE P0002 sur HTTP 500 sans que cela signifie
+    # qu'une écriture ait réussi. Ne tolérer 500 QUE pour l'erreur attendue,
+    # et confirmer ensuite en SQL que la cible Alpha n'a pas changé.
+    if code == 500:
+        try:
+            problem = json.loads(body)
+        except (ValueError, TypeError):
+            problem = {}
+        if problem.get("code") not in ("P0002", "42501"):
+            raise AssertionError("Erreur RPC inattendue lors du refus interclub.")
+    else:
+        denied(code, "Validation interclub")
+    if sql(f"select status from public.profiles where id='{ua}'") != "active":
+        raise AssertionError("Une RPC interclub a modifié le statut du membre Alpha.")
     print("PASS RPC administrateur, modifications isolées, cible A refusée par B")
 
     pa = "/storage/v1/object/profile-photos/" + ua + "/qa-alpha.png"
