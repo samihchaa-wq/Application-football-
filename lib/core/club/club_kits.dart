@@ -11,6 +11,8 @@ class ClubKit {
     required this.label,
     required this.body,
     required this.trim,
+    this.goalkeeperBody = const Color(0xFF168A52),
+    this.goalkeeperTrim = const Color(0xFFFFFFFF),
     required this.enabled,
   });
 
@@ -24,14 +26,27 @@ class ClubKit {
 
   /// Couleur des manches et du col.
   final Color trim;
+
+  /// Couleurs du gardien distinctes de celles des joueurs de champ.
+  final Color goalkeeperBody;
+  final Color goalkeeperTrim;
   final bool enabled;
 
-  ClubKit copyWith({String? label, Color? body, Color? trim, bool? enabled}) =>
+  ClubKit copyWith({
+    String? label,
+    Color? body,
+    Color? trim,
+    Color? goalkeeperBody,
+    Color? goalkeeperTrim,
+    bool? enabled,
+  }) =>
       ClubKit(
         slot: slot,
         label: label ?? this.label,
         body: body ?? this.body,
         trim: trim ?? this.trim,
+        goalkeeperBody: goalkeeperBody ?? this.goalkeeperBody,
+        goalkeeperTrim: goalkeeperTrim ?? this.goalkeeperTrim,
         enabled: enabled ?? this.enabled,
       );
 
@@ -40,6 +55,8 @@ class ClubKit {
         'label': label.trim(),
         'body': colorToHex(body),
         'trim': colorToHex(trim),
+        'goalkeeper_body': colorToHex(goalkeeperBody),
+        'goalkeeper_trim': colorToHex(goalkeeperTrim),
         'enabled': enabled,
       };
 
@@ -50,10 +67,14 @@ class ClubKit {
       other.label == label &&
       other.body == body &&
       other.trim == trim &&
+        other.goalkeeperBody == goalkeeperBody &&
+        other.goalkeeperTrim == goalkeeperTrim &&
       other.enabled == enabled;
 
   @override
-  int get hashCode => Object.hash(slot, label, body, trim, enabled);
+  int get hashCode => Object.hash(
+        slot, label, body, trim, goalkeeperBody, goalkeeperTrim, enabled,
+      );
 }
 
 /// « Color(0xFFAA0000) » → « #AA0000 ».
@@ -70,6 +91,15 @@ String colorToHex(Color color) {
 /// sont tirés de ses couleurs.
 abstract final class ClubKits {
   static const int maxLabelLength = 20;
+
+  static Color defaultGoalkeeperBodyFor(JerseyOption slot) => switch (slot) {
+        JerseyOption.france => const Color(0xFF168A52),
+        JerseyOption.orange => const Color(0xFFF5A300),
+        JerseyOption.blue => const Color(0xFF1F6FEB),
+      };
+
+  static Color defaultGoalkeeperTrimFor(JerseyOption slot) =>
+      const Color(0xFFFFFFFF);
 
   static final ValueNotifier<int> _revision = ValueNotifier<int>(0);
   static List<ClubKit>? _saved;
@@ -90,6 +120,8 @@ abstract final class ClubKits {
         label: 'Domicile',
         body: main,
         trim: second,
+        goalkeeperBody: defaultGoalkeeperBodyFor(JerseyOption.france),
+        goalkeeperTrim: defaultGoalkeeperTrimFor(JerseyOption.france),
         enabled: true,
       ),
       ClubKit(
@@ -97,6 +129,8 @@ abstract final class ClubKits {
         label: 'Extérieur',
         body: const Color(0xFFFFFFFF),
         trim: main,
+        goalkeeperBody: defaultGoalkeeperBodyFor(JerseyOption.orange),
+        goalkeeperTrim: defaultGoalkeeperTrimFor(JerseyOption.orange),
         enabled: true,
       ),
       ClubKit(
@@ -104,6 +138,8 @@ abstract final class ClubKits {
         label: 'Troisième',
         body: const Color(0xFF1B1F2A),
         trim: second,
+        goalkeeperBody: defaultGoalkeeperBodyFor(JerseyOption.blue),
+        goalkeeperTrim: defaultGoalkeeperTrimFor(JerseyOption.blue),
         enabled: true,
       ),
     ];
@@ -166,10 +202,19 @@ abstract final class ClubKits {
     for (final item in json) {
       if (item is! Map) return null;
       final slot = JerseyOption.fromId(item['slot']?.toString());
+      if (slot == null) return null;
       final body = AppTheme.parseHex(item['body']?.toString());
       final trim = AppTheme.parseHex(item['trim']?.toString());
+      // Les maillots antérieurs restent lisibles grâce à ces valeurs stables.
+      final goalkeeperBody = item.containsKey('goalkeeper_body')
+          ? AppTheme.parseHex(item['goalkeeper_body']?.toString())
+          : defaultGoalkeeperBodyFor(slot);
+      final goalkeeperTrim = item.containsKey('goalkeeper_trim')
+          ? AppTheme.parseHex(item['goalkeeper_trim']?.toString())
+          : defaultGoalkeeperTrimFor(slot);
       final label = item['label']?.toString().trim() ?? '';
-      if (slot == null || body == null || trim == null || label.isEmpty) {
+      if (body == null || trim == null || goalkeeperBody == null ||
+          goalkeeperTrim == null || label.isEmpty) {
         return null;
       }
       bySlot[slot] = ClubKit(
@@ -177,6 +222,8 @@ abstract final class ClubKits {
         label: label,
         body: body,
         trim: trim,
+        goalkeeperBody: goalkeeperBody,
+        goalkeeperTrim: goalkeeperTrim,
         enabled: item['enabled'] != false,
       );
     }
