@@ -142,7 +142,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           logoPath: previous?.logoPath,
         );
       });
-      ref.invalidate(myClubProvider);
+      refreshClubConfiguration(ref.invalidate);
       ClubIdentity.set(name: club.name, shortName: club.shortName);
       _showMessage('Nom du club enregistré.');
     } catch (_) {
@@ -211,7 +211,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           );
       if (!mounted) return;
       setState(() => _club = updated);
-      ref.invalidate(myClubProvider);
+      refreshClubConfiguration(ref.invalidate);
       applyClubColors(updated);
     } catch (_) {
       if (mounted) _showMessage('Les couleurs n’ont pas pu être enregistrées.');
@@ -268,7 +268,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
 
   void _adoptClub(Club club) {
     setState(() => _club = club);
-    ref.invalidate(myClubProvider);
+    refreshClubConfiguration(ref.invalidate);
     ClubIdentity.setLogoUrl(ref.read(clubRepositoryProvider).logoUrl(club));
   }
 
@@ -369,7 +369,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           );
         });
       }
-      ref.invalidate(myClubProvider);
+      refreshClubConfiguration(ref.invalidate);
       _showMessage('Nouveau code d’invitation : $code');
     } catch (_) {
       if (mounted) _showMessage('Le code n’a pas pu être changé.');
@@ -387,7 +387,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       if (!mounted) return;
       setState(() => _modules = modules);
       // Les écrans qui dépendent de ce réglage se mettent à jour.
-      ref.invalidate(clubModulesProvider);
+      refreshClubConfiguration(ref.invalidate);
     } catch (_) {
       if (mounted) _showMessage('Le réglage n’a pas pu être enregistré.');
     } finally {
@@ -403,6 +403,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       if (!mounted) return;
       setState(() => _rules = rules);
       applyClubRules(rules);
+      refreshClubConfiguration(ref.invalidate);
     } catch (_) {
       if (mounted) _showMessage('La règle n’a pas pu être enregistrée.');
     } finally {

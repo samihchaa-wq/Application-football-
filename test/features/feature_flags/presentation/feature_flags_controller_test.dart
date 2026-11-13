@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:as_grinta/core/logging/app_logger.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/feature_flags/data/feature_flags_repository.dart';
 import 'package:as_grinta/features/feature_flags/domain/feature_flags.dart';
 import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
@@ -38,6 +39,7 @@ void main() {
       overrides: [
         featureFlagsRepositoryProvider.overrideWithValue(repository),
         featureFlagsSessionReadyProvider.overrideWithValue(true),
+        clubSessionIdentityProvider.overrideWithValue('test-session'),
       ],
     );
     addTearDown(container.dispose);
@@ -59,6 +61,7 @@ void main() {
       overrides: [
         featureFlagsRepositoryProvider.overrideWithValue(repository),
         featureFlagsSessionReadyProvider.overrideWithValue(true),
+        clubSessionIdentityProvider.overrideWithValue('test-session'),
       ],
     );
     addTearDown(container.dispose);
@@ -85,6 +88,7 @@ void main() {
       overrides: [
         featureFlagsRepositoryProvider.overrideWithValue(repository),
         featureFlagsSessionReadyProvider.overrideWithValue(true),
+        clubSessionIdentityProvider.overrideWithValue('test-session'),
       ],
     );
     addTearDown(container.dispose);
@@ -117,6 +121,7 @@ void main() {
         overrides: [
           featureFlagsRepositoryProvider.overrideWithValue(repository),
           featureFlagsSessionReadyProvider.overrideWithValue(true),
+          clubSessionIdentityProvider.overrideWithValue('test-session'),
           featureFlagsWatchRetryDelayProvider.overrideWithValue(
             (_) => Duration.zero,
           ),
@@ -177,6 +182,131 @@ void main() {
       expect(container.read(sportsManagementEnabledProvider), isTrue);
     },
   );
+  test('les révisions de configuration sont séparées et regroupées', () async {
+    final repository = _FakeFeatureFlagsRepository();
+    addTearDown(repository.dispose);
+    var refreshes = 0;
+    final container = ProviderContainer(overrides: [
+      featureFlagsRepositoryProvider.overrideWithValue(repository),
+      featureFlagsSessionReadyProvider.overrideWithValue(true),
+      clubSessionIdentityProvider.overrideWithValue('a'),
+      featureFlagsConfigurationRefreshProvider
+          .overrideWithValue(() => refreshes++),
+      featureFlagsConfigurationDebounceProvider
+          .overrideWithValue(Duration.zero),
+    ]);
+    addTearDown(container.dispose);
+    await container.read(featureFlagsControllerProvider.future);
+    for (final revision in [1, 2, 2, 1]) {
+      repository.publishSignal(
+          key: 'club_configuration',
+          revision: revision,
+          updatedAt: DateTime.utc(2026, 7, 20, 13));
+    }
+    await pumpEventQueue();
+    expect(refreshes, 1);
+    // Même numéro dans un autre flux : le changement sportif n'est pas perdu.
+    repository.publishChange(
+        revision: 2, enabled: true, updatedAt: DateTime.utc(2026, 7, 20, 14));
+    await pumpEventQueue();
+    expect(container.read(sportsManagementEnabledProvider), isTrue);
+    repository.publishSignal(
+        key: 'club_configuration',
+        revision: 3,
+        updatedAt: DateTime.utc(2026, 7, 20, 15));
+    await pumpEventQueue();
+    expect(refreshes, 2);
+  });
+
+  test(
+      'la première révision rattrape les réglages modifiés pendant le chargement',
+      () async {
+    final repository = _FakeFeatureFlagsRepository();
+    addTearDown(repository.dispose);
+    var refreshes = 0;
+    final container = ProviderContainer(overrides: [
+      featureFlagsRepositoryProvider.overrideWithValue(repository),
+      featureFlagsSessionReadyProvider.overrideWithValue(true),
+      clubSessionIdentityProvider.overrideWithValue('a'),
+      featureFlagsConfigurationRefreshProvider
+          .overrideWithValue(() => refreshes++),
+      featureFlagsConfigurationDebounceProvider
+          .overrideWithValue(Duration.zero),
+    ]);
+    addTearDown(container.dispose);
+    await container.read(featureFlagsControllerProvider.future);
+    repository.publishSignal(
+        key: 'club_configuration',
+        revision: 8,
+        updatedAt: DateTime.utc(2026, 7, 20, 12));
+    await pumpEventQueue();
+    expect(refreshes, 1);
+    repository.publishSignal(
+        key: 'club_configuration',
+        revision: 8,
+        updatedAt: DateTime.utc(2026, 7, 20, 13));
+    await pumpEventQueue();
+    expect(refreshes, 1);
+  });
+
+  test('une réponse de chargement A ne remplace jamais les flags de B',
+      () async {
+    final session = StateProvider<String?>((ref) => 'a');
+    final repository = _PendingFeatureFlagsRepository();
+    final container = ProviderContainer(overrides: [
+      featureFlagsRepositoryProvider.overrideWithValue(repository),
+      featureFlagsSessionReadyProvider.overrideWithValue(true),
+      clubSessionIdentityProvider.overrideWith((ref) => ref.watch(session)),
+    ]);
+    addTearDown(container.dispose);
+    final subscription =
+        container.listen(featureFlagsControllerProvider, (_, __) {});
+    addTearDown(subscription.close);
+    await pumpEventQueue();
+    expect(repository.pending, hasLength(1));
+    container.read(session.notifier).state = 'b';
+    await pumpEventQueue();
+    expect(repository.pending, hasLength(2));
+    repository.pending[1]
+        .complete(_snapshot(enabled: false, updatedAt: DateTime.utc(2026)));
+    await pumpEventQueue();
+    repository.pending[0]
+        .complete(_snapshot(enabled: true, updatedAt: DateTime.utc(2027)));
+    await pumpEventQueue();
+    expect(container.read(sportsManagementEnabledProvider), isFalse);
+    expect(repository.watchCount, 1);
+  });
+
+  test('une actualisation A en vol ne réactive pas les flags chez B', () async {
+    final session = StateProvider<String?>((ref) => 'a');
+    final repository = _PendingFeatureFlagsRepository();
+    final container = ProviderContainer(overrides: [
+      featureFlagsRepositoryProvider.overrideWithValue(repository),
+      featureFlagsSessionReadyProvider.overrideWithValue(true),
+      clubSessionIdentityProvider.overrideWith((ref) => ref.watch(session)),
+    ]);
+    addTearDown(container.dispose);
+    final subscription =
+        container.listen(featureFlagsControllerProvider, (_, __) {});
+    addTearDown(subscription.close);
+    await pumpEventQueue();
+    repository.pending[0]
+        .complete(_snapshot(enabled: true, updatedAt: DateTime.utc(2026)));
+    await pumpEventQueue();
+    final refreshA =
+        container.read(featureFlagsControllerProvider.notifier).refresh();
+    await pumpEventQueue();
+    container.read(session.notifier).state = 'b';
+    await pumpEventQueue();
+    repository.pending[2]
+        .complete(_snapshot(enabled: false, updatedAt: DateTime.utc(2026)));
+    await pumpEventQueue();
+    repository.pending[1]
+        .complete(_snapshot(enabled: true, updatedAt: DateTime.utc(2027)));
+    await refreshA;
+    await pumpEventQueue();
+    expect(container.read(sportsManagementEnabledProvider), isFalse);
+  });
 }
 
 class _FakeFeatureFlagsRepository implements FeatureFlagsRepository {
@@ -204,11 +334,13 @@ class _FakeFeatureFlagsRepository implements FeatureFlagsRepository {
   }
 
   void publishSignal({
+    String key = 'sports_management',
     required int revision,
     required DateTime updatedAt,
   }) {
     _changes.add(
-      FeatureFlagChangeSignal(revision: revision, updatedAt: updatedAt),
+      FeatureFlagChangeSignal(
+          key: key, revision: revision, updatedAt: updatedAt),
     );
   }
 
@@ -249,4 +381,22 @@ FeatureFlagsSnapshot _snapshot({
       updatedAt: updatedAt,
     ),
   );
+}
+
+class _PendingFeatureFlagsRepository implements FeatureFlagsRepository {
+  final pending = <Completer<FeatureFlagsSnapshot>>[];
+  int watchCount = 0;
+
+  @override
+  Future<FeatureFlagsSnapshot> fetchFeatureFlags() {
+    final completer = Completer<FeatureFlagsSnapshot>();
+    pending.add(completer);
+    return completer.future;
+  }
+
+  @override
+  Stream<FeatureFlagChangeSignal> watchSportsManagementChanges() {
+    watchCount += 1;
+    return const Stream.empty();
+  }
 }

@@ -12,6 +12,8 @@ import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/widgets/grinta_accessibility_scope.dart';
 import 'package:as_grinta/core/widgets/grinta_status_banner.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
+import 'package:as_grinta/features/club/presentation/club_configuration_status_banner.dart';
 import 'package:as_grinta/features/club/presentation/club_identity_sync.dart';
 import 'package:as_grinta/features/club/presentation/club_rules_sync.dart';
 import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
@@ -56,14 +58,13 @@ class _AsGrintaAppState extends ConsumerState<AsGrintaApp>
     });
     // L'icône de l'application porte le même chiffre que la cloche (zéro
     // hors connexion : la pastille du compte précédent disparaît).
-    ref.listenManual<AsyncValue<int>>(
-      unreadNotificationCountProvider,
-      (_, next) {
-        final count = next.valueOrNull;
-        if (count != null) unawaited(pushSetAppBadge(count));
-      },
-      fireImmediately: true,
-    );
+    ref.listenManual<AsyncValue<int>>(unreadNotificationCountProvider, (
+      _,
+      next,
+    ) {
+      final count = next.valueOrNull;
+      if (count != null) unawaited(pushSetAppBadge(count));
+    }, fireImmediately: true);
   }
 
   /// La cloche des notifications reflète l'abonnement du navigateur, que le
@@ -111,6 +112,10 @@ class _AsGrintaAppState extends ConsumerState<AsGrintaApp>
     // déclenche (sharedDataSyncListenerProvider). Rien n'a changé : rien
     // n'est rechargé.
     ref.invalidate(sharedDataSignalProvider);
+    // Les préférences de club peuvent avoir changé pendant la suspension du
+    // websocket iOS, même après une courte absence.
+    refreshClubConfiguration(ref.invalidate);
+    ref.invalidate(featureFlagsControllerProvider);
     // La cloche peut avoir reçu des notifications pendant l'absence.
     ref.invalidate(unreadNotificationCountProvider);
     // Le joueur revient peut-être des réglages du téléphone.
@@ -120,7 +125,6 @@ class _AsGrintaAppState extends ConsumerState<AsGrintaApp>
 
     // Longue absence : une application installée sur iPhone reprend souvent
     // sans relancer, ce retour compte alors comme une ouverture.
-    ref.invalidate(featureFlagsControllerProvider);
     unawaited(ref.read(sharedDataRefreshCoordinatorProvider).refreshAll());
     if (ref.read(authControllerProvider).isAuthenticated) {
       unawaited(_resyncPushSubscription());
@@ -233,6 +237,7 @@ class _AsGrintaAppState extends ConsumerState<AsGrintaApp>
                         ),
                       ),
                     ),
+                  if (isAuthenticated) const ClubConfigurationStatusBanner(),
                   if (isAuthenticated) const PushDeviceBanner(),
                   Expanded(
                     // Quand le nom du club arrive ou change, les écrans déjà
