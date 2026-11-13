@@ -153,7 +153,10 @@ void main() {
         Uint8List.fromList(img.encodeJpg(solid, quality: 95)),
         beforeExport: () async {
           expect(find.byType(InteractiveViewer), findsOneWidget);
-          expect(find.byKey(const ValueKey('portrait-kit-preview')), findsNothing);
+          expect(
+            find.byKey(const ValueKey('portrait-kit-preview')),
+            findsNothing,
+          );
           expect(find.text('👑'), findsNothing);
         },
       );
