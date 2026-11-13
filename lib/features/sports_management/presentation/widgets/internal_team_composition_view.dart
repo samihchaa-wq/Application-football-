@@ -1,4 +1,5 @@
 import 'package:as_grinta/core/club/club_kits.dart';
+import 'package:as_grinta/core/club/match_kit_snapshot.dart';
 import 'package:as_grinta/core/logging/app_logger.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/utils/app_errors.dart';
@@ -646,6 +647,13 @@ class _InternalTeamCompositionViewState
         final unassignedOther = unassignedGroup(InternalPlayerGroup.other);
         final team1 = entries.where((entry) => entry.teamNo == 1).toList();
         final team2 = entries.where((entry) => entry.teamNo == 2).toList();
+        // En lecture historique, les deux équipes doivent garder les
+        // couleurs fixées le jour du match, gardiens compris.
+        final kitHistory = ref
+            .watch(matchKitSnapshotProvider(widget.matchId))
+            .valueOrNull;
+        final frozenTeam1Kit = widget.editable ? null : kitHistory?.team1Kit;
+        final frozenTeam2Kit = widget.editable ? null : kitHistory?.team2Kit;
         final benchCounts =
             benchCountsAsync.valueOrNull ?? const <String, int>{};
         final validation = _validation(entries);
@@ -662,7 +670,8 @@ class _InternalTeamCompositionViewState
 
         final terrainEntries = _terrainTeam == 1 ? team1 : team2;
         final terrainCard = CompositionKitScope(
-          kit: (_terrainTeam == 1 ? _team1Jersey : _team2Jersey).kit,
+          kit: (_terrainTeam == 1 ? frozenTeam1Kit : frozenTeam2Kit) ??
+              (_terrainTeam == 1 ? _team1Jersey : _team2Jersey).kit,
           child: _InternalTeamCard(
             name: _terrainTeam == 1
                 ? (_team1Controller.text.isEmpty
@@ -746,6 +755,8 @@ class _InternalTeamCompositionViewState
                 team2Controller: widget.editable ? _team2Controller : null,
                 team1Jersey: _team1Jersey,
                 team2Jersey: _team2Jersey,
+                frozenTeam1Kit: frozenTeam1Kit,
+                frozenTeam2Kit: frozenTeam2Kit,
                 team1: team1,
                 team2: team2,
                 editable: widget.editable,
