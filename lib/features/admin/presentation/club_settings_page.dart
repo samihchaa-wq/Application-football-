@@ -483,7 +483,9 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   String _ruleCategory(ClubRule rule) {
     if (rule.key == ClubRules.waitlistModeKey ||
         rule.key == ClubRules.featuresOpenDaysKey ||
-        rule.key == ClubRules.featuresOpenHourKey) return 'squad';
+        rule.key == ClubRules.featuresOpenHourKey) {
+      return 'squad';
+    }
     if (rule.key == ClubRules.correctionWindowHoursKey) return 'matches';
     if (rule.key.startsWith('prediction_')) return 'predictions';
     return 'other';
@@ -496,13 +498,12 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
         for (final module in ClubModule.values)
           if (_moduleCategory(module) == category)
             SwitchListTile.adaptive(
-              key: ValueKey('club-module-' + module.key),
+              key: ValueKey('club-module-${module.key}'),
               contentPadding: EdgeInsets.zero,
               title: _labelWithInfo(
-                'module-' + module.key,
+                'module-${module.key}',
                 module.label,
-                module.description +
-                    '\n\nLa désactivation conserve les données existantes.',
+                '${module.description}\n\nLa désactivation conserve les données existantes.',
               ),
               value: _modules.isEnabled(module),
               onChanged: _pendingModules.contains(module)
@@ -518,20 +519,18 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
               _waitlistModeTile(rule)
             else
               ListTile(
-                key: ValueKey('club-rule-' + rule.key),
+                key: ValueKey('club-rule-${rule.key}'),
                 contentPadding: EdgeInsets.zero,
                 title: _labelWithInfo(
-                  'rule-' + rule.key,
+                  'rule-${rule.key}',
                   rule.label,
-                  rule.description +
-                      '\n\nValeur par défaut : ' +
-                      _ruleValueLabel(rule, rule.defaultValue),
+                  '${rule.description}\n\nValeur par défaut : ${_ruleValueLabel(rule, rule.defaultValue)}',
                 ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      key: ValueKey('club-rule-' + rule.key + '-minus'),
+                      key: ValueKey('club-rule-${rule.key}-minus'),
                       tooltip: 'Diminuer',
                       icon: const Icon(Icons.remove_circle_outline),
                       onPressed: _pendingRules.contains(rule.key) ||
@@ -541,7 +540,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
                     ),
                     Text(_ruleValueLabel(rule, rule.value)),
                     IconButton(
-                      key: ValueKey('club-rule-' + rule.key + '-plus'),
+                      key: ValueKey('club-rule-${rule.key}-plus'),
                       tooltip: 'Augmenter',
                       icon: const Icon(Icons.add_circle_outline),
                       onPressed: _pendingRules.contains(rule.key) ||
@@ -557,7 +556,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   String _ruleValueLabel(ClubRule rule, int value) =>
       rule.unit == ClubRules.multiplierUnit
           ? ClubRules.formatMultiplier(value)
-          : '$value ' + rule.unit;
+          : '$value ${rule.unit}';
 
   Widget _waitlistModeTile(ClubRule rule) {
     final current = WaitlistMode.fromValue(rule.value);
@@ -565,19 +564,19 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     final info = [
       rule.description,
       for (final mode in WaitlistMode.values)
-        mode.label + ' : ' + mode.description,
+        '${mode.label} : ${mode.description}',
       'Les +1 sont attribués et retirés uniquement par les admins. '
           'Aucun +1 n’est automatique.',
     ].join('\n\n');
     return Padding(
-      key: ValueKey('club-rule-' + rule.key),
+      key: ValueKey('club-rule-${rule.key}'),
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _labelWithInfo('rule-' + rule.key, rule.label, info),
+          _labelWithInfo('rule-${rule.key}', rule.label, info),
           DropdownButton<WaitlistMode>(
-            key: ValueKey('club-rule-' + rule.key + '-select'),
+            key: ValueKey('club-rule-${rule.key}-select'),
             value: current,
             isExpanded: true,
             items: [
