@@ -1,4 +1,7 @@
+import 'package:as_grinta/core/club/club_kits.dart';
 import 'package:as_grinta/core/storage/profile_photo_urls.dart';
+import 'package:as_grinta/core/widgets/kit_portrait.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/utils/name_validation.dart';
 import 'package:as_grinta/core/widgets/match_contribution_icons.dart';
@@ -731,6 +734,7 @@ class PlayerAvatar extends StatefulWidget {
     required this.name,
     this.lastName,
     this.isGoalkeeper = false,
+    this.kit,
     this.size = 52,
     this.fallbackScale = .84,
   });
@@ -743,6 +747,10 @@ class PlayerAvatar extends StatefulWidget {
   /// écrans (voir [avatarInitials]).
   final String? lastName;
   final bool isGoalkeeper;
+
+  /// Pour une fiche joueur hors contexte de match. En composition/vidéo,
+  /// le maillot est fourni automatiquement par CompositionKitScope.
+  final ClubKit? kit;
   final double size;
 
   /// Les initiales restent dans le même emplacement que la photo, mais leur
@@ -818,12 +826,21 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
     final size = widget.size;
     final fallbackScale = widget.fallbackScale.clamp(.5, 1).toDouble();
     final fallbackSize = size * fallbackScale;
-    // Les photos des joueurs sont indépendantes des maillots du club.
+    // La photo source n'est jamais modifiée. Le maillot de composition
+    // (ou de la fiche joueur) est un calque visuel et dépend du club courant.
     final original = widget.photoUrl?.trim();
     final hasPhoto = original != null && original.isNotEmpty;
     final url = _resolvedPhotoUrl;
     final showPhoto = hasPhoto && url != null;
     final visualSize = showPhoto ? size : fallbackSize;
+    final kit = widget.kit ?? CompositionKitScope.maybeOf(context);
+    // L'habillage est ajouté seulement quand une trame photo a été décodée.
+    // Le réseau peut afficher des initiales pendant le chargement : celles-ci
+    // restent sans maillot ; c'est vrai aussi en cas d'erreur de téléchargement.
+    final portraitKit =
+        showPhoto && size >= 44 && kit?.dressPlayers == true ? kit : null;
+    final avatar =
+        showPhoto ? _photo(url, kit: portraitKit) : _initials(visualSize);
 
     return SizedBox(
       width: size,
@@ -832,7 +849,7 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
         child: SizedBox(
           width: visualSize,
           height: visualSize,
-          child: showPhoto ? _photo(url) : _initials(visualSize),
+          child: avatar,
         ),
       ),
     );
@@ -862,7 +879,7 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
     );
   }
 
-  Widget _photo(String url) {
+  Widget _photo(String url, {ClubKit? kit}) {
     final fallbackSize =
         widget.size * widget.fallbackScale.clamp(.5, 1).toDouble();
     return Image.network(
@@ -873,6 +890,14 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
       fit: BoxFit.cover,
       gaplessPlayback: true,
       filterQuality: FilterQuality.medium,
+      frameBuilder: (context, child, frame, wasSynchronouslyLoaded) =>
+          frame == null || kit == null
+              ? child
+              : KitPortrait(
+                  kit: kit,
+                  isGoalkeeper: widget.isGoalkeeper,
+                  child: child,
+                ),
       // Les vues HTML créent un overlay de composition par avatar sur le Web.
       // Sur iOS, la grille d'effectif pouvait ainsi dépasser les ressources de
       // WebKit et faire recharger toute la page. Supabase autorise le chargement

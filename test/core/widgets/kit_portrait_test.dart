@@ -84,6 +84,113 @@ void main() {
     expect(find.byType(PlayerAvatar), findsNWidgets(2));
   });
 
+  testWidgets(
+    'le maillot du match habille les photos de composition et de vidéo',
+    (tester) async {
+      final kit = ClubKits.of(JerseyOption.orange).copyWith(
+        dressPlayers: true,
+        body: Colors.red,
+        goalkeeperBody: Colors.green,
+      );
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: CompositionKitScope(
+            kit: kit,
+            child: const Column(
+              children: [
+                PlayerAvatar(
+                  photoUrl: 'https://example.test/joueur.png',
+                  name: 'Alex',
+                  size: 58,
+                ),
+                PlayerAvatar(
+                  photoUrl: 'https://example.test/gardien.png',
+                  name: 'Camille',
+                  size: 58,
+                  isGoalkeeper: true,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ));
+      // Ne pas confondre « URL chargée » et « photo décodée » : le
+      // frameBuilder n'habille rien avant le premier frame réussi.
+      final avatars = find.byType(PlayerAvatar);
+      final images = [
+        for (var i = 0; i < 2; i++)
+          tester.widget<Image>(
+            find.descendant(
+              of: avatars.at(i),
+              matching: find.byType(Image),
+            ),
+          ),
+      ];
+      for (var i = 0; i < images.length; i++) {
+        final image = images[i];
+        expect(image.frameBuilder, isNotNull);
+        final context = tester.element(avatars.at(i));
+        final placeholder =
+            image.frameBuilder!(context, const SizedBox(), null, false);
+        expect(placeholder, isNot(isA<KitPortrait>()));
+        final dressed =
+            image.frameBuilder!(context, const SizedBox(), 0, false);
+        expect(dressed, isA<KitPortrait>());
+        final portrait = dressed as KitPortrait;
+        expect(portrait.kit, kit);
+        expect(portrait.isGoalkeeper, i == 1);
+      }
+    },
+  );
+
+  testWidgets('les petits avatars restent neutres même en composition',
+      (tester) async {
+    final kit = ClubKits.of(JerseyOption.france).copyWith(dressPlayers: true);
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: CompositionKitScope(
+          kit: kit,
+          child: const PlayerAvatar(
+            photoUrl: 'https://example.test/joueur.png',
+            name: 'Alex',
+            size: 24,
+          ),
+        ),
+      ),
+    ));
+    final image = tester.widget<Image>(find.byType(Image));
+    final dressed = image.frameBuilder!(
+      tester.element(find.byType(PlayerAvatar)),
+      const SizedBox(),
+      0,
+      false,
+    );
+    expect(dressed, isNot(isA<KitPortrait>()));
+  });
+
+  testWidgets('la fiche joueur peut fournir sa tenue sans scope de match',
+      (tester) async {
+    final kit = ClubKits.of(JerseyOption.france).copyWith(dressPlayers: true);
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: PlayerAvatar(
+          photoUrl: 'https://example.test/joueur.png',
+          name: 'Alex',
+          size: 112,
+          kit: kit,
+        ),
+      ),
+    ));
+    final image = tester.widget<Image>(find.byType(Image));
+    final dressed = image.frameBuilder!(
+      tester.element(find.byType(PlayerAvatar)),
+      const SizedBox(),
+      0,
+      false,
+    );
+    expect(dressed, isA<KitPortrait>());
+  });
+
   testWidgets('sans habillage, aucune icône maillot n’est ajoutée',
       (tester) async {
     await tester.pumpWidget(MaterialApp(

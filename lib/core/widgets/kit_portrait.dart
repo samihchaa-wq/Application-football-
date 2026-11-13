@@ -115,6 +115,44 @@ class PortraitJerseyPainter extends CustomPainter {
       trim,
     );
 
+    // Relief du tissu sur le portrait, absent du pictogramme « Info » :
+    // lumière sur le haut du torse, côtés et plis plus sombres. Le calque
+    // est uniquement dans le tracé du maillot et ne touche pas au visage.
+    canvas.drawPath(
+      shirt,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment(-1, -.6),
+          end: Alignment(1, .6),
+          stops: [0, .19, .43, .71, 1],
+          colors: [
+            Color(0x33000000),
+            Color(0x13FFFFFF),
+            Color(0x21FFFFFF),
+            Color(0x08000000),
+            Color(0x42000000),
+          ],
+        ).createShader(const Rect.fromLTWH(-.035, .635, 1.07, .385)),
+    );
+
+    // Couture discrète suivant la pente des épaules : la ligne ne fait pas
+    // de tour brusque sur le cou et reste sous les trois bandes décoratives.
+    final shoulderSeam = Path()
+      ..moveTo(.385, .648)
+      ..cubicTo(.31, .668, .247, .693, .186, .723)
+      ..cubicTo(.13, .751, .076, .781, .02, .817);
+    final seamPaint = Paint()
+      ..color = const Color(0x39000000)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = .0045
+      ..strokeCap = StrokeCap.round;
+    canvas.drawPath(shoulderSeam, seamPaint);
+    canvas.save();
+    canvas.translate(1, 0);
+    canvas.scale(-1, 1);
+    canvas.drawPath(shoulderSeam, seamPaint);
+    canvas.restore();
+
     // Trois bandes fines sur le DESSUS des épaules, comme le modèle validé.
     // Elles suivent la pente des épaules, jamais les manches ou les bras.
     for (var i = 0; i < 3; i++) {
