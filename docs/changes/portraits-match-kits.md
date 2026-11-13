@@ -43,6 +43,16 @@ vérifient notamment le cou dégagé et la pente des épaules ; **le rendu exact
 sur téléphone reste à valider visuellement**, surtout avec de vraies photos
 aux proportions variées.
 
+## Validation de la maquette — cadrage serré
+
+Le modèle approuvé montre seulement les épaules et le haut de la poitrine.
+Le rendu partagé `PortraitJerseyPainter` ne trace donc plus de manches,
+ourlets de manches ni bras : le maillot occupe le bas du cadre et les épaules
+disparaissent naturellement sur les bords. Le col, les couleurs et les motifs
+configurables restent conservés. Cette modification de code nécessite encore
+une validation visuelle en conditions réelles et une publication pour être
+visible dans l'application.
+
 ## Périmètre et activation
 
 Migration additive `20261116030000_portraits_match_kits.sql` : validation des
