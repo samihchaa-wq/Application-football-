@@ -3,6 +3,35 @@ begin;
 set local search_path = public, extensions, pg_catalog;
 select no_plan();
 
+-- Contrats repris du contrôle d'AS Grinta « admin_club_defaults »,
+-- adaptés aux deux RPC distinctes et au cloisonnement multiclub.
+-- Les droits d'exécution n'impliquent pas le droit d'agir : l'autorisation
+-- admin actif et le club courant sont vérifiés dans les fonctions.
+select ok(
+  not has_function_privilege(
+    'anon', 'public.admin_set_club_home_address(text)', 'EXECUTE'
+  ),
+  'un visiteur anonyme ne peut pas changer le terrain d’un club'
+);
+select ok(
+  not has_function_privilege(
+    'anon', 'public.admin_set_club_usual_squad_size(integer)', 'EXECUTE'
+  ),
+  'un visiteur anonyme ne peut pas changer le quota de convoqués'
+);
+select ok(
+  has_function_privilege(
+    'authenticated', 'public.admin_set_club_home_address(text)', 'EXECUTE'
+  ),
+  'la RPC du terrain est accessible aux connectés avec contrôle admin interne'
+);
+select ok(
+  has_function_privilege(
+    'authenticated', 'public.admin_set_club_usual_squad_size(integer)', 'EXECUTE'
+  ),
+  'la RPC du quota est accessible aux connectés avec contrôle admin interne'
+);
+
 -- Réglages du club : fonctionnalités à activer ou non, nom du club. Deux
 -- clubs, pour vérifier que le réglage de l'un ne touche pas l'autre.
 create temporary table test_clubs (label text primary key, id uuid not null) on commit drop;
@@ -125,7 +154,12 @@ select is(
   'le quota est lu dans le réglage du club A'
 );
 select throws_ok(
-  $$select public.admin_set_club_usual_squad_size(0)$$,
+  $select public.admin_set_club_usual_squad_size(null)$,
+  '22023', null,
+  'un quota non renseigné est refusé'
+);
+select throws_ok(
+  $select public.admin_set_club_usual_squad_size(0)$,
   '22023', null,
   'un quota inférieur à 1 est refusé'
 );
