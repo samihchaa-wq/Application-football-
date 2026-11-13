@@ -64,7 +64,8 @@ class _CheckerboardPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawRect(Offset.zero & size, Paint()..color = const Color(0xFF343B44));
+    canvas.drawRect(
+        Offset.zero & size, Paint()..color = const Color(0xFF343B44));
     final paint = Paint()..color = const Color(0xFF424A54);
     const cells = 16;
     final w = size.width / cells;
@@ -108,29 +109,22 @@ class _AlignmentPainter extends CustomPainter {
       dashed(Offset(0, size.height * level),
           Offset(size.width, size.height * level));
     }
-    dashed(Offset(size.width * .5, 0),
-        Offset(size.width * .5, size.height));
+    dashed(Offset(size.width * .5, 0), Offset(size.width * .5, size.height));
 
     final face = Path()
       ..moveTo(.31 * size.width, .34 * size.height)
-      ..cubicTo(.27 * size.width, .20 * size.height,
-          .36 * size.width, .12 * size.height,
-          .5 * size.width, .12 * size.height)
-      ..cubicTo(.64 * size.width, .12 * size.height,
-          .73 * size.width, .20 * size.height,
-          .69 * size.width, .34 * size.height)
-      ..cubicTo(.76 * size.width, .32 * size.height,
-          .75 * size.width, .43 * size.height,
-          .69 * size.width, .44 * size.height)
-      ..cubicTo(.67 * size.width, .51 * size.height,
-          .59 * size.width, .57 * size.height,
-          .5 * size.width, .57 * size.height)
-      ..cubicTo(.41 * size.width, .57 * size.height,
-          .33 * size.width, .51 * size.height,
-          .31 * size.width, .44 * size.height)
-      ..cubicTo(.25 * size.width, .43 * size.height,
-          .24 * size.width, .32 * size.height,
-          .31 * size.width, .34 * size.height)
+      ..cubicTo(.27 * size.width, .20 * size.height, .36 * size.width,
+          .12 * size.height, .5 * size.width, .12 * size.height)
+      ..cubicTo(.64 * size.width, .12 * size.height, .73 * size.width,
+          .20 * size.height, .69 * size.width, .34 * size.height)
+      ..cubicTo(.76 * size.width, .32 * size.height, .75 * size.width,
+          .43 * size.height, .69 * size.width, .44 * size.height)
+      ..cubicTo(.67 * size.width, .51 * size.height, .59 * size.width,
+          .57 * size.height, .5 * size.width, .57 * size.height)
+      ..cubicTo(.41 * size.width, .57 * size.height, .33 * size.width,
+          .51 * size.height, .31 * size.width, .44 * size.height)
+      ..cubicTo(.25 * size.width, .43 * size.height, .24 * size.width,
+          .32 * size.height, .31 * size.width, .34 * size.height)
       ..close();
     canvas.drawPath(face, white);
 
