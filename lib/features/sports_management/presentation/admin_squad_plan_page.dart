@@ -35,6 +35,7 @@ import 'package:as_grinta/features/sports_management/domain/player_position_prof
 import 'package:as_grinta/features/sports_management/domain/sport_match_finalization.dart';
 import 'package:as_grinta/features/sports_management/domain/sport_waitlist_models.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_presentation.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/effectif_avatar_grid.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/formation_pitch_editor.dart';
