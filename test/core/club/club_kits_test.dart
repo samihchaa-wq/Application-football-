@@ -93,6 +93,28 @@ void main() {
     expect(ClubKits.of(JerseyOption.france).label, 'Domicile');
   });
 
+  test('couleurs gardien distinctes, sérialisation et relecture', () {
+    final oldKit = ClubKits.parse(savedJson())!.first;
+    expect(oldKit.goalkeeperBody, const Color(0xFF168A52));
+    expect(oldKit.goalkeeperTrim, const Color(0xFFFFFFFF));
+
+    final configured = oldKit.copyWith(
+      goalkeeperBody: const Color(0xFF111111),
+      goalkeeperTrim: const Color(0xFFFFCC00),
+    );
+    expect(configured.body, oldKit.body);
+    final restored = ClubKits.parse([configured.toJson(),
+        ClubKits.parse(savedJson())![1].toJson(),
+        ClubKits.parse(savedJson())![2].toJson()])!;
+    expect(restored.first.goalkeeperBody, const Color(0xFF111111));
+    expect(restored.first.goalkeeperTrim, const Color(0xFFFFCC00));
+    expect(restored.first.body, const Color(0xFFAA0000));
+
+    final invalid = savedJson();
+    invalid[1]['goalkeeper_body'] = 'sans couleur';
+    expect(ClubKits.parse(invalid), isNull);
+  });
+
   test('toJson produit ce que le serveur attend', () {
     final kit = ClubKits.parse(savedJson())!.first;
     expect(kit.toJson(), {
@@ -100,6 +122,8 @@ void main() {
       'label': 'Rouge',
       'body': '#AA0000',
       'trim': '#FFFFFF',
+      'goalkeeper_body': '#168A52',
+      'goalkeeper_trim': '#FFFFFF',
       'enabled': true,
     });
   });
