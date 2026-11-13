@@ -240,6 +240,18 @@ void main() {
     expect(ClubRules.predictionCloseBeforeKickoff, const Duration(minutes: 16));
   });
 
+  testWidgets('la durée du vote se trouve avec les pronostics et votes',
+      (tester) async {
+    repository.ruleValues['motm_window_hours'] = 24;
+    await pumpPage(tester);
+    await openSection(tester, 'predictions');
+
+    expect(
+      find.byKey(const ValueKey('club-rule-motm_window_hours')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('le mode de liste d’attente se choisit parmi trois options',
       (tester) async {
     repository.ruleValues['waitlist_mode'] = 0;
