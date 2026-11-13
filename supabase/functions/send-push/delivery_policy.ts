@@ -112,3 +112,60 @@ export async function executePushDelivery<T>(
 
   throw new Error("push delivery retry loop ended unexpectedly");
 }
+
+
+/// Vérifie les clés que le navigateur remet pour le chiffrement Web Push.
+///
+/// p256dh est une clé publique P-256 non compressée (65 octets, préfixe 04).
+/// auth est un secret de 16 octets. Les valeurs invalides ne peuvent jamais
+/// être délivrées : supprimer cet abonnement évite des échecs répétés.
+/// Ne jamais journaliser les valeurs des clés ni les points d'accès complets.
+function pushKeyBytes(encoded: string): Uint8Array | null {
+  if (
+    typeof encoded !== "string" ||
+    !/^[A-Za-z0-9_-]+={0,2}$/.test(encoded)
+  ) return null;
+  const normal = encoded.replaceAll("-", "+").replaceAll("_", "/");
+  if (normal.length % 4 === 1) return null;
+  try {
+    const raw = atob(normal.padEnd(Math.ceil(normal.length / 4) * 4, "="));
+    return Uint8Array.from(raw, (char) => char.charCodeAt(0));
+  } catch {
+    return null;
+  }
+}
+
+export function invalidPushSubscriptionReason(
+  subscription: { p256dh: string; auth: string },
+): string | null {
+  const dh = pushKeyBytes(subscription.p256dh);
+  if (dh === null || dh.length !== 65 || dh[0] !== 4) {
+    return "Invalid Web Push p256dh key";
+  }
+  const auth = pushKeyBytes(subscription.auth);
+  if (auth === null || auth.length !== 16) {
+    return "Invalid Web Push auth secret";
+  }
+  return null;
+}
+
+/// Une subscription malformée est irrécupérable : retourner une erreur
+/// « expired » sans envoyer au service push ni effectuer de nouvelle tentative.
+/// L'appelant utilise déjà ce statut pour retirer les endpoints périmés.
+/// Les erreurs réseau temporaires, elles, continuent d'être réessayées.
+export async function executeValidatedPushDelivery<T>(
+  subscription: { p256dh: string; auth: string },
+  operation: () => Promise<T>,
+): Promise<PushDeliveryOutcome<T>> {
+  const reason = invalidPushSubscriptionReason(subscription);
+  if (reason !== null) {
+    return {
+      success: false,
+      error: new Error(reason),
+      attempts: 0,
+      statusCode: null,
+      failureClass: "expired",
+    };
+  }
+  return executePushDelivery(operation);
+}
