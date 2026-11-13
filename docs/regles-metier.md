@@ -67,6 +67,15 @@ Le module actuel comprend notamment :
 - statistiques ;
 - vote collectif et anonyme de l’Homme du match.
 
+**+1 en liste d’attente (décision Petit Filet du 13/11/2026) :**
+le compteur n’est modifié **que par un administrateur** avec les boutons
++ / − de la liste d’attente ; toute attribution ou révocation automatique au
+coup d’envoi, en lecture, lors d’une annulation ou d’un report est interdite.
+Les anciennes valeurs sont conservées et le classement se recalcule après
+une correction manuelle. Les modes de convocation restent indépendants.
+Voir issue #68 et PR #69 ; **sur la base en ligne, la modification ne prend
+effet qu’après application autorisée de la nouvelle migration**.
+
 ### Indisponibilité déclarée
 
 Depuis Paramètres, chaque joueur déclare lui-même les périodes où il ne sera pas
@@ -76,9 +85,9 @@ lues en Europe/Paris.
 - Un match dont le coup d’envoi tombe dans la période pose automatiquement le
   joueur **absent** : il sort de l’effectif convocable, et les notifications qui
   en découlent ne lui sont plus envoyées (`docs/NOTIFICATIONS_V2.md`).
-- S’il était déjà convoqué sur un match publié, il se retire exactement comme
-  une désistement ordinaire : le suivant de la liste d’attente monte, et son
-  tour n’est pas consommé avant l’heure limite.
+- S’il était déjà convoqué sur un match publié, il se retire comme lors
+  d’un désistement ordinaire : le suivant de la liste d’attente peut monter.
+  Aucun +1 n’est attribué ou retiré automatiquement.
 - Pendant la période, ni lui ni un administrateur ne peut répondre à la
   disponibilité des matchs concernés : la période est la seule source de vérité.
 - La période reste modifiable et annulable tant qu’elle n’est pas terminée.

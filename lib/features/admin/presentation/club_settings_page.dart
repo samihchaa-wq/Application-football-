@@ -416,6 +416,12 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     ];
     String? group;
     for (final rule in _rules) {
+      // Depuis le passage des +1 en attribution 100 % manuelle, ces deux
+      // limites temporelles n'ont plus d'effet et ne sont plus proposees.
+      if (rule.key == 'waitlist_cutoff_days' ||
+          rule.key == 'waitlist_cutoff_hour') {
+        continue;
+      }
       if (rule.group != group) {
         group = rule.group;
         widgets
@@ -502,6 +508,14 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
                   subtitle: Text(mode.description),
                 ),
             ],
+          ),
+        ),
+        const Padding(
+          padding: EdgeInsets.only(top: 8),
+          child: Text(
+            'Les +1 de la liste d’attente sont attribués ou retirés '
+            'uniquement par un administrateur, avec les boutons + et − '
+            'de la liste. Aucun +1 n’est automatique.',
           ),
         ),
       ],
