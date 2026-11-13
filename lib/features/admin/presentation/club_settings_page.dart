@@ -469,13 +469,20 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           ),
       ];
 
+  bool _isPredictionOrVoteRule(ClubRule rule) =>
+      rule.key.startsWith('prediction_') ||
+      rule.key.startsWith('motm_') ||
+      rule.key.startsWith('vote_');
+
   List<Widget> _ruleTiles(bool Function(ClubRule) include) {
     final widgets = <Widget>[];
     for (final rule in _rules) {
       // Ces horaires sont sans effet depuis le passage aux +1 manuels.
       if (!include(rule) ||
           rule.key == 'waitlist_cutoff_days' ||
-          rule.key == 'waitlist_cutoff_hour') continue;
+          rule.key == 'waitlist_cutoff_hour') {
+        continue;
+      }
       if (rule.key == ClubRules.waitlistModeKey) {
         widgets.add(_waitlistModeTile(rule));
         continue;
@@ -818,7 +825,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
             ),
             const Divider(height: 24),
             ..._moduleTiles(const [ClubModule.liveMode, ClubModule.weather]),
-            ..._ruleTiles((rule) => !rule.key.startsWith('prediction_')),
+            ..._ruleTiles((rule) => !_isPredictionOrVoteRule(rule)),
           ],
         ),
         _settingsSection(
@@ -829,7 +836,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
             ..._moduleTiles(
               const [ClubModule.predictions, ClubModule.manOfTheMatch],
             ),
-            ..._ruleTiles((rule) => rule.key.startsWith('prediction_')),
+            ..._ruleTiles(_isPredictionOrVoteRule),
           ],
         ),
         _settingsSection(
