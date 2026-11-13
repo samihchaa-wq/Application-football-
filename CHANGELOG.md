@@ -22,6 +22,9 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
   saisons ». Un match saisi par erreur se supprime depuis sa fiche. Seuls les
   matchs antérieurs à la première saison suivie dans l'application sont
   acceptés ;
+- historique : ajouter ou supprimer un match passé recalcule tout de suite
+  les cotes des matchs déjà au calendrier, et « Simuler composition » tient
+  compte des postes tenus dans les compositions de l'historique ;
 - historique : l'effectif d'un match archivé n'écarte plus les joueurs
   prénommés Philippe (filtre propre au club d'origine) ;
 - maillots : les trois maillots proposés pour un match (France, Orange,
