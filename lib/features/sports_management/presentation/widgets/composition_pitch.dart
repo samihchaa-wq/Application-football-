@@ -843,9 +843,9 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
               height: visualSize,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(visualSize * 0.28),
-                border: showPhoto && kit == null
-                    ? null
-                    : Border.all(color: border, width: 2),
+                // Une vraie photo reste sans cadre, même avec un maillot
+                // configuré. Le liseré sert uniquement aux initiales.
+                border: showPhoto ? null : Border.all(color: border, width: 2),
               ),
               clipBehavior: Clip.antiAlias,
               child: kit?.dressPlayers == true
