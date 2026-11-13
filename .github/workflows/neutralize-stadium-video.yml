@@ -1,0 +1,64 @@
+name: Neutral stadium media (branch only)
+
+on:
+  push:
+    branches:
+      - feature/stadium-video-neutral-20261113
+    paths:
+      - 'scripts/neutralize_stadium_video.py'
+      - '.github/workflows/neutralize-stadium-video.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  retouch:
+    if: github.repository == 'samihchaa-wq/Application-football-' && github.ref == 'refs/heads/feature/stadium-video-neutral-20261113'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout commercial feature branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: true
+          fetch-depth: 1
+
+      - name: Install offline media processing tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          python3 -m venv /tmp/stadium-venv
+          /tmp/stadium-venv/bin/pip install --disable-pip-version-check 'numpy==2.2.6' 'opencv-python-headless==4.11.0.86'
+
+      - name: Read only original media from commercial main
+        run: |
+          set -euo pipefail
+          git fetch origin main --depth=1
+          mkdir -p build/stadium-source
+          git show origin/main:assets/composition/stade.mp4 > build/stadium-source/stade.mp4
+          git show origin/main:assets/composition/stade-720.mp4 > build/stadium-source/stade-720.mp4
+
+      - name: Restore neutral spectators in both clips
+        run: |
+          set -euo pipefail
+          /tmp/stadium-venv/bin/python scripts/neutralize_stadium_video.py \
+            --source build/stadium-source --output build/neutral-stadium
+          for file in stade.mp4 stade-720.mp4; do
+            test -s "build/neutral-stadium/$file"
+            ffprobe -v error -show_entries format=duration -of csv=p=0 "build/neutral-stadium/$file"
+          done
+          test -s assets/composition/stade.jpg
+
+      - name: Commit the two corrected MP4s to this feature branch only
+        run: |
+          set -euo pipefail
+          cp build/neutral-stadium/stade.mp4 assets/composition/stade.mp4
+          cp build/neutral-stadium/stade-720.mp4 assets/composition/stade-720.mp4
+          git add assets/composition/stade.mp4 assets/composition/stade-720.mp4
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "feat(media): remove AS Grinta spectator lettering from both stadium videos"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
