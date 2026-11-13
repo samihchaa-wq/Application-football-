@@ -154,12 +154,12 @@ select is(
   'le quota est lu dans le réglage du club A'
 );
 select throws_ok(
-  $select public.admin_set_club_usual_squad_size(null)$,
+  $$select public.admin_set_club_usual_squad_size(null)$$,
   '22023', null,
   'un quota non renseigné est refusé'
 );
 select throws_ok(
-  $select public.admin_set_club_usual_squad_size(0)$,
+  $$select public.admin_set_club_usual_squad_size(0)$$,
   '22023', null,
   'un quota inférieur à 1 est refusé'
 );
