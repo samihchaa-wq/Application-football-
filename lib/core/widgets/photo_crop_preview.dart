@@ -32,11 +32,6 @@ Future<Uint8List?> cropProfilePhoto(
   ClubKit? kit,
   bool isGoalkeeper = false,
 }) {
-  final previewKits = [
-    for (final value in ClubKits.all)
-      if (value.dressPlayers && (value.enabled || value.slot == kit?.slot))
-        value,
-  ];
   return showDialog<Uint8List?>(
     context: context,
     barrierDismissible: false,
@@ -47,9 +42,6 @@ Future<Uint8List?> cropProfilePhoto(
       confirmLabel: confirmLabel,
       previewColor: previewColor,
       previewBorderColor: previewBorderColor,
-      kits: previewKits,
-      initialKit: kit,
-      isGoalkeeper: isGoalkeeper,
     ),
   );
 }
@@ -62,9 +54,6 @@ class _PhotoCropDialog extends StatefulWidget {
     required this.confirmLabel,
     required this.previewColor,
     required this.previewBorderColor,
-    required this.kits,
-    required this.initialKit,
-    required this.isGoalkeeper,
   });
 
   final Uint8List bytes;
@@ -73,9 +62,6 @@ class _PhotoCropDialog extends StatefulWidget {
   final String confirmLabel;
   final Color previewColor;
   final Color previewBorderColor;
-  final List<ClubKit> kits;
-  final ClubKit? initialKit;
-  final bool isGoalkeeper;
 
   @override
   State<_PhotoCropDialog> createState() => _PhotoCropDialogState();
