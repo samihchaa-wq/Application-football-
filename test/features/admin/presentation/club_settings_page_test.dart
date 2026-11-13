@@ -63,7 +63,11 @@ void main() {
     final tile = find
         .byKey(PageStorageKey<String>('club-settings-section-$section'))
         .first;
-    await tester.scrollUntilVisible(tile, 260);
+    await tester.scrollUntilVisible(
+      tile,
+      260,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(tile);
     await tester.pumpAndSettle();
   }
