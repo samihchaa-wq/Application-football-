@@ -88,16 +88,17 @@ class PortraitJerseyPainter extends CustomPainter {
     canvas.save();
     canvas.scale(size.width, size.height);
 
-    // Épaules en pente, emmanchures et manches courtes. Les anciennes courbes
-    // jusqu'aux bords formaient un demi-cercle, pas un haut de maillot.
+    // Portrait serré, comme une photo officielle de joueur : seules les
+    // épaules et le haut de poitrine sont visibles. Les manches, bras et
+    // poignets sont volontairement hors cadre, sur tous les formats.
     final shirt = Path()
       ..moveTo(.392, .635)
       ..cubicTo(.334, .641, .276, .659, .218, .686)
-      ..cubicTo(.113, .711, .03, .761, -.018, .82)
-      ..lineTo(-.045, 1.02)
-      ..lineTo(1.045, 1.02)
-      ..lineTo(1.018, .82)
-      ..cubicTo(.97, .761, .887, .711, .782, .686)
+      ..cubicTo(.115, .712, .025, .758, -.035, .795)
+      ..lineTo(-.035, 1.02)
+      ..lineTo(1.035, 1.02)
+      ..lineTo(1.035, .795)
+      ..cubicTo(.975, .758, .885, .712, .782, .686)
       ..cubicTo(.724, .659, .666, .641, .608, .635)
       ..lineTo(.608, .658)
       ..cubicTo(.588, .695, .553, .715, .5, .715)
@@ -114,36 +115,20 @@ class PortraitJerseyPainter extends CustomPainter {
       trim,
     );
 
-    // Les bandes de finition sont placées sur les manches, et non au milieu
-    // d'une forme ovale. Le haut des bras reste majoritairement couleur corps.
-    final leftCuff = Path()
-      ..moveTo(-.014, .852)
-      ..cubicTo(.045, .825, .11, .819, .173, .844)
-      ..lineTo(.161, .883)
-      ..cubicTo(.10, .859, .044, .865, -.019, .9)
-      ..close();
-    final cuffPaint = Paint()..color = trim;
-    canvas.drawPath(leftCuff, cuffPaint);
-    canvas.save();
-    canvas.translate(1, 0);
-    canvas.scale(-1, 1);
-    canvas.drawPath(leftCuff, cuffPaint);
-    canvas.restore();
-
-    // Une couture fine sépare chaque manche du corps, symétriquement.
-    final sleeveSeam = Path()
-      ..moveTo(.22, .686)
-      ..cubicTo(.245, .747, .258, .79, .253, .845);
-    final seamPaint = Paint()
-      ..color = const Color(0x50000000)
+    // Discrètes bandes de haut d'épaule, arrêtées au bord de l'avatar.
+    // Aucun ourlet de manche ni tracé de bras ne doit apparaître.
+    final shoulderTrim = Path()
+      ..moveTo(.216, .686)
+      ..cubicTo(.135, .707, .045, .752, -.025, .794);
+    final stripePaint = Paint()
+      ..color = trim
       ..style = PaintingStyle.stroke
-      ..strokeWidth = .009
-      ..strokeCap = StrokeCap.round;
-    canvas.drawPath(sleeveSeam, seamPaint);
+      ..strokeWidth = .012;
+    canvas.drawPath(shoulderTrim, stripePaint);
     canvas.save();
     canvas.translate(1, 0);
     canvas.scale(-1, 1);
-    canvas.drawPath(sleeveSeam, seamPaint);
+    canvas.drawPath(shoulderTrim, stripePaint);
     canvas.restore();
 
     canvas.drawRect(
