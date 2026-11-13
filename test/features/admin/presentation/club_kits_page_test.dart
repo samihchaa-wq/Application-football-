@@ -55,6 +55,9 @@ void main() {
     await tester.tap(
       find.byKey(const ValueKey('kit-goalkeeper-body-france-#000000')),
     );
+    // Une action d'utilisateur par frame : reconstruire les callbacks
+    // de la deuxième couleur sur le maillot déjà modifié.
+    await tester.pump();
     await tester.tap(
       find.byKey(const ValueKey('kit-goalkeeper-trim-france-#FBE80C')),
     );
