@@ -204,6 +204,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 ),
               ),
               GoRoute(
+                path: '/admin/season',
+                builder: (_, __) => DeferredRoutePage(
+                  load: admin_administration.loadLibrary,
+                  builder: (_) => admin_administration.AdminSeasonPage(),
+                ),
+              ),
+              GoRoute(
                 path: '/admin/matches',
                 builder: (_, __) => const MatchesPage(),
               ),

@@ -667,3 +667,165 @@ Future<void> _showPlayerDialog(
 
   firstName.dispose();
 }
+
+/// Actions d'administration d'une fiche de l'effectif. Réutilisé par l'onglet
+/// Membres de l'administration.
+class RosterPlayerMenu extends ConsumerWidget {
+  const RosterPlayerMenu({
+    super.key,
+    required this.seasonId,
+    required this.player,
+    required this.roster,
+    this.showTextLabel = false,
+  });
+
+  final String seasonId;
+  final RosterPlayer player;
+  final List<RosterPlayer> roster;
+  final bool showTextLabel;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final players = roster;
+    return PopupMenuButton<String>(
+      tooltip: 'Modifier le joueur',
+      child: showTextLabel
+          ? const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+              child: Text('Modifier'),
+            )
+          : null,
+      onSelected: (action) async {
+        final repo = ref.read(rosterRepositoryProvider);
+        try {
+          if (action == 'edit') {
+            await showRosterPlayerDialog(
+              context,
+              ref,
+              seasonId: seasonId,
+              existing: player,
+            );
+            return;
+          }
+          if (action == 'photo') {
+            await chooseRosterPhoto(
+              context,
+              ref,
+              seasonId: seasonId,
+              player: player,
+            );
+            return;
+          }
+          if (action == 'link') {
+            await _showProfileLinkDialog(
+              context,
+              ref,
+              seasonId: seasonId,
+              player: player,
+              roster: players,
+            );
+            return;
+          }
+          if (action == 'unlink') {
+            final confirmed = await _confirmUnlink(
+              context,
+              player,
+            );
+            if (!confirmed) return;
+            await repo.setProfileLink(
+              seasonPlayerId: player.id,
+            );
+            ref.invalidate(rosterProvider(seasonId));
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Liaison supprimée.'),
+                ),
+              );
+            }
+            return;
+          }
+          if (action == 'delete') {
+            final confirmed = await _confirmDelete(context, player);
+            if (!confirmed) return;
+            await repo.deletePlayer(player.id);
+          } else if (action == 'archive') {
+            await repo.setActive(id: player.id, active: false);
+          } else if (action == 'restore') {
+            await repo.setActive(id: player.id, active: true);
+          }
+          ref.invalidate(rosterProvider(seasonId));
+        } catch (error) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(humanizeError(error))),
+            );
+          }
+        }
+      },
+      itemBuilder: (_) => [
+        const PopupMenuItem(
+          value: 'edit',
+          child: Text('Modifier le joueur'),
+        ),
+        const PopupMenuItem(
+          value: 'photo',
+          child: Text('Changer photos'),
+        ),
+        PopupMenuItem(
+          value: 'link',
+          child: Text(
+            player.linkedProfileId == null
+                ? 'Relier à un compte'
+                : 'Modifier la liaison',
+          ),
+        ),
+        if (player.linkedProfileId != null)
+          const PopupMenuItem(
+            value: 'unlink',
+            child: Text('Supprimer la liaison'),
+          ),
+        PopupMenuItem(
+          value: player.isActive ? 'archive' : 'restore',
+          child: Text(
+            player.isActive
+                ? 'Retirer de l’effectif'
+                : 'Remettre dans l’effectif',
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'delete',
+          child: Text('Supprimer'),
+        ),
+      ],
+    );
+  }
+}
+
+/// Expose les actions d'origine depuis l'Administration reprise d'AS Grinta.
+/// Elles réutilisent les mêmes dialogues et contrôles du dépôt commercial.
+Future<void> showRosterPlayerDialog(
+  BuildContext context,
+  WidgetRef ref, {
+  required String seasonId,
+  RosterPlayer? existing,
+}) =>
+    _showPlayerDialog(
+      context,
+      ref,
+      seasonId: seasonId,
+      existing: existing,
+    );
+
+Future<void> chooseRosterPhoto(
+  BuildContext context,
+  WidgetRef ref, {
+  required String seasonId,
+  required RosterPlayer player,
+}) =>
+    _chooseRosterPhoto(
+      context,
+      ref,
+      seasonId: seasonId,
+      player: player,
+    );
