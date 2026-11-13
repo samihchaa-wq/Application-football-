@@ -6,8 +6,8 @@ import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Réutilise la garde d'identité et de réponses tardives d'AS Grinta, avec le
-/// provider du club : les changements distants peuvent désormais la relancer.
+/// Étend la garde d'identité multiclub déjà présente dans Petit Filet, avec
+/// le provider du club : les changements distants peuvent aussi la relancer.
 final clubIdentitySyncProvider = Provider<void>((ref) {
   ref.watch(clubSessionIdentityProvider);
   var disposed = false;

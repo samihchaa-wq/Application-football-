@@ -220,6 +220,22 @@ void main() {
     expectNeutral();
   });
 
+  test('une panne des règles ne réactive pas le mode live coupé par le club',
+      () async {
+    final live = container.listen(clubLiveModeSyncProvider, (_, __) {});
+    addTearDown(live.close);
+    await settle();
+    clubs.complete('a', clubA, liveEnabled: false);
+    await settle();
+    expect(ClubRules.liveEnabled, isFalse);
+
+    container.invalidate(clubRulesProvider);
+    await settle();
+    clubs.fail('a');
+    await settle();
+    expect(ClubRules.liveEnabled, isFalse);
+  });
+
   test('la déconnexion remet l’affichage neutre', () async {
     await settle();
     clubs.complete('a', clubA);
@@ -263,9 +279,10 @@ class _ControlledClubRepository implements ClubRepository {
   }
 
   void complete(String profileId, Club club,
-      {bool predictions = true, int openDays = 6}) {
+      {bool predictions = true, bool liveEnabled = true, int openDays = 6}) {
     for (final completer in _pendingModules.remove(profileId) ?? const []) {
-      completer.complete(ClubModules({'predictions': predictions}));
+      completer.complete(
+          ClubModules({'predictions': predictions, 'live_mode': liveEnabled}));
     }
     for (final completer in _pendingRules.remove(profileId) ?? const []) {
       completer.complete([

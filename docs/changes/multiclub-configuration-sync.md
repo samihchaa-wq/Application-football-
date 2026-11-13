@@ -52,6 +52,7 @@ Les réglages ne réécrivent pas les résultats et compositions historiques.
   regroupement des changements et rattrapage du premier signal.
 - Bandeau de chargement, erreur, nouvelle tentative et absence de requête hors
   connexion ; rejet des réponses de modules incomplètes ou mal typées.
+- Une erreur de lecture des règles ne réactive pas le mode live désactivé.
 - Nouvelle suite SQL : mutations des modules, règles, identité, couleurs, logo,
   maillots, code d'invitation, terrain et quota ; absence de signal sur erreur
   ou écriture identique ; isolement A/B, rôles, suspension, éditeur et cascades.

@@ -14,7 +14,9 @@ final clubRulesSyncProvider = Provider<void>((ref) {
   ref.onDispose(() => disposed = true);
   unawaited(
     Future<void>.microtask(() {
-      if (!disposed) ClubRules.reset();
+      // Le mode live appartient à clubLiveModeSyncProvider : une panne de
+      // lecture des règles ne doit jamais le réactiver par défaut.
+      if (!disposed) ClubRules.set(const {});
     }),
   );
   ref.listen<AsyncValue<List<ClubRule>>>(clubRulesProvider, (_, next) {
@@ -24,7 +26,7 @@ final clubRulesSyncProvider = Provider<void>((ref) {
       Future<void>.microtask(() {
         if (disposed || currentGeneration != generation) return;
         if (next.hasError) {
-          ClubRules.reset();
+          ClubRules.set(const {});
         } else {
           applyClubRules(next.valueOrNull ?? const []);
         }
