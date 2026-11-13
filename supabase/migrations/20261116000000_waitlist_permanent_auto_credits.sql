@@ -21,6 +21,9 @@ create table private.waitlist_auto_processed_matches (
   processed_at timestamptz not null default now(),
   credited_count integer not null default 0 check (credited_count >= 0)
 );
+-- Index de couverture de la clé étrangère saison (contrat CI/RLS).
+create index waitlist_auto_processed_matches_season_idx
+  on private.waitlist_auto_processed_matches(season_id);
 -- Les fonctions existantes sont SECURITY DEFINER sous le role club_scope :
 -- ce role doit posseder les tables privees pour que RLS n'ecarte pas
 -- silencieusement ses lignes, sans rien ouvrir aux utilisateurs.
