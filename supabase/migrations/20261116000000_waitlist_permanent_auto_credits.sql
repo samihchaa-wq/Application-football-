@@ -520,6 +520,10 @@ revoke all on function private.finalize_match_waitlist_turns_internal(uuid,boole
   from public, anon, authenticated;
 revoke all on function private.process_due_waitlist_credits()
   from public, anon, authenticated;
+-- La tache pg_cron est executee comme postgres, jamais comme un client.
+grant execute on function private.process_due_waitlist_credits() to postgres;
+grant execute on function private.finalize_match_waitlist_turns_internal(uuid,boolean)
+  to postgres;
 
 -- Reprendre une execution a la minute ; aucune fonction client n'est exposee.
 select cron.schedule(
