@@ -49,7 +49,7 @@ List<Widget> buildWrappedSlides({
     ),
     _FigureSlide(
       skin: skins[5],
-      label: 'Homme du match',
+      label: 'Étoile du match',
       value: wrapped.motm,
       rank: wrapped.motmRank,
       caption: wrapped.motm == 0

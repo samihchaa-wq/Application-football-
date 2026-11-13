@@ -4,6 +4,7 @@ import 'package:as_grinta/app/shell/module_navigation.dart';
 import 'package:as_grinta/features/auth/data/auth_repository.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
 import 'package:as_grinta/features/badges/data/statistics_badge_emblems_provider.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/predictions/data/leaderboard_repository.dart';
 import 'package:as_grinta/features/statistics/data/statistics_repository.dart';
 import 'package:as_grinta/features/statistics/presentation/stats_hub_page.dart';
@@ -26,6 +27,7 @@ void main() {
     WidgetTester tester, {
     String? section,
     Size size = const Size(900, 1200),
+    ClubModules modules = const ClubModules.allEnabled(),
   }) async {
     await tester.binding.setSurfaceSize(size);
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -40,6 +42,7 @@ void main() {
             (ref) async => const <String, List<StatisticsBadgeEmblemData>>{},
           ),
           leaderboardProvider.overrideWith((ref) async => leaderboard),
+          clubModulesProvider.overrideWith((ref) async => modules),
         ],
         child: MaterialApp(home: StatsHubPage(initialSection: section)),
       ),
@@ -333,6 +336,20 @@ void main() {
     );
     expect(find.text('14'), findsOneWidget);
     expect(find.text('11'), findsOneWidget);
+  });
+
+  testWidgets('pronostics coupés par le club : plus d’onglet Prono',
+      (tester) async {
+    await pumpStats(
+      tester,
+      section: 'rankings',
+      modules: const ClubModules({'predictions': false}),
+    );
+
+    expect(find.text('Prono'), findsNothing);
+    expect(find.text('Joueurs'), findsOneWidget);
+    // Un ancien lien vers le classement ouvre les joueurs, pas un écran vide.
+    expect(find.text('Actuelle'), findsOneWidget);
   });
 
   testWidgets('la colonne Prono tient sur un écran de téléphone',

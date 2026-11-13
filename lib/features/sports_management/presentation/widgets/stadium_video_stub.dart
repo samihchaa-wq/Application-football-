@@ -1,3 +1,4 @@
+import 'package:as_grinta/features/sports_management/presentation/widgets/stadium_poster.dart';
 import 'package:flutter/widgets.dart';
 
 /// Hors navigateur, rien à débloquer.
@@ -41,6 +42,6 @@ class _StadiumVideoState extends State<StadiumVideo> {
 
   @override
   Widget build(BuildContext context) {
-    return Image.asset(widget.poster, fit: BoxFit.cover, gaplessPlayback: true);
+    return NeutralStadiumPoster(asset: widget.poster);
   }
 }

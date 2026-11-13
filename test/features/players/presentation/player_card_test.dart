@@ -242,7 +242,7 @@ void main() {
         'VICTOIRES',
         'BUTS',
         'PASSES D.',
-        'HOMME DU MATCH',
+        'ÉTOILE DU MATCH',
         'BUTS / MATCH',
       ];
       final positions = [
@@ -355,7 +355,7 @@ void main() {
 
       // Personne n'a de passe ni de HDM : aucun « 1er du club » à la clé.
       final hdmTile = find.ancestor(
-        of: find.text('HOMME DU MATCH'),
+        of: find.text('ÉTOILE DU MATCH'),
         matching: find.byType(Column),
       );
       expect(
@@ -594,7 +594,7 @@ void main() {
         expect(find.text('7'), findsOneWidget);
         expect(find.text('Saison 2026-2027 en cours.'), findsOneWidget);
 
-        await tester.tap(find.text('HDM'));
+        await tester.tap(find.text('ÉTM'));
         await tester.pumpAndSettle();
         expect(colorOf(tester, '12'), const Color(0xFFFFD84A));
         expect(find.text('53'), findsNothing);
@@ -755,7 +755,7 @@ void main() {
         );
         await tester.tap(find.text('Carrière'));
         await tester.pumpAndSettle();
-        await tester.tap(find.text('HDM'));
+        await tester.tap(find.text('ÉTM'));
         await tester.pumpAndSettle();
         expect(find.text('12'), findsOneWidget);
 

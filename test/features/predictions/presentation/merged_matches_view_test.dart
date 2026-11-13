@@ -98,7 +98,7 @@ void main() {
     await disposeCalendar(tester);
   });
 
-  // Le vote Homme du match se ferme 24 h après le coup d'envoi ; le résultat
+  // Le vote de l’Étoile du match se ferme 24 h après le coup d'envoi ; le résultat
   // reste ensuite en vue 24 h. Au-delà de 48 h, le prochain match passe en
   // haut.
   testWidgets(

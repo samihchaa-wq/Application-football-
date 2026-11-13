@@ -13,6 +13,7 @@ import 'package:as_grinta/features/badges/data/statistics_badge_emblems_provider
 import 'package:as_grinta/features/badges/presentation/badge_detail_sheet.dart';
 import 'package:as_grinta/features/badges/presentation/badge_emblem.dart';
 import 'package:as_grinta/features/badges/presentation/badge_emblem_body.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/players/data/player_card_repository.dart';
 import 'package:as_grinta/features/players/data/player_stat_ranking.dart';
 import 'package:as_grinta/features/players/presentation/hero_photo_margin.dart';
@@ -211,8 +212,10 @@ class _PlayerCardPageState extends ConsumerState<PlayerCardPage> {
             )
           else
             _MatchList(matches: info.recentMatches),
-          // Un joueur d'effectif sans compte ne peut pas gagner de badge.
-          if (info.profileId != null) ...[
+          // Un joueur d'effectif sans compte ne peut pas gagner de badge, et
+          // un club qui a coupé les badges n'en montre aucun.
+          if (info.profileId != null &&
+              ref.watch(clubModuleEnabledProvider(ClubModule.badges))) ...[
             const SizedBox(height: 20),
             const _SectionTitle('Badges'),
             const SizedBox(height: 10),

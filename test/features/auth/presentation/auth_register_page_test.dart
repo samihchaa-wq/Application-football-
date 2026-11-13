@@ -31,6 +31,11 @@ void main() {
     final terms = find.byKey(const Key('register-accept-terms'));
     await tester.ensureVisible(terms);
     await tester.tap(terms);
+    final contract = find.byKey(const Key('register-accept-club-contract'));
+    if (contract.evaluate().isNotEmpty) {
+      await tester.ensureVisible(contract);
+      await tester.tap(contract);
+    }
     await tester.pump();
   }
 
@@ -94,7 +99,7 @@ void main() {
 
     await tester.tap(find.widgetWithText(FilledButton, 'Créer mon club'));
     await tester.pump();
-    expect(find.textContaining('nom du club'), findsOneWidget);
+    expect(find.textContaining('Le nom du club'), findsOneWidget);
     expect(repository.created, isNull);
     ScaffoldMessenger.of(tester.element(find.byType(AuthRegisterPage)))
         .clearSnackBars();
@@ -108,6 +113,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repository.created, 'FC Villeneuve');
+    expect(repository.createdContract, clubContractVersion);
     expect(find.text('Club créé : FC Villeneuve'), findsOneWidget);
     expect(find.textContaining('Connecte-toi, puis'), findsOneWidget);
   });
@@ -179,6 +185,7 @@ class _FakeClubRepository implements ClubRepository {
   String? created;
   String? lastEmail;
   (String, AgeConfirmation)? lastConsent;
+  String? createdContract;
   StateError? failure;
 
   @override
@@ -210,11 +217,13 @@ class _FakeClubRepository implements ClubRepository {
     required String lastName,
     required String password,
     required String acceptedTermsVersion,
+    required String acceptedClubContractVersion,
     required AgeConfirmation ageConfirmation,
     String? email,
   }) async {
     if (failure != null) throw failure!;
     created = clubName;
+    createdContract = acceptedClubContractVersion;
     return ClubRegistration(
       username: 'karimb',
       clubName: clubName,

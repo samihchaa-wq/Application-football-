@@ -15,7 +15,7 @@ PlayerPositionProfile profile(String displayName, {int appearances = 10}) {
 void main() {
   group('normalizePlayerName', () {
     test('met en minuscules et resserre les espaces', () {
-      expect(normalizePlayerName('  Romain   SPIGOLON '), 'romain spigolon');
+      expect(normalizePlayerName('  Romain   SERRANO '), 'romain serrano');
     });
 
     test('conserve les accents, comme la base', () {
@@ -25,28 +25,28 @@ void main() {
 
   group('realignPlayerPositionProfiles', () {
     final archive = <String, PlayerPositionProfile>{
-      'ancien-romain': profile('Romain Spigolon'),
-      'stable-flo': profile('Flo Arnauduc'),
+      'ancien-romain': profile('Romain Serrano'),
+      'stable-flo': profile('Flo Aubertin'),
     };
 
     test('déplace un profil sur l’identité qui porte désormais son histoire',
         () {
       final realigned = realignPlayerPositionProfiles(
-        identitiesByName: const {'romain spigolon': 'nouveau-romain'},
+        identitiesByName: const {'romain serrano': 'nouveau-romain'},
         archive: archive,
       );
 
-      expect(realigned['nouveau-romain']?.displayName, 'Romain Spigolon');
+      expect(realigned['nouveau-romain']?.displayName, 'Romain Serrano');
       expect(realigned.containsKey('ancien-romain'), isFalse);
     });
 
     test('laisse intacts les profils dont l’identité n’a pas bougé', () {
       final realigned = realignPlayerPositionProfiles(
-        identitiesByName: const {'romain spigolon': 'nouveau-romain'},
+        identitiesByName: const {'romain serrano': 'nouveau-romain'},
         archive: archive,
       );
 
-      expect(realigned['stable-flo']?.displayName, 'Flo Arnauduc');
+      expect(realigned['stable-flo']?.displayName, 'Flo Aubertin');
       expect(realigned.length, archive.length);
     });
 
@@ -71,9 +71,9 @@ void main() {
 
     test('retrouve le nom quelle que soit la casse ou les espaces', () {
       final realigned = realignPlayerPositionProfiles(
-        identitiesByName: const {'flo arnauduc': 'nouveau-flo'},
+        identitiesByName: const {'flo aubertin': 'nouveau-flo'},
         archive: <String, PlayerPositionProfile>{
-          'ancien-flo': profile('  FLO   Arnauduc  '),
+          'ancien-flo': profile('  FLO   Aubertin  '),
         },
       );
 
@@ -110,8 +110,8 @@ void main() {
     test('raccorde un surnom visible au profil de la même identité', () {
       final relabelled = relabelPlayerPositionProfilesForDisplay(
         profiles: <String, PlayerPositionProfile>{
-          'luka-id': profile('Luka Brunel'),
-          'milan-id': profile('Milan Couzin'),
+          'luka-id': profile('Luka Barral'),
+          'milan-id': profile('Milan Collet'),
         },
         displayNamesByPlayerId: const {
           'luka-id': 'Lulu',

@@ -76,7 +76,7 @@ class MatchesRepository {
         .toList();
   }
 
-  /// Adresse du terrain d'AS Grinta (mémorisée pour les matchs à domicile).
+  /// Adresse par défaut du terrain du club courant (matchs à domicile).
   Future<String?> fetchClubHomeAddress() async {
     final row = await _client
         .from('club_settings')

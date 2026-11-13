@@ -41,7 +41,7 @@ class LegalDocumentPage extends StatelessWidget {
                   const SizedBox(height: 12),
                 ],
                 Text(
-                  'Version du $legalVersion',
+                  'Version du ${legalVersionOf(document)}',
                   style: theme.textTheme.bodySmall,
                 ),
                 const SizedBox(height: 16),

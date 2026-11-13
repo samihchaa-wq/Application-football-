@@ -1,4 +1,5 @@
 import 'package:as_grinta/core/utils/app_errors.dart';
+import 'package:as_grinta/features/matches/domain/jersey_option.dart';
 import 'package:as_grinta/features/players/data/roster_repository.dart';
 import 'package:as_grinta/features/sports_management/data/match_kit_photo_overrides.dart';
 import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
@@ -239,9 +240,21 @@ Future<void> _chooseRosterPhoto(
       title: Text('Changer photos — ${player.displayName}'),
       children: [
         for (final option in [
-          ('france', 'Photo France (par défaut)', player.photoUrl),
-          ('brazil', 'Photo Brésil', player.brazilPhotoUrl),
-          ('netherlands', 'Photo Pays-Bas', player.netherlandsPhotoUrl),
+          (
+            'france',
+            'Photo maillot ${JerseyOption.france.label} (par défaut)',
+            player.photoUrl,
+          ),
+          (
+            'netherlands',
+            'Photo maillot ${JerseyOption.orange.label}',
+            player.netherlandsPhotoUrl,
+          ),
+          (
+            'brazil',
+            'Photo maillot ${JerseyOption.blue.label}',
+            player.brazilPhotoUrl,
+          ),
         ])
           SimpleDialogOption(
             onPressed: () => Navigator.of(dialogContext).pop(option.$1),

@@ -7,7 +7,9 @@ name: Production backup
 #
 # Le dépôt étant public, la copie est chiffrée avec BACKUP_PASSPHRASE avant
 # d'être déposée : sans cette phrase secrète, le fichier est illisible.
-# Inactif tant que PRODUCTION_DB_URL et BACKUP_PASSPHRASE n'existent pas.
+# Sans PRODUCTION_DB_URL ou BACKUP_PASSPHRASE, le workflow échoue :
+# une sauvegarde non effectuée ne doit jamais apparaître comme un succès.
+# Cette archive SQL n'inclut pas les objets Storage ; voir docs/exploitation.md.
 on:
   schedule:
     - cron: '23 2 * * 1'
@@ -24,10 +26,27 @@ jobs:
       DB_URL: ${{ secrets.PRODUCTION_DB_URL }}
       BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
     steps:
-      - name: Skip when no production database is configured
+      - name: Require configured database and backup passphrase
         if: env.DB_URL == '' || env.BACKUP_PASSPHRASE == ''
-        run: >-
-          echo "::notice::Pas encore de base en ligne ou de phrase secrète : sauvegarde inactive."
+        shell: bash
+        run: |
+          echo "::error::PRODUCTION_DB_URL ou BACKUP_PASSPHRASE manquant : sauvegarde non effectuée."
+          exit 1
+
+      # Les artefacts d'un dépôt public sont téléchargeables par tout compte
+      # GitHub : seule la phrase secrète protège la copie. Une phrase courte
+      # se casse par essais successifs, donc on refuse de sauvegarder avec.
+      - name: Refuse a short passphrase
+        if: env.DB_URL != '' && env.BACKUP_PASSPHRASE != ''
+        shell: bash
+        run: |
+          # Même règle que l'étape de chiffrement : blancs de début et de fin
+          # retirés (retour à la ligne collé depuis un téléphone).
+          BACKUP_PASSPHRASE="$(printf '%s' "$BACKUP_PASSPHRASE" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | tr -d '\r\n')"
+          if [ "${#BACKUP_PASSPHRASE}" -lt 32 ]; then
+            echo "::error::BACKUP_PASSPHRASE doit faire au moins 32 caractères."
+            exit 1
+          fi
 
       - name: Setup Supabase CLI
         if: env.DB_URL != '' && env.BACKUP_PASSPHRASE != ''
@@ -40,6 +59,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Retire un éventuel retour à la ligne invisible collé avec le secret.
+          DB_URL="$(printf '%s' "$DB_URL" | tr -d '[:space:]')"
+          # Blancs de début et de fin retirés de la phrase secrète : pour
+          # déchiffrer, taper la phrase telle qu'écrite, sans retour à la ligne.
+          BACKUP_PASSPHRASE="$(printf '%s' "$BACKUP_PASSPHRASE" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | tr -d '\r\n')"
           stamp=$(date -u +%Y-%m-%d)
           supabase db dump --db-url "$DB_URL" -f "roles.sql" --role-only
           supabase db dump --db-url "$DB_URL" -f "schema.sql"

@@ -25,34 +25,55 @@ mettre à jour à chaque étape importante.
   Coût : inclus dans l'abonnement Pro (~25 $/mois), aucun supplément tant que
   c'est le seul projet de l'organisation.
   - Migrations appliquées jusqu'à `20261112050000_blocage_serveur_mode_live`
-    (enregistrées dans `supabase_migrations.schema_migrations`). Base vide :
-    aucun club, aucun utilisateur.
+    (19 migrations, vérifié dans Supabase le 12/11 à 10 h 35 UTC). Base vide
+    à la lecture du 12/11 : aucun club, aucun utilisateur.
   - Schéma `install_tmp` restant (inaccessible à l'appli) : à supprimer depuis
     l'éditeur SQL Supabase, `drop schema install_tmp cascade;`.
-  - État relevé par le fil 9 le 12/11 : 8 Edge Functions actives (déploiement constaté),
-    4 entrées Vault comptées sans lire leurs valeurs, 12 tâches cron actives.
-    Le fonctionnement des notifications, de l'Auth, du compte éditeur et des
-    secrets n'est pas encore validé de bout en bout.
-- **PR fusionnées** : #1 à #23 au dernier relevé du fil 9.
-- **PR #24** : proposition de réactivation Pages (ouverte au relevé).
-- **PR #25** : audit fonctionnel (ouverte au relevé).
-- **Pilotage fil 00** : `docs/CHANTIER.md` proposé par la PR #29 (brouillon,
-  pas encore sur `main` au relevé du fil 9).
-- **Mission 09** : diagnostic et procédures dans
-  `docs/MAINTENANCE_SUPPORT_MISSION09.md` (PR #31 en brouillon) ; correctif
-  fail-closed des alertes/sauvegardes et tests associés dans la PR #32
-  (en brouillon, non activé).
-- Déploiement GitHub Pages **désactivé** (`.github/workflows-disabled/`).
+  - Faits le 12/11 via le workflow « Supabase commercial : mise en route » :
+    migrations jusqu'à `20261112050000`, coffre (project_url,
+    push_internal_token, clés VAPID), 8 Edge Functions et leurs secrets.
+  - Pas encore faits : réglages d'authentification (URL du site, e-mails),
+    compte éditeur (`private.platform_operators`).
+- **PR fusionnées** : #1 à #22 (socle multiclub, réglages, sécurité de
+  publication).
+- **PR #23** : nom du club dans les notifications au lieu de « AS Grinta »,
+  lien d'agenda, nom du fichier du bilan.
+- **PR #24** fusionnée : blocage serveur du mode live, `config/production.json`
+  relié à la base commerciale, workflow Pages en publication manuelle.
+- **PR #48** fusionnée : liste d'attente en trois modes et saisie de
+  l'historique par l'admin.
+- **PR #25** (audit fonctionnel, documents seulement) : voir section suivante.
+- Déploiement GitHub Pages : workflow réactivé en **publication manuelle uniquement** (PR #24), pour un test à clubs fictifs. Site cible : https://samihchaa-wq.github.io/Application-football-/ — publié seulement après lancement manuel et vérification. GitHub Pages **n'autorise pas** l'hébergement d'un SaaS commercial : un autre hébergeur sera nécessaire avant toute vente.
+- Hébergement définitif : Cloudflare Pages, workflow manuel `deploy_cloudflare.yml` (secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, variables `COMMERCIAL_APP_URL`, `CLOUDFLARE_PAGES_PROJECT`). Notice pour Samih : `docs/MISE_EN_LIGNE.md` (domaine, Cloudflare, Auth Supabase, e-mails Brevo). Jamais lancé tant que le compte Cloudflare n'existe pas. Plan de sortie commerciale : https://claude.ai/artifact/Akdg7d8RWKrKTjYh4euAaZ
+
+## Audit fonctionnel (fil 1, PR #25) — 12/11/2026
+
+- Index lisible : `docs/AUDIT_FONCTIONNALITES.md`. Référentiel unique :
+  `docs/AUDIT_FONCTIONNALITES_DETAILLE.md` (164 fonctions classées).
+  Pages et réglages : `docs/AUDIT_ROUTES_ET_PARAMETRES.md`. Tâches du fil 2 :
+  `docs/CAHIER_DES_CHARGES_FIL_02.md` (F2-00 à F2-29). Ne pas créer de
+  tableau concurrent.
+- Audit fait par **lecture du code** et requêtes Supabase en lecture seule.
+  Aucun parcours testé dans l'appli, aucune notification réelle, aucun test
+  de cloisonnement entre deux clubs : c'est le rôle des fils 3 et 4.
+- Décisions réservées à Samih (DEC-01 à DEC-08) : une équipe ou plusieurs
+  par espace ; foot à 11 seul ou aussi 8/7/5 ; identifiants de connexion
+  (aujourd'hui uniques sur toute la plateforme, 20 homonymes maximum) ;
+  maillots personnalisables ; nom neutre pour « Homme du match » et les
+  badges genrés ; clips joueurs ; prix et paiement ; nom et droits des médias.
+- Alertes Supabase : 157 fonctions serveur accessibles aux comptes connectés
+  (nombre de fonctions, pas des failles prouvées) ; à instruire par le fil 4.
 
 ## Reste à faire, par priorité
 
 ### Bloquant pour un club test
-1-2. Mise en route technique **exécutée avec succès** le 12/11 via workflow
-   **« Supabase commercial : mise en route »** (run 43134233822) : migrations,
-   Vault et déploiement des Edge Functions. Reste à tester leurs comportements
-   réels avec deux clubs de démonstration, et à vérifier les paramètres Auth.
-   Le workflow reste réservé à la seule base commerciale et ne doit pas être
-   relancé avec des opérations d'écriture sans accord explicite.
+1-2. Fonctions serveur, secrets du coffre (`project_url`,
+   `push_internal_token`, clés VAPID générées automatiquement) et migrations
+   en attente : workflow GitHub **« Supabase commercial : mise en route »**
+   (`.github/workflows/commercial_supabase_setup.yml`, lancement manuel).
+   Prérequis côté Samih : secret GitHub `SUPABASE_ACCESS_TOKEN` (Supabase >
+   Account > Access Tokens). Les assistants ne peuvent pas écrire de secret
+   eux-mêmes. Le workflow refuse tout autre projet que la base commerciale.
 3. Réglages Auth dans Supabase (action de Samih dans le tableau de bord) :
    URL du site `https://samihchaa-wq.github.io/Application-football-/`, URLs
    de redirection, service d'envoi d'e-mails.
@@ -66,21 +87,19 @@ mettre à jour à chaque étape importante.
    SQL, 3 fichiers Dart/fonctions). Sans effet pour la France métropolitaine,
    Belgique, Suisse, Luxembourg. À faire seulement pour un club hors de ce
    fuseau (DOM-TOM, étranger).
-7. Nom définitif du produit (provisoire : « Club », `ClubIdentity.appName`).
+7. Nom du produit : « Petit Filet » (choisi par Samih le 12/11/2026, remplace « Lucarne » écarté après recherche INPI : marque « La Lucarne » n°5276552 en classes 35/42). Stade de la présentation des compositions repeint aux couleurs du club (WebGL, repli : vidéo atténuée).
 
 ### Bloquant pour faire payer (décisions de Samih)
 8. Paiement : Stripe non intégré.
 9. Prix : 10 €/joueur/an dans le code, non validé.
-10. Textes légaux : SIRET et coordonnées à compléter
-    (`lib/features/legal/domain/legal_documents.dart`).
+10. Textes légaux : les 5 textes sont rédigés (fil « Blinder l'appli
+    juridiquement », `docs/legal/README.md`). Reste : SIRET et coordonnées,
+    relecture par un juriste, licence de la vidéo du stade, écran de
+    nouvelle acceptation après changement de version.
 11. Passer le dépôt en privé (l'historique contient d'anciennes données
     AS Grinta).
-12. **Protection d'exploitation à activer et vérifier** : le run de
-    `Production watch` du 12/11 (43133882260) est vert mais son contrôle SQL
-    a été **ignoré** car `PRODUCTION_DB_URL` n'était pas disponible.
-    Sauvegarde hebdomadaire SQL non validée (`BACKUP_PASSPHRASE` à vérifier),
-    aucun test de restauration réalisé. Les fichiers des trois buckets
-    Storage ne sont pas inclus dans ce workflow. Voir la Mission 09.
+12. Secrets GitHub `PRODUCTION_DB_URL` et `BACKUP_PASSPHRASE` pour la
+    surveillance et la sauvegarde hebdomadaire.
 
 ## Contrôles avant fusion
 

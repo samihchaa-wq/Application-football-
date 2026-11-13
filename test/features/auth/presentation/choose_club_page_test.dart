@@ -22,6 +22,7 @@ class _FakeClubRepository implements ClubRepository {
     required String firstName,
     required String lastName,
     required String acceptedTermsVersion,
+    String? acceptedClubContractVersion,
     required AgeConfirmation ageConfirmation,
   }) async {
     if (failure != null) throw failure!;
@@ -32,6 +33,7 @@ class _FakeClubRepository implements ClubRepository {
       'first': firstName,
       'last': lastName,
       'terms': acceptedTermsVersion,
+      'contract': acceptedClubContractVersion,
       'age': ageConfirmation,
     };
     return const ClubRegistration(
@@ -100,6 +102,8 @@ void main() {
   Future<void> acceptConsent(WidgetTester tester) async {
     await tester.tap(find.byKey(const Key('register-age-15-or-more')));
     await tester.tap(find.byKey(const Key('register-accept-terms')));
+    final contract = find.byKey(const Key('register-accept-club-contract'));
+    if (contract.evaluate().isNotEmpty) await tester.tap(contract);
     await tester.pump();
   }
 
@@ -133,6 +137,7 @@ void main() {
     expect(clubs.claimed?['create'], false);
     expect(clubs.claimed?['code'], 'ABCDEFGH');
     expect(clubs.claimed?['terms'], legalVersion);
+    expect(clubs.claimed?['contract'], isNull);
     expect(clubs.claimed?['age'], AgeConfirmation.fifteenOrMore);
     expect(auth.refreshes, 1);
   });
@@ -151,7 +156,27 @@ void main() {
 
     expect(clubs.claimed?['create'], true);
     expect(clubs.claimed?['club'], 'FC Villeneuve');
+    expect(clubs.claimed?['contract'], clubContractVersion);
     expect(auth.refreshes, 1);
+  });
+
+  testWidgets('créer un club exige d’accepter le contrat du club',
+      (tester) async {
+    await pumpPage(tester);
+    await tester.tap(find.text('Créer un club'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('choose-club-name')),
+      'FC Villeneuve',
+    );
+    await tester.tap(find.byKey(const Key('register-age-15-or-more')));
+    await tester.tap(find.byKey(const Key('register-accept-terms')));
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, 'Créer mon club'));
+    await tester.pump();
+
+    expect(find.textContaining('conditions d’abonnement'), findsWidgets);
+    expect(clubs.claimed, isNull);
   });
 
   testWidgets('le refus du serveur est affiché', (tester) async {

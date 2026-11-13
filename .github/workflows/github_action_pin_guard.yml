@@ -6,11 +6,13 @@ on:
     paths:
       - '.github/workflows/**'
       - '.github/actions/**'
+      - 'tool/tests/test_commercial_production_failclosed.py'
   push:
     branches: [main]
     paths:
       - '.github/workflows/**'
       - '.github/actions/**'
+      - 'tool/tests/test_commercial_production_failclosed.py'
   workflow_dispatch:
 
 permissions:
@@ -71,3 +73,6 @@ jobs:
               f'{len(set(candidates))} YAML files.'
           )
           PY
+
+      - name: Verify fail-closed monitoring and backup contracts
+        run: python3 -m unittest discover -s tool/tests -p 'test_commercial_production_failclosed.py' -v

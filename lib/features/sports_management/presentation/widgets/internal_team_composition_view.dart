@@ -1,8 +1,10 @@
+import 'package:as_grinta/core/club/club_kits.dart';
 import 'package:as_grinta/core/logging/app_logger.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/utils/app_errors.dart';
 import 'package:as_grinta/core/widgets/grinta_loader.dart';
 import 'package:as_grinta/features/matches/domain/jersey_option.dart';
+import 'package:as_grinta/features/matches/presentation/widgets/kit_jersey.dart';
 import 'package:as_grinta/features/sports_management/data/internal_match_composition_repository.dart';
 import 'package:as_grinta/features/sports_management/data/match_kit_photo_overrides.dart';
 import 'package:as_grinta/features/sports_management/data/player_identity_repository.dart';
@@ -49,8 +51,16 @@ class _InternalTeamCompositionViewState
   final _team2Controller = TextEditingController();
 
   List<InternalCompositionEntry>? _entries;
-  JerseyOption _team1Jersey = JerseyOption.orange;
-  JerseyOption _team2Jersey = JerseyOption.blue;
+  JerseyOption _team1Jersey = _defaultJersey(1);
+  JerseyOption _team2Jersey = _defaultJersey(2);
+
+  /// Maillots par défaut des deux équipes : les deux premiers que le club
+  /// propose.
+  static JerseyOption _defaultJersey(int teamNo) {
+    final options = ClubKits.forInternalMatch;
+    return options[teamNo == 1 ? 0 : 1].slot;
+  }
+
   String? _team1FormationCode;
   String? _team2FormationCode;
   String? _selectedParticipantId;
@@ -115,12 +125,15 @@ class _InternalTeamCompositionViewState
     _notificationSent = composition.notificationSent;
 
     final team1 =
-        JerseyOption.fromId(composition.team1JerseyId) ?? JerseyOption.orange;
+        JerseyOption.fromId(composition.team1JerseyId) ?? _defaultJersey(1);
     final requestedTeam2 =
-        JerseyOption.fromId(composition.team2JerseyId) ?? JerseyOption.blue;
+        JerseyOption.fromId(composition.team2JerseyId) ?? _defaultJersey(2);
     _team1Jersey = team1;
     _team2Jersey = requestedTeam2 == team1
-        ? JerseyOption.values.firstWhere((option) => option != team1)
+        ? [
+            for (final kit in ClubKits.forInternalMatch) kit.slot,
+            ...JerseyOption.values,
+          ].firstWhere((option) => option != team1)
         : requestedTeam2;
   }
 

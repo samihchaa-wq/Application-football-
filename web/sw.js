@@ -9,7 +9,7 @@ const APP_SHELL = [
   'index.html',
   'build_version.js',
   'app_shell.js',
-  'club_crest.webp',
+  'petit_filet_logo.webp',
   'flutter_bootstrap.js',
   'manifest.json',
   'favicon.png',
@@ -257,7 +257,7 @@ self.addEventListener('push', (event) => {
   }
   event.waitUntil(
     Promise.all([
-      self.registration.showNotification(data.title || 'Club', {
+      self.registration.showNotification(data.title || 'Petit Filet', {
         body: data.body || '',
         icon: 'icons/Icon-192.png',
         // Android dessine le badge de la barre d'état avec sa seule
