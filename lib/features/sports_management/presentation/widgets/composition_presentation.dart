@@ -1,4 +1,5 @@
 import 'package:as_grinta/core/club/club_identity.dart';
+import 'package:as_grinta/core/club/club_kits.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -11,6 +12,7 @@ import 'package:as_grinta/core/widgets/match_detail_header_card.dart';
 import 'package:as_grinta/features/sports_management/domain/composition_presentation_plan.dart';
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_presentation_camera.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/football_pitch.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/stadium_video.dart';
@@ -47,7 +49,11 @@ class CompositionPresentationData {
     this.typeLabel,
     this.address,
     this.formationCode,
+    this.kit,
   });
+
+  /// Couleurs capturées pour cette vidéo (joueurs et gardien).
+  final ClubKit? kit;
 
   final String homeName;
   final String awayName;
@@ -184,14 +190,18 @@ Future<void> showCompositionPresentation(
       opaque: !onPage,
       transitionDuration: const Duration(milliseconds: 250),
       reverseTransitionDuration: const Duration(milliseconds: 200),
-      pageBuilder: (context, animation, secondaryAnimation) =>
-          CompositionPresentationPage(
-        data: data,
-        background: debugPresentationBackground ?? background,
-        preview: preview,
-        landing: landsOnPage ? landing : null,
-        endsOnPage: onPage,
-      ),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        final page = CompositionPresentationPage(
+          data: data,
+          background: debugPresentationBackground ?? background,
+          preview: preview,
+          landing: landsOnPage ? landing : null,
+          endsOnPage: onPage,
+        );
+        return data.kit == null
+            ? page
+            : CompositionKitScope(kit: data.kit!, child: page);
+      },
       transitionsBuilder: (context, animation, secondaryAnimation, child) =>
           FadeTransition(opacity: animation, child: child),
     ),
