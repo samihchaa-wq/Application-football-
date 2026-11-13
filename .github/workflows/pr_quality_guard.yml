@@ -26,6 +26,9 @@ jobs:
       - name: Test migration history guard
         run: python3 -m unittest discover -s tool/tests -p 'test_migration_history_guard.py' -v
 
+      - name: Test read-only migration state audit
+        run: python3 -m unittest discover -s tool/tests -p 'test_commercial_migration_state.py' -v
+
       - name: Verify prior SQL migrations have not been rewritten
         if: github.event_name == 'pull_request'
         env:
