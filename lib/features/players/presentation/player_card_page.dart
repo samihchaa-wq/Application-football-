@@ -259,7 +259,7 @@ class _Hero extends ConsumerWidget {
   /// de repli, affichées en plus petit, demandent un petit ajustement.
   double _photoClearRight() {
     final url = photoUrl?.trim();
-    return url == null || url.isEmpty ? (1 - _heroInitialsScale) / 2 : 0;
+    return url == null || url.isEmpty ? (1 - _heroInitialsScale) / 2 : 0.0;
   }
 
   @override
