@@ -14,9 +14,9 @@ import 'package:flutter/material.dart';
 /// pinch-to-zoom / dézoom et export JPEG, ou PNG si la photo a des zones
 /// transparentes.
 ///
-/// Un patron est posé sur l'aperçu (ovale du visage, épaules, couronne de
-/// l'Étoile du match à sa place sur le terrain) pour cadrer tous les joueurs
-/// de la même façon. Il n'est jamais enregistré dans l'image.
+/// Deux seuls patrons sont posés sur l'aperçu : le maillot du club et
+/// l'emplacement de la couronne Homme du match, au-dessus de la tête.
+/// Aucun d'eux n'est enregistré dans la photo exportée.
 ///
 /// L'export est calculé directement depuis l'image source et la matrice de
 /// transformation. On ne capture pas le widget à l'écran : cela évite les
@@ -26,8 +26,8 @@ Future<Uint8List?> cropProfilePhoto(
   BuildContext context,
   Uint8List bytes, {
   String title = 'Recadrer la photo',
-  String instructions = 'Déplace et pince pour zoomer : le visage dans '
-      'l’ovale, du haut du front au menton.',
+  String instructions = 'Déplace et pince pour zoomer : place la tête '
+      'sous la couronne et le cou dans le maillot.',
   String confirmLabel = 'Utiliser cette photo',
   Color previewColor = const Color(0xFF174936),
   Color previewBorderColor = const Color(0xFF6DAD8B),
@@ -188,67 +188,43 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
   }
 
   static const _background = Color(0xFF080F19);
-  static const _panel = Color(0xFF111C2B);
   static const _outline = Color(0xFF3A4A5D);
 
   ClubKit get _previewKit => widget.kit ?? ClubKits.enabled.first;
 
-  /// Une seule image source, déplacée sous des calques NON exportés.
-  Widget _photoFrame({required bool interactive, required bool guide}) {
+  /// Une seule image source, déplacée sous les deux patrons non exportés.
+  /// Le maillot conserve le cou visible, la couronne reste fixe au-dessus.
+  Widget _photoFrame() {
     final photo = !_ready
         ? const ColoredBox(color: Color(0x1FFFFFFF))
-        : interactive
-            ? InteractiveViewer(
-                transformationController: _transformationController,
-                constrained: false,
-                boundaryMargin: const EdgeInsets.all(_cropSize * 4),
-                minScale: 0.05,
-                maxScale: 8,
-                panEnabled: true,
-                scaleEnabled: true,
-                child: Image.memory(
-                  widget.bytes,
-                  width: _childWidth,
-                  height: _childHeight,
-                  fit: BoxFit.fill,
-                  filterQuality: FilterQuality.high,
-                ),
-              )
-            : OverflowBox(
-                alignment: Alignment.topLeft,
-                maxWidth: double.infinity,
-                maxHeight: double.infinity,
-                child: AnimatedBuilder(
-                  animation: _transformationController,
-                  builder: (context, child) => Transform(
-                    alignment: Alignment.topLeft,
-                    transform: _transformationController.value,
-                    child: child,
-                  ),
-                  child: Image.memory(
-                    widget.bytes,
-                    width: _childWidth,
-                    height: _childHeight,
-                    fit: BoxFit.fill,
-                    filterQuality: FilterQuality.high,
-                  ),
-                ),
-              );
+        : InteractiveViewer(
+            transformationController: _transformationController,
+            constrained: false,
+            boundaryMargin: const EdgeInsets.all(_cropSize * 4),
+            minScale: 0.05,
+            maxScale: 8,
+            panEnabled: true,
+            scaleEnabled: true,
+            child: Image.memory(
+              widget.bytes,
+              width: _childWidth,
+              height: _childHeight,
+              fit: BoxFit.fill,
+              filterQuality: FilterQuality.high,
+            ),
+          );
 
     return ClipRect(
       child: Stack(
         fit: StackFit.expand,
         children: [
           const TransparentPhotoBackground(),
-          // Découper la photo sur la même silhouette que les compositions :
-          // les épaules d'origine ne doivent jamais traverser le maillot.
-          // Les repères et la tenue restent exclus de l'export PNG/JPEG.
           KitPortrait(
             kit: _previewKit,
             isGoalkeeper: widget.isGoalkeeper,
             child: photo,
           ),
-          if (guide) const PortraitAlignmentGuide(),
+          const PortraitAlignmentGuide(),
         ],
       ),
     );
@@ -277,7 +253,7 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
                     height: _cropSize,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(13),
-                      child: _photoFrame(interactive: true, guide: true),
+                      child: _photoFrame(),
                     ),
                   ),
                 ),
@@ -286,179 +262,9 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
           ),
           const SizedBox(height: 9),
           const Text(
-            'Déplace la photo ou pince pour zoomer. Les guides ne seront pas enregistrés.',
+            'Déplace la photo ou pince pour zoomer. Maillot et couronne ne seront pas enregistrés.',
             style: TextStyle(color: Color(0xFFAAB7C7), fontSize: 12),
             textAlign: TextAlign.center,
-          ),
-        ],
-      );
-
-  Widget _infoCard({
-    required IconData icon,
-    required String title,
-    required Widget child,
-    Color iconColor = const Color(0xFF37A7FF),
-  }) =>
-      Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: _panel,
-          border: Border.all(color: _outline),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: iconColor, size: 22),
-                const SizedBox(width: 9),
-                Text(title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                    )),
-              ],
-            ),
-            const SizedBox(height: 8),
-            child,
-          ],
-        ),
-      );
-
-  Widget _example(String label, bool correct, Alignment alignment) => Expanded(
-        child: Container(
-          decoration: BoxDecoration(
-            color: correct ? const Color(0xFF115A28) : const Color(0xFF622425),
-            border: Border.all(
-                color:
-                    correct ? const Color(0xFF55DE58) : const Color(0xFFFF6262),
-                width: 2),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            children: [
-              AspectRatio(
-                aspectRatio: 1,
-                child: ClipRRect(
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(9)),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      const TransparentPhotoBackground(),
-                      // Même découpe et même tenue que le grand patron.
-                      // La photo brute ne doit pas déborder sous le maillot.
-                      IgnorePointer(
-                        child: KitPortrait(
-                          kit: _previewKit,
-                          isGoalkeeper: widget.isGoalkeeper,
-                          child: Image.memory(
-                            widget.bytes,
-                            fit: BoxFit.cover,
-                            alignment: alignment,
-                          ),
-                        ),
-                      ),
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: Icon(
-                          correct ? Icons.check_circle : Icons.cancel,
-                          color: correct
-                              ? const Color(0xFF59E566)
-                              : const Color(0xFFFF4444),
-                          size: 25,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 7),
-                child: Text(label,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w400,
-                    )),
-              ),
-            ],
-          ),
-        ),
-      );
-
-  Widget _sidebar() => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _infoCard(
-            icon: Icons.info_outline_rounded,
-            title: 'Patron de cadrage',
-            child: const Text(
-              'Positionne ta photo pour que la tête soit bien centrée et à la bonne taille. Le maillot du club s’appliquera automatiquement.',
-              style: TextStyle(color: Colors.white, height: 1.4),
-            ),
-          ),
-          const SizedBox(height: 12),
-          _infoCard(
-            icon: Icons.check_circle,
-            title: 'Conseils',
-            iconColor: Color(0xFF5DDA4C),
-            child: const Text(
-              '• Visage de face, bien centré\n'
-              '• Regard droit (de préférence)\n'
-              '• Tête entière visible (sans coupe)\n'
-              '• Éclairage clair et uniforme\n'
-              '• Fond simple (ou transparent)',
-              style: TextStyle(color: Colors.white, height: 1.45),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _example('Correct', true, Alignment.center),
-              const SizedBox(width: 7),
-              _example('Trop haut', false, Alignment.topCenter),
-              const SizedBox(width: 7),
-              _example('Décalé', false, Alignment.centerRight),
-            ],
-          ),
-        ],
-      );
-
-  Widget _finalPreview() => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Aperçu final',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400)),
-          const SizedBox(height: 8),
-          Center(
-            child: Container(
-              width: 156,
-              height: 156,
-              padding: const EdgeInsets.all(3),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(11),
-                child: FittedBox(
-                  fit: BoxFit.fill,
-                  child: SizedBox(
-                    width: _cropSize,
-                    height: _cropSize,
-                    child: _photoFrame(interactive: false, guide: false),
-                  ),
-                ),
-              ),
-            ),
           ),
         ],
       );
@@ -466,8 +272,8 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
   @override
   Widget build(BuildContext context) {
     final screen = MediaQuery.sizeOf(context);
-    final dialogWidth = math.min(screen.width - 32, 940.0);
-    final isCompact = dialogWidth < 680;
+    // Fenêtre compacte, sans panneaux d'explications ni aperçu secondaire.
+    final dialogWidth = math.min(screen.width - 32, 520.0);
     return Dialog(
       backgroundColor: _background,
       insetPadding: const EdgeInsets.all(16),
@@ -477,7 +283,7 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
       ),
       child: SizedBox(
         width: dialogWidth,
-        height: math.min(screen.height - 32, 750.0),
+        height: math.min(screen.height - 32, dialogWidth + 205),
         child: Column(
           children: [
             Padding(
@@ -495,7 +301,7 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
                       maxLines: 2,
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: isCompact ? 18 : 23,
+                        fontSize: dialogWidth < 400 ? 18 : 23,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -513,33 +319,7 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(14),
-                child: isCompact
-                    ? Column(
-                        children: [
-                          _mainPreview(),
-                          const SizedBox(height: 14),
-                          _sidebar(),
-                          const SizedBox(height: 16),
-                          _finalPreview(),
-                        ],
-                      )
-                    : Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(flex: 11, child: _mainPreview()),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            flex: 10,
-                            child: Column(
-                              children: [
-                                _sidebar(),
-                                const SizedBox(height: 14),
-                                _finalPreview(),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                child: _mainPreview(),
               ),
             ),
             const Divider(color: _outline, height: 1),
