@@ -1,4 +1,5 @@
 import 'package:as_grinta/core/providers/supabase_provider.dart';
+import 'package:as_grinta/core/club/match_kit_snapshot.dart';
 import 'package:as_grinta/features/matches/data/match_info_repository.dart';
 import 'package:as_grinta/features/matches/domain/jersey_option.dart';
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
@@ -16,24 +17,26 @@ String? kitPhotoColumn(String? jerseyId) =>
 
 /// Pour un match, récupère seulement les portraits alternatifs du maillot
 /// sélectionné. Une variante absente conserve la photo France existante.
-final matchKitPhotoOverridesProvider =
-    FutureProvider.autoDispose.family<Map<String, String>, String>(
-  (ref, matchId) async {
-    final match = await ref.watch(matchInfoProvider(matchId).future);
-    final column = kitPhotoColumn(match.jerseyNote);
-    if (column == null) return const <String, String>{};
+final matchKitPhotoOverridesProvider = FutureProvider.autoDispose
+    .family<Map<String, String>, String>((ref, matchId) async {
+  final snapshot = await ref.watch(
+    matchKitSnapshotProvider(matchId).future,
+  );
+  final jerseyId = snapshot?.jerseyId.id ??
+      (await ref.watch(matchInfoProvider(matchId).future)).jerseyNote;
+  final column = kitPhotoColumn(jerseyId);
+  if (column == null) return const <String, String>{};
 
-    final rows = await ref
-        .watch(supabaseClientProvider)
-        .from('season_player_kit_photos')
-        .select('season_player_id,$column');
-    return {
-      for (final row in rows)
-        if (row[column] is String && (row[column] as String).trim().isNotEmpty)
-          row['season_player_id'].toString(): (row[column] as String).trim(),
-    };
-  },
-);
+  final rows = await ref
+      .watch(supabaseClientProvider)
+      .from('season_player_kit_photos')
+      .select('season_player_id,$column');
+  return {
+    for (final row in rows)
+      if (row[column] is String && (row[column] as String).trim().isNotEmpty)
+        row['season_player_id'].toString(): (row[column] as String).trim(),
+  };
+});
 
 /// Applique uniquement à l'affichage : aucun champ de la composition publiée
 /// ou de son brouillon n'est enregistré ou réécrit.
@@ -73,9 +76,7 @@ final internalTeamKitPhotosProvider =
     FutureProvider.autoDispose<Map<String, Map<String, String>>>((ref) async {
   final rows = await ref
       .watch(supabaseClientProvider)
-      .from(
-        'season_player_kit_photos',
-      )
+      .from('season_player_kit_photos')
       .select('season_player_id,brazil_url,netherlands_url');
   return {
     for (final row in rows)

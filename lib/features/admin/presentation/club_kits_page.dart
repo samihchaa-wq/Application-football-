@@ -98,7 +98,27 @@ class _ClubKitsPageState extends ConsumerState<ClubKitsPage> {
         children: [
           const Text(
             'Les maillots que tu proposes au choix pour chaque match. Les '
-            'joueurs voient celui retenu sur la fiche du match.',
+            'joueurs voient celui retenu sur la fiche du match, les '
+            'compositions et la vidéo.',
+          ),
+          SwitchListTile(
+            key: const ValueKey('dress-players'),
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Habiller les joueurs avec le maillot du match'),
+            subtitle: const Text(
+              'Appliqué aux portraits avant, pendant et après '
+              'le match, ainsi que dans la vidéo. Les matchs déjà commencés '
+              'conservent leur tenue et leur réglage.',
+            ),
+            value: _kits.any((kit) => kit.dressPlayers),
+            onChanged: _saving
+                ? null
+                : (value) => setState(() {
+                      _kits = [
+                        for (final kit in _kits)
+                          kit.copyWith(dressPlayers: value),
+                      ];
+                    }),
           ),
           if (ClubKits.usesDefaults) ...[
             const SizedBox(height: 8),
@@ -219,6 +239,12 @@ class _KitEditor extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text('Joueurs', style: Theme.of(context).textTheme.titleSmall),
+            _PatternChoice(
+              key: ValueKey('kit-pattern-${kit.slot.id}'),
+              value: kit.pattern,
+              enabled: enabled,
+              onChanged: (value) => onChanged(kit.copyWith(pattern: value)),
+            ),
             const SizedBox(height: 8),
             _ColorChoice(
               label: 'Couleur du maillot',
@@ -239,6 +265,13 @@ class _KitEditor extends StatelessWidget {
             ),
             const Divider(height: 28),
             Text('Gardien', style: Theme.of(context).textTheme.titleSmall),
+            _PatternChoice(
+              key: ValueKey('kit-goalkeeper-pattern-${kit.slot.id}'),
+              value: kit.goalkeeperPattern,
+              enabled: enabled,
+              onChanged: (value) =>
+                  onChanged(kit.copyWith(goalkeeperPattern: value)),
+            ),
             const SizedBox(height: 8),
             _ColorChoice(
               label: 'Couleur du maillot de gardien',
@@ -326,4 +359,36 @@ class _ColorChoice extends StatelessWidget {
       ],
     );
   }
+}
+
+class _PatternChoice extends StatelessWidget {
+  const _PatternChoice({
+    super.key,
+    required this.value,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  final KitPattern value;
+  final bool enabled;
+  final ValueChanged<KitPattern> onChanged;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: DropdownButtonFormField<KitPattern>(
+          initialValue: value,
+          decoration: const InputDecoration(labelText: 'Modèle du maillot'),
+          isExpanded: true,
+          items: [
+            for (final pattern in KitPattern.values)
+              DropdownMenuItem(value: pattern, child: Text(pattern.label)),
+          ],
+          onChanged: enabled
+              ? (value) {
+                  if (value != null) onChanged(value);
+                }
+              : null,
+        ),
+      );
 }

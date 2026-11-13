@@ -2,6 +2,8 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:as_grinta/core/club/club_kits.dart';
+import 'package:as_grinta/core/widgets/kit_portrait.dart';
 import 'package:as_grinta/core/storage/avatar_image.dart';
 import 'package:as_grinta/core/storage/avatar_image_codec.dart'
     deferred as avatar_codec;
@@ -29,7 +31,14 @@ Future<Uint8List?> cropProfilePhoto(
   String confirmLabel = 'Utiliser cette photo',
   Color previewColor = const Color(0xFF174936),
   Color previewBorderColor = const Color(0xFF6DAD8B),
+  ClubKit? kit,
+  bool isGoalkeeper = false,
 }) {
+  final previewKits = [
+    for (final value in ClubKits.all)
+      if (value.dressPlayers && (value.enabled || value.slot == kit?.slot))
+        value,
+  ];
   return showDialog<Uint8List?>(
     context: context,
     barrierDismissible: false,
@@ -40,6 +49,9 @@ Future<Uint8List?> cropProfilePhoto(
       confirmLabel: confirmLabel,
       previewColor: previewColor,
       previewBorderColor: previewBorderColor,
+      kits: previewKits,
+      initialKit: kit,
+      isGoalkeeper: isGoalkeeper,
     ),
   );
 }
@@ -52,6 +64,9 @@ class _PhotoCropDialog extends StatefulWidget {
     required this.confirmLabel,
     required this.previewColor,
     required this.previewBorderColor,
+    required this.kits,
+    required this.initialKit,
+    required this.isGoalkeeper,
   });
 
   final Uint8List bytes;
@@ -60,6 +75,9 @@ class _PhotoCropDialog extends StatefulWidget {
   final String confirmLabel;
   final Color previewColor;
   final Color previewBorderColor;
+  final List<ClubKit> kits;
+  final ClubKit? initialKit;
+  final bool isGoalkeeper;
 
   @override
   State<_PhotoCropDialog> createState() => _PhotoCropDialogState();
@@ -81,6 +99,12 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
   double _childHeight = _cropSize;
   bool _ready = false;
   bool _busy = false;
+  late ClubKit? _kit = widget.kits.isEmpty
+      ? null
+      : widget.kits.firstWhere(
+          (kit) => kit.slot == widget.initialKit?.slot,
+          orElse: () => widget.kits.first,
+        );
 
   @override
   void initState() {
@@ -186,91 +210,116 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
     final crownTop = _frameInset + PhotoCrown.topOffset(_cropSize);
     return AlertDialog(
       title: Text(widget.title),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Une seule consigne, sans note en dessous : avec la place de la
-          // couronne, la fenêtre doit encore tenir sur un petit écran.
-          Text(
-            '${widget.instructions} Ovale, couronne et fond ne sont pas '
-            'enregistrés.',
-            textAlign: TextAlign.center,
-          ),
-          // La couronne dépasse au-dessus de l'aperçu, comme sur le terrain :
-          // son dessin monte à environ 22 % du côté de la photo au-dessus
-          // d'elle (le haut de la boîte de l'emoji, plus haut, est vide). Sa
-          // place est réservée, sans plus : un petit écran doit tout afficher.
-          const SizedBox(height: 6 + _cropSize * .22 - _frameInset),
-          Stack(
-            clipBehavior: Clip.none,
+      content: SizedBox(
+          width: 260,
+          child: SingleChildScrollView(
+              child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: widget.previewColor,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: widget.previewBorderColor),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(_cropSize * 0.25),
-                  child: SizedBox(
-                    width: _cropSize,
-                    height: _cropSize,
-                    child: !_ready
-                        ? const ColoredBox(color: Color(0x1FFFFFFF))
-                        : ClipRect(
-                            child: InteractiveViewer(
-                              transformationController:
-                                  _transformationController,
-                              constrained: false,
-                              boundaryMargin:
-                                  const EdgeInsets.all(_cropSize * 4),
-                              minScale: 0.05,
-                              maxScale: 8,
-                              panEnabled: true,
-                              scaleEnabled: true,
-                              child: Image.memory(
-                                widget.bytes,
-                                width: _childWidth,
-                                height: _childHeight,
-                                fit: BoxFit.fill,
-                                filterQuality: FilterQuality.high,
-                              ),
-                            ),
-                          ),
-                  ),
-                ),
+              // Une seule consigne, sans note en dessous : avec la place de la
+              // couronne, la fenêtre doit encore tenir sur un petit écran.
+              Text(
+                '${widget.instructions} Le patron, le maillot et la couronne '
+                'servent d’aperçu et ne modifient pas ta photo.',
+                textAlign: TextAlign.center,
               ),
-              // Le patron laisse passer les gestes jusqu'à la photo.
-              Positioned(
-                top: crownTop,
-                left: 0,
-                right: 0,
-                child: const IgnorePointer(
-                  child: Center(
-                    child: Opacity(
-                      opacity: .8,
-                      child: PhotoCrown(photoSize: _cropSize),
+              if (_kit != null)
+                DropdownButtonFormField<ClubKit>(
+                  key: const ValueKey('portrait-kit-preview'),
+                  initialValue: _kit,
+                  decoration: InputDecoration(
+                    labelText: widget.isGoalkeeper
+                        ? 'Aperçu gardien'
+                        : 'Aperçu joueur',
+                  ),
+                  isExpanded: true,
+                  items: [
+                    for (final kit in widget.kits)
+                      DropdownMenuItem(value: kit, child: Text(kit.label)),
+                  ],
+                  onChanged:
+                      _busy ? null : (value) => setState(() => _kit = value),
+                ),
+              // La couronne dépasse au-dessus de l'aperçu, comme sur le terrain :
+              // son dessin monte à environ 22 % du côté de la photo au-dessus
+              // d'elle (le haut de la boîte de l'emoji, plus haut, est vide). Sa
+              // place est réservée, sans plus : un petit écran doit tout afficher.
+              Padding(
+                padding: const EdgeInsets.only(top: _cropSize * .22),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: widget.previewColor,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: widget.previewBorderColor),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(_cropSize * 0.25),
+                        child: SizedBox(
+                          width: _cropSize,
+                          height: _cropSize,
+                          child: _withKit(!_ready
+                              ? const ColoredBox(color: Color(0x1FFFFFFF))
+                              : ClipRect(
+                                  child: InteractiveViewer(
+                                    transformationController:
+                                        _transformationController,
+                                    constrained: false,
+                                    boundaryMargin: const EdgeInsets.all(
+                                      _cropSize * 4,
+                                    ),
+                                    minScale: 0.05,
+                                    maxScale: 8,
+                                    panEnabled: true,
+                                    scaleEnabled: true,
+                                    child: Image.memory(
+                                      widget.bytes,
+                                      width: _childWidth,
+                                      height: _childHeight,
+                                      fit: BoxFit.fill,
+                                      filterQuality: FilterQuality.high,
+                                    ),
+                                  ),
+                                )),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: _frameInset,
-                top: _frameInset,
-                width: _cropSize,
-                height: _cropSize,
-                child: IgnorePointer(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(_cropSize * 0.25),
-                    child: const CustomPaint(painter: _FramingGuidePainter()),
-                  ),
+                    // Le patron laisse passer les gestes jusqu'à la photo.
+                    Positioned(
+                      top: crownTop,
+                      left: 0,
+                      right: 0,
+                      child: const IgnorePointer(
+                        child: Center(
+                          child: Opacity(
+                            opacity: .8,
+                            child: PhotoCrown(photoSize: _cropSize),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      left: _frameInset,
+                      top: _frameInset,
+                      width: _cropSize,
+                      height: _cropSize,
+                      child: IgnorePointer(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(_cropSize * 0.25),
+                          child: const CustomPaint(
+                            painter: _FramingGuidePainter(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
-          ),
-        ],
-      ),
+          ))),
       actions: [
         TextButton(
           onPressed: _busy ? null : () => Navigator.pop(context, null),
@@ -283,6 +332,14 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
       ],
     );
   }
+
+  Widget _withKit(Widget child) => _kit == null
+      ? child
+      : KitPortrait(
+          kit: _kit!,
+          isGoalkeeper: widget.isGoalkeeper,
+          child: child,
+        );
 }
 
 /// Patron de cadrage, en pointillés : un ovale pour le visage, du haut du

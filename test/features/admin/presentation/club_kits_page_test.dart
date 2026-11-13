@@ -71,6 +71,23 @@ void main() {
     expect(ClubKits.of(JerseyOption.france).goalkeeperBody, kit.goalkeeperBody);
   });
 
+  testWidgets('le club active les portraits habillés pour les trois tenues',
+      (tester) async {
+    await pumpPage(tester);
+    await tester.tap(find.byKey(const ValueKey('dress-players')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('kit-pattern-france')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Rayures verticales').last);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('club-kits-save')));
+    await tester.tap(find.byKey(const ValueKey('club-kits-save')));
+    await tester.pumpAndSettle();
+    expect(repository.saved!.every((kit) => kit.dressPlayers), isTrue);
+    expect(repository.saved!.first.pattern, KitPattern.stripes);
+    expect(repository.saved!.first.goalkeeperPattern, KitPattern.plain);
+  });
+
   testWidgets('au moins un maillot doit rester proposé', (tester) async {
     await pumpPage(tester);
     for (final slot in ['france', 'orange', 'blue']) {

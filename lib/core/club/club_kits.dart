@@ -3,6 +3,21 @@ import 'package:as_grinta/features/matches/domain/jersey_option.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
+enum KitPattern {
+  plain('Uni'),
+  stripes('Rayures verticales'),
+  hoops('Bandes horizontales'),
+  sash('Bande diagonale');
+
+  const KitPattern(this.label);
+  final String label;
+
+  static KitPattern fromJson(Object? value) => values.firstWhere(
+        (pattern) => pattern.name == value,
+        orElse: () => plain,
+      );
+}
+
 /// Un maillot du club : son nom, ses deux couleurs et s'il est proposé.
 @immutable
 class ClubKit {
@@ -13,6 +28,9 @@ class ClubKit {
     required this.trim,
     this.goalkeeperBody = const Color(0xFF168A52),
     this.goalkeeperTrim = const Color(0xFFFFFFFF),
+    this.pattern = KitPattern.plain,
+    this.goalkeeperPattern = KitPattern.plain,
+    this.dressPlayers = false,
     required this.enabled,
   });
 
@@ -30,6 +48,12 @@ class ClubKit {
   /// Couleurs du gardien distinctes de celles des joueurs de champ.
   final Color goalkeeperBody;
   final Color goalkeeperTrim;
+  final KitPattern pattern;
+  final KitPattern goalkeeperPattern;
+
+  /// Option du club, conservée dans la tenue figée du match. Les anciennes
+  /// photos restent intactes ; le maillot est composé uniquement à l'écran.
+  final bool dressPlayers;
   final bool enabled;
 
   ClubKit copyWith({
@@ -38,6 +62,9 @@ class ClubKit {
     Color? trim,
     Color? goalkeeperBody,
     Color? goalkeeperTrim,
+    KitPattern? pattern,
+    KitPattern? goalkeeperPattern,
+    bool? dressPlayers,
     bool? enabled,
   }) =>
       ClubKit(
@@ -47,6 +74,9 @@ class ClubKit {
         trim: trim ?? this.trim,
         goalkeeperBody: goalkeeperBody ?? this.goalkeeperBody,
         goalkeeperTrim: goalkeeperTrim ?? this.goalkeeperTrim,
+        pattern: pattern ?? this.pattern,
+        goalkeeperPattern: goalkeeperPattern ?? this.goalkeeperPattern,
+        dressPlayers: dressPlayers ?? this.dressPlayers,
         enabled: enabled ?? this.enabled,
       );
 
@@ -57,6 +87,9 @@ class ClubKit {
         'trim': colorToHex(trim),
         'goalkeeper_body': colorToHex(goalkeeperBody),
         'goalkeeper_trim': colorToHex(goalkeeperTrim),
+        'pattern': pattern.name,
+        'goalkeeper_pattern': goalkeeperPattern.name,
+        'dress_players': dressPlayers,
         'enabled': enabled,
       };
 
@@ -69,6 +102,9 @@ class ClubKit {
       other.trim == trim &&
       other.goalkeeperBody == goalkeeperBody &&
       other.goalkeeperTrim == goalkeeperTrim &&
+      other.pattern == pattern &&
+      other.goalkeeperPattern == goalkeeperPattern &&
+      other.dressPlayers == dressPlayers &&
       other.enabled == enabled;
 
   @override
@@ -79,6 +115,9 @@ class ClubKit {
         trim,
         goalkeeperBody,
         goalkeeperTrim,
+        pattern,
+        goalkeeperPattern,
+        dressPlayers,
         enabled,
       );
 }
@@ -161,7 +200,7 @@ abstract final class ClubKits {
   /// Les maillots que l'administrateur propose pour un match.
   static List<ClubKit> get enabled => [
         for (final kit in all)
-          if (kit.enabled) kit
+          if (kit.enabled) kit,
       ];
 
   /// Les maillots au choix pour un match « entre nous », où il en faut deux
@@ -233,6 +272,9 @@ abstract final class ClubKits {
         trim: trim,
         goalkeeperBody: goalkeeperBody,
         goalkeeperTrim: goalkeeperTrim,
+        pattern: KitPattern.fromJson(item['pattern']),
+        goalkeeperPattern: KitPattern.fromJson(item['goalkeeper_pattern']),
+        dressPlayers: item['dress_players'] == true,
         enabled: item['enabled'] != false,
       );
     }

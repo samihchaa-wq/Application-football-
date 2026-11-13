@@ -105,5 +105,27 @@ select ok(
   'aucun compte client ne peut forcer un snapshot historique'
 );
 
+select is(
+  private.match_kit_snapshot_value(null, '#AA0000', '#FFFFFF', 'france')
+    ->> 'dress_players', 'false', 'les anciens matchs ne sont pas habillés rétroactivement'
+);
+select is(
+  private.match_kit_snapshot_value(
+    '[{"slot":"orange","pattern":"sash","goalkeeper_pattern":"hoops","dress_players":true}]',
+    '#AA0000', '#FFFFFF', 'orange'
+  ) ->> 'pattern', 'sash', 'le snapshot conserve le modèle de la tenue sélectionnée'
+);
+select is(
+  private.match_kit_snapshot_value(
+    '[{"slot":"orange","pattern":"sash","goalkeeper_pattern":"hoops","dress_players":true}]',
+    '#AA0000', '#FFFFFF', 'orange'
+  ) ->> 'goalkeeper_pattern', 'hoops', 'le snapshot conserve le modèle du gardien'
+);
+select is(
+  private.match_kit_snapshot_value(
+    '[{"slot":"orange","dress_players":true}]', '#AA0000', '#FFFFFF', 'orange'
+  ) ->> 'dress_players', 'true', 'le snapshot conserve l option de portrait du jour du match'
+);
+
 select * from finish();
 rollback;

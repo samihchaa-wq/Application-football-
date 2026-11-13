@@ -276,7 +276,7 @@ class _PresentationTile extends StatelessWidget {
             height: photoSize + 12,
             child: Align(
               alignment: Alignment.bottomCenter,
-              child: face.hasPhoto
+              child: face.hasPhoto || kit?.dressPlayers == true
                   ? avatar
                   : Stack(
                       children: [

@@ -29,8 +29,7 @@ class CompositionKitScope extends InheritedWidget {
 /// Un chargement en cours ne montre PAS un faux maillot « domicile » : les
 /// avatars restent neutres jusqu'à réception de la fiche du match.
 ///
-/// Pour un match déjà terminé, un snapshot historique doit prendre le pas sur
-/// ces réglages courants : ce sera l'objet d'une migration séparée.
+/// Le snapshot historique prend toujours le pas sur les réglages courants.
 class MatchCompositionKitScope extends ConsumerWidget {
   const MatchCompositionKitScope({
     super.key,
@@ -47,7 +46,9 @@ class MatchCompositionKitScope extends ConsumerWidget {
     if (id == null) return child;
     // Pour les matchs démarrés/terminés : toujours la tenue du jour J,
     // pas celle configurée aujourd'hui dans Administration.
-    final snapshot = ref.watch(matchKitSnapshotProvider(id)).valueOrNull;
+    final history = ref.watch(matchKitSnapshotProvider(id));
+    if (history.isLoading || history.hasError) return child;
+    final snapshot = history.valueOrNull;
     if (snapshot != null) {
       return CompositionKitScope(kit: snapshot.kit, child: child);
     }

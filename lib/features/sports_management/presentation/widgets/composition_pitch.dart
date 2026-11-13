@@ -5,6 +5,7 @@ import 'package:as_grinta/core/widgets/match_contribution_icons.dart';
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/football_pitch.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
+import 'package:as_grinta/core/widgets/kit_portrait.dart';
 import 'package:flutter/material.dart';
 
 class CompositionPitch extends StatefulWidget {
@@ -847,12 +848,20 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
                     : Border.all(color: border, width: 2),
               ),
               clipBehavior: Clip.antiAlias,
-              child: showPhoto ? _photo(url) : _initials(visualSize),
+              child: kit?.dressPlayers == true
+                  ? KitPortrait(
+                      kit: kit!,
+                      isGoalkeeper: widget.isGoalkeeper,
+                      child: showPhoto ? _photo(url) : _initials(visualSize),
+                    )
+                  : showPhoto
+                      ? _photo(url)
+                      : _initials(visualSize),
             ),
           ),
           // Avec ou sans portrait, rendre le maillot réellement identifiable.
           // Les autres avatars de l'application restent inchangés.
-          if (kit != null)
+          if (kit != null && !kit.dressPlayers)
             Positioned(
               right: 0,
               bottom: 0,

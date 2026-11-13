@@ -303,7 +303,12 @@ Future<void> _pickAndUploadRosterPhoto(
   // Meme editeur que les photos de profil (deplacer, zoomer, dezoomer).
   // Il exporte en PNG si l'image a des zones transparentes, sinon en JPEG ;
   // le format reel est relu depuis le contenu au moment de l'envoi.
-  final cropped = await cropProfilePhoto(context, bytes);
+  final cropped = await cropProfilePhoto(
+    context,
+    bytes,
+    kit: (JerseyOption.fromId(kitId) ?? JerseyOption.france).kit,
+    isGoalkeeper: player.isGoalkeeper,
+  );
   if (cropped == null || !context.mounted) return;
   const extension = 'jpg';
   try {
