@@ -52,9 +52,9 @@ declare
   v_gk_body text;
 begin
   if jsonb_typeof(p_kits) = 'array' then
-    select item into v_kit
-    from jsonb_array_elements(p_kits) as item
-    where item ->> 'slot' = v_slot
+    select elem.value into v_kit
+    from jsonb_array_elements(p_kits) as elem(value)
+    where elem.value ->> 'slot' = v_slot
     limit 1;
   end if;
 
@@ -131,16 +131,16 @@ begin
     p_match_id,
     v_match.club_id,
     v_slot,
-    (select item from jsonb_array_elements(v_kits) as item
-      where item ->> 'slot' = v_slot limit 1),
+    (select elem.value from jsonb_array_elements(v_kits) as elem(value)
+      where elem.value ->> 'slot' = v_slot limit 1),
     v_kits,
     case when v_match.match_type = 'entre_nous' then
-      (select item from jsonb_array_elements(v_kits) as item
-       where item ->> 'slot' = v_match.team1_jersey limit 1)
+      (select elem.value from jsonb_array_elements(v_kits) as elem(value)
+       where elem.value ->> 'slot' = v_match.team1_jersey limit 1)
     end,
     case when v_match.match_type = 'entre_nous' then
-      (select item from jsonb_array_elements(v_kits) as item
-       where item ->> 'slot' = v_match.team2_jersey limit 1)
+      (select elem.value from jsonb_array_elements(v_kits) as elem(value)
+       where elem.value ->> 'slot' = v_match.team2_jersey limit 1)
     end
   )
   on conflict (match_id) do nothing;
@@ -149,13 +149,13 @@ begin
     update public.match_kit_snapshots s
     set team1_kit = coalesce(
           s.team1_kit,
-          (select item from jsonb_array_elements(s.kits) as item
-           where item ->> 'slot' = v_match.team1_jersey limit 1)
+          (select elem.value from jsonb_array_elements(s.kits) as elem(value)
+           where elem.value ->> 'slot' = v_match.team1_jersey limit 1)
         ),
         team2_kit = coalesce(
           s.team2_kit,
-          (select item from jsonb_array_elements(s.kits) as item
-           where item ->> 'slot' = v_match.team2_jersey limit 1)
+          (select elem.value from jsonb_array_elements(s.kits) as elem(value)
+           where elem.value ->> 'slot' = v_match.team2_jersey limit 1)
         )
     where s.match_id = p_match_id
       and (s.team1_kit is null or s.team2_kit is null);
