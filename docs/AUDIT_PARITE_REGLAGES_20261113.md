@@ -40,6 +40,14 @@ Les correctifs des PR #47, #48, #50, #57, #69, #72 et #73 modifient plusieurs co
 - Le test original `composition_simulation_season_replay_test.dart` ne doit **pas** être copié à cause de ses données personnelles ; élaborer un test équivalent avec une équipe fictive.
 - La configuration serveur, les migrations SQL, les cron, les Edge Functions et les historiques de données doivent être **contrôlés** avant une affirmation de parité complète.
 
+## Écarts fonctionnels explicitement confirmés, non résolus par ce PR
+
+- **Maillots de gardien distincts** : `ClubKits` et l'écran de réglage des maillots ne proposent actuellement que les couleurs des joueurs de champ. Le besoin de tenues gardien et de leur rendu cohérent (compositions avant/live/après, vidéos, historique) est encore **ouvert** : [issue #67](https://github.com/samihchaa-wq/Application-football-/issues/67). Il requiert une adaptation du modèle persistant et de tous les rendus, pas un simple interrupteur.
+- **Stade vidéo non neutre** : les inscriptions « AS Grinta » incrustées dans la vidéo et son poster ne sont pas supprimées par le recoloriage CSS. Correction des assets encore **ouverte** : [issue #71](https://github.com/samihchaa-wq/Application-football-/issues/71).
+- **Fonctions réellement configurables de bout en bout** : seuls 7 modules et les règles exposées par le catalogue serveur disposent d'un contrôle générique vérifié dans ce périmètre. L'enquête complète des 164 fonctions (préférences, interrupteurs et protections côté serveur) demeure **ouverte** : [issue #66](https://github.com/samihchaa-wq/Application-football-/issues/66).
+
+Ces écarts ne doivent pas être présentés comme « terminés » ou « testés » au seul motif que leurs fichiers Flutter sont présents.
+
 ## Réorganisation introduite dans cette branche
 
 L'écran **Réglages du club** possède six sections repliables :
