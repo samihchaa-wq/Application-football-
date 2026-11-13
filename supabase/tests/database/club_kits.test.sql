@@ -91,6 +91,11 @@ select is(
   '#111111',
   'la couleur gardien du club A est persistée'
 );
+select is(
+  public.admin_update_club_kits(pg_temp.kits()) -> 0 ->> 'goalkeeper_body',
+  '#111111',
+  'un ancien client conserve la personnalisation du gardien'
+);
 select throws_ok(
   $$select public.admin_update_club_kits(
       jsonb_set(pg_temp.kits(), '{0,goalkeeper_body}', '"noir"')
