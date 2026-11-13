@@ -1,4 +1,3 @@
-import 'package:as_grinta/core/club/club_kits.dart';
 import 'package:as_grinta/core/theme/app_spacing.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/theme/calendar_card_palette.dart';
@@ -317,9 +316,8 @@ class _Hero extends ConsumerWidget {
                   photoUrl: photoUrl,
                   name: name,
                   isGoalkeeper: isGoalkeeper,
-                  // Hors contexte de match, présenter la première tenue
-                  // proposée par le club (si l'option d'habillage est active).
-                  kit: ClubKits.enabled.firstOrNull,
+                  // Le composant commun applique la tenue par défaut du
+                  // club et se met à jour lorsque ses couleurs changent.
                   size: _heroPhotoSize,
                   fallbackScale: _heroInitialsScale,
                 ),
