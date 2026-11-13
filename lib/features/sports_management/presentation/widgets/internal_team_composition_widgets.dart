@@ -42,8 +42,10 @@ class _PaperTeams extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: _PaperTeamColumn(
-            name: team1Name,
+          child: CompositionKitScope(
+            kit: team1Jersey.kit,
+            child: _PaperTeamColumn(
+              name: team1Name,
             teamNo: 1,
             controller: team1Controller,
             jersey: team1Jersey,
@@ -55,12 +57,15 @@ class _PaperTeams extends StatelessWidget {
             onJerseyTap: onAssignTeam1,
             onJerseySelected: onJersey1,
             onPlayerTap: onPlayerTap,
+            ),
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: _PaperTeamColumn(
-            name: team2Name,
+          child: CompositionKitScope(
+            kit: team2Jersey.kit,
+            child: _PaperTeamColumn(
+              name: team2Name,
             teamNo: 2,
             controller: team2Controller,
             jersey: team2Jersey,
@@ -72,6 +77,7 @@ class _PaperTeams extends StatelessWidget {
             onJerseyTap: onAssignTeam2,
             onJerseySelected: onJersey2,
             onPlayerTap: onPlayerTap,
+            ),
           ),
         ),
       ],
