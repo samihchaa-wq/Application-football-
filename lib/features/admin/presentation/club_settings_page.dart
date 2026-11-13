@@ -408,7 +408,6 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     }
   }
 
-
   // L'aide est accessible sur demande ; elle ne surcharge pas l'écran.
   Widget _infoButton(String title, String description) => IconButton(
         tooltip: 'Informations : $title',
@@ -474,7 +473,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     final widgets = <Widget>[];
     for (final rule in _rules) {
       // Ces horaires sont sans effet depuis le passage aux +1 manuels.
-      if (!include(rule) || rule.key == 'waitlist_cutoff_days' ||
+      if (!include(rule) ||
+          rule.key == 'waitlist_cutoff_days' ||
           rule.key == 'waitlist_cutoff_hour') continue;
       if (rule.key == ClubRules.waitlistModeKey) {
         widgets.add(_waitlistModeTile(rule));
@@ -533,7 +533,6 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       rule.unit == ClubRules.multiplierUnit
           ? ClubRules.formatMultiplier(value)
           : '$value ${rule.unit}';
-
 
   Widget _waitlistModeTile(ClubRule rule) {
     final current = WaitlistMode.fromValue(rule.value);
@@ -638,14 +637,15 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
               alignment: Alignment.centerLeft,
               child: FilledButton(
                 onPressed: _savingIdentity ? null : _saveIdentity,
-                child: Text(_savingIdentity ? 'Enregistrement…' : 'Enregistrer'),
+                child:
+                    Text(_savingIdentity ? 'Enregistrement…' : 'Enregistrer'),
               ),
             ),
             const Divider(height: 32),
             _settingTitle(
               'Logo du club',
               'Ton écusson apparaît dans l’application à la place du logo '
-              'neutre. Formats JPEG, PNG ou WebP, de préférence carrés.',
+                  'neutre. Formats JPEG, PNG ou WebP, de préférence carrés.',
             ),
             const SizedBox(height: 8),
             Row(
@@ -696,7 +696,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
               title: _settingTitle(
                 'Maillots du club',
                 'Personnalise les couleurs et les noms des tenues disponibles '
-                'pour les matchs, y compris les tenues des gardiens.',
+                    'pour les matchs, y compris les tenues des gardiens.',
               ),
               trailing: const Icon(Icons.chevron_right_rounded),
               onTap: () => context.push('/admin/club/maillots'),
@@ -712,7 +712,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
             _settingTitle(
               'Code d’invitation',
               'Partage ce code ou le lien d’inscription aux joueurs. '
-              'Tu valideras ensuite leurs comptes dans Administration.',
+                  'Tu valideras ensuite leurs comptes dans Administration.',
             ),
             const SizedBox(height: 8),
             Row(
@@ -766,7 +766,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
                 suffixIcon: _infoButton(
                   'Terrain à domicile',
                   'Adresse proposée pour chaque nouveau match à domicile. '
-                  'Elle reste modifiable pour chaque rencontre.',
+                      'Elle reste modifiable pour chaque rencontre.',
                 ),
               ),
             ),
@@ -788,7 +788,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
                 _settingTitle(
                   'Joueurs convoqués par défaut',
                   'Nombre proposé pour les nouveaux matchs (de 1 à 30). '
-                  'Tu peux le modifier individuellement pour chaque match.',
+                      'Tu peux le modifier individuellement pour chaque match.',
                 ),
                 Align(
                   alignment: Alignment.centerRight,
@@ -798,19 +798,18 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
                       IconButton(
                         key: const Key('club-usual-squad-size-minus'),
                         icon: const Icon(Icons.remove_circle_outline),
-                        onPressed:
-                            _savingUsualSquadSize || _usualSquadSize <= 1
-                                ? null
-                                : () => _saveUsualSquadSize(_usualSquadSize - 1),
+                        onPressed: _savingUsualSquadSize || _usualSquadSize <= 1
+                            ? null
+                            : () => _saveUsualSquadSize(_usualSquadSize - 1),
                       ),
                       Text('$_usualSquadSize'),
                       IconButton(
                         key: const Key('club-usual-squad-size-plus'),
                         icon: const Icon(Icons.add_circle_outline),
-                        onPressed:
-                            _savingUsualSquadSize || _usualSquadSize >= 30
-                                ? null
-                                : () => _saveUsualSquadSize(_usualSquadSize + 1),
+                        onPressed: _savingUsualSquadSize ||
+                                _usualSquadSize >= 30
+                            ? null
+                            : () => _saveUsualSquadSize(_usualSquadSize + 1),
                       ),
                     ],
                   ),
