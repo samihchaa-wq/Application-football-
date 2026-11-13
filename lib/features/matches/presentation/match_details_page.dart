@@ -21,6 +21,7 @@ import 'package:as_grinta/features/sports_management/domain/match_availability_b
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
 import 'package:as_grinta/features/sports_management/domain/sport_motm_vote.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/stadium_video.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -613,9 +614,12 @@ class _CompletedCompositionCard extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.only(top: 16),
-      child: CompletedCompositionCard(
-        composition: displayedComposition,
-        fallbackPlayers: _playersFromMatchDetails(displayedComposition),
+      child: MatchCompositionKitScope(
+        matchId: matchId,
+        child: CompletedCompositionCard(
+          composition: displayedComposition,
+          fallbackPlayers: _playersFromMatchDetails(displayedComposition),
+        ),
       ),
     );
   }
