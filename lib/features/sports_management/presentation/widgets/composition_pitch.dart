@@ -4,8 +4,6 @@ import 'package:as_grinta/core/utils/name_validation.dart';
 import 'package:as_grinta/core/widgets/match_contribution_icons.dart';
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/football_pitch.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
-import 'package:as_grinta/core/widgets/kit_portrait.dart';
 import 'package:flutter/material.dart';
 
 class CompositionPitch extends StatefulWidget {
@@ -820,11 +818,7 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
     final size = widget.size;
     final fallbackScale = widget.fallbackScale.clamp(.5, 1).toDouble();
     final fallbackSize = size * fallbackScale;
-    final kit = CompositionKitScope.maybeOf(context);
-    final bodyColor = widget.isGoalkeeper ? kit?.goalkeeperBody : kit?.body;
-    final trimColor = widget.isGoalkeeper ? kit?.goalkeeperTrim : kit?.trim;
-    final border = trimColor ??
-        (widget.isGoalkeeper ? const Color(0xFFE59A1F) : Colors.white);
+    // Les photos des joueurs sont indépendantes des maillots du club.
     final original = widget.photoUrl?.trim();
     final hasPhoto = original != null && original.isNotEmpty;
     final url = _resolvedPhotoUrl;
@@ -834,82 +828,31 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
     return SizedBox(
       width: size,
       height: size,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Center(
-            child: Container(
-              width: visualSize,
-              height: visualSize,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(visualSize * 0.28),
-                border: showPhoto && kit == null
-                    ? null
-                    : Border.all(color: border, width: 2),
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: kit?.dressPlayers == true
-                  ? KitPortrait(
-                      kit: kit!,
-                      isGoalkeeper: widget.isGoalkeeper,
-                      child: showPhoto ? _photo(url) : _initials(visualSize),
-                    )
-                  : showPhoto
-                      ? _photo(url)
-                      : _initials(visualSize),
-            ),
-          ),
-          // Avec ou sans portrait, rendre le maillot réellement identifiable.
-          // Les autres avatars de l'application restent inchangés.
-          if (kit != null && !kit.dressPlayers)
-            Positioned(
-              right: 0,
-              bottom: 0,
-              child: Container(
-                key: ValueKey(
-                  'composition-kit-${widget.isGoalkeeper ? 'goalkeeper' : 'field'}',
-                ),
-                width: size * .29,
-                height: size * .29,
-                decoration: BoxDecoration(
-                  color: trimColor,
-                  borderRadius: BorderRadius.circular(size * .07),
-                  border: Border.all(color: Colors.white, width: 1),
-                ),
-                child: Icon(
-                  Icons.checkroom,
-                  color: bodyColor,
-                  size: size * .23,
-                ),
-              ),
-            ),
-        ],
+      child: Center(
+        child: SizedBox(
+          width: visualSize,
+          height: visualSize,
+          child: showPhoto ? _photo(url) : _initials(visualSize),
+        ),
       ),
     );
   }
 
   Widget _initials(double visualSize) {
     final initials = avatarInitials(widget.name);
-    final kit = CompositionKitScope.maybeOf(context);
-    final color = widget.isGoalkeeper ? kit?.goalkeeperBody : kit?.body;
-    final accent = widget.isGoalkeeper ? kit?.goalkeeperTrim : kit?.trim;
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: kit == null ? _avatarColors : [color!, accent!],
+          colors: _avatarColors,
         ),
       ),
       child: Center(
         child: Text(
           initials,
           style: TextStyle(
-            color: color == null ||
-                    ThemeData.estimateBrightnessForColor(color) ==
-                        Brightness.dark
-                ? Colors.white
-                : Colors.black,
+            color: Colors.white,
             fontWeight: FontWeight.w400,
             fontSize: visualSize * 0.32,
             shadows: const [Shadow(color: Colors.black26, blurRadius: 2)],

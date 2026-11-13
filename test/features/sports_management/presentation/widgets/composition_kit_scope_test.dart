@@ -43,7 +43,7 @@ void main() {
       capturedAt: DateTime.utc(2026, 10, 1),
     ));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('portrait-jersey-field')), findsOneWidget);
+    expect(find.byKey(const ValueKey('portrait-jersey-field')), findsNothing);
   });
 
   testWidgets('composition: les maillots joueur et gardien sont distincts', (
@@ -77,18 +77,13 @@ void main() {
       ),
     );
 
-    final playerMarker = tester.widget<Container>(
-      find.byKey(const ValueKey('composition-kit-field')),
-    );
-    final goalkeeperMarker = tester.widget<Container>(
-      find.byKey(const ValueKey('composition-kit-goalkeeper')),
-    );
-    expect((playerMarker.decoration! as BoxDecoration).color, kit.trim);
+    expect(find.byIcon(Icons.checkroom), findsNothing);
+    expect(find.byKey(const ValueKey('composition-kit-field')), findsNothing);
     expect(
-      (goalkeeperMarker.decoration! as BoxDecoration).color,
-      kit.goalkeeperTrim,
+      find.byKey(const ValueKey('composition-kit-goalkeeper')),
+      findsNothing,
     );
-    expect(find.byIcon(Icons.checkroom), findsNWidgets(2));
+    expect(find.byType(PlayerAvatar), findsNWidgets(2));
   });
 
   testWidgets('deux équipes partagent le terrain, pas leurs couleurs', (
@@ -126,16 +121,9 @@ void main() {
       ),
     );
 
-    final markers = tester.widgetList<Container>(
-      find.byKey(const ValueKey('composition-kit-field')),
-    );
-    expect(
-      [
-        for (final marker in markers)
-          (marker.decoration! as BoxDecoration).color,
-      ],
-      [home.trim, away.trim],
-    );
+    expect(find.byKey(const ValueKey('composition-kit-field')), findsNothing);
+    expect(find.byIcon(Icons.checkroom), findsNothing);
+    expect(find.byType(PlayerAvatar), findsNWidgets(2));
   });
 
   testWidgets('les photos hors composition ne reçoivent pas le maillot', (

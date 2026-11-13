@@ -69,10 +69,8 @@ void main() {
   );
 
   testWidgets(
-    'la couronne de l’éditeur de photo tombe où elle tombera sur le terrain',
+    'le recadrage ne superpose aucune couronne',
     (tester) async {
-      final pitch = await _pitchCrown(tester);
-
       await tester.pumpWidget(
         MaterialApp(
           home: Builder(
@@ -85,18 +83,13 @@ void main() {
       );
       await tester.tap(find.text('recadrer'));
       await tester.pumpAndSettle();
+      // Le décodage de l'image s'effectue hors de l'horloge simulée.
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 200)),
       );
       await tester.pumpAndSettle();
-
-      final editor = _placement(
-        tester.getRect(find.text('👑')),
-        tester.getRect(find.byType(InteractiveViewer)),
-      );
-      expect(editor.top, closeTo(pitch.top, .005));
-      expect(editor.width, closeTo(pitch.width, .005));
-      expect(editor.centerShift, closeTo(pitch.centerShift, .005));
+      expect(find.byType(InteractiveViewer), findsOneWidget);
+      expect(find.text('👑'), findsNothing);
     },
   );
 }

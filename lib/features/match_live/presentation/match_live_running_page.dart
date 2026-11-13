@@ -200,9 +200,7 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
                             null => substitutionStartColor,
                           },
                       },
-                      namesOnly:
-                          CompositionKitScope.maybeOf(context)?.dressPlayers !=
-                              true,
+                      namesOnly: false,
                       nameSuffixes: {
                         for (final MapEntry(:key, :value) in minutesOnField(
                           field: lineup.entriesFor(MatchCompositionZone.field),
