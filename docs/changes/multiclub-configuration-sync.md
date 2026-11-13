@@ -53,6 +53,9 @@ Les réglages ne réécrivent pas les résultats et compositions historiques.
 - Bandeau de chargement, erreur, nouvelle tentative et absence de requête hors
   connexion ; rejet des réponses de modules incomplètes ou mal typées.
 - Une erreur de lecture des règles ne réactive pas le mode live désactivé.
+- Les anciens tests d'écran déclarent maintenant leurs modules actifs dans
+  leurs fixtures ; un bouton de badges ne lit rien pendant un chargement ou
+  une erreur de modules. Aucun défaut permissif n'est réintroduit pour les tests.
 - Nouvelle suite SQL : mutations des modules, règles, identité, couleurs, logo,
   maillots, code d'invitation, terrain et quota ; absence de signal sur erreur
   ou écriture identique ; isolement A/B, rôles, suspension, éditeur et cascades.

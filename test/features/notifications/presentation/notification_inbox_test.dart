@@ -5,6 +5,7 @@ import 'package:as_grinta/features/notifications/presentation/notification_histo
 import 'package:as_grinta/features/notifications/presentation/notification_inbox_button.dart';
 import 'package:as_grinta/features/notifications/presentation/notifications_page.dart';
 import 'package:as_grinta/features/season_wrapped/data/season_wrapped_repository.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -113,6 +114,9 @@ Future<GoRouter> _pumpHistory(WidgetTester tester, _FakeInbox inbox) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        clubModulesProvider.overrideWith(
+          (ref) async => const ClubModules.allEnabled(),
+        ),
         notificationInboxRepositoryProvider.overrideWithValue(inbox),
         unreadNotificationCountProvider.overrideWith(
           (ref) => ref.watch(notificationInboxRepositoryProvider).unreadCount(),
@@ -145,6 +149,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            clubModulesProvider.overrideWith(
+              (ref) async => const ClubModules.allEnabled(),
+            ),
             unreadNotificationCountProvider.overrideWith((ref) async => unread),
           ],
           child: const MaterialApp(
@@ -199,6 +206,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            clubModulesProvider.overrideWith(
+              (ref) async => const ClubModules.allEnabled(),
+            ),
             unreadNotificationCountProvider.overrideWith((ref) async => 1),
           ],
           child: MaterialApp.router(routerConfig: router),
@@ -306,6 +316,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            clubModulesProvider.overrideWith(
+              (ref) async => const ClubModules.allEnabled(),
+            ),
             notificationInboxRepositoryProvider.overrideWithValue(inbox),
           ],
           child: const MaterialApp(home: NotificationsPage()),
@@ -328,6 +341,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          clubModulesProvider.overrideWith(
+            (ref) async => const ClubModules.allEnabled(),
+          ),
           unreadNotificationCountProvider.overrideWith((ref) async => 12),
           hasUnseenBadgeProvider.overrideWith((ref) async => true),
           seasonWrappedStateProvider.overrideWith(

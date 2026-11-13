@@ -12,6 +12,7 @@ import 'package:as_grinta/features/sports_management/data/sport_motm_vote_reposi
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
 import 'package:as_grinta/features/sports_management/domain/sport_motm_vote.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -74,6 +75,9 @@ Future<void> _pump(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        clubModulesProvider.overrideWith(
+          (ref) async => const ClubModules.allEnabled(),
+        ),
         matchDetailsProvider(_matchId)
             .overrideWith((ref) async => details ?? _details()),
         sportMotmVoteProvider(_matchId).overrideWith((ref) async => vote),

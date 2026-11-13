@@ -5,6 +5,7 @@ import 'package:as_grinta/features/players/data/player_card_repository.dart';
 import 'package:as_grinta/features/players/presentation/player_card_link.dart';
 import 'package:as_grinta/features/players/presentation/player_card_page.dart';
 import 'package:as_grinta/features/statistics/data/statistics_repository.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -178,6 +179,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            clubModulesProvider.overrideWith(
+              (ref) async => const ClubModules.allEnabled(),
+            ),
             for (final period in StatisticsPeriod.values)
               statisticsPeriodProvider(period).overrideWith(
                 (ref) async => StatisticsPeriodData(
@@ -299,6 +303,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            clubModulesProvider.overrideWith(
+              (ref) async => const ClubModules.allEnabled(),
+            ),
             for (final period in StatisticsPeriod.values)
               statisticsPeriodProvider(period).overrideWith(
                 (ref) async => StatisticsPeriodData(
@@ -375,6 +382,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            clubModulesProvider.overrideWith(
+              (ref) async => const ClubModules.allEnabled(),
+            ),
             for (final period in StatisticsPeriod.values)
               statisticsPeriodProvider(period).overrideWith(
                 (ref) async => StatisticsPeriodData(
@@ -778,6 +788,9 @@ void main() {
       final repository = _FakeSeasonsRepository();
       final container = ProviderContainer(
         overrides: [
+          clubModulesProvider.overrideWith(
+            (ref) async => const ClubModules.allEnabled(),
+          ),
           playerCardRepositoryProvider.overrideWithValue(repository),
           statisticsPeriodProvider(StatisticsPeriod.allTime).overrideWith(
             (ref) async => const StatisticsPeriodData(
