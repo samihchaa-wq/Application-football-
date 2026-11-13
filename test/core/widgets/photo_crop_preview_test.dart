@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:as_grinta/core/club/club_kits.dart';
-import 'package:as_grinta/core/widgets/kit_portrait.dart';
 import 'package:as_grinta/core/storage/avatar_image.dart';
 import 'package:as_grinta/core/widgets/photo_crop_preview.dart';
 import 'package:flutter/material.dart';
@@ -153,13 +152,9 @@ void main() {
         tester,
         Uint8List.fromList(img.encodeJpg(solid, quality: 95)),
         beforeExport: () async {
-          expect(find.byType(KitPortrait), findsOneWidget);
-          await tester.tap(find.byKey(const ValueKey('portrait-kit-preview')));
-          await tester.pumpAndSettle();
-          await tester.tap(find.text('Extérieur').last);
-          await tester.pumpAndSettle();
-          expect(tester.widget<KitPortrait>(find.byType(KitPortrait)).kit.label,
-              'Extérieur');
+          expect(find.byType(InteractiveViewer), findsOneWidget);
+          expect(find.byKey(const ValueKey('portrait-kit-preview')), findsNothing);
+          expect(find.text('👑'), findsNothing);
         },
       );
 
