@@ -8,7 +8,8 @@ void main() {
   setUp(ClubKits.reset);
   tearDown(ClubKits.reset);
 
-  test('le snapshot retient couleurs et gardien après modification du club', () {
+  test('le snapshot retient couleurs et gardien après modification du club',
+      () {
     final kits = [
       for (final kit in ClubKits.defaultsFor())
         kit.slot == JerseyOption.france
