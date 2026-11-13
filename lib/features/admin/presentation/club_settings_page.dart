@@ -702,8 +702,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
               leading: const Icon(Icons.checkroom_rounded),
               title: _settingTitle(
                 'Maillots du club',
-                'Personnalise les couleurs et les noms des tenues disponibles '
-                    'pour les matchs, y compris les tenues des gardiens.',
+                'Personnalise les couleurs et les noms des tenues de champ '
+                    'disponibles pour les matchs.',
               ),
               trailing: const Icon(Icons.chevron_right_rounded),
               onTap: () => context.push('/admin/club/maillots'),
