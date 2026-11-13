@@ -197,7 +197,7 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
   /// Une seule image source, déplacée sous des calques NON exportés.
   Widget _photoFrame({required bool interactive, required bool guide}) {
     final photo = !_ready
-        ? const Center(child: CircularProgressIndicator())
+        ? const ColoredBox(color: Color(0x1FFFFFFF))
         : interactive
             ? InteractiveViewer(
                 transformationController: _transformationController,
