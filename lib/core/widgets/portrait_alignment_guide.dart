@@ -7,11 +7,11 @@ class PortraitAlignmentGuide extends StatelessWidget {
   const PortraitAlignmentGuide({super.key});
 
   @override
-  Widget build(BuildContext context) => const IgnorePointer(
+  Widget build(BuildContext context) => IgnorePointer(
         child: Semantics(
           label: 'Emplacement de la couronne Homme du match',
           image: true,
-          child: CustomPaint(
+          child: const CustomPaint(
             key: ValueKey('portrait-crown-guide'),
             painter: CrownPlacementPainter(),
           ),
