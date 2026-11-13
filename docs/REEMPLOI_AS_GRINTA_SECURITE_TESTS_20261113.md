@@ -12,12 +12,12 @@ Le dépôt et la base d’AS Grinta restent **intouchés**. Aucun accès d’éc
 |---|---:|---:|---:|---:|
 | `lib/` Flutter | 188 | 102 | 0 | 30 |
 | `test/` Flutter | 173 | 39 | 1 | 21 |
-| `supabase/tests/database/` | 126 | 14 | 1 | 23 |
+| `supabase/tests/database/` | 126 | 14 | 1 | 24 |
 | `supabase/functions/` | 12 | 6 | 0 | 12 |
 | `.github/workflows/` actifs | 0 | 6 | 12 | 6 |
 | `supabase/migrations/` | 0 | 0 | 647 | 40 |
 
-**Note SQL** : les 32 fichiers de tests propres à Petit Filet sous `supabase/tests/` incluent 23 tests `database/` et 9 fichiers auxiliaires `load/`. Les **647 migrations** de l’application originale ne sont pas des corrections à importer en bloc : Petit Filet suit sa propre histoire de schéma et ses 40 migrations commerciales doivent rester immuables après application. Réutiliser des invariants ou tests, pas réappliquer un historique incompatible.
+**Note SQL** : les 32 fichiers de tests propres à Petit Filet sous `supabase/tests/` incluent 24 tests `database/` et 8 fichiers auxiliaires `load/`. Les **647 migrations** de l’application originale ne sont pas des corrections à importer en bloc : Petit Filet suit sa propre histoire de schéma et ses 40 migrations commerciales doivent rester immuables après application. Réutiliser des invariants ou tests, pas réappliquer un historique incompatible.
 
 ## Décisions de réemploi
 
