@@ -275,7 +275,7 @@ void main() {
     expect(ClubRules.waitlistMode, WaitlistMode.arrivalOrder);
   });
 
-  testWidgets('les +1 sont manuels et les heures auto ne sont plus proposées', (
+  testWidgets('les +1 sont automatiques et les anciens créneaux sont masqués', (
     tester,
   ) async {
     repository.ruleValues.addAll({
@@ -286,12 +286,12 @@ void main() {
     await pumpPage(tester);
     await openSection(tester, 'squad');
 
-    expect(find.textContaining('Aucun +1 n’est automatique.'), findsNothing);
+    expect(find.textContaining('Au coup d’envoi'), findsNothing);
     await tester.tap(
       find.byKey(const ValueKey('club-info-rule-waitlist_mode')),
     );
     await tester.pumpAndSettle();
-    expect(find.textContaining('Aucun +1 n’est automatique.'), findsOneWidget);
+    expect(find.textContaining('Au coup d’envoi'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('club-rule-waitlist_cutoff_days')),
       findsNothing,

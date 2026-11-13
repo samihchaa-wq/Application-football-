@@ -107,24 +107,24 @@ enum WaitlistMode {
   lastSeasonAttendance(
     0,
     'Par présence l’an dernier',
-    'Ceux qui sont le moins venus la saison passée attendent en premier, '
-        'puis chacun son tour.',
+    'Les +1 acquis cette saison sont prioritaires, puis les présences '
+        'de la saison précédente départagent les joueurs.',
   ),
 
   /// Premier à se dire disponible, premier convoqué.
   arrivalOrder(
     1,
     'Ordre d’arrivée',
-    'Les premiers à se dire disponibles sont convoqués, les derniers '
-        'attendent.',
+    'Les +1 acquis cette saison sont prioritaires, puis les joueurs '
+        'qui se sont déclarés présents en premier.',
   ),
 
   /// Tout le monde est convoqué ; l'admin met lui-même en attente.
   adminChoice(
     2,
     'Par choix',
-    'Tous les disponibles sont convoqués : tu mets toi-même en attente '
-        'ceux qui sont en trop.',
+    'Tous les disponibles sont convoqués : l’admin décide qui attend, '
+        'avec les crédits +1 visibles pour le guider.',
   );
 
   const WaitlistMode(this.value, this.label, this.description);

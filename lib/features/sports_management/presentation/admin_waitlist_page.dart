@@ -166,10 +166,13 @@ class _AdminWaitlistPageState extends ConsumerState<AdminWaitlistPage> {
               key: const ValueKey('waitlist-mode-notice'),
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(
-                'Ton club est en mode « ${ClubRules.waitlistMode.label} » : '
-                'ce classement ne sert pas pour l’instant. Il reprendra si '
-                'tu reviens au mode « Par présence l’an dernier » dans les '
-                'réglages du club.',
+                ClubRules.waitlistMode == WaitlistMode.arrivalOrder
+                    ? 'Mode « Ordre d’arrivée » : les +1 acquis cette saison '
+                        'sont prioritaires. À égalité, les premiers inscrits '
+                        'passent avant.'
+                    : 'Mode « Par choix » : les +1 restent acquis cette '
+                        'saison et guident l’admin, qui conserve le choix '
+                        'des convocations.',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ),

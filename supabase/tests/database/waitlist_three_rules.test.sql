@@ -363,8 +363,8 @@ select ok(
   'aucun crédit dans le journal n est produit automatiquement'
 );
 
--- Point de départ de la mise en ligne : l'ordre de départ prime, seuls les
--- +1 gagnés ensuite font descendre un joueur.
+-- La priorite suit les +1 cumules depuis le debut de saison ;
+-- l'ancien point de depart n'annule jamais les credits permanents.
 delete from private.sport_waitlist_start
 where season_id = 'b5200000-0000-0000-0000-000000000001';
 insert into private.sport_waitlist_start
@@ -385,11 +385,11 @@ select is(
    from public.sport_waitlist_entries e
    where e.season_id = 'b5200000-0000-0000-0000-000000000001'),
   array[
-    'b5400000-0000-0000-0000-000000000001'::uuid,
     'b5400000-0000-0000-0000-000000000002'::uuid,
-    'b5400000-0000-0000-0000-000000000003'::uuid
+    'b5400000-0000-0000-0000-000000000003'::uuid,
+    'b5400000-0000-0000-0000-000000000001'::uuid
   ],
-  'les anciens compteurs ne chamboulent pas l ordre de départ'
+  'les credits cumules priment sur le point de depart historique'
 );
 select public.admin_set_waitlist_manual_count(
   'b5400000-0000-0000-0000-000000000002',
@@ -401,11 +401,11 @@ select is(
    from public.sport_waitlist_entries e
    where e.season_id = 'b5200000-0000-0000-0000-000000000001'),
   array[
-    'b5400000-0000-0000-0000-000000000001'::uuid,
     'b5400000-0000-0000-0000-000000000003'::uuid,
-    'b5400000-0000-0000-0000-000000000002'::uuid
+    'b5400000-0000-0000-0000-000000000002'::uuid,
+    'b5400000-0000-0000-0000-000000000001'::uuid
   ],
-  'un nouveau +1 fait descendre Bruno en bas de liste'
+  'un nouveau +1 place Bruno devant celui qui a zero credit'
 );
 
 select * from finish();
