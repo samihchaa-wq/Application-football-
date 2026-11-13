@@ -87,7 +87,7 @@ mettre à jour à chaque étape importante.
    SQL, 3 fichiers Dart/fonctions). Sans effet pour la France métropolitaine,
    Belgique, Suisse, Luxembourg. À faire seulement pour un club hors de ce
    fuseau (DOM-TOM, étranger).
-7. Nom du produit : « Lucarne » (choisi par Samih le 12/11/2026). Stade de la présentation des compositions repeint aux couleurs du club (WebGL, repli : vidéo atténuée).
+7. Nom du produit : « Petit Filet » (choisi par Samih le 12/11/2026, remplace « Lucarne » écarté après recherche INPI : marque « La Lucarne » n°5276552 en classes 35/42). Stade de la présentation des compositions repeint aux couleurs du club (WebGL, repli : vidéo atténuée).
 
 ### Bloquant pour faire payer (décisions de Samih)
 8. Paiement : Stripe non intégré.

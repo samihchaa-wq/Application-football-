@@ -73,24 +73,24 @@ class CommercialPreflightTests(unittest.TestCase):
         self.assertTrue(check(self.valid))
 
     def test_custom_domain_is_accepted_when_configured(self) -> None:
-        for url in ("https://lucarne.fr/", "https://lucarne-app.pages.dev/"):
+        for url in ("https://petitfilet.fr/", "https://petit-filet-app.pages.dev/"):
             with self.subTest(url=url):
                 self.valid["PUBLIC_APP_URL"] = url
                 self.assertEqual(check(self.valid, custom_public_url=url), [])
 
     def test_custom_domain_must_match_build_config(self) -> None:
-        self.assertTrue(check(self.valid, custom_public_url="https://lucarne.fr/"))
+        self.assertTrue(check(self.valid, custom_public_url="https://petitfilet.fr/"))
 
     def test_custom_domain_without_configuration_is_refused(self) -> None:
-        self.valid["PUBLIC_APP_URL"] = "https://lucarne.fr/"
+        self.valid["PUBLIC_APP_URL"] = "https://petitfilet.fr/"
         self.assertTrue(check(self.valid, custom_public_url=""))
 
     def test_bad_custom_domains_are_refused(self) -> None:
         for url in (
-            "http://lucarne.fr/",
-            "https://lucarne.fr/app/",
-            "https://lucarne.fr",
-            "https://lucarne.fr:8443/",
+            "http://petitfilet.fr/",
+            "https://petitfilet.fr/app/",
+            "https://petitfilet.fr",
+            "https://petitfilet.fr:8443/",
             "https://asgrinta.fr/",
             "https://samihchaa-wq.github.io/",
             "https://localhost/",

@@ -84,7 +84,7 @@ function eventLines(row: Record<string, unknown>): string {
   let out = "BEGIN:VEVENT\r\n";
   // Compatibilité des abonnements existants : un UID iCalendar est une clé
   // persistante. Ne pas changer le suffixe historique, même si le produit
-  // est désormais Lucarne : cela créerait des matchs en double dans les
+  // est désormais Petit Filet : cela créerait des matchs en double dans les
   // agendas déjà abonnés (Apple, Google, Outlook).
   out += foldLine(`UID:${escapeIcs(id)}@sporteasy-grinta`);
   out += `DTSTAMP:${formatUtc(new Date())}\r\n`;

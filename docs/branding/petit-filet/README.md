@@ -1,4 +1,4 @@
-# Identité Lucarne
+# Identité Petit Filet
 
 Logo du produit, redessiné en vecteur le 12/11/2026 d'après l'esquisse de
 Samih (but, ballon en pleine lucarne, traînée verte).
@@ -6,8 +6,8 @@ Samih (but, ballon en pleine lucarne, traînée verte).
 - `logo_clair.svg` : logo complet sur fond blanc (magasins d'applis, documents).
 - `logo_sombre.svg` : logo complet sur le fond bleu nuit de l'appli.
 - `logo_sombre_transparent.svg` : idem sans fond, exporté en
-  `web/lucarne_logo.webp` (écran de démarrage) et
-  `assets/images/lucarne_logo.webp` (écran de connexion).
+  `web/petit_filet_logo.webp` (écran de démarrage) et
+  `assets/images/petit_filet_logo.webp` (écran de connexion).
 - `icone.svg` : icône sans texte → `web/icons/Icon-192.png`, `Icon-512.png`,
   `web/favicon.svg`, `web/favicon.png`.
 - `icone_maskable.svg` : marge de sécurité Android → `Icon-maskable-512.png`.
@@ -18,7 +18,7 @@ Samih (but, ballon en pleine lucarne, traînée verte).
 ## Licence de la police du logo
 
 Le générateur `gen2.py` intègre la police **Oswald** dans le code. Les trois
-logos SVG contenant le mot « LUCARNE » embarquent également cette police au
+logos SVG contenant les mots « PETIT FILET » embarquent également cette police au
 format `@font-face`. Leur redistribution est soumise à la licence libre
 **SIL Open Font License 1.1 (OFL-1.1)**.
 
@@ -31,7 +31,7 @@ format `@font-face`. Leur redistribution est soumise à la licence libre
   copie de la police est redistribuée.
 
 Cette notice couvre **la police Oswald seulement** ; elle ne constitue pas
-une vérification de disponibilité de la marque « Lucarne », des droits sur les
+une vérification de disponibilité de la marque « Petit Filet », des droits sur les
 autres ressources graphiques, ni des usages particuliers du logo.
 
 L'écusson neutre `assets/images/club_crest.webp` reste celui des clubs qui
