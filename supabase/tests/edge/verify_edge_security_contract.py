@@ -34,8 +34,11 @@ def function_file(slug: str, filename: str) -> str:
 
 
 def require_in_order(text: str, first: str, second: str, message: str) -> None:
-    first_index = text.find(first)
-    second_index = text.find(second)
+    # Le formatage TypeScript peut couper une chaîne d'appels sur plusieurs
+    # lignes ; une différence de blancs ne change pas l'ordre des gardes.
+    compact = "".join(text.split())
+    first_index = compact.find("".join(first.split()))
+    second_index = compact.find("".join(second.split()))
     require(first_index >= 0, f"marqueur absent: {first!r}")
     require(second_index >= 0, f"marqueur absent: {second!r}")
     require(first_index < second_index, message)
@@ -78,7 +81,14 @@ def main() -> int:
             f"{slug}: verify_jwt={actual!r}, attendu {expected!r}",
         )
 
-    manage = source("manage-user")
+    manage_entry = source("manage-user")
+    require(
+        'import { createManageUserHandler } from "./handler.ts"' in manage_entry
+        and "Deno.serve(createManageUserHandler({" in manage_entry
+        and "getEnv: (name) => Deno.env.get(name)" in manage_entry,
+        "manage-user doit exposer le handler testé avec les dépendances réelles",
+    )
+    manage = function_file("manage-user", "handler.ts")
     for marker in (
         'req.method !== "POST"',
         'authHeader?.startsWith("Bearer ")',
@@ -95,7 +105,10 @@ def main() -> int:
         '.select("role,status,club_id")',
         '"x-club-id": clubId',
     ):
-        require(marker in manage, f"manage-user: garde absente: {marker}")
+        require(
+            "".join(marker.split()) in "".join(manage.split()),
+            f"manage-user: garde absente: {marker}",
+        )
     require(
         manage.count('.eq("club_id", clubId)') >= 3,
         "manage-user doit borner chaque lecture de compte au club de l’administrateur",
@@ -123,8 +136,25 @@ def main() -> int:
     require_in_order(
         manage,
         'targetProfile.role === "admin"',
-        'admin.rpc(\n        "prepare_profile_for_hard_deletion"',
+        "admin.rpc(",
         "manage-user doit protéger le dernier admin avant toute suppression",
+    )
+    require(
+        'await callerClient.rpc("is_admin")' in manage
+        and "clubAccessError || clubAdminAllowed !== true" in manage,
+        "manage-user doit vérifier les droits du JWT via le prédicat SQL commun",
+    )
+    require_in_order(
+        manage,
+        'clubAccessError || clubAdminAllowed !== true',
+        'if (action === "reset-password")',
+        "manage-user doit refuser un club suspendu avant les actions admin",
+    )
+    require_in_order(
+        manage,
+        'if (String(peekedBody?.action ?? "") === "delete-self")',
+        'await callerClient.rpc("is_admin")',
+        "la suspension ne doit pas bloquer la demande d'effacement personnel",
     )
 
     register = source("register-account")
