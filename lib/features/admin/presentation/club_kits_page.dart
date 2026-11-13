@@ -246,8 +246,7 @@ class _KitEditor extends StatelessWidget {
               current: kit.goalkeeperBody,
               palette: palette,
               enabled: enabled,
-              onPick: (color) =>
-                  onChanged(kit.copyWith(goalkeeperBody: color)),
+              onPick: (color) => onChanged(kit.copyWith(goalkeeperBody: color)),
             ),
             const SizedBox(height: 12),
             _ColorChoice(
@@ -256,8 +255,7 @@ class _KitEditor extends StatelessWidget {
               current: kit.goalkeeperTrim,
               palette: palette,
               enabled: enabled,
-              onPick: (color) =>
-                  onChanged(kit.copyWith(goalkeeperTrim: color)),
+              onPick: (color) => onChanged(kit.copyWith(goalkeeperTrim: color)),
             ),
           ],
         ),
