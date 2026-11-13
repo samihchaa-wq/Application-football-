@@ -42,10 +42,6 @@ create policy deny_client_access on private.waitlist_auto_activation
   as restrictive for all to anon, authenticated
   using (false) with check (false);
 
-create policy club_isolation on private.waitlist_auto_processed_matches
-  as restrictive for all to public
-  using (club_id = (select private.current_club_id()))
-  with check (club_id = (select private.current_club_id()));
 create policy club_scope_access on private.waitlist_auto_processed_matches
   for all to club_scope using (true) with check (true);
 
