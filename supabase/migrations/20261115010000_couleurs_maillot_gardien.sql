@@ -1,6 +1,6 @@
 -- Couleurs du gardien distinctes des joueurs, par tenue et par club.
 -- Migration additive : mêmes trois identifiants de tenue et données existantes.
--- Les anciens clients sans goalkeeper_* reçoivent des valeurs par défaut ;
+-- Les anciens clients sans goalkeeper_* conservent les valeurs déjà enregistrées ;
 -- aucune table, saison ou ancienne migration n'est effacée.
 -- Écriture limitée à l'administrateur du club actif (contrôles RPC existants).
 
@@ -17,6 +17,7 @@ declare
   v_label text;
   v_goalkeeper_body text;
   v_goalkeeper_trim text;
+  v_previous_kits jsonb;
   v_enabled_count integer := 0;
 begin
   -- Administrateur actif d'un club actif : un club suspendu ou un compte
@@ -28,6 +29,12 @@ begin
      or jsonb_array_length(p_kits) <> 3 then
     raise exception 'Il faut exactement trois maillots.' using errcode = '22023';
   end if;
+
+  -- Lire uniquement les tenues du club courant : préserver les personnalisations
+  -- gardien lors d'une écriture provenant d'un ancien client Flutter.
+  select kits into v_previous_kits
+  from public.clubs
+  where id = (select private.current_club_id());
 
   for v_item in select value from jsonb_array_elements(p_kits) loop
     if jsonb_typeof(v_item) <> 'object'
@@ -43,16 +50,31 @@ begin
        or coalesce(v_item ->> 'trim', '') !~ '^#[0-9A-Fa-f]{6}$' then
       raise exception 'Couleur de maillot invalide.' using errcode = '22023';
     end if;
-    -- Les anciens clients restent compatibles : couleurs gardien de repli.
+    -- Un ancien client ne peut pas écraser les couleurs gardien existantes.
     v_goalkeeper_body := coalesce(
       v_item ->> 'goalkeeper_body',
+      (
+        select prior ->> 'goalkeeper_body'
+        from jsonb_array_elements(coalesce(v_previous_kits, '[]'::jsonb)) as prior
+        where prior ->> 'slot' = v_item ->> 'slot'
+        limit 1
+      ),
       case v_item ->> 'slot'
         when 'france' then '#168A52'
         when 'orange' then '#F5A300'
         else '#1F6FEB'
       end
     );
-    v_goalkeeper_trim := coalesce(v_item ->> 'goalkeeper_trim', '#FFFFFF');
+    v_goalkeeper_trim := coalesce(
+      v_item ->> 'goalkeeper_trim',
+      (
+        select prior ->> 'goalkeeper_trim'
+        from jsonb_array_elements(coalesce(v_previous_kits, '[]'::jsonb)) as prior
+        where prior ->> 'slot' = v_item ->> 'slot'
+        limit 1
+      ),
+      '#FFFFFF'
+    );
     if v_goalkeeper_body !~ '^#[0-9A-Fa-f]{6}$'
        or v_goalkeeper_trim !~ '^#[0-9A-Fa-f]{6}$' then
       raise exception 'Couleur de gardien invalide.' using errcode = '22023';
