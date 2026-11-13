@@ -3,6 +3,7 @@ import 'package:as_grinta/features/auth/domain/auth_profile.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
 import 'package:as_grinta/features/season_wrapped/data/season_wrapped_repository.dart';
 import 'package:as_grinta/features/season_wrapped/presentation/season_wrapped_entry_button.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,6 +15,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            clubModulesProvider.overrideWith(
+              (ref) async => const ClubModules.allEnabled(),
+            ),
             seasonWrappedStateProvider.overrideWith(
               (ref) async => const SeasonWrappedState.unavailable(),
             ),
@@ -38,6 +42,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          clubModulesProvider.overrideWith(
+            (ref) async => const ClubModules.allEnabled(),
+          ),
           seasonWrappedStateProvider.overrideWith(
             (ref) async => const SeasonWrappedState(
               available: true,

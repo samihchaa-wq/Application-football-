@@ -30,6 +30,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          clubModulesProvider.overrideWith(
+            (ref) async => const ClubModules.allEnabled(),
+          ),
           clubRepositoryProvider.overrideWithValue(repository),
           hasUnseenBadgeProvider.overrideWith((ref) => false),
           clubSubscriptionProvider.overrideWith(
@@ -209,6 +212,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          clubModulesProvider.overrideWith((ref) => repository.fetchModules()),
           clubRepositoryProvider.overrideWithValue(repository),
           hasUnseenBadgeProvider.overrideWith((ref) => false),
         ],
@@ -357,10 +361,14 @@ void main() {
     expect(hue < 20 || hue > 340, isTrue);
   });
 
-  testWidgets('le bouton des badges reste visible par défaut', (tester) async {
+  testWidgets('le bouton des badges reste visible quand le module est activé',
+      (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          clubModulesProvider.overrideWith(
+            (ref) async => const ClubModules.allEnabled(),
+          ),
           clubRepositoryProvider.overrideWithValue(repository),
           hasUnseenBadgeProvider.overrideWith((ref) => false),
         ],

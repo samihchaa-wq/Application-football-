@@ -2,6 +2,36 @@ import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('fonctionnalités reçues du serveur', () {
+    test('une réponse absente, partielle ou mal typée est refusée', () {
+      for (final value in <Object?>[
+        null,
+        [],
+        {},
+        {'badges': true},
+        {for (final module in ClubModule.values) module.key: 'true'},
+      ]) {
+        expect(() => ClubModules.fromJson(value), throwsFormatException);
+      }
+    });
+
+    test('les sept réglages sont lus sans réactiver ceux coupés', () {
+      final values = {
+        for (final module in ClubModule.values)
+          module.key: module != ClubModule.predictions,
+      };
+      final modules = ClubModules.fromJson(values);
+      expect(modules.isEnabled(ClubModule.predictions), isFalse);
+      expect(modules.isEnabled(ClubModule.badges), isTrue);
+    });
+
+    test('l’état de remplacement ne rend aucune option disponible', () {
+      const modules = ClubModules.allDisabled();
+      for (final module in ClubModule.values) {
+        expect(modules.isEnabled(module), isFalse);
+      }
+    });
+  });
   group('code d’invitation', () {
     test('les espaces, tirets et minuscules sont tolérés à la saisie', () {
       expect(normalizeInviteCode(' abcd-efgh '), 'ABCDEFGH');

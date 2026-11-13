@@ -5,6 +5,7 @@ import 'package:as_grinta/core/config/app_config.dart';
 import 'package:as_grinta/core/providers/supabase_provider.dart';
 import 'package:as_grinta/core/security/password_policy.dart';
 import 'package:as_grinta/core/utils/app_errors.dart';
+import 'package:as_grinta/features/auth/presentation/auth_state.dart';
 import 'package:as_grinta/features/feature_flags/domain/feature_flags.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -113,15 +114,30 @@ enum ClubModule {
   final String description;
 }
 
-/// État des fonctionnalités du club. Une fonctionnalité inconnue ou non
-/// renseignée est considérée comme activée : rien ne disparaît par erreur.
+/// État des fonctionnalités du club reçu du serveur.
 class ClubModules {
   const ClubModules(this._enabled);
 
   const ClubModules.allEnabled() : _enabled = const {};
 
+  const ClubModules.allDisabled()
+      : _enabled = const {
+          'predictions': false,
+          'statistics': false,
+          'man_of_the_match': false,
+          'live_mode': false,
+          'badges': false,
+          'season_wrapped': false,
+          'weather': false,
+        };
+
   factory ClubModules.fromJson(Object? json) {
-    if (json is! Map) return const ClubModules.allEnabled();
+    if (json is! Map ||
+        ClubModule.values.any((module) => json[module.key] is! bool)) {
+      throw const FormatException(
+        'Les fonctionnalités du club sont incomplètes.',
+      );
+    }
     return ClubModules({
       for (final entry in json.entries)
         if (entry.value is bool) '${entry.key}': entry.value as bool,
@@ -213,7 +229,8 @@ class ClubRepository {
     final row = await _client
         .from('clubs')
         .select(
-            'id,name,short_name,invite_code,primary_color,secondary_color,logo_path,kits')
+          'id,name,short_name,invite_code,primary_color,secondary_color,logo_path,kits',
+        )
         .single();
     return Club.fromJson(row);
   }
@@ -276,7 +293,10 @@ class ClubRepository {
 
   /// Envoie l'image comme logo du club. Réservé aux administrateurs.
   Future<Club> uploadLogo(
-      Uint8List bytes, String fileExt, String clubId) async {
+    Uint8List bytes,
+    String fileExt,
+    String clubId,
+  ) async {
     final ext = fileExt.isEmpty ? 'png' : fileExt.toLowerCase();
     // Chaque envoi prend un nouveau nom : le navigateur peut garder l'image
     // un an sans jamais afficher l'ancienne.
@@ -302,8 +322,10 @@ class ClubRepository {
   Future<Club> removeLogo() => _setLogoPath(null);
 
   Future<Club> _setLogoPath(String? path) async {
-    final result =
-        await _client.rpc('admin_set_club_logo', params: {'p_path': path});
+    final result = await _client.rpc(
+      'admin_set_club_logo',
+      params: {'p_path': path},
+    );
     if (result is! Map) throw StateError('Le logo n’a pas pu être changé.');
     return Club.fromJson(Map<String, dynamic>.from(result));
   }
@@ -361,8 +383,10 @@ class ClubRepository {
   }
 
   /// Active ou désactive une fonctionnalité. Réservé aux administrateurs.
-  Future<ClubModules> setModule(ClubModule module,
-      {required bool enabled}) async {
+  Future<ClubModules> setModule(
+    ClubModule module, {
+    required bool enabled,
+  }) async {
     return ClubModules.fromJson(
       await _client.rpc(
         'admin_set_club_module',
@@ -374,7 +398,9 @@ class ClubRepository {
   /// Les règles du club avec leur valeur actuelle.
   Future<List<ClubRule>> fetchRules() async {
     final result = await _client.rpc('get_club_rules');
-    if (result is! List) return const [];
+    if (result is! List || result.isEmpty || result.any((row) => row is! Map)) {
+      throw const FormatException('Les règles du club sont indisponibles.');
+    }
     return [
       for (final row in result)
         if (row is Map) ClubRule.fromJson(Map<String, dynamic>.from(row)),
@@ -533,19 +559,52 @@ final clubRepositoryProvider = Provider<ClubRepository>((ref) {
   return ClubRepository(ref.watch(supabaseClientProvider));
 });
 
+/// Une identité de compte, pas seulement « connecté ». Deux comptes peuvent
+/// se succéder sans passage observable par false pendant le renouvellement.
+final clubSessionIdentityProvider = Provider<String?>((ref) {
+  return ref.watch(
+    authControllerProvider.select(
+      (state) => state.isAuthenticated ? state.profile?.id : null,
+    ),
+  );
+});
+
 /// Le club du compte connecté.
 final myClubProvider = FutureProvider.autoDispose<Club>((ref) {
+  if (ref.watch(clubSessionIdentityProvider) == null) {
+    throw StateError('Le compte du club n’est pas encore disponible.');
+  }
   return ref.watch(clubRepositoryProvider).fetchMyClub();
 });
 
-/// Les fonctionnalités du club. Tant que la réponse n'est pas arrivée, ou si
-/// elle échoue, les écrans se comportent comme si tout était activé.
+/// La requête est reconstruite au changement de compte. Riverpod écarte la
+/// réponse d'une ancienne requête, même si celle-ci arrive après la nouvelle.
 final clubModulesProvider = FutureProvider<ClubModules>((ref) {
+  if (ref.watch(clubSessionIdentityProvider) == null) {
+    return const ClubModules.allDisabled();
+  }
   return ref.watch(clubRepositoryProvider).fetchModules();
 });
 
-/// Vrai si [module] est activé pour le club (ou pas encore connu).
-final clubModuleEnabledProvider =
-    Provider.family<bool, ClubModule>((ref, module) {
-  return ref.watch(clubModulesProvider).valueOrNull?.isEnabled(module) ?? true;
+final clubRulesProvider = FutureProvider<List<ClubRule>>((ref) {
+  if (ref.watch(clubSessionIdentityProvider) == null) return const [];
+  return ref.watch(clubRepositoryProvider).fetchRules();
 });
+
+/// Un état inconnu ou périmé ne vaut jamais une autorisation d'affichage.
+final clubModuleEnabledProvider = Provider.family<bool, ClubModule>((
+  ref,
+  module,
+) {
+  final modules = ref.watch(clubModulesProvider);
+  if (modules.isLoading || modules.hasError) return false;
+  return modules.valueOrNull?.isEnabled(module) ?? false;
+});
+
+/// Même invalidation après un signal distant, un retour au premier plan et
+/// une écriture locale. Les règles métiers restent autoritaires côté SQL.
+void refreshClubConfiguration(void Function(ProviderOrFamily) invalidate) {
+  invalidate(myClubProvider);
+  invalidate(clubModulesProvider);
+  invalidate(clubRulesProvider);
+}

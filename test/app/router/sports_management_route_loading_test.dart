@@ -1,7 +1,9 @@
 import 'dart:async';
+
 import 'dart:typed_data';
 
 import 'package:as_grinta/app/router/app_router.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/app/router/auth_redirect.dart';
 import 'package:as_grinta/features/auth/data/auth_repository.dart';
 import 'package:as_grinta/features/auth/domain/auth_profile.dart';
@@ -207,6 +209,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           featureFlagsRepositoryProvider.overrideWithValue(repository),
+          clubSessionIdentityProvider.overrideWithValue('test-session'),
           featureFlagsSessionReadyProvider.overrideWith(
             (ref) => ref.watch(sessionReady),
           ),

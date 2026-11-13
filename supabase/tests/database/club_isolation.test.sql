@@ -376,6 +376,9 @@ select is(
         'platform_update_club(uuid,text,text,timestamp with time zone,timestamp with time zone,integer,integer,bigint,text)',
         'platform_health()',
         'private.is_platform_operator()',
+        -- Trigger interne sans argument : émet uniquement une révision pour
+        -- la ligne déjà autorisée, y compris lors d'une opération éditeur.
+        'private.signal_club_configuration_change()',
         -- État du club lisible même quand il est suspendu.
         'get_my_club_access()',
         -- Aide posée par l'amorce des tests, absente d'une vraie base.

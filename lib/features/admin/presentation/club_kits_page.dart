@@ -71,7 +71,7 @@ class _ClubKitsPageState extends ConsumerState<ClubKitsPage> {
     try {
       final saved = await ref.read(clubRepositoryProvider).updateKits(kits);
       ClubKits.setFromJson([for (final kit in saved) kit.toJson()]);
-      ref.invalidate(myClubProvider);
+      refreshClubConfiguration(ref.invalidate);
       if (!mounted) return;
       setState(() => _kits = List.of(saved));
       _showMessage('Maillots enregistrés.');
@@ -286,10 +286,7 @@ class _ColorChoice extends StatelessWidget {
     final currentHex = colorToHex(current);
     // Une couleur déjà choisie hors palette (maillots par défaut tirés des
     // couleurs du club) reste affichée et sélectionnée.
-    final options = [
-      if (!palette.contains(currentHex)) currentHex,
-      ...palette,
-    ];
+    final options = [if (!palette.contains(currentHex)) currentHex, ...palette];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

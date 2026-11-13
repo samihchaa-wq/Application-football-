@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/club/club_kits.dart';
+import 'package:as_grinta/core/club/club_rules.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/features/auth/data/auth_repository.dart';
 import 'package:as_grinta/features/auth/domain/auth_profile.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
 import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/club/presentation/club_identity_sync.dart';
+import 'package:as_grinta/features/club/presentation/club_rules_sync.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
@@ -50,6 +52,7 @@ void main() {
     ClubIdentity.reset();
     AppTheme.resetClubColors();
     ClubKits.reset();
+    ClubRules.reset();
     auth = _SwitchableAuthController(profile('a'));
     clubs = _ControlledClubRepository(() => auth.state.profile!.id!);
     container = ProviderContainer(
@@ -59,6 +62,8 @@ void main() {
       ],
     );
     container.listen(clubIdentitySyncProvider, (_, __) {});
+    container.listen(clubRulesSyncProvider, (_, __) {});
+    container.listen(clubModulesProvider, (_, __) {});
   });
 
   tearDown(() {
@@ -66,6 +71,7 @@ void main() {
     ClubIdentity.reset();
     AppTheme.resetClubColors();
     ClubKits.reset();
+    ClubRules.reset();
   });
 
   Future<void> settle() async {
@@ -146,6 +152,90 @@ void main() {
     expectClub(clubA, 'Rouge');
   });
 
+  test('les modules et règles de A ne restent pas dans la session B', () async {
+    await settle();
+    clubs.complete('a', clubA, predictions: false, openDays: 3);
+    await settle();
+    expect(ClubRules.featuresOpenDays, 3);
+    expect(container.read(clubModuleEnabledProvider(ClubModule.predictions)),
+        isFalse);
+
+    auth.switchTo(profile('b'));
+    expect(container.read(clubModuleEnabledProvider(ClubModule.predictions)),
+        isFalse);
+    await settle();
+    expect(ClubRules.featuresOpenDays, 6);
+    clubs.complete('b', clubB, predictions: true, openDays: 9);
+    await settle();
+    expect(ClubRules.featuresOpenDays, 9);
+    expect(container.read(clubModuleEnabledProvider(ClubModule.predictions)),
+        isTrue);
+  });
+
+  test('les réponses tardives des règles et modules A sont ignorées chez B',
+      () async {
+    await settle();
+    auth.switchTo(profile('b'));
+    await settle();
+    clubs.complete('b', clubB, predictions: false, openDays: 10);
+    await settle();
+    clubs.complete('a', clubA, predictions: true, openDays: 2);
+    await settle();
+    expect(ClubRules.featuresOpenDays, 10);
+    expect(container.read(clubModuleEnabledProvider(ClubModule.predictions)),
+        isFalse);
+    expectClub(clubB, 'Vert');
+  });
+
+  test('un changement distant recharge les réglages sans changer de compte',
+      () async {
+    await settle();
+    clubs.complete('a', clubA, predictions: true, openDays: 3);
+    await settle();
+    expect(container.read(clubModuleEnabledProvider(ClubModule.predictions)),
+        isTrue);
+    refreshClubConfiguration(container.invalidate);
+    expect(container.read(clubModuleEnabledProvider(ClubModule.predictions)),
+        isFalse);
+    await settle();
+    clubs.complete('a', clubA, predictions: false, openDays: 12);
+    await settle();
+    expect(ClubRules.featuresOpenDays, 12);
+    expect(container.read(clubModuleEnabledProvider(ClubModule.predictions)),
+        isFalse);
+  });
+
+  test('une panne réseau dans B ne conserve ni règles ni autorisation de A',
+      () async {
+    await settle();
+    clubs.complete('a', clubA, predictions: true, openDays: 2);
+    await settle();
+    auth.switchTo(profile('b'));
+    await settle();
+    clubs.fail('b');
+    await settle();
+    expect(ClubRules.featuresOpenDays, 6);
+    expect(container.read(clubModuleEnabledProvider(ClubModule.predictions)),
+        isFalse);
+    expectNeutral();
+  });
+
+  test('une panne des règles ne réactive pas le mode live coupé par le club',
+      () async {
+    final live = container.listen(clubLiveModeSyncProvider, (_, __) {});
+    addTearDown(live.close);
+    await settle();
+    clubs.complete('a', clubA, liveEnabled: false);
+    await settle();
+    expect(ClubRules.liveEnabled, isFalse);
+
+    container.invalidate(clubRulesProvider);
+    await settle();
+    clubs.fail('a');
+    await settle();
+    expect(ClubRules.liveEnabled, isFalse);
+  });
+
   test('la déconnexion remet l’affichage neutre', () async {
     await settle();
     clubs.complete('a', clubA);
@@ -164,6 +254,22 @@ class _ControlledClubRepository implements ClubRepository {
 
   final String Function() _currentProfileId;
   final Map<String, List<Completer<Club>>> _pending = {};
+  final Map<String, List<Completer<ClubModules>>> _pendingModules = {};
+  final Map<String, List<Completer<List<ClubRule>>>> _pendingRules = {};
+
+  @override
+  Future<ClubModules> fetchModules() {
+    final completer = Completer<ClubModules>();
+    _pendingModules.putIfAbsent(_currentProfileId(), () => []).add(completer);
+    return completer.future;
+  }
+
+  @override
+  Future<List<ClubRule>> fetchRules() {
+    final completer = Completer<List<ClubRule>>();
+    _pendingRules.putIfAbsent(_currentProfileId(), () => []).add(completer);
+    return completer.future;
+  }
 
   @override
   Future<Club> fetchMyClub() {
@@ -172,13 +278,38 @@ class _ControlledClubRepository implements ClubRepository {
     return completer.future;
   }
 
-  void complete(String profileId, Club club) {
+  void complete(String profileId, Club club,
+      {bool predictions = true, bool liveEnabled = true, int openDays = 6}) {
+    for (final completer in _pendingModules.remove(profileId) ?? const []) {
+      completer.complete(
+          ClubModules({'predictions': predictions, 'live_mode': liveEnabled}));
+    }
+    for (final completer in _pendingRules.remove(profileId) ?? const []) {
+      completer.complete([
+        ClubRule(
+            key: 'features_open_days',
+            label: 'Ouverture',
+            description: '',
+            unit: 'jours',
+            group: 'Avant le match',
+            defaultValue: 6,
+            min: 1,
+            max: 21,
+            value: openDays)
+      ]);
+    }
     for (final completer in _pending.remove(profileId) ?? const []) {
       completer.complete(club);
     }
   }
 
   void fail(String profileId) {
+    for (final completer in _pendingModules.remove(profileId) ?? const []) {
+      completer.completeError(StateError('réseau indisponible'));
+    }
+    for (final completer in _pendingRules.remove(profileId) ?? const []) {
+      completer.completeError(StateError('réseau indisponible'));
+    }
     for (final completer in _pending.remove(profileId) ?? const []) {
       completer.completeError(StateError('réseau indisponible'));
     }
