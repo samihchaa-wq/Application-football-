@@ -1,6 +1,6 @@
 # Petit Filet — parité fonctionnelle AS Grinta et refonte des réglages
 
-> **Mise à jour du 13/11/2026 :** les +1 de la liste d'attente sont désormais **automatiques au coup d'envoi** et permanents sur la saison (PR #86, [nouvelle règle](changes/credits-attente-permanents-20261113.md)). Les mentions de +1 « manuels » ci-dessous décrivent la décision précédente, remplacée.
+> **Décision corrigée :** les +1 sont **exclusivement manuels**, attribués par les administrateurs. La [PR #105](https://github.com/samihchaa-wq/Application-football-/pull/105) prépare le retrait du cron sans écriture en production. Cette décision remplace l'ancienne automatisation du coup d'envoi ; les autres constats de parité restent historiques.
 
 **Date : 13 novembre 2026.** Périmètre : dépôt commercial `samihchaa-wq/Application-football-`. Source AS Grinta lue **sans aucune écriture**. Aucun accès en écriture à Supabase, aucun déploiement, aucun test E2E réel.
 

@@ -1,6 +1,6 @@
 # Refonte de la liste d'attente — historique des règles (novembre 2026)
 
-> **Nouvelle décision validée le 13/11/2026 :** les +1 deviennent **automatiques au coup d'envoi**, permanents pendant toute la saison, et prioritaires sur les critères de sélection. Voir [la nouvelle règle](credits-attente-permanents-20261113.md). Le contenu ci-dessous est conservé comme **historique** de la décision précédente (« admin uniquement »), qui est désormais remplacée.
+> **Décision produit actuelle :** seuls les administrateurs modifient les crédits +1 avec les boutons +/−. La migration automatique du 16/11 est remplacée par le [correctif préparé en PR #105](waitlist-admin-only-correctif-20261113.md), **pas encore déployé**. Les passages ci-dessous qui décrivent un moteur de crédits au coup d'envoi sont historiques et ne doivent pas servir de consigne pour un développement nouveau.
 
 > **Décision prioritaire du 13/11/2026 (Petit Filet, issue #68) :** la rotation des convocations peut rester automatique, mais **aucun +1 d’attente ne doit être attribué ni retiré automatiquement**. Seul un administrateur agit avec les boutons +/− dans « Liste d’attente ». Les anciens crédits ne sont pas effacés. La migration préparée `20261115000000_waitlist_credits_admin_only.sql` désactive le cron et neutralise les fonctions automatiques. Les références ci-dessous aux anciennes fenêtres de crédit sont historiques et ne font plus autorité.
 

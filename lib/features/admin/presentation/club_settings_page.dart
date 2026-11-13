@@ -687,9 +687,9 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       rule.description,
       for (final mode in WaitlistMode.values)
         '${mode.label} : ${mode.description}',
-      'Au coup d’envoi, un joueur présent encore en attente gagne automatiquement +1. '
-          'Les crédits restent acquis toute la saison et sont prioritaires pour les prochains matchs. '
-          'Les admins peuvent corriger les compteurs avec +/−.',
+      'Les crédits +1 ne sont jamais ajoutés ni retirés automatiquement. '
+          'Seuls les administrateurs les modifient avec +/− dans la liste d’attente. '
+          'Les crédits enregistrés sont conservés pendant la saison et guident les prochains matchs.',
     ].join('\n\n');
     return Padding(
       key: ValueKey('club-rule-${rule.key}'),

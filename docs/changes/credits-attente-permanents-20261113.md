@@ -1,4 +1,6 @@
-# Petit Filet — priorité cumulée des passages en attente (décision du 13/11/2026)
+# Petit Filet — priorité cumulée des passages en attente (historique, remplacé)
+
+> **Document historique, règle remplacée :** la décision actuellement retenue par le propriétaire est **aucun +1 automatique**. Le correctif préparé par [PR #105](https://github.com/samihchaa-wq/Application-football-/pull/105) désactive l'attribution au coup d'envoi et conserve les crédits manuels. Voir [contrat en vigueur](waitlist-admin-only-correctif-20261113.md). Tant que la migration corrective n'est pas appliquée sur Supabase commercial, le comportement distant peut encore créditer automatiquement. Le texte ci-dessous explique l'ancienne mécanique et ne doit pas être réutilisé comme spécification active.
 
 ## Règle unique
 - Au **coup d'envoi**, chaque joueur de saison **présent, éligible et toujours dans « Liste d'attente »** gagne **exactement +1**.

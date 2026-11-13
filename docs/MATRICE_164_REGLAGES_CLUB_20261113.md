@@ -1,6 +1,6 @@
 # Matrice 164 fonctionnalités — règles et options par club
 
-> **Mise à jour du 13/11/2026 :** les +1 de la liste d'attente sont désormais **automatiques au coup d'envoi** et permanents sur la saison (PR #86, [nouvelle règle](changes/credits-attente-permanents-20261113.md)). Les mentions de +1 « manuels » ci-dessous décrivent la décision précédente, remplacée.
+> **Décision plus récente à appliquer :** aucun crédit +1 automatique ; correction exclusivement par administrateur. Voir [PR #105](https://github.com/samihchaa-wq/Application-football-/pull/105) et [contrat](changes/waitlist-admin-only-correctif-20261113.md). Les autres lignes de cette matrice sont conservées comme état documentaire ; ne pas les considérer comme tests réellement exécutés.
 
 Établie le 13 novembre 2026 après comparaison GitHub AS Grinta (lecture seule) / Petit Filet. **Inventaire de décisions et preuves, pas déclaration de recette terminée.**
 
