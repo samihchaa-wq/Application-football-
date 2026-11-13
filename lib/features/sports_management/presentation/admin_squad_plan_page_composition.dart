@@ -565,12 +565,15 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
             // Les joueurs calés sur leur poste, comme chez les joueurs : la
             // vidéo s'y pose exactement.
-            child: CompositionPitchWithBench(
-              key: _publishedLanding.area,
-              pitchKey: _publishedLanding.pitch,
-              field: alignFieldToFormation(_composition?.formationCode, field),
-              bench: bench,
-              maxWidth: 520,
+            child: MatchCompositionKitScope(
+              matchId: _selectedMatchId,
+              child: CompositionPitchWithBench(
+                key: _publishedLanding.area,
+                pitchKey: _publishedLanding.pitch,
+                field: alignFieldToFormation(_composition?.formationCode, field),
+                bench: bench,
+                maxWidth: 520,
+              ),
             ),
           ),
         ),
@@ -828,14 +831,17 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
         ),
         const SizedBox(height: 14),
         Center(
-          child: FormationPitchEditor(
-            slots: formationForCode(composition.formationCode).slots,
-            entries: field,
-            editable: !_compositionLocked,
-            onDroppedOnSlot: _dropOnSlot,
-            onRemoveFromField: _moveToBench,
-            finishedBenchCounts: _postMatch ? const {} : _finishedBenchCounts,
-            benchedLastTime: _postMatch ? const {} : _benchedLastTime,
+          child: MatchCompositionKitScope(
+            matchId: _selectedMatchId,
+            child: FormationPitchEditor(
+              slots: formationForCode(composition.formationCode).slots,
+              entries: field,
+              editable: !_compositionLocked,
+              onDroppedOnSlot: _dropOnSlot,
+              onRemoveFromField: _moveToBench,
+              finishedBenchCounts: _postMatch ? const {} : _finishedBenchCounts,
+              benchedLastTime: _postMatch ? const {} : _benchedLastTime,
+            ),
           ),
         ),
         const SizedBox(height: 14),
