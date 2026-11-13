@@ -8,6 +8,8 @@ class _PaperTeams extends StatelessWidget {
     required this.team2Controller,
     required this.team1Jersey,
     required this.team2Jersey,
+    this.frozenTeam1Kit,
+    this.frozenTeam2Kit,
     required this.team1,
     required this.team2,
     required this.editable,
@@ -25,6 +27,8 @@ class _PaperTeams extends StatelessWidget {
   final TextEditingController? team2Controller;
   final JerseyOption team1Jersey;
   final JerseyOption team2Jersey;
+  final ClubKit? frozenTeam1Kit;
+  final ClubKit? frozenTeam2Kit;
   final List<InternalCompositionEntry> team1;
   final List<InternalCompositionEntry> team2;
   final bool editable;
@@ -43,7 +47,7 @@ class _PaperTeams extends StatelessWidget {
       children: [
         Expanded(
           child: CompositionKitScope(
-            kit: team1Jersey.kit,
+            kit: frozenTeam1Kit ?? team1Jersey.kit,
             child: _PaperTeamColumn(
               name: team1Name,
               teamNo: 1,
@@ -63,7 +67,7 @@ class _PaperTeams extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: CompositionKitScope(
-            kit: team2Jersey.kit,
+            kit: frozenTeam2Kit ?? team2Jersey.kit,
             child: _PaperTeamColumn(
               name: team2Name,
               teamNo: 2,
