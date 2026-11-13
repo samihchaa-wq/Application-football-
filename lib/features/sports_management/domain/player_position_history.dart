@@ -4,14 +4,13 @@ import 'package:as_grinta/features/sports_management/domain/football_formation.d
 import 'package:as_grinta/features/sports_management/domain/player_position_profiles.dart';
 import 'package:flutter/painting.dart' show Offset;
 
-/// Date à partir de laquelle les compositions enregistrées dans
-/// l'application alimentent les postes de référence.
+/// Première date interrogée pour retrouver les postes déjà joués.
 ///
-/// L'archive du club couvre les compositions jusqu'au 21 mai 2026 : reprendre
-/// ces matchs depuis la base les compterait deux fois. Le raccord est posé un
-/// peu plus tard, à la mise en service de la simulation, parce que les seules
-/// compositions enregistrées entre les deux sont des matchs de test.
-final DateTime kLivePositionHistoryStart = DateTime.utc(2026, 8, 8);
+/// AS Grinta limitait cette lecture à août 2026 afin de ne pas compter deux
+/// fois son archive locale. Petit Filet n'embarque aucune archive : chaque club
+/// doit pouvoir exploiter ses compositions historiques, même antérieures à
+/// 2026. Le filtrage par club reste appliqué par la RPC côté serveur.
+final DateTime kLivePositionHistoryStart = DateTime.utc(1, 1, 1);
 
 /// Un poste tenu par un joueur sur un match déjà joué.
 class PlayedPosition {
