@@ -16,6 +16,7 @@ import 'package:as_grinta/features/sports_management/domain/formation_display.da
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
 import 'package:as_grinta/features/sports_management/presentation/admin_squad_plan_page.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_presentation.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/internal_team_composition_view.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/player_composition_video.dart';
@@ -433,9 +434,11 @@ class PublishedLineupPreview extends ConsumerWidget {
                     ),
               ),
               const SizedBox(height: AppSpacing.contentGap),
-              CompositionPitchWithBench(
-                key: landing?.area,
-                pitchKey: landing?.pitch,
+              MatchCompositionKitScope(
+                matchId: matchId,
+                child: CompositionPitchWithBench(
+                  key: landing?.area,
+                  pitchKey: landing?.pitch,
                 field: alignFieldToFormation(
                   composition.formationCode,
                   withMatchKitPhotos(
@@ -447,7 +450,8 @@ class PublishedLineupPreview extends ConsumerWidget {
                   composition.entriesFor(MatchCompositionZone.bench),
                   kitPhotos,
                 ),
-                maxWidth: expanded ? 520 : 420,
+                  maxWidth: expanded ? 520 : 420,
+                ),
               ),
               if (showLists && beforeKickoff) ...[
                 const SizedBox(height: AppSpacing.sectionGap),
