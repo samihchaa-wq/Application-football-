@@ -1,4 +1,5 @@
 import 'package:as_grinta/core/club/club_identity.dart';
+
 import 'dart:async';
 
 import 'package:as_grinta/core/theme/app_spacing.dart';
@@ -25,6 +26,7 @@ import 'package:as_grinta/features/matches/presentation/widgets/upcoming_match_f
 import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/formation_pitch_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -188,8 +190,9 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
                   benchColors: {
                     for (final key in bundle.substituteCounts.keys)
                       key: switch (lastExits[key]) {
-                        final exit? =>
-                          substitutionSalvoColorAt(exit.colorIndex),
+                        final exit? => substitutionSalvoColorAt(
+                            exit.colorIndex,
+                          ),
                         null => substitutionStartColor,
                       },
                   },
@@ -722,9 +725,8 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
   }
 
   void _showMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _explainHowToSubstitute(BuildContext context) {
@@ -758,9 +760,7 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
     try {
       await controller.changeFormation(
         formationCode: nextCode,
-        entries: [
-          for (final entry in changed.entries) entry.toRpcJson(),
-        ],
+        entries: [for (final entry in changed.entries) entry.toRpcJson()],
         expectedLineupRevision: bundle.session.lineupRevision,
       );
       if (!mounted) return;

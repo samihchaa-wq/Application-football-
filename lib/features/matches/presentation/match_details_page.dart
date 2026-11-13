@@ -21,6 +21,7 @@ import 'package:as_grinta/features/sports_management/domain/match_availability_b
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
 import 'package:as_grinta/features/sports_management/domain/sport_motm_vote.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/stadium_video.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -41,8 +42,9 @@ int compareMatchPredictionResultsForDisplay(
       currentProfileId != null && b.profileId == currentProfileId;
   if (aIsCurrent != bIsCurrent) return aIsCurrent ? -1 : 1;
 
-  final nameComparison =
-      a.name.trim().toLowerCase().compareTo(b.name.trim().toLowerCase());
+  final nameComparison = a.name.trim().toLowerCase().compareTo(
+        b.name.trim().toLowerCase(),
+      );
   if (nameComparison != 0) return nameComparison;
 
   // Deterministic fallback for duplicate display names.
@@ -62,10 +64,12 @@ class MatchDetailsPage extends ConsumerWidget {
     final currentProfileId = ref.watch(
       authControllerProvider.select((state) => state.profile?.id),
     );
-    final predictionsEnabled =
-        ref.watch(clubModuleEnabledProvider(ClubModule.predictions));
-    final motmEnabled =
-        ref.watch(clubModuleEnabledProvider(ClubModule.manOfTheMatch));
+    final predictionsEnabled = ref.watch(
+      clubModuleEnabledProvider(ClubModule.predictions),
+    );
+    final motmEnabled = ref.watch(
+      clubModuleEnabledProvider(ClubModule.manOfTheMatch),
+    );
 
     // Composition et faits du match sont des blocs de la liste qui ne
     // restent construits que tant qu'ils sont proches de l'écran. Sans
@@ -613,9 +617,12 @@ class _CompletedCompositionCard extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.only(top: 16),
-      child: CompletedCompositionCard(
-        composition: displayedComposition,
-        fallbackPlayers: _playersFromMatchDetails(displayedComposition),
+      child: MatchCompositionKitScope(
+        matchId: matchId,
+        child: CompletedCompositionCard(
+          composition: displayedComposition,
+          fallbackPlayers: _playersFromMatchDetails(displayedComposition),
+        ),
       ),
     );
   }
@@ -647,13 +654,13 @@ class _MotmVotesCard extends ConsumerWidget {
         .where((candidate) => (candidate.votesCount ?? 0) > 0)
         .toList()
       ..sort((a, b) {
-        final votesComparison =
-            (b.votesCount ?? 0).compareTo(a.votesCount ?? 0);
+        final votesComparison = (b.votesCount ?? 0).compareTo(
+          a.votesCount ?? 0,
+        );
         if (votesComparison != 0) return votesComparison;
-        return a.displayName
-            .trim()
-            .toLowerCase()
-            .compareTo(b.displayName.trim().toLowerCase());
+        return a.displayName.trim().toLowerCase().compareTo(
+              b.displayName.trim().toLowerCase(),
+            );
       });
     if (ranked.isEmpty) return const SizedBox.shrink();
 
@@ -687,9 +694,7 @@ class _MotmVotesCard extends ConsumerWidget {
                 size: 36,
               ),
               const SizedBox(width: 12),
-              Expanded(
-                child: Text(name, overflow: TextOverflow.ellipsis),
-              ),
+              Expanded(child: Text(name, overflow: TextOverflow.ellipsis)),
               Text('$votes voix'),
             ],
           ),

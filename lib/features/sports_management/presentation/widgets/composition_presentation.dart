@@ -1,4 +1,6 @@
 import 'package:as_grinta/core/club/club_identity.dart';
+import 'package:as_grinta/core/club/club_kits.dart';
+
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -11,6 +13,7 @@ import 'package:as_grinta/core/widgets/match_detail_header_card.dart';
 import 'package:as_grinta/features/sports_management/domain/composition_presentation_plan.dart';
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_presentation_camera.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/football_pitch.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/stadium_video.dart';
@@ -47,7 +50,11 @@ class CompositionPresentationData {
     this.typeLabel,
     this.address,
     this.formationCode,
+    this.kit,
   });
+
+  /// Couleurs capturées pour cette vidéo (joueurs et gardien).
+  final ClubKit? kit;
 
   final String homeName;
   final String awayName;
@@ -184,14 +191,18 @@ Future<void> showCompositionPresentation(
       opaque: !onPage,
       transitionDuration: const Duration(milliseconds: 250),
       reverseTransitionDuration: const Duration(milliseconds: 200),
-      pageBuilder: (context, animation, secondaryAnimation) =>
-          CompositionPresentationPage(
-        data: data,
-        background: debugPresentationBackground ?? background,
-        preview: preview,
-        landing: landsOnPage ? landing : null,
-        endsOnPage: onPage,
-      ),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        final page = CompositionPresentationPage(
+          data: data,
+          background: debugPresentationBackground ?? background,
+          preview: preview,
+          landing: landsOnPage ? landing : null,
+          endsOnPage: onPage,
+        );
+        return data.kit == null
+            ? page
+            : CompositionKitScope(kit: data.kit!, child: page);
+      },
       transitionsBuilder: (context, animation, secondaryAnimation, child) =>
           FadeTransition(opacity: animation, child: child),
     ),
@@ -416,8 +427,7 @@ class _CompositionPresentationPageState
     Rect boxRect(RenderBox box) => Rect.fromPoints(
           root.globalToLocal(box.localToGlobal(Offset.zero)),
           root.globalToLocal(
-            box.localToGlobal(box.size.bottomRight(Offset.zero)),
-          ),
+              box.localToGlobal(box.size.bottomRight(Offset.zero))),
         );
     final rect = boxRect(pitch);
     final area = landing?.area.currentContext?.findRenderObject();
@@ -442,9 +452,7 @@ class _CompositionPresentationPageState
     // pas de page à part entière, donc pas de barre ni d'écusson d'accueil.
     // Posée sur la vraie page, celle-ci reste affichée dessous : elle est
     // tue pour les lecteurs d'écran (VoiceOver) tant que la vidéo est là.
-    return BlockSemantics(
-      child: _buildPlayer(context),
-    );
+    return BlockSemantics(child: _buildPlayer(context));
   }
 
   Widget _buildPlayer(BuildContext context) {
@@ -594,7 +602,8 @@ class _CompositionPresentationPageState
                                   children: [
                                     const Icon(Icons.groups_2_outlined),
                                     const SizedBox(
-                                        width: AppSpacing.contentGap),
+                                      width: AppSpacing.contentGap,
+                                    ),
                                     Expanded(
                                       child: Text(
                                         'Composition',

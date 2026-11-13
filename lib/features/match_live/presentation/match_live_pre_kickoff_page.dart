@@ -9,6 +9,7 @@ import 'package:as_grinta/features/sports_management/domain/football_formation.d
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
 import 'package:as_grinta/features/sports_management/domain/match_squad_editing.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/match_squad_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -183,10 +184,8 @@ class _MatchLivePreKickoffPageState
           labelText: label,
           border: const OutlineInputBorder(),
           isDense: true,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 10,
-            vertical: 16,
-          ),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
         );
 
     Widget iconAction({
@@ -420,9 +419,12 @@ class MatchLivePreKickoffSpectatorView extends StatelessWidget {
         const SizedBox(height: 16),
         MediaQuery.withClampedTextScaling(
           maxScaleFactor: 1,
-          child: CompositionPitchWithBench(
-            field: lineup.entriesFor(MatchCompositionZone.field),
-            bench: lineup.entriesFor(MatchCompositionZone.bench),
+          child: MatchCompositionKitScope(
+            matchId: bundle.session.matchId,
+            child: CompositionPitchWithBench(
+              field: lineup.entriesFor(MatchCompositionZone.field),
+              bench: lineup.entriesFor(MatchCompositionZone.bench),
+            ),
           ),
         ),
       ],

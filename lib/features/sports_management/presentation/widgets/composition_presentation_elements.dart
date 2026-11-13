@@ -50,9 +50,7 @@ class _PillButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: const Color(0x8C041224),
-      shape: const StadiumBorder(
-        side: BorderSide(color: Color(0x47EEF3FB)),
-      ),
+      shape: const StadiumBorder(side: BorderSide(color: Color(0x47EEF3FB))),
       child: InkWell(
         customBorder: const StadiumBorder(),
         onTap: onPressed,
@@ -204,8 +202,9 @@ class _PanelLayout {
 /// Rangée des remplaçants en bas de l'image, à gauche du coach s'il est là.
 class _BenchStrip {
   _BenchStrip(CompositionPresentationPlan plan) {
-    final hasCoach =
-        plan.lines.any((line) => line.kind == PresentationLineKind.coach);
+    final hasCoach = plan.lines.any(
+      (line) => line.kind == PresentationLineKind.coach,
+    );
     final bench = plan.lines
         .where((line) => line.kind == PresentationLineKind.bench)
         .fold<int>(0, (sum, line) => sum + line.people.length);
@@ -256,6 +255,9 @@ class _PresentationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const photoSize = CompositionPlayerTile.photoSize;
+    final kit = CompositionKitScope.maybeOf(context);
+    final bodyColor = face.isGoalkeeper ? kit?.goalkeeperBody : kit?.body;
+    final trimColor = face.isGoalkeeper ? kit?.goalkeeperTrim : kit?.trim;
     final avatar = PlayerAvatar(
       photoUrl: face.photoUrl,
       name: face.name,
@@ -282,9 +284,14 @@ class _PresentationTile extends StatelessWidget {
                         if (silhouette > 0)
                           Opacity(
                             opacity: silhouette.clamp(0.0, 1.0),
-                            child: const SizedBox.square(
+                            child: SizedBox.square(
                               dimension: photoSize,
-                              child: CustomPaint(painter: _SilhouettePainter()),
+                              child: CustomPaint(
+                                painter: _SilhouettePainter(
+                                  shirtColor: bodyColor,
+                                  shirtTrim: trimColor,
+                                ),
+                              ),
                             ),
                           ),
                       ],
@@ -301,7 +308,10 @@ class _PresentationTile extends StatelessWidget {
 
 /// Silhouette neutre détourée, pour un joueur sans photo.
 class _SilhouettePainter extends CustomPainter {
-  const _SilhouettePainter();
+  const _SilhouettePainter({this.shirtColor, this.shirtTrim});
+
+  final Color? shirtColor;
+  final Color? shirtTrim;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -325,8 +335,11 @@ class _SilhouettePainter extends CustomPainter {
       ..quadraticBezierTo(50 * s, 75 * s, 41.5 * s, 70 * s)
       ..close();
     canvas
-      ..drawPath(body, fill)
-      ..drawPath(neck, Paint()..color = const Color(0xFF9FB0C5))
+      ..drawPath(
+        body,
+        shirtColor == null ? fill : (Paint()..color = shirtColor!),
+      )
+      ..drawPath(neck, Paint()..color = shirtTrim ?? const Color(0xFF9FB0C5))
       ..drawOval(
         Rect.fromCenter(
           center: Offset(50 * s, 38 * s),
@@ -338,7 +351,9 @@ class _SilhouettePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_SilhouettePainter oldDelegate) => false;
+  bool shouldRepaint(_SilhouettePainter oldDelegate) =>
+      shirtColor != oldDelegate.shirtColor ||
+      shirtTrim != oldDelegate.shirtTrim;
 }
 
 // ---------------------------------------------------------------------------
