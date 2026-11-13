@@ -108,7 +108,7 @@ Future<void> _playUntil(WidgetTester tester, double seconds) async {
 }
 
 void main() {
-  testWidgets('la vidéo habille le gardien avec la tenue sélectionnée',
+  testWidgets('la vidéo ne superpose aucun maillot au gardien',
       (tester) async {
     final kit = ClubKits.of(JerseyOption.orange).copyWith(
       dressPlayers: true,
@@ -120,7 +120,7 @@ void main() {
     await tester.pump();
     await _playUntil(tester, 3.4);
     expect(
-        find.byKey(const ValueKey('portrait-jersey-goalkeeper')), findsWidgets);
+        find.byKey(const ValueKey('portrait-jersey-goalkeeper')), findsNothing);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
