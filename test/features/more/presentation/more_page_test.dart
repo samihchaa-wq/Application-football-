@@ -106,10 +106,19 @@ void main() {
       'Équipes & stades',
       'Réglages du club',
       'Administration',
-      'Se déconnecter',
+      'Saisons',
     ]) {
       expect(find.text(title), findsOneWidget, reason: title);
     }
+
+    // La gestion des saisons ajoute une ligne : le bouton de déconnexion
+    // reste présent, mais nécessite maintenant un défilement sur téléphone.
+    await tester.scrollUntilVisible(
+      find.text('Se déconnecter'),
+      160,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Se déconnecter'), findsOneWidget);
 
     // Les deux groupes sont chacun une seule carte.
     expect(
