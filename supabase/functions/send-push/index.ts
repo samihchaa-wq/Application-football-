@@ -9,7 +9,7 @@ import {
 } from "./club_notification_policy.ts";
 import { optionalMatchId, targetedDeliveryLogKind } from "./delivery_log.ts";
 import {
-  executePushDelivery,
+  executeValidatedPushDelivery,
   PUSH_DELIVERY_TTL_SECONDS,
 } from "./delivery_policy.ts";
 import {
@@ -169,7 +169,7 @@ async function sendFixedPayloadToProfiles(
   const deliveries: DeliveryLogRow[] = [];
   let sent = 0;
   await Promise.all(targets.map(async (sub) => {
-    const outcome = await executePushDelivery(() =>
+    const outcome = await executeValidatedPushDelivery(sub, () =>
       webpush.sendNotification(
         { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
         payloadForProfile(payload, sub.profile_id, unread),
@@ -399,7 +399,7 @@ Deno.serve(async (req: Request) => {
 
     await Promise.all(
       subscriptions.map(async (sub) => {
-        const outcome = await executePushDelivery(() =>
+        const outcome = await executeValidatedPushDelivery(sub, () =>
           webpush.sendNotification(
             {
               endpoint: sub.endpoint,
@@ -685,7 +685,7 @@ Deno.serve(async (req: Request) => {
 
   await Promise.all(
     subscriptions.map(async (sub) => {
-      const outcome = await executePushDelivery(() =>
+      const outcome = await executeValidatedPushDelivery(sub, () =>
         webpush.sendNotification(
           {
             endpoint: sub.endpoint,
