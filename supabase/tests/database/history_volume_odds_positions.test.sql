@@ -165,13 +165,15 @@ select is(
 select set_config('test.odds_full',
   (select odds_victoire_as_grinta::text from public.match_odds
    where match_id = 'f5a50000-0000-0000-0000-000000000001'), true);
+select set_config('test.wins',
+  (select string_agg(score.id::text, ',') from public.historical_match_scores score
+   where score.opponent_id = 'f5a30000-0000-0000-0000-000000000001'
+     and score.score_as_grinta > score.score_adverse), true);
 select pg_temp.as_profile('f5a10000-0000-0000-0000-000000000001');
 set local role authenticated;
 select lives_ok($$
-  select count(public.admin_delete_historical_match(score.id))
-  from public.historical_match_scores score
-  where score.opponent_id = 'f5a30000-0000-0000-0000-000000000001'
-    and score.score_as_grinta > score.score_adverse
+  select count(public.admin_delete_historical_match(win_id::uuid))
+  from unnest(string_to_array(current_setting('test.wins'), ',')) as win_id
 $$, 'l’administrateur supprime les 240 victoires');
 reset role;
 
