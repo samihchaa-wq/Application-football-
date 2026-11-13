@@ -103,9 +103,11 @@ void main() {
       goalkeeperTrim: const Color(0xFFFFCC00),
     );
     expect(configured.body, oldKit.body);
-    final restored = ClubKits.parse([configured.toJson(),
-        ClubKits.parse(savedJson())![1].toJson(),
-        ClubKits.parse(savedJson())![2].toJson()])!;
+    final restored = ClubKits.parse([
+      configured.toJson(),
+      ClubKits.parse(savedJson())![1].toJson(),
+      ClubKits.parse(savedJson())![2].toJson()
+    ])!;
     expect(restored.first.goalkeeperBody, const Color(0xFF111111));
     expect(restored.first.goalkeeperTrim, const Color(0xFFFFCC00));
     expect(restored.first.body, const Color(0xFFAA0000));
