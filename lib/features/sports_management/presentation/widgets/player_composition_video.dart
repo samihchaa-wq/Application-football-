@@ -36,14 +36,12 @@ String markCompositionRouteFromNotification(String route) {
       !RegExp(r'^/?matches/[^/]+/lineup$').hasMatch(uri.path)) {
     return route;
   }
-  return uri
-      .replace(
-        queryParameters: {
-          ...uri.queryParameters,
-          'from': compositionOpenedFromNotification,
-        },
-      )
-      .toString();
+  return uri.replace(
+    queryParameters: {
+      ...uri.queryParameters,
+      'from': compositionOpenedFromNotification,
+    },
+  ).toString();
 }
 
 /// Les données de la vidéo, à partir de la compo et de la fiche du match.
@@ -224,8 +222,7 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
     final composition = ref
         .watch(publishedMatchCompositionProvider(widget.matchId))
         .valueOrNull;
-    final playable =
-        composition != null &&
+    final playable = composition != null &&
         composition
             .entriesFor(MatchCompositionZone.field)
             .any((entry) => !entry.isVacant);

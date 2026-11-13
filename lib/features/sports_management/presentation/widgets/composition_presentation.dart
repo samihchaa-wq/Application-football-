@@ -80,26 +80,27 @@ class CompositionPresentationData {
   }
 
   CompositionPresentationPlan get plan => CompositionPresentationPlan.build(
-    field: [
-      for (final entry in field)
-        if (!entry.isVacant)
-          PresentationPerson(
-            id: entry.participantId,
-            name: entry.displayName,
-            position: entry.x == null || entry.y == null
-                ? null
-                : Offset(entry.x!, entry.y!),
-            isGoalkeeper: entry.isGoalkeeper,
-          ),
-    ],
-    bench: [
-      for (final entry in bench)
-        PresentationPerson(id: entry.participantId, name: entry.displayName),
-    ],
-    coach: coach == null
-        ? null
-        : PresentationPerson(id: _coachId, name: coach!.name),
-  );
+        field: [
+          for (final entry in field)
+            if (!entry.isVacant)
+              PresentationPerson(
+                id: entry.participantId,
+                name: entry.displayName,
+                position: entry.x == null || entry.y == null
+                    ? null
+                    : Offset(entry.x!, entry.y!),
+                isGoalkeeper: entry.isGoalkeeper,
+              ),
+        ],
+        bench: [
+          for (final entry in bench)
+            PresentationPerson(
+                id: entry.participantId, name: entry.displayName),
+        ],
+        coach: coach == null
+            ? null
+            : PresentationPerson(id: _coachId, name: coach!.name),
+      );
 
   static const _coachId = '#coach';
 }
@@ -417,16 +418,17 @@ class _CompositionPresentationPageState
     final landing = widget.landing;
     // Sur la page sans terrain où se poser : le terrain se pose au milieu.
     if (_onPage && landing == null) return;
-    final pitch = (landing?.pitch ?? _pitchKey).currentContext
-        ?.findRenderObject();
+    final pitch =
+        (landing?.pitch ?? _pitchKey).currentContext?.findRenderObject();
     if (root is! RenderBox || pitch is! RenderBox) return;
     if (!root.hasSize || !root.attached) return;
     if (!pitch.hasSize || !pitch.attached) return;
     // La vraie page est sous la vidéo, pas dedans : on passe par l'écran.
     Rect boxRect(RenderBox box) => Rect.fromPoints(
-      root.globalToLocal(box.localToGlobal(Offset.zero)),
-      root.globalToLocal(box.localToGlobal(box.size.bottomRight(Offset.zero))),
-    );
+          root.globalToLocal(box.localToGlobal(Offset.zero)),
+          root.globalToLocal(
+              box.localToGlobal(box.size.bottomRight(Offset.zero))),
+        );
     final rect = boxRect(pitch);
     final area = landing?.area.currentContext?.findRenderObject();
     final areaRect = area is RenderBox && area.attached && area.hasSize

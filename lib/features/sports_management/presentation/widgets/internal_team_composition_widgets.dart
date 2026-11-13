@@ -188,8 +188,7 @@ class _PaperTeamColumn extends StatelessWidget {
                         child: _PlayerChip(
                           entry: entries[index],
                           editable: editable,
-                          selected:
-                              selectedParticipantId ==
+                          selected: selectedParticipantId ==
                               entries[index].participantId,
                           onTap: () => onPlayerTap(entries[index]),
                         ),
@@ -351,7 +350,7 @@ class _InternalTeamCard extends StatelessWidget {
   final VoidCallback onAssignSelected;
   final ValueChanged<JerseyOption> onJerseySelected;
   final void Function(MatchCompositionEntry, FootballFormationSlot)
-  onDroppedOnSlot;
+      onDroppedOnSlot;
   final ValueChanged<MatchCompositionEntry> onRemoveFromField;
   final Map<String, int> finishedBenchCounts;
   final TextEditingController? controller;
@@ -392,9 +391,8 @@ class _InternalTeamCard extends StatelessWidget {
         .where((entry) => entry.zone == 'bench')
         .map(_classic)
         .toList(growable: false);
-    final waiting = entries
-        .where((entry) => entry.zone == 'available')
-        .toList();
+    final waiting =
+        entries.where((entry) => entry.zone == 'available').toList();
     final semanticName = controller?.text.trim().isNotEmpty == true
         ? controller!.text.trim()
         : name;
@@ -466,7 +464,9 @@ class _InternalTeamCard extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  entries.isEmpty ? 'Aucun joueur dans cette équipe.' : 'Le terrain sera disponible dès que l’équipe contient un joueur.',
+                  entries.isEmpty
+                      ? 'Aucun joueur dans cette équipe.'
+                      : 'Le terrain sera disponible dès que l’équipe contient un joueur.',
                   textAlign: TextAlign.center,
                 ),
               ),

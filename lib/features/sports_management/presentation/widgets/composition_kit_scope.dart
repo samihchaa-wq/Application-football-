@@ -46,8 +46,7 @@ class MatchCompositionKitScope extends ConsumerWidget {
     if (id == null) return child;
     final info = ref.watch(matchInfoProvider(id));
     if (info.isLoading || info.hasError) return child;
-    final selection =
-        JerseyOption.fromId(info.valueOrNull?.jerseyNote) ??
+    final selection = JerseyOption.fromId(info.valueOrNull?.jerseyNote) ??
         JerseyOption.france;
 
     return ValueListenableBuilder<int>(

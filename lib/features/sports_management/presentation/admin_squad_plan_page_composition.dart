@@ -84,8 +84,8 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
                   .moveTo(
                     base.canBeSelected
                         ? previous.zone == MatchCompositionZone.field
-                              ? MatchCompositionZone.field
-                              : MatchCompositionZone.bench
+                            ? MatchCompositionZone.field
+                            : MatchCompositionZone.bench
                         : MatchCompositionZone.notSelected,
                     x: previous.x,
                     y: previous.y,
@@ -289,9 +289,8 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
   void _moveToBench(MatchCompositionEntry moving) {
     final composition = _composition;
     if (composition == null || _compositionLocked) return;
-    final benchCount = composition
-        .entriesFor(MatchCompositionZone.bench)
-        .length;
+    final benchCount =
+        composition.entriesFor(MatchCompositionZone.bench).length;
     _updateState(() {
       _composition = composition.copyWith(
         entries: [
@@ -322,9 +321,8 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
             participantId: entry.participantId,
             displayName: entry.displayName,
             benchCount: _finishedBenchCounts[entry.participantId] ?? 0,
-            profile:
-                _positionProfiles[_canonicalPlayerIds[entry.seasonPlayerId] ??
-                    ''],
+            profile: _positionProfiles[
+                _canonicalPlayerIds[entry.seasonPlayerId] ?? ''],
             isGuest: entry.isGuest,
             isGoalkeeper: entry.isGoalkeeper,
             benchedLastTime: _benchedLastTime.contains(entry.participantId),
@@ -457,13 +455,12 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
     _updateState(() => _busy = true);
     try {
       final repository = ref.read(matchCompositionRepositoryProvider);
-      final limit =
-          int.tryParse(_limitController.text) ??
+      final limit = int.tryParse(_limitController.text) ??
           _convocations?.squadSizeLimit ??
           14;
       final selectedCount =
           ready.entriesFor(MatchCompositionZone.field).length +
-          ready.entriesFor(MatchCompositionZone.bench).length;
+              ready.entriesFor(MatchCompositionZone.bench).length;
       final allowException = selectedCount > limit;
       late final MatchComposition result;
       if (_postMatch) {
@@ -532,9 +529,8 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
                     children: [
                       Icon(
                         Icons.lock_clock_rounded,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSecondaryContainer,
+                        color:
+                            Theme.of(context).colorScheme.onSecondaryContainer,
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -589,10 +585,10 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
           onPressed: field.isEmpty
               ? null
               : () => _previewCompositionVideo(
-                  field,
-                  bench,
-                  landing: _publishedLanding,
-                ),
+                    field,
+                    bench,
+                    landing: _publishedLanding,
+                  ),
           icon: const Icon(Icons.play_circle_outline_rounded),
           label: const Text('Aperçu de la vidéo'),
         ),
@@ -730,20 +726,19 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
     final kitPhotos = matchId == null
         ? const <String, String>{}
         : ref.watch(matchKitPhotoOverridesProvider(matchId)).valueOrNull ??
-              const <String, String>{};
+            const <String, String>{};
     final field = withMatchKitPhotos(
       composition.entriesFor(MatchCompositionZone.field),
       kitPhotos,
     );
-    final bench =
-        withMatchKitPhotos(
-          composition.entriesFor(MatchCompositionZone.bench),
-          kitPhotos,
-        )..removeWhere(
-          (entry) =>
-              _desiredEffectifStatuses[entry.participantId] !=
-              ConvocationStatus.convoked,
-        );
+    final bench = withMatchKitPhotos(
+      composition.entriesFor(MatchCompositionZone.bench),
+      kitPhotos,
+    )..removeWhere(
+        (entry) =>
+            _desiredEffectifStatuses[entry.participantId] !=
+            ConvocationStatus.convoked,
+      );
 
     if (composition.isPublished &&
         !_postMatch &&
@@ -770,9 +765,8 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
                     children: [
                       Icon(
                         Icons.lock_clock_rounded,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSecondaryContainer,
+                        color:
+                            Theme.of(context).colorScheme.onSecondaryContainer,
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -818,11 +812,10 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
                     children: [
                       Expanded(
                         child: _FormationDropdown(
-                          value: formationForCode(composition.formationCode)
-                              .code,
-                          onChanged: _compositionLocked
-                              ? null
-                              : _applyFormation,
+                          value:
+                              formationForCode(composition.formationCode).code,
+                          onChanged:
+                              _compositionLocked ? null : _applyFormation,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -882,7 +875,9 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
                 children: [
                   Text(
                     'Remplaçants (${bench.length})',
-                    style: Theme.of(context).textTheme.titleMedium
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
                         ?.copyWith(fontWeight: FontWeight.w400),
                   ),
                   const SizedBox(height: 8),
@@ -900,9 +895,8 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
                             finishedBenchCount: _postMatch
                                 ? 0
                                 : _finishedBenchCounts[entry.participantId] ??
-                                      0,
-                            benchedLastTime:
-                                !_postMatch &&
+                                    0,
+                            benchedLastTime: !_postMatch &&
                                 _benchedLastTime.contains(entry.participantId),
                           ),
                       ],
@@ -922,10 +916,10 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
                 onPressed: field.isEmpty
                     ? null
                     : () => _previewCompositionVideo(
-                        field,
-                        bench,
-                        returnToPage: true,
-                      ),
+                          field,
+                          bench,
+                          returnToPage: true,
+                        ),
                 icon: const Icon(Icons.play_circle_outline_rounded),
                 label: const Text('Aperçu'),
               ),

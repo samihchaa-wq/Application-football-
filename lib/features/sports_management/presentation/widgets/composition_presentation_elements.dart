@@ -98,11 +98,11 @@ class _StageFit {
   late final Offset origin;
 
   Rect toStage(Rect rect) => Rect.fromLTWH(
-    (rect.left - origin.dx) / scale,
-    (rect.top - origin.dy) / scale,
-    rect.width / scale,
-    rect.height / scale,
-  );
+        (rect.left - origin.dx) / scale,
+        (rect.top - origin.dy) / scale,
+        rect.width / scale,
+        rect.height / scale,
+      );
 }
 
 /// Tout ce qui dépend de l'instant [t] : caméra, avancement de chaque étape.
@@ -136,10 +136,10 @@ class _Frame {
 
   /// Avant la première mesure : un terrain de 340 de large au milieu.
   static Rect _fallbackPitch(_StageFit stage) => Rect.fromCenter(
-    center: stage.screen.center(Offset.zero),
-    width: 340,
-    height: 500,
-  );
+        center: stage.screen.center(Offset.zero),
+        width: 340,
+        height: 500,
+      );
 
   /// Apparition de l'écran Composition autour du terrain.
   double get chrome => _easeOut((t - (plan.moveStart + 1.0)) / 0.7);
@@ -160,10 +160,11 @@ class _Frame {
   /// Ligne des remplaçants et du coach : en bas de l'image, sans jamais
   /// passer sous le bord de l'écran.
   double get stripY => math.min(
-    778,
-    (stage.screen.height - safeArea.bottom - stage.origin.dy) / stage.scale -
-        50,
-  );
+        778,
+        (stage.screen.height - safeArea.bottom - stage.origin.dy) /
+                stage.scale -
+            50,
+      );
 }
 
 // ---------------------------------------------------------------------------
@@ -457,8 +458,8 @@ class _GoldRule extends StatelessWidget {
           colors: height > 1
               ? [Color(0x00FBE80C), AppTheme.accent, Color(0x00FBE80C)]
               : flipped
-              ? [AppTheme.accent, Color(0x00FBE80C)]
-              : [Color(0x00FBE80C), AppTheme.accent],
+                  ? [AppTheme.accent, Color(0x00FBE80C)]
+                  : [Color(0x00FBE80C), AppTheme.accent],
         ),
       ),
     );
