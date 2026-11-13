@@ -45,7 +45,9 @@ void main() {
     final image = await picture.toImage(180, 180);
     final pixels = (await image.toByteData(
       format: ui.ImageByteFormat.rawRgba,
-    ))!.buffer.asUint8List();
+    ))!
+        .buffer
+        .asUint8List();
 
     int opacityAt(int x, int y) => pixels[(y * 180 + x) * 4 + 3];
 
