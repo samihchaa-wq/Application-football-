@@ -1,112 +1,40 @@
-# Relais entre assistants (Claude ↔ ChatGPT)
+# Relais entre assistants — Petit Filet (application commerciale)
 
-Mis à jour le 12/11/2026. À relire **en entier** avant toute action, et à
-mettre à jour à chaque étape importante.
+**Actualisé le 13 novembre 2026.** Source de vérité opérationnelle : branche `main`, PR ouvertes et contrôles GitHub sur le dernier SHA ; les états ci-dessous peuvent évoluer.
 
-## Règles absolues
+## Règles impératives
 
-1. Ne **jamais** toucher AS Grinta ni Carte soirée : ni leurs dépôts, ni leurs
-   bases Supabase (`ovzijmqrnsgcmryinkfa`, `yqfewxadpyulgxehhpcu`), ni leur site.
-   Tout le travail se fait dans `samihchaa-wq/Application-football-`.
-2. Annoncer tout coût à Samih **avant** d'agir (création de projet, option
-   payante, service tiers).
-3. Aucune migration ou écriture sur la base commerciale sans accord de Samih.
-   Ne jamais exécuter `supabase/seed.sql` sur la base en ligne.
-4. Migrations déjà appliquées = immuables : toute correction passe par une
-   nouvelle migration datée.
-5. Samih n'est pas développeur : réponses en français, simples, concises ;
-   dire ce qui n'est pas testé.
-6. Fusionner une PR seulement quand tous les contrôles GitHub sont verts.
+1. **Écriture uniquement dans `samihchaa-wq/Application-football-`.** Ne jamais modifier les dépôts, données, sites ni bases Supabase d'AS Grinta original ou de Carte soirée. Le dépôt AS Grinta peut être consulté en lecture seule pour comparer ses fonctionnalités et son interface.
+2. **Dépôt commercial PUBLIC maintenu** (choix explicite B). Ne pas modifier sa visibilité ni republier de données personnelles / secrets dans les PR et issues.
+3. **Supabase commercial `jvxkhgdopslctpcjrhzw` : lecture seule par défaut.** Aucune migration, écriture, déploiement de fonctions, création de comptes tests distants, changement de secret, publication ou paiement sans accord distinct du propriétaire. Ne jamais lancer de commandes de suppression de schéma à l'aveugle, en particulier **`DROP SCHEMA install_tmp CASCADE`**, instruction obsolète et dangereuse.
+4. Migrations déjà appliquées **immuables** ; chaque correction SQL doit être une nouvelle migration à identifiant unique, compatible avec le registre des migrations de la base commerciale.
+5. Fusion de PR uniquement après revue des risques, absence de conflit et contrôles GitHub **verts sur le SHA exact**. Toute CI incomplète, échouée ou en cours bloque la fusion. Une fusion de code **ne déploie pas** automatiquement l'application : les workflows de publication Cloudflare et de configuration Supabase sont manuels.
+6. Aucune dépense ou souscription sans annonce du prix et accord préalable. Réponses françaises, directes ; distinguer : documenté, développé, CI validée, testé réellement, déployé.
 
-## État actuel
+## Produit — décisions validées
 
-- **Base commerciale** : projet Supabase `application-football`, ref
-  `jvxkhgdopslctpcjrhzw`, organisation Pro, région Paris (eu-west-3).
-  Coût : inclus dans l'abonnement Pro (~25 $/mois), aucun supplément tant que
-  c'est le seul projet de l'organisation.
-  - Migrations appliquées jusqu'à `20261112050000_blocage_serveur_mode_live`
-    (19 migrations, vérifié dans Supabase le 12/11 à 10 h 35 UTC). Base vide
-    à la lecture du 12/11 : aucun club, aucun utilisateur.
-  - Schéma `install_tmp` restant (inaccessible à l'appli) : à supprimer depuis
-    l'éditeur SQL Supabase, `drop schema install_tmp cascade;`.
-  - Faits le 12/11 via le workflow « Supabase commercial : mise en route » :
-    migrations jusqu'à `20261112050000`, coffre (project_url,
-    push_internal_token, clés VAPID), 8 Edge Functions et leurs secrets.
-  - Pas encore faits : réglages d'authentification (URL du site, e-mails),
-    compte éditeur (`private.platform_operators`).
-- **PR fusionnées** : #1 à #22 (socle multiclub, réglages, sécurité de
-  publication).
-- **PR #23** : nom du club dans les notifications au lieu de « AS Grinta »,
-  lien d'agenda, nom du fichier du bilan.
-- **PR #24** fusionnée : blocage serveur du mode live, `config/production.json`
-  relié à la base commerciale, workflow Pages en publication manuelle.
-- **PR #48** fusionnée : liste d'attente en trois modes et saisie de
-  l'historique par l'admin.
-- **PR #25** (audit fonctionnel, documents seulement) : voir section suivante.
-- Déploiement GitHub Pages : workflow réactivé en **publication manuelle uniquement** (PR #24), pour un test à clubs fictifs. Site cible : https://samihchaa-wq.github.io/Application-football-/ — publié seulement après lancement manuel et vérification. GitHub Pages **n'autorise pas** l'hébergement d'un SaaS commercial : un autre hébergeur sera nécessaire avant toute vente.
-- Hébergement définitif : Cloudflare Pages, workflow manuel `deploy_cloudflare.yml` (secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, variables `COMMERCIAL_APP_URL`, `CLOUDFLARE_PAGES_PROJECT`). Notice pour Samih : `docs/MISE_EN_LIGNE.md` (domaine, Cloudflare, Auth Supabase, e-mails Brevo). Jamais lancé tant que le compte Cloudflare n'existe pas. Plan de sortie commerciale : https://claude.ai/artifact/Akdg7d8RWKrKTjYh4euAaZ
+Nom commercial **Petit Filet** (précédemment « Lucarne », changement intégré par PR #65). Application multiclub de football **à 11**, avec identité et maillots indépendants pour chaque club, « Étoile du match » et emojis de badges préservés, objectif mai 2027. Le tarif, les paiements et les opérations commerciales restent à arbitrer.
 
-## Audit fonctionnel (fil 1, PR #25) — 12/11/2026
+**Décisions prioritaires nouvelles du 13/11 :**
 
-- Index lisible : `docs/AUDIT_FONCTIONNALITES.md`. Référentiel unique :
-  `docs/AUDIT_FONCTIONNALITES_DETAILLE.md` (164 fonctions classées).
-  Pages et réglages : `docs/AUDIT_ROUTES_ET_PARAMETRES.md`. Tâches du fil 2 :
-  `docs/CAHIER_DES_CHARGES_FIL_02.md` (F2-00 à F2-29). Ne pas créer de
-  tableau concurrent.
-- Audit fait par **lecture du code** et requêtes Supabase en lecture seule.
-  Aucun parcours testé dans l'appli, aucune notification réelle, aucun test
-  de cloisonnement entre deux clubs : c'est le rôle des fils 3 et 4.
-- Décisions réservées à Samih (DEC-01 à DEC-08) : une équipe ou plusieurs
-  par espace ; foot à 11 seul ou aussi 8/7/5 ; identifiants de connexion
-  (aujourd'hui uniques sur toute la plateforme, 20 homonymes maximum) ;
-  maillots personnalisables ; nom neutre pour « Homme du match » et les
-  badges genrés ; clips joueurs ; prix et paiement ; nom et droits des médias.
-- Alertes Supabase : 157 fonctions serveur accessibles aux comptes connectés
-  (nombre de fonctions, pas des failles prouvées) ; à instruire par le fil 4.
+- Issue [#66](https://github.com/samihchaa-wq/Application-football-/issues/66) : rendre les fonctions optionnelles héritées d'AS Grinta réellement réglables/désactivables par club, avec application côté serveur et conservation de l'historique.
+- Issue [#67](https://github.com/samihchaa-wq/Application-football-/issues/67) : choisir des couleurs distinctes **joueurs et gardiens** pour chaque tenue, et afficher correctement ces couleurs avant, pendant et après chaque match, y compris en vidéo et historique.
+- Issue [#68](https://github.com/samihchaa-wq/Application-football-/issues/68), PR [#69](https://github.com/samihchaa-wq/Application-football-/pull/69) : **aucun +1 automatique en liste d'attente** ; seuls les administrateurs utilisent +/−. L'automatisation SQL commerciale **reste active tant que la migration préparée n'est pas appliquée avec autorisation**, même si la PR est fusionnée.
+- Issue [#70](https://github.com/samihchaa-wq/Application-football-/issues/70), PR [#72](https://github.com/samihchaa-wq/Application-football-/pull/72) : retrouver **exactement** l'Administration récente d'AS Grinta sur Petit Filet, hors adaptations obligatoires de sécurité multiclub. La PR est en validation Flutter/QA.
+- Issue [#71](https://github.com/samihchaa-wq/Application-football-/issues/71) : **supprimer toute inscription « AS Grinta » des tribunes/public** de la vidéo de composition, sans ajouter de texte remplaçant ; traiter `stade.mp4`, `stade-720.mp4` et le poster `stade.jpg`. Pas encore traité dans les médias.
 
-## Reste à faire, par priorité
+## Intégrations vérifiées pendant le 13/11
 
-### Bloquant pour un club test
-1-2. Fonctions serveur, secrets du coffre (`project_url`,
-   `push_internal_token`, clés VAPID générées automatiquement) et migrations
-   en attente : workflow GitHub **« Supabase commercial : mise en route »**
-   (`.github/workflows/commercial_supabase_setup.yml`, lancement manuel).
-   Prérequis côté Samih : secret GitHub `SUPABASE_ACCESS_TOKEN` (Supabase >
-   Account > Access Tokens). Les assistants ne peuvent pas écrire de secret
-   eux-mêmes. Le workflow refuse tout autre projet que la base commerciale.
-3. Réglages Auth dans Supabase (action de Samih dans le tableau de bord) :
-   URL du site `https://samihchaa-wq.github.io/Application-football-/`, URLs
-   de redirection, service d'envoi d'e-mails.
-4. Tester deux clubs fictifs A et B sur la vraie base : aucune fuite de
-   données, inscriptions, admins, fichiers, notifications
-   (`docs/COMMERCIAL_LAUNCH_CHECKLIST.md`, section 2).
-5. Réactiver le déploiement Pages seulement après ces tests.
+Fusionnées : #65 (nom Petit Filet), #33 (tests de charge fiables), #44 (garde migrations et conventions), #62/#64 (journal et indicateurs agents), #26 (registre QA), #29 (tableau de pilotage), #34 (identité), #35 (stratégie). Elles rejoignent les PR métier #23–#25, #46–#52 et #55–#60 précédemment fusionnées. **Les noms/références présents dans des documents datés sont historiques et non un état de production.**
 
-### À corriger, non bloquant
-6. Fuseau horaire par club : « Europe/Paris » est écrit en dur (~50 endroits
-   SQL, 3 fichiers Dart/fonctions). Sans effet pour la France métropolitaine,
-   Belgique, Suisse, Luxembourg. À faire seulement pour un club hors de ce
-   fuseau (DOM-TOM, étranger).
-7. Nom du produit : « Petit Filet » (choisi par Samih le 12/11/2026, remplace « Lucarne » écarté après recherche INPI : marque « La Lucarne » n°5276552 en classes 35/42). Stade de la présentation des compositions repeint aux couleurs du club (WebGL, repli : vidéo atténuée).
+Restent à vérifier sur GitHub avant intégration : PR #69 (+1 manuel), #72 (écran Administration), #36 (juridique) ainsi que les documents historiques #30/#31/#41/#53. **Ne pas considérer cette liste exhaustive après cette date : interroger GitHub.**
 
-### Bloquant pour faire payer (décisions de Samih)
-8. Paiement : Stripe non intégré.
-9. Prix : 10 €/joueur/an dans le code, non validé.
-10. Textes légaux : les 5 textes sont rédigés (fil « Blinder l'appli
-    juridiquement », `docs/legal/README.md`). Reste : SIRET et coordonnées,
-    relecture par un juriste, licence de la vidéo du stade, écran de
-    nouvelle acceptation après changement de version.
-11. Passer le dépôt en privé (l'historique contient d'anciennes données
-    AS Grinta).
-12. Secrets GitHub `PRODUCTION_DB_URL` et `BACKUP_PASSPHRASE` pour la
-    surveillance et la sauvegarde hebdomadaire.
+## GO/NO-GO et coordination
 
-## Contrôles avant fusion
+- **P0** : séparation réelle des clubs A/B avec permissions admin/RPC/RLS/Storage/Edge, contrôle d'un admin suspendu, sécurité des sauvegardes, restauration DB + objets Storage, RGPD/consentement.
+- **P1** : tests smartphone/PWA, fiabilité des notifications et des e-mails, cohérence maillots, compositions et gestion des saisons ; vérifier la désactivation serveur des modules.
+- **P2** : pilote volontaires, documents juridiques relus (SIRET, identité de l'éditeur), disponibilité de la marque et du domaine, paiement, hébergement adapté sans dépenses non autorisées.
+- Site de test GitHub Pages existant ; publication commerciale sur Cloudflare uniquement par workflow **manuel**. Vérifier tout changement de configuration avant usage.
+- Les cinq automatisations de coordination couvrent les neuf missions M01–M09 ; utiliser `docs/CHANTIER.md` et les PR/issues pour communiquer. Ne pas déclarer « fait » sans résultat vérifiable.
 
-```bash
-python3 -m unittest discover -s tool/tests -p 'test_commercial_*.py' -v
-python3 tool/check_commercial_deploy.py
-flutter analyze --fatal-warnings --fatal-infos   # Flutter 3.47.9
-flutter test
-```
-Tests base de données : workflow GitHub « Supabase business and RLS tests ».
+**Ce document ne vaut ni autorisation de déploiement ni certification du lancement.**
