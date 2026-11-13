@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_rules.dart';
 import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/utils/app_errors.dart';
@@ -144,8 +145,8 @@ class MatchDetailsPage extends ConsumerWidget {
               final motmActionLabel =
                   vote != null && vote.isOpen && vote.isEligibleVoter
                       ? (vote.hasVoted
-                          ? 'Vote Homme du match enregistré'
-                          : 'Voter pour l’Homme du match')
+                          ? 'Vote de l’Étoile du match enregistré'
+                          : 'Voter pour l’Étoile du match')
                       : null;
               return MatchSheetListView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
@@ -268,7 +269,8 @@ class _PostgameAdminActions extends ConsumerWidget {
 
     final validatedAt = details.resultValidatedAt;
     if (validatedAt == null) return const SizedBox.shrink();
-    final anchor = validatedAt.add(const Duration(hours: 24));
+    // Délai de correction réglé par le club (24 h par défaut).
+    final anchor = validatedAt.add(ClubRules.correctionWindow);
 
     if (!sportsEnabled) return _actions(context, anchor);
 
@@ -619,7 +621,7 @@ class _CompletedCompositionCard extends ConsumerWidget {
   }
 }
 
-/// Classement du vote Homme du match, affiché seulement une fois le scrutin
+/// Classement du vote de l’Étoile du match, affiché seulement une fois le scrutin
 /// clos et le vainqueur révélé. Seuls les joueurs ayant reçu au moins une
 /// voix apparaissent ; les ex æquo partagent le même rang.
 ///
@@ -699,7 +701,7 @@ class _MotmVotesCard extends ConsumerWidget {
       padding: const EdgeInsets.only(top: 16),
       child: CollapsibleSectionCard(
         storageKey: 'match-$matchId-votes-hdm',
-        title: 'Votes Homme du match',
+        title: 'Votes de l’Étoile du match',
         childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 12),
         children: rows,
       ),

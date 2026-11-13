@@ -13,12 +13,12 @@ values
   (
     'e1000000-0000-0000-0000-000000000001',
     'archive-surnom@example.invalid',
-    '{"first_name":"Olivierarchive","last_name":"Milletarchive"}'::jsonb
+    '{"first_name":"Olivierarchive","last_name":"Moreauarchive"}'::jsonb
   ),
   (
     'e1000000-0000-0000-0000-000000000002',
     'archive-sans-surnom@example.invalid',
-    '{"first_name":"Simonarchive","last_name":"Reisarchive"}'::jsonb
+    '{"first_name":"Simonarchive","last_name":"Rouxarchive"}'::jsonb
   );
 
 update public.profiles
@@ -53,11 +53,11 @@ values (
   'e3000000-0000-0000-0000-000000000001',
   '4-4-2',
   '[
-     {"name":"Olivierarchive Milletarchive","is_gk":false,"x_pct":30,"y_pct":40},
-     {"name":"Simonarchive Reisarchive","is_gk":false,"x_pct":60,"y_pct":40}
+     {"name":"Olivierarchive Moreauarchive","is_gk":false,"x_pct":30,"y_pct":40},
+     {"name":"Simonarchive Rouxarchive","is_gk":false,"x_pct":60,"y_pct":40}
    ]'::jsonb,
   '[]'::jsonb,
-  '["Olivierarchive Milletarchive","Simonarchive Reisarchive"]'::jsonb,
+  '["Olivierarchive Moreauarchive","Simonarchive Rouxarchive"]'::jsonb,
   '[]'::jsonb,
   '[]'::jsonb
 );
@@ -68,14 +68,14 @@ update public.profiles profile
 set player_id = archive.player_id
 from public.historical_match_players archive
 where archive.match_id = 'e3000000-0000-0000-0000-000000000001'::uuid
-  and archive.source_name = 'Olivierarchive Milletarchive'
+  and archive.source_name = 'Olivierarchive Moreauarchive'
   and profile.id = 'e1000000-0000-0000-0000-000000000001'::uuid;
 
 update public.profiles profile
 set player_id = archive.player_id
 from public.historical_match_players archive
 where archive.match_id = 'e3000000-0000-0000-0000-000000000001'::uuid
-  and archive.source_name = 'Simonarchive Reisarchive'
+  and archive.source_name = 'Simonarchive Rouxarchive'
   and profile.id = 'e1000000-0000-0000-0000-000000000002'::uuid;
 
 select set_config(
@@ -97,25 +97,25 @@ as $function$
 $function$;
 
 select is(
-  pg_temp.archive_identity('Olivierarchive Milletarchive', 'name'),
+  pg_temp.archive_identity('Olivierarchive Moreauarchive', 'name'),
   'Poulain',
   'un joueur d’archive surnommé est rendu sous son surnom'
 );
 
 select is(
-  pg_temp.archive_identity('Olivierarchive Milletarchive', 'last_initial'),
+  pg_temp.archive_identity('Olivierarchive Moreauarchive', 'last_initial'),
   'M',
   'son initiale de nom de famille accompagne le surnom'
 );
 
 select is(
-  pg_temp.archive_identity('Simonarchive Reisarchive', 'name'),
+  pg_temp.archive_identity('Simonarchive Rouxarchive', 'name'),
   'Simonarchive',
   'sans surnom, le prénom du compte est rendu'
 );
 
 select is(
-  pg_temp.archive_identity('Simonarchive Reisarchive', 'last_initial'),
+  pg_temp.archive_identity('Simonarchive Rouxarchive', 'last_initial'),
   'R',
   'l’initiale suit aussi les joueurs sans surnom'
 );

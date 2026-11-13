@@ -256,7 +256,7 @@ select is(
     from public.matches match
     join public.clubs club on club.id = match.club_id
     where match.id = current_setting('test.motm_push_match')::uuid
-  ) || E' 1 - 0 Push FC\nPense à voter pour l’Homme du match.',
+  ) || E' 1 - 0 Push FC\nPense à voter pour l’Étoile du match.',
   'la notification affiche le nom du club du match, jamais « AS Grinta »'
 );
 

@@ -24,23 +24,45 @@ mettre à jour à chaque étape importante.
   `jvxkhgdopslctpcjrhzw`, organisation Pro, région Paris (eu-west-3).
   Coût : inclus dans l'abonnement Pro (~25 $/mois), aucun supplément tant que
   c'est le seul projet de l'organisation.
-  - Migrations appliquées jusqu'à `20261112040000_notifications_nom_du_club`
-    (enregistrées dans `supabase_migrations.schema_migrations`). Base vide :
-    aucun club, aucun utilisateur.
+  - Migrations appliquées jusqu'à `20261112050000_blocage_serveur_mode_live`
+    (19 migrations, vérifié dans Supabase le 12/11 à 10 h 35 UTC). Base vide
+    à la lecture du 12/11 : aucun club, aucun utilisateur.
   - Schéma `install_tmp` restant (inaccessible à l'appli) : à supprimer depuis
     l'éditeur SQL Supabase, `drop schema install_tmp cascade;`.
-  - Constat M04 du 12/11 : **8 Edge Functions sont ACTIVE** dans l'API Supabase ;
-    cela ne prouve **ni leurs secrets ni leur fonctionnement réel**. Les
-    réglages Auth/e-mail, le compte éditeur et les secrets opérationnels
-    restent **à vérifier**, sans les divulguer.
+  - Faits le 12/11 via le workflow « Supabase commercial : mise en route » :
+    migrations jusqu'à `20261112050000`, coffre (project_url,
+    push_internal_token, clés VAPID), 8 Edge Functions et leurs secrets.
+  - Pas encore faits : réglages d'authentification (URL du site, e-mails),
+    compte éditeur (`private.platform_operators`).
 - **PR fusionnées** : #1 à #22 (socle multiclub, réglages, sécurité de
   publication).
 - **PR #23** : nom du club dans les notifications au lieu de « AS Grinta »,
   lien d'agenda, nom du fichier du bilan.
-- **Prochaine PR** (branche `claude/project-thread-q37eby`) : blocage serveur
-  du mode live désactivé, `config/production.json` relié à la base
-  commerciale, ce document.
-- Déploiement GitHub Pages **désactivé** (`.github/workflows-disabled/`).
+- **PR #24** fusionnée : blocage serveur du mode live, `config/production.json`
+  relié à la base commerciale, workflow Pages en publication manuelle.
+- **PR #48** fusionnée : liste d'attente en trois modes et saisie de
+  l'historique par l'admin.
+- **PR #25** (audit fonctionnel, documents seulement) : voir section suivante.
+- Déploiement GitHub Pages : workflow réactivé en **publication manuelle uniquement** (PR #24), pour un test à clubs fictifs. Site cible : https://samihchaa-wq.github.io/Application-football-/ — publié seulement après lancement manuel et vérification. GitHub Pages **n'autorise pas** l'hébergement d'un SaaS commercial : un autre hébergeur sera nécessaire avant toute vente.
+- Hébergement définitif : Cloudflare Pages, workflow manuel `deploy_cloudflare.yml` (secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, variables `COMMERCIAL_APP_URL`, `CLOUDFLARE_PAGES_PROJECT`). Notice pour Samih : `docs/MISE_EN_LIGNE.md` (domaine, Cloudflare, Auth Supabase, e-mails Brevo). Jamais lancé tant que le compte Cloudflare n'existe pas. Plan de sortie commerciale : https://claude.ai/artifact/Akdg7d8RWKrKTjYh4euAaZ
+
+## Audit fonctionnel (fil 1, PR #25) — 12/11/2026
+
+- Index lisible : `docs/AUDIT_FONCTIONNALITES.md`. Référentiel unique :
+  `docs/AUDIT_FONCTIONNALITES_DETAILLE.md` (164 fonctions classées).
+  Pages et réglages : `docs/AUDIT_ROUTES_ET_PARAMETRES.md`. Tâches du fil 2 :
+  `docs/CAHIER_DES_CHARGES_FIL_02.md` (F2-00 à F2-29). Ne pas créer de
+  tableau concurrent.
+- Audit fait par **lecture du code** et requêtes Supabase en lecture seule.
+  Aucun parcours testé dans l'appli, aucune notification réelle, aucun test
+  de cloisonnement entre deux clubs : c'est le rôle des fils 3 et 4.
+- Décisions réservées à Samih (DEC-01 à DEC-08) : une équipe ou plusieurs
+  par espace ; foot à 11 seul ou aussi 8/7/5 ; identifiants de connexion
+  (aujourd'hui uniques sur toute la plateforme, 20 homonymes maximum) ;
+  maillots personnalisables ; nom neutre pour « Homme du match » et les
+  badges genrés ; clips joueurs ; prix et paiement ; nom et droits des médias.
+- Alertes Supabase : 157 fonctions serveur accessibles aux comptes connectés
+  (nombre de fonctions, pas des failles prouvées) ; à instruire par le fil 4.
 
 ## Reste à faire, par priorité
 
@@ -65,13 +87,15 @@ mettre à jour à chaque étape importante.
    SQL, 3 fichiers Dart/fonctions). Sans effet pour la France métropolitaine,
    Belgique, Suisse, Luxembourg. À faire seulement pour un club hors de ce
    fuseau (DOM-TOM, étranger).
-7. Nom définitif du produit (provisoire : « Club », `ClubIdentity.appName`).
+7. Nom du produit : « Petit Filet » (choisi par Samih le 12/11/2026, remplace « Lucarne » écarté après recherche INPI : marque « La Lucarne » n°5276552 en classes 35/42). Stade de la présentation des compositions repeint aux couleurs du club (WebGL, repli : vidéo atténuée).
 
 ### Bloquant pour faire payer (décisions de Samih)
 8. Paiement : Stripe non intégré.
 9. Prix : 10 €/joueur/an dans le code, non validé.
-10. Textes légaux : SIRET et coordonnées à compléter
-    (`lib/features/legal/domain/legal_documents.dart`).
+10. Textes légaux : les 5 textes sont rédigés (fil « Blinder l'appli
+    juridiquement », `docs/legal/README.md`). Reste : SIRET et coordonnées,
+    relecture par un juriste, licence de la vidéo du stade, écran de
+    nouvelle acceptation après changement de version.
 11. Passer le dépôt en privé (l'historique contient d'anciennes données
     AS Grinta).
 12. Secrets GitHub `PRODUCTION_DB_URL` et `BACKUP_PASSPHRASE` pour la
@@ -86,34 +110,3 @@ flutter analyze --fatal-warnings --fatal-infos   # Flutter 3.47.9
 flutter test
 ```
 Tests base de données : workflow GitHub « Supabase business and RLS tests ».
-
-## Mission 04 — sécurité et résilience (audit en lecture seule, 12/11/2026)
-
-Rapport et registre : [`docs/M04_SECURITE_RESILIENCE_20261112.md`](M04_SECURITE_RESILIENCE_20261112.md), dans la PR de la mission 04.
-
-**Constaté :** RLS active sur 59 tables `public` et 24 `private`, dix vues
-`security_invoker`, aucune RPC applicative exécutable par `anon` dans
-`public`/`private`. Linter : 157 avertissements SECURITY DEFINER en
-`public` (à examiner individuellement), et un pour `install_tmp.apply`.
-Le projet Supabase commercial est sain mais vide (aucun club réel testé).
-12 cron actifs ; les exécutions présentes dans l'historique consulté ont réussi.
-
-**Corrections à préparer (fil 02, aucune migration exécutée) :**
-- M04-01 : journal `admin_recent_client_incidents` global non filtré par club.
-- M04-02 : `private.is_admin()` n'intègre pas l'état suspendu du club ;
-  plusieurs RPC de réglage restent potentiellement accessibles.
-- M04-08 : tests de cloisonnement des appels `service_role`.
-
-**À valider (fil 03) :** comptes fictifs clubs A et B, permissions, suspension,
-Storage, RPC/Edge, invitations, notifications, charge, backup + restauration.
-
-**À traiter (fil 09 et fil 00) :** sauvegardes des objets Storage absentes des
-exports SQL, surveillance d'usage commerciale désactivée, secret et alerte
-de monitoring non vérifiés, choix d'hébergement compatible SaaS, dépôt public
-à inventorier avec le fil 07 avant la vente.
-
-**Décision M04 : NO-GO pour les premiers clubs réels** à cette étape.
-Aucun test intrusif ni écriture, aucun déploiement et aucun coût engagé.
-Les migrations, tests A/B en base commerciale, dépôts privés et services
-externes exigent les autorisations du propriétaire. Voir aussi la PR #29 de
-pilotage (`docs/CHANTIER.md`, encore non fusionnée à cette date).

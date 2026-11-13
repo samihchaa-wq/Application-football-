@@ -1,9 +1,11 @@
 import 'dart:typed_data';
 
+import 'package:as_grinta/core/club/club_kits.dart';
 import 'package:as_grinta/core/config/app_config.dart';
 import 'package:as_grinta/core/providers/supabase_provider.dart';
 import 'package:as_grinta/core/security/password_policy.dart';
 import 'package:as_grinta/core/utils/app_errors.dart';
+import 'package:as_grinta/features/feature_flags/domain/feature_flags.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -17,6 +19,7 @@ class Club {
     this.primaryColor,
     this.secondaryColor,
     this.logoPath,
+    this.kits,
   });
 
   factory Club.fromJson(Map<String, dynamic> json) => Club(
@@ -27,6 +30,7 @@ class Club {
         primaryColor: json['primary_color'] as String?,
         secondaryColor: json['secondary_color'] as String?,
         logoPath: json['logo_path'] as String?,
+        kits: json['kits'],
       );
 
   final String id;
@@ -40,6 +44,10 @@ class Club {
 
   /// Chemin du logo dans l'espace d'images (null : écusson neutre).
   final String? logoPath;
+
+  /// Maillots réglés par le club (null : maillots par défaut). Voir
+  /// [ClubKits.parse].
+  final Object? kits;
 
   /// Lien d'inscription à partager : il ouvre la page d'inscription avec le
   /// code du club déjà rempli.
@@ -73,8 +81,8 @@ enum ClubModule {
   ),
   manOfTheMatch(
     'man_of_the_match',
-    'Homme du match',
-    'Le vote de l’homme du match après chaque rencontre.',
+    'Étoile du match',
+    'Le vote de l’Étoile du match après chaque rencontre.',
   ),
   liveMode(
     'live_mode',
@@ -205,9 +213,22 @@ class ClubRepository {
     final row = await _client
         .from('clubs')
         .select(
-            'id,name,short_name,invite_code,primary_color,secondary_color,logo_path')
+            'id,name,short_name,invite_code,primary_color,secondary_color,logo_path,kits')
         .single();
     return Club.fromJson(row);
+  }
+
+  /// Enregistre les trois maillots du club. Réservé aux administrateurs.
+  Future<List<ClubKit>> updateKits(List<ClubKit> kits) async {
+    final result = await _client.rpc(
+      'admin_update_club_kits',
+      params: {
+        'p_kits': [for (final kit in kits) kit.toJson()],
+      },
+    );
+    final saved = ClubKits.parse(result);
+    if (saved == null) throw StateError('Les maillots n’ont pas pu changer.');
+    return saved;
   }
 
   /// Remplace le code d'invitation du club. Réservé aux administrateurs.
@@ -287,6 +308,53 @@ class ClubRepository {
     return Club.fromJson(Map<String, dynamic>.from(result));
   }
 
+  /// Terrain à domicile du club connecté, sans accès aux autres clubs (RLS).
+  Future<String?> fetchHomeAddress() async {
+    final row = await _client
+        .from('club_settings')
+        .select('home_address')
+        .maybeSingle();
+    final address = row?['home_address']?.toString().trim();
+    return address == null || address.isEmpty ? null : address;
+  }
+
+  /// Enregistre ou efface le terrain par défaut du club. Admin uniquement ;
+  /// le RPC vérifie le rôle et contraint l'écriture au club courant.
+  Future<String?> updateHomeAddress(String? address) async {
+    final result = await _client.rpc(
+      'admin_set_club_home_address',
+      params: {'p_address': address},
+    );
+    if (result != null && result is! String) {
+      throw StateError('L’adresse du terrain n’a pas pu être enregistrée.');
+    }
+    return result as String?;
+  }
+
+  /// Nombre habituel de convoqués (1 à 30) du club, lu côté serveur.
+  Future<int> fetchUsualSquadSize() async {
+    final payload = await _client.rpc('get_public_feature_flags');
+    return FeatureFlagsSnapshot.fromRpc(payload)
+        .sportsManagement
+        .usualSquadSize;
+  }
+
+  /// Change la taille habituelle des convocations futures.
+  /// Le serveur vérifie rôle, bornes et isolation entre clubs.
+  Future<int> updateUsualSquadSize(int value) async {
+    if (value < 1 || value > 30) {
+      throw RangeError.range(value, 1, 30, 'value');
+    }
+    final payload = await _client.rpc(
+      'admin_set_club_usual_squad_size',
+      params: {'p_size': value},
+    );
+    if (payload is! num || payload.toInt() != value) {
+      throw StateError('Le nombre de convoqués n’a pas pu être enregistré.');
+    }
+    return payload.toInt();
+  }
+
   /// Les fonctionnalités activées pour le club du compte connecté.
   Future<ClubModules> fetchModules() async {
     return ClubModules.fromJson(await _client.rpc('get_club_modules'));
@@ -359,12 +427,14 @@ class ClubRepository {
     required String lastName,
     required String password,
     required String acceptedTermsVersion,
+    required String acceptedClubContractVersion,
     required AgeConfirmation ageConfirmation,
     String? email,
   }) {
     return _register({
       'mode': 'create',
       'acceptedTermsVersion': acceptedTermsVersion,
+      'acceptedClubContractVersion': acceptedClubContractVersion,
       'ageConfirmation': ageConfirmation.serverValue,
       'clubName': clubName.trim(),
       if (clubShortName != null && clubShortName.trim().isNotEmpty)
@@ -386,6 +456,7 @@ class ClubRepository {
     required String firstName,
     required String lastName,
     required String acceptedTermsVersion,
+    String? acceptedClubContractVersion,
     required AgeConfirmation ageConfirmation,
   }) async {
     final FunctionResponse response;
@@ -401,6 +472,8 @@ class ClubRepository {
           'firstName': firstName.trim(),
           'lastName': lastName.trim(),
           'acceptedTermsVersion': acceptedTermsVersion,
+          if (create && acceptedClubContractVersion != null)
+            'acceptedClubContractVersion': acceptedClubContractVersion,
           'ageConfirmation': ageConfirmation.serverValue,
         },
       );

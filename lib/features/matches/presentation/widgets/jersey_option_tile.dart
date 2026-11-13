@@ -1,4 +1,6 @@
+import 'package:as_grinta/core/club/club_kits.dart';
 import 'package:as_grinta/features/matches/domain/jersey_option.dart';
+import 'package:as_grinta/features/matches/presentation/widgets/kit_jersey.dart';
 import 'package:flutter/material.dart';
 
 /// Vignette d'un maillot proposé pour un match, avec sa coche quand il est
@@ -26,7 +28,19 @@ class JerseyOptionPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final options = JerseyOption.values;
+    return ValueListenableBuilder<int>(
+      valueListenable: ClubKits.revision,
+      builder: (context, _, __) => _buildRow(),
+    );
+  }
+
+  Widget _buildRow() {
+    // Les maillots proposés par le club, plus celui déjà choisi pour ce match
+    // s'il a été retiré depuis : il reste visible et désélectionnable.
+    final options = [
+      for (final option in JerseyOption.values)
+        if (option.kit.enabled || option == selected) option,
+    ];
     return Row(
       children: [
         for (var i = 0; i < options.length; i++) ...[
@@ -73,16 +87,25 @@ class JerseyOptionTile extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
       child: AspectRatio(
-        aspectRatio: 96 / 108,
+        aspectRatio: 96 / 128,
         child: Stack(
           children: [
-            Center(
-              child: Image.asset(
-                option.assetPath,
-                fit: BoxFit.contain,
-                semanticLabel: 'Maillot ${option.label}',
-                errorBuilder: (context, _, __) =>
-                    _JerseyFallback(label: option.label, selected: selected),
+            Positioned.fill(
+              bottom: 20,
+              child: Center(child: KitJersey(kit: option.kit)),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Text(
+                option.label,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: selected ? accent : null,
+                    ),
               ),
             ),
             if (selected)
@@ -97,36 +120,6 @@ class JerseyOptionTile extends StatelessWidget {
               ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _JerseyFallback extends StatelessWidget {
-  const _JerseyFallback({required this.label, required this.selected});
-
-  final String label;
-  final bool selected;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return Container(
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: selected ? colors.primary : colors.outlineVariant,
-          width: selected ? 2 : 1,
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.checkroom_rounded, color: colors.onSurfaceVariant),
-          const SizedBox(height: 6),
-          Text(label, style: Theme.of(context).textTheme.labelMedium),
-        ],
       ),
     );
   }

@@ -247,7 +247,7 @@ class _PaperJerseyAssignmentTile extends StatelessWidget {
                   onTap: assignmentEnabled ? onTap : null,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Image.asset(jersey.assetPath, fit: BoxFit.contain),
+                    child: Center(child: KitJersey(kit: jersey.kit)),
                   ),
                 ),
               ),
@@ -283,7 +283,9 @@ class _PaperJerseyAssignmentTile extends StatelessWidget {
                   initialValue: jersey,
                   onSelected: onJerseySelected,
                   itemBuilder: (context) => [
-                    for (final option in JerseyOption.values)
+                    for (final option in [
+                      for (final kit in ClubKits.forInternalMatch) kit.slot,
+                    ])
                       PopupMenuItem<JerseyOption>(
                         value: option,
                         child: Row(
@@ -291,10 +293,7 @@ class _PaperJerseyAssignmentTile extends StatelessWidget {
                             SizedBox(
                               width: 34,
                               height: 34,
-                              child: Image.asset(
-                                option.assetPath,
-                                fit: BoxFit.contain,
-                              ),
+                              child: KitJersey(kit: option.kit),
                             ),
                             const SizedBox(width: 8),
                             Text(
@@ -603,7 +602,7 @@ class _JerseyTarget extends StatelessWidget {
                         width: assignmentEnabled ? 2 : 1,
                       ),
                     ),
-                    child: Image.asset(jersey.assetPath, fit: BoxFit.contain),
+                    child: Center(child: KitJersey(kit: jersey.kit)),
                   ),
                 ),
               ),
@@ -618,7 +617,9 @@ class _JerseyTarget extends StatelessWidget {
                 initialValue: jersey,
                 onSelected: onJerseySelected,
                 itemBuilder: (context) => [
-                  for (final option in JerseyOption.values)
+                  for (final option in [
+                    for (final kit in ClubKits.forInternalMatch) kit.slot,
+                  ])
                     PopupMenuItem(
                       value: option,
                       child: Row(
@@ -626,7 +627,7 @@ class _JerseyTarget extends StatelessWidget {
                           SizedBox(
                             width: 30,
                             height: 30,
-                            child: Image.asset(option.assetPath),
+                            child: KitJersey(kit: option.kit),
                           ),
                           const SizedBox(width: 8),
                           Text(

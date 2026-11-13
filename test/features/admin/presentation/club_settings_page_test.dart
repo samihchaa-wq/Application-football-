@@ -24,7 +24,7 @@ void main() {
   });
 
   Future<void> pumpPage(WidgetTester tester) async {
-    tester.view.physicalSize = const Size(900, 2400);
+    tester.view.physicalSize = const Size(900, 3000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
@@ -118,6 +118,46 @@ void main() {
     expect(find.textContaining('entre 2 et 80'), findsOneWidget);
   });
 
+  testWidgets('adresse du terrain propre au club et effaçable', (tester) async {
+    repository.homeAddress = 'Rue du Stade, Toulouse';
+    await pumpPage(tester);
+
+    final field = find.byKey(const Key('club-settings-home-address'));
+    expect(tester.widget<TextField>(field).controller!.text,
+        'Rue du Stade, Toulouse');
+
+    await tester.ensureVisible(field);
+    await tester.enterText(field, '  12 avenue des Sports, Lille  ');
+    final save = find.byKey(const Key('club-settings-save-home-address'));
+    await tester.ensureVisible(save);
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+    expect(repository.homeAddress, '12 avenue des Sports, Lille');
+
+    await tester.enterText(field, '');
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+    expect(repository.homeAddress, isNull);
+    expect(find.text('Adresse du terrain effacée.'), findsOneWidget);
+  });
+
+  testWidgets('le quota habituel est réglable de 1 à 30', (tester) async {
+    await pumpPage(tester);
+    final plus = find.byKey(const Key('club-usual-squad-size-plus'));
+    await tester.ensureVisible(plus);
+    expect(find.text('14'), findsOneWidget);
+
+    await tester.tap(plus);
+    await tester.pumpAndSettle();
+    expect(repository.usualSquadSize, 15);
+    expect(find.text('15'), findsOneWidget);
+
+    final minus = find.byKey(const Key('club-usual-squad-size-minus'));
+    await tester.tap(minus);
+    await tester.pumpAndSettle();
+    expect(repository.usualSquadSize, 14);
+  });
+
   testWidgets('changer le code demande confirmation puis affiche le nouveau',
       (tester) async {
     await pumpPage(tester);
@@ -174,6 +214,30 @@ void main() {
     expect(repository.ruleValues['prediction_close_minutes'], 16);
     expect(find.text('16 min'), findsOneWidget);
     expect(ClubRules.predictionCloseBeforeKickoff, const Duration(minutes: 16));
+  });
+
+  testWidgets('le mode de liste d’attente se choisit parmi trois options',
+      (tester) async {
+    repository.ruleValues['waitlist_mode'] = 0;
+    await pumpPage(tester);
+
+    expect(find.text('Par présence l’an dernier'), findsOneWidget);
+    expect(find.text('Ordre d’arrivée'), findsOneWidget);
+    expect(find.text('Par choix'), findsOneWidget);
+    // Pas de compteur +/- pour ce réglage.
+    expect(
+      find.byKey(const ValueKey('club-rule-waitlist_mode-plus')),
+      findsNothing,
+    );
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('club-rule-waitlist_mode-1')),
+    );
+    await tester.tap(find.byKey(const ValueKey('club-rule-waitlist_mode-1')));
+    await tester.pumpAndSettle();
+
+    expect(repository.ruleValues['waitlist_mode'], 1);
+    expect(ClubRules.waitlistMode, WaitlistMode.arrivalOrder);
   });
 
   testWidgets('retirer le logo rétablit l’écusson neutre', (tester) async {
@@ -235,21 +299,36 @@ class _FakeClubRepository implements ClubRepository {
   );
   final Map<String, bool> modules = {};
   int identityUpdates = 0;
+  String? homeAddress;
+  int usualSquadSize = 14;
   final Map<String, int> ruleValues = {'prediction_close_minutes': 15};
 
   List<ClubRule> _rules() => [
         for (final entry in ruleValues.entries)
-          ClubRule(
-            key: entry.key,
-            label: 'Fermeture des pronostics',
-            description: 'Minutes avant le coup d’envoi.',
-            unit: 'min',
-            group: 'Pronostics',
-            defaultValue: 15,
-            min: 0,
-            max: 240,
-            value: entry.value,
-          ),
+          if (entry.key == 'waitlist_mode')
+            ClubRule(
+              key: entry.key,
+              label: 'Liste d’attente : qui passe en premier',
+              description: 'Quand il y a trop de disponibles.',
+              unit: 'mode',
+              group: 'Liste d’attente',
+              defaultValue: 0,
+              min: 0,
+              max: 2,
+              value: entry.value,
+            )
+          else
+            ClubRule(
+              key: entry.key,
+              label: 'Fermeture des pronostics',
+              description: 'Minutes avant le coup d’envoi.',
+              unit: 'min',
+              group: 'Pronostics',
+              defaultValue: 15,
+              min: 0,
+              max: 240,
+              value: entry.value,
+            ),
       ];
 
   @override
@@ -257,12 +336,30 @@ class _FakeClubRepository implements ClubRepository {
 
   @override
   Future<List<ClubRule>> setRule(String key, int? value) async {
-    ruleValues[key] = value ?? 15;
+    ruleValues[key] = value ?? (key == 'waitlist_mode' ? 0 : 15);
     return _rules();
   }
 
   @override
   Future<Club> fetchMyClub() async => club;
+
+  @override
+  Future<String?> fetchHomeAddress() async => homeAddress;
+
+  @override
+  Future<String?> updateHomeAddress(String? address) async {
+    homeAddress = address;
+    return address;
+  }
+
+  @override
+  Future<int> fetchUsualSquadSize() async => usualSquadSize;
+
+  @override
+  Future<int> updateUsualSquadSize(int value) async {
+    usualSquadSize = value;
+    return value;
+  }
 
   @override
   Future<ClubModules> fetchModules() async => ClubModules(Map.of(modules));

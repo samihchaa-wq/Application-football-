@@ -72,9 +72,10 @@ Créer deux clubs A et B avec administrateurs et joueurs distincts. Vérifier :
 
 ## 4. Avant toute commercialisation
 
-- Renseigner et faire valider les mentions légales / CGU / politique de
-  confidentialité : `lib/features/legal/domain/legal_documents.dart`
-  contient encore des **champs à compléter**.
+- Renseigner et faire valider les cinq textes légaux (mentions, CGU,
+  confidentialité, conditions d'abonnement, accord sur les données) :
+  `lib/features/legal/domain/legal_documents.dart` contient encore des
+  **champs à compléter**. Voir `docs/legal/README.md`.
 - Confirmer le modèle économique : le code prépare actuellement un prix
   indicatif de **10 € par joueur et par an**, pas un tarif validé.
 - Choisir et intégrer les paiements, ou assumer explicitement un paiement

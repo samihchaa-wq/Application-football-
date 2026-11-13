@@ -139,6 +139,24 @@ class BadgeAdminRepository {
     });
   }
 
+  /// Change le nombre à atteindre pour un badge à paliers du club. Le serveur
+  /// vérifie le rôle, garde l'ordre des paliers et décerne le badge à ceux
+  /// qui atteignent désormais le seuil.
+  Future<int> updateBadgeThreshold({
+    required String badgeCode,
+    required int threshold,
+  }) async {
+    final result = await _client.rpc('staff_update_badge_threshold', params: {
+      'p_badge_code': badgeCode,
+      'p_threshold': threshold,
+    });
+    final saved = result is Map ? result['threshold'] : null;
+    if (saved is! num) {
+      throw StateError('Le seuil n’a pas pu être enregistré.');
+    }
+    return saved.toInt();
+  }
+
   /// Crée un badge manuel/mystère directement avec son illustration finale.
   /// Sa couleur est toujours l'orange des badges mystère.
   ///

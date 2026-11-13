@@ -1,0 +1,265 @@
+name: Publier l'appli commerciale sur Cloudflare Pages
+
+# Hébergement définitif de l'appli commerciale (GitHub Pages interdit les
+# services commerciaux). Publication MANUELLE uniquement : onglet Actions >
+# « Publier l'appli commerciale sur Cloudflare Pages » > Run workflow.
+#
+# Prérequis (une seule fois, voir docs/MISE_EN_LIGNE.md) :
+# - secret   CLOUDFLARE_API_TOKEN (droit « Cloudflare Pages : Modifier »)
+# - l'ID du compte Cloudflare (non secret) est inscrit ci-dessous par défaut ;
+#   le secret ou la variable CLOUDFLARE_ACCOUNT_ID le remplace si besoin.
+# - variables facultatives : CLOUDFLARE_PAGES_PROJECT (défaut : petit-filet) et
+#   COMMERCIAL_APP_URL (défaut : l'adresse *.pages.dev que Cloudflare attribue
+#   au projet ; à renseigner avec le domaine propre une fois relié).
+# Sans les secrets, le workflow s'arrête avant toute publication.
+on:
+  workflow_dispatch:
+    inputs:
+      target_sha:
+        description: 'Commit de main à publier (40 caractères). Vide = main actuel.'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-pages
+  cancel-in-progress: false
+
+env:
+  TARGET_SHA: ${{ inputs.target_sha || github.sha }}
+  # COMMERCIAL_PUBLIC_URL est fixée par l'étape « Préparer le projet » (via
+  # GITHUB_ENV, qu'une clé env: ici empêcherait de remplacer).
+  COMMERCIAL_APP_URL_VAR: ${{ vars.COMMERCIAL_APP_URL }}
+  PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT || 'petit-filet' }}
+  WRANGLER_VERSION: '4.150.0'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Vérifier les réglages Cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID || '3eac3b573d991d43901ec78c94c3dd53' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Secrets collés depuis un téléphone : retirer les blancs invisibles.
+          CLOUDFLARE_API_TOKEN="$(printf '%s' "$CLOUDFLARE_API_TOKEN" | tr -d '[:space:]')"
+          CLOUDFLARE_ACCOUNT_ID="$(printf '%s' "$CLOUDFLARE_ACCOUNT_ID" | tr -d '[:space:]')"
+          missing=()
+          [[ -n "${CLOUDFLARE_API_TOKEN}" ]] || missing+=('secret CLOUDFLARE_API_TOKEN')
+          [[ -n "${CLOUDFLARE_ACCOUNT_ID}" ]] || missing+=('secret CLOUDFLARE_ACCOUNT_ID')
+          [[ -n "${PAGES_PROJECT}" ]] || missing+=('variable CLOUDFLARE_PAGES_PROJECT')
+          if (( ${#missing[@]} )); then
+            for item in "${missing[@]}"; do echo "::error::Manque : $item (voir docs/MISE_EN_LIGNE.md)."; done
+            exit 1
+          fi
+          if [[ ! "$PAGES_PROJECT" =~ ^[a-z0-9][a-z0-9-]{0,57}$ ]]; then
+            echo '::error::CLOUDFLARE_PAGES_PROJECT : minuscules, chiffres et tirets uniquement.'
+            exit 1
+          fi
+
+      # Crée le projet Cloudflare Pages s'il n'existe pas, et lit l'adresse
+      # *.pages.dev réellement attribuée (Cloudflare ajoute un suffixe si le
+      # nom est déjà pris ailleurs). Elle sert d'adresse publique tant que
+      # COMMERCIAL_APP_URL n'est pas renseignée.
+      - name: Préparer le projet Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID || '3eac3b573d991d43901ec78c94c3dd53' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          token="$(printf '%s' "$CLOUDFLARE_API_TOKEN" | tr -d '[:space:]')"
+          account="$(printf '%s' "$CLOUDFLARE_ACCOUNT_ID" | tr -d '[:space:]')"
+          api="https://api.cloudflare.com/client/v4/accounts/${account}/pages/projects"
+          auth=(-H "Authorization: Bearer ${token}" -H 'Content-Type: application/json')
+          project=$(curl -sS "${auth[@]}" "${api}/${PAGES_PROJECT}")
+          if [[ "$(jq -r '.success' <<<"$project")" != "true" ]]; then
+            echo "Projet ${PAGES_PROJECT} absent : création."
+            project=$(curl -sS -X POST "${auth[@]}" "$api" \
+              --data "$(jq -n --arg n "$PAGES_PROJECT" '{name: $n, production_branch: "main"}')")
+            if [[ "$(jq -r '.success' <<<"$project")" != "true" ]]; then
+              echo '::error::Projet Cloudflare Pages ni lisible ni créable : vérifier le jeton, ses droits (Cloudflare Pages > Modifier) et l ID de compte.'
+              jq -r '.errors[]? | "\(.code) \(.message)"' <<<"$project"
+              exit 1
+            fi
+          fi
+          subdomain=$(jq -r '.result.subdomain // empty' <<<"$project")
+          if [[ -z "$subdomain" ]]; then
+            echo "::error::Cloudflare n'a pas renvoyé l'adresse du projet."
+            exit 1
+          fi
+          echo "Adresse Cloudflare du projet : https://${subdomain}/"
+          url="$(printf '%s' "${COMMERCIAL_APP_URL_VAR}" | tr -d '[:space:]')"
+          [[ -n "$url" ]] || url="https://${subdomain}/"
+          echo "Adresse publique utilisée : $url"
+          echo "COMMERCIAL_PUBLIC_URL=$url" >> "$GITHUB_ENV"
+
+      - name: Récupérer la version validée
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ env.TARGET_SHA }}
+          fetch-depth: 0
+
+      - name: Refuser un commit absent de main
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$TARGET_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo '::error::target_sha doit être un SHA complet de 40 caractères.'
+            exit 1
+          fi
+          git fetch origin main
+          if ! git merge-base --is-ancestor "$TARGET_SHA" origin/main; then
+            echo '::error::Seuls les commits déjà présents dans main peuvent être publiés.'
+            exit 1
+          fi
+
+      - name: Pointer la configuration vers l'adresse définitive
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq --arg url "$COMMERCIAL_PUBLIC_URL" '.PUBLIC_APP_URL = $url' \
+            config/production.json > /tmp/production.json
+          mv /tmp/production.json config/production.json
+
+      - name: Bloquer une mauvaise configuration
+        run: python3 tool/check_commercial_deploy.py
+
+      - name: Préparer la politique de sécurité du navigateur (CSP)
+        run: python3 tool/stamp_commercial_csp.py
+
+      - name: Installer Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          flutter-version: 3.47.9
+          cache: true
+
+      - name: Installer les dépendances verrouillées
+        run: flutter pub get --enforce-lockfile
+
+      - name: Lire et estampiller la version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(awk '/^version:/{print $2}' pubspec.yaml)
+          test -n "$version"
+          web_version="${version}-${TARGET_SHA:0:12}"
+          cat > web/build_version.js <<JS
+          (function (globalScope) {
+            globalScope.AS_GRINTA_WEB_VERSION = '${web_version}';
+          })(typeof self !== 'undefined' ? self : window);
+          JS
+          echo "APP_VERSION=$version" >> "$GITHUB_ENV"
+          echo "WEB_VERSION=$web_version" >> "$GITHUB_ENV"
+
+      - name: Construire l'appli web
+        run: |
+          flutter build web \
+            --release \
+            --base-href "/" \
+            --pwa-strategy=none \
+            --no-web-resources-cdn \
+            --dart-define-from-file=config/production.json \
+            --dart-define=APP_VERSION="$APP_VERSION"
+
+      - name: Versionner les fichiers critiques
+        run: python3 tool/stamp_web_release.py
+
+      - name: Respecter le budget de poids
+        env:
+          MAX_MAIN_DART_JS_BYTES: '6000000'
+          MAX_MAIN_DART_JS_GZIP_BYTES: '1700000'
+        run: python3 tool/check_web_performance_budget.py
+
+      - name: En-têtes de sécurité et de cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Pas de 404.html : Cloudflare Pages renvoie alors index.html pour
+          # toute adresse inconnue (navigation de l'appli).
+          rm -f build/web/404.html
+          cat > build/web/_headers <<'TXT'
+          /*
+            Strict-Transport-Security: max-age=31536000; includeSubDomains
+            X-Content-Type-Options: nosniff
+            Referrer-Policy: strict-origin-when-cross-origin
+            X-Frame-Options: DENY
+          /index.html
+            Cache-Control: no-cache
+          /sw.js
+            Cache-Control: no-cache
+          /build_version.js
+            Cache-Control: no-cache
+          TXT
+
+      - name: Contrôler le contenu construit
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in index.html app_shell.js build_version.js flutter_bootstrap.js main.dart.js favicon.svg _headers; do
+            test -s "build/web/$f"
+          done
+          grep -Fq "$WEB_VERSION" build/web/build_version.js
+          grep -q '<base href="/">' build/web/index.html
+          grep -q 'Content-Security-Policy' build/web/index.html
+          if grep -Fq 'a-remplacer.supabase.co' build/web/index.html; then
+            echo '::error::CSP resté sur la configuration provisoire.'
+            exit 1
+          fi
+
+      - name: Installer Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+
+      - name: Publier sur Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID || '3eac3b573d991d43901ec78c94c3dd53' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          CLOUDFLARE_API_TOKEN="$(printf '%s' "$CLOUDFLARE_API_TOKEN" | tr -d '[:space:]')"
+          CLOUDFLARE_ACCOUNT_ID="$(printf '%s' "$CLOUDFLARE_ACCOUNT_ID" | tr -d '[:space:]')"
+          export CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID
+          wrangler="npx --yes wrangler@${WRANGLER_VERSION}"
+          if ! $wrangler pages project list 2>/dev/null | grep -qw "$PAGES_PROJECT"; then
+            $wrangler pages project create "$PAGES_PROJECT" --production-branch=main
+          fi
+          $wrangler pages deploy build/web \
+            --project-name="$PAGES_PROJECT" \
+            --branch=main \
+            --commit-hash="$TARGET_SHA" \
+            --commit-dirty=true
+
+      - name: Vérifier le site en ligne
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="$COMMERCIAL_PUBLIC_URL"
+          project_host=$(jq -r '.SUPABASE_URL | sub("^https://"; "") | sub("/$"; "")' config/production.json)
+          ok=0
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -LfsS "${base}build_version.js?audit=$(date +%s)" -o /tmp/build_version.js \
+               && grep -Fq "$WEB_VERSION" /tmp/build_version.js; then
+              ok=1; break
+            fi
+            sleep 15
+          done
+          if (( ! ok )); then
+            echo "::error::La nouvelle version n'est pas visible sur $base (domaine pas encore relié ?)."
+            exit 1
+          fi
+          curl -LfsS "${base}?audit=$(date +%s)" -o /tmp/index.html
+          grep -Fq "https://$project_host" /tmp/index.html
+          grep -Fq "wss://$project_host" /tmp/index.html
+          curl -I -LfsS "$base" -o /tmp/headers.txt
+          grep -qi '^strict-transport-security:' /tmp/headers.txt
+          echo "Site publié et vérifié : $base"

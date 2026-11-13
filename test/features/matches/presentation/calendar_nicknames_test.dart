@@ -29,9 +29,9 @@ void main() {
     test('le surnom du club remplace le prénom de la feuille de match', () {
       final detail = historicalMatchDetailFromRow(
         _archiveRow(
-          names: ['Olivier Millet'],
+          names: ['Olivier Moreau'],
           identities: {
-            'Olivier Millet': {'name': 'Poulain', 'last_initial': 'M'},
+            'Olivier Moreau': {'name': 'Poulain', 'last_initial': 'M'},
           },
         ),
       );
@@ -70,12 +70,12 @@ void main() {
     test('les buteurs portent la même appellation que le terrain', () {
       final detail = historicalMatchDetailFromRow(
         _archiveRow(
-          names: ['Milan Couzin'],
+          names: ['Milan Collet'],
           identities: {
-            'Milan Couzin': {'name': 'Pipo', 'last_initial': 'C'},
+            'Milan Collet': {'name': 'Pipo', 'last_initial': 'C'},
           },
           scorers: [
-            {'name': 'Milan Couzin', 'goals': 2},
+            {'name': 'Milan Collet', 'goals': 2},
           ],
         ),
       );
@@ -84,20 +84,22 @@ void main() {
       expect(detail.scorers.single.goals, 2);
     });
 
-    test('le coach reste exclu de l’effectif de secours même surnommé', () {
+    test('l’effectif de secours garde chaque joueur sous son surnom', () {
       final detail = historicalMatchDetailFromRow(
         _archiveRow(
-          names: ['Philippe Couzin', 'Milan Couzin'],
+          names: ['Philippe Collet', 'Milan Collet'],
           identities: {
-            'Philippe Couzin': {'name': 'Coach', 'last_initial': 'C'},
-            'Milan Couzin': {'name': 'Pipo', 'last_initial': 'C'},
+            'Philippe Collet': {'name': 'Coach', 'last_initial': 'C'},
+            'Milan Collet': {'name': 'Pipo', 'last_initial': 'C'},
           },
         ),
       );
 
       final roster = historicalFallbackPlayers(detail);
-      expect(roster.map((player) => player.name), isNot(contains('Coach')));
-      expect(roster.map((player) => player.name), contains('Pipo'));
+      // Plus aucun prénom n'est écarté d'office (ancien filtre propre au
+      // club d'origine) : chacun apparaît sous son appellation actuelle.
+      expect(
+          roster.map((player) => player.name), containsAll(['Coach', 'Pipo']));
     });
   });
 

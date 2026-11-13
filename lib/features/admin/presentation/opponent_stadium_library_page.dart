@@ -366,7 +366,7 @@ class _OpponentStadiumEditorState extends State<_OpponentStadiumEditor> {
                 maxLength: 120,
                 decoration: const InputDecoration(
                   labelText: 'Équipe',
-                  hintText: 'Ex. US Pibrac Loisirs',
+                  hintText: 'Ex. FC Les Tilleuls',
                   prefixIcon: Icon(Icons.shield_outlined),
                 ),
                 validator: (raw) {
@@ -383,7 +383,7 @@ class _OpponentStadiumEditorState extends State<_OpponentStadiumEditor> {
                 maxLength: 120,
                 decoration: const InputDecoration(
                   labelText: 'Stade / terrain actuel',
-                  hintText: 'Ex. Stade de Pibrac',
+                  hintText: 'Ex. Stade municipal',
                   prefixIcon: Icon(Icons.stadium_outlined),
                 ),
               ),

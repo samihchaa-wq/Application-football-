@@ -10,7 +10,7 @@ ConvocationPlayer _player({
     participantId: 'p1',
     seasonPlayerId: 's1',
     firstName: firstName,
-    lastName: 'Fernandez',
+    lastName: 'Ferreira',
     availabilityStatus: 'available',
     convocationStatus: ConvocationStatus.convoked,
     publishedConvocationStatus: ConvocationStatus.convoked,

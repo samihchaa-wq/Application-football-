@@ -14,7 +14,8 @@ import {
   sendMail,
   sha256Hex,
 } from "./account_email.ts";
-import { parseConsent } from "./consent.ts";
+import { parseClubContractVersion, parseConsent } from "./consent.ts";
+import { isDuplicateError, reserveUsername } from "./username.ts";
 import { validatePassword } from "./password_policy.ts";
 
 const USERNAME_DOMAIN = Deno.env.get("USERNAME_DOMAIN")?.trim() ||
@@ -166,7 +167,17 @@ Deno.serve(async (req: Request) => {
     return jsonResponse(
       {
         error:
-          "Accepte les conditions d’utilisation et indique ton âge pour créer ton compte.",
+          "Accepte les conditions d’utilisation et indique ton âge pour créer ton compte. Si la page est ancienne, recharge-la.",
+      },
+      400,
+    );
+  }
+  const clubContractVersion = parseClubContractVersion(body);
+  if (mode === "create" && !clubContractVersion) {
+    return jsonResponse(
+      {
+        error:
+          "Pour créer le club, accepte les conditions d’abonnement et l’accord sur les données. Si la page est ancienne, recharge-la.",
       },
       400,
     );
@@ -242,20 +253,42 @@ Deno.serve(async (req: Request) => {
     }
 
     const base = `${normalizedFirst}${normalizedInitial}`.slice(0, 27);
-    let username = "";
-    for (let suffix = 1; suffix <= 20; suffix++) {
-      const candidate = suffix === 1 ? base : `${base}${suffix}`;
-      const { data: existing, error: existsError } = await admin
-        .from("profiles")
-        .select("id")
-        .eq("username", candidate)
-        .maybeSingle();
-      if (existsError) throw existsError;
-      if (!existing) {
-        username = candidate;
-        break;
+    // Les identifiants sont uniques sur toute la plateforme (tous clubs
+    // confondus) : « thomasd », puis « thomasd2 », « thomasd3 »… La base
+    // calcule le premier libre, sans plafond ; si une inscription simultanée
+    // vient de le prendre, la création du compte est refusée et on passe au
+    // suivant.
+    const nextFree = async (skip: string[]) => {
+      if (!admin) throw new Error("Missing server client");
+      const { data, error } = await admin.rpc("internal_next_free_username", {
+        p_base: base,
+        p_skip: skip,
+      });
+      if (error) throw error;
+      return typeof data === "string" ? data : null;
+    };
+    const username = await reserveUsername(nextFree, async (candidate) => {
+      if (!admin) throw new Error("Missing server client");
+      const { data: created, error: createError } =
+        await admin.auth.admin.createUser({
+          email: `${candidate}@${USERNAME_DOMAIN}`,
+          password,
+          email_confirm: true,
+          user_metadata: {
+            first_name: firstName,
+            last_name: lastName,
+          },
+          // Lu par le déclencheur d'inscription ; non modifiable par le compte.
+          app_metadata: { club_id: club.id },
+        });
+      if (createError) {
+        if (isDuplicateError(createError)) return "taken";
+        throw createError;
       }
-    }
+      newUserId = created.user?.id ?? null;
+      if (!newUserId) throw new Error("Account creation returned no user id");
+      return "ok";
+    });
     if (!username) {
       if (createdClubId) {
         await admin.rpc("discard_empty_club", { p_club_id: createdClubId });
@@ -266,22 +299,6 @@ Deno.serve(async (req: Request) => {
         409,
       );
     }
-
-    const { data: created, error: createError } =
-      await admin.auth.admin.createUser({
-        email: `${username}@${USERNAME_DOMAIN}`,
-        password,
-        email_confirm: true,
-        user_metadata: {
-          first_name: firstName,
-          last_name: lastName,
-        },
-        // Lu par le déclencheur d'inscription ; non modifiable par le compte.
-        app_metadata: { club_id: club.id },
-      });
-    if (createError) throw createError;
-    newUserId = created.user?.id ?? null;
-    if (!newUserId) throw new Error("Account creation returned no user id");
 
     // Les automatismes de la base rangent ce qu'ils écrivent dans le club
     // annoncé par cet en-tête, que seule la clé de service peut fournir.
@@ -304,9 +321,14 @@ Deno.serve(async (req: Request) => {
     if (updateError) throw updateError;
 
     if (mode === "create") {
-      const { error: founderError } = await scoped.rpc("promote_club_founder", {
+      // Promotion du créateur et preuve d'acceptation du contrat du club, en
+      // une seule transaction (public.found_club) : si la preuve ne peut pas
+      // être enregistrée, rien n'est fait, et le club vide est supprimé
+      // plus bas par discard_empty_club.
+      const { error: founderError } = await scoped.rpc("found_club", {
         p_club_id: club.id,
         p_profile_id: newUserId,
+        p_contract_version: clubContractVersion,
       });
       if (founderError) throw founderError;
     }

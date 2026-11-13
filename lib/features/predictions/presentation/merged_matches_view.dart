@@ -38,7 +38,7 @@ class MergedMatchesView extends ConsumerStatefulWidget {
   /// Match à amener en haut de l'écran à l'ouverture, par exemple depuis une
   /// notification de disponibilité. Sans lui, ou s'il ne figure pas dans le
   /// calendrier, c'est le dernier match joué pendant 48 h après son coup
-  /// d'envoi (le vote Homme du match, clos 24 h après le coup d'envoi, puis
+  /// d'envoi (le vote de l’Étoile du match, clos 24 h après le coup d'envoi, puis
   /// 24 h pour en voir le résultat) ; ensuite, le prochain match.
   final String? focusMatchId;
 
@@ -405,7 +405,7 @@ class _MergedMatchesViewState extends ConsumerState<MergedMatchesView> {
 }
 
 /// Durée pendant laquelle le dernier match joué reste en haut du calendrier
-/// après son coup d'envoi. Le vote Homme du match se ferme 24 h après le coup
+/// après son coup d'envoi. Le vote de l’Étoile du match se ferme 24 h après le coup
 /// d'envoi (`private.match_motm_closes_at`) ; le résultat reste ensuite en
 /// vue 24 h.
 const lastMatchFocusDuration = Duration(hours: 48);

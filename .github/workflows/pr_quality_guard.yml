@@ -1,0 +1,34 @@
+name: PR quality guard
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-quality-guard-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  migration-history:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Test migration history guard
+        run: python3 -m unittest discover -s tool/tests -p 'test_migration_history_guard.py' -v
+
+      - name: Verify prior SQL migrations have not been rewritten
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.sha }}
+        run: python3 tool/check_migration_history.py "$BASE_SHA" "$HEAD_SHA"

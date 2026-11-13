@@ -11,6 +11,9 @@ class ConsentFields extends StatelessWidget {
     required this.enabled,
     required this.onAgeChanged,
     required this.onTermsChanged,
+    this.showClubContract = false,
+    this.acceptedClubContract = false,
+    this.onClubContractChanged,
   });
 
   final AgeConfirmation? ageConfirmation;
@@ -18,6 +21,12 @@ class ConsentFields extends StatelessWidget {
   final bool enabled;
   final ValueChanged<AgeConfirmation?> onAgeChanged;
   final ValueChanged<bool> onTermsChanged;
+
+  /// Création d'un club : la personne engage le club (contrat d'abonnement
+  /// et accord sur le traitement des données des membres).
+  final bool showClubContract;
+  final bool acceptedClubContract;
+  final ValueChanged<bool>? onClubContractChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +68,21 @@ class ConsentFields extends StatelessWidget {
             'confidentialité',
           ),
         ),
+        if (showClubContract)
+          CheckboxListTile(
+            key: const Key('register-accept-club-contract'),
+            contentPadding: EdgeInsets.zero,
+            controlAffinity: ListTileControlAffinity.leading,
+            value: acceptedClubContract,
+            onChanged: enabled && onClubContractChanged != null
+                ? (value) => onClubContractChanged!(value ?? false)
+                : null,
+            title: const Text(
+              'J’agis au nom du club, j’ai le pouvoir de l’engager, et '
+              'j’accepte pour lui les conditions d’abonnement et l’accord '
+              'sur les données des membres',
+            ),
+          ),
         Wrap(
           spacing: 4,
           children: [
@@ -70,6 +94,16 @@ class ConsentFields extends StatelessWidget {
               onPressed: () => context.push('/legal/confidentialite'),
               child: const Text('Lire la politique de confidentialité'),
             ),
+            if (showClubContract) ...[
+              TextButton(
+                onPressed: () => context.push('/legal/cgv'),
+                child: const Text('Lire les conditions d’abonnement'),
+              ),
+              TextButton(
+                onPressed: () => context.push('/legal/donnees-club'),
+                child: const Text('Lire l’accord sur les données'),
+              ),
+            ],
           ],
         ),
       ],
