@@ -3,6 +3,7 @@ import 'package:as_grinta/features/feature_flags/presentation/feature_flags_cont
 import 'package:as_grinta/features/matches/data/match_info_repository.dart';
 import 'package:as_grinta/features/sports_management/data/match_availability_board_repository.dart';
 import 'package:as_grinta/features/sports_management/data/match_kit_photo_overrides.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
 import 'package:as_grinta/features/sports_management/domain/match_availability_board.dart';
 import 'package:as_grinta/features/sports_management/domain/sport_waitlist_models.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/effectif_avatar_grid.dart';
@@ -62,11 +63,14 @@ class MatchAvailabilityBoardCard extends ConsumerWidget {
         if (!visible) return const SizedBox.shrink();
         return Padding(
           padding: EdgeInsets.only(bottom: bottomSpacing),
-          child: MatchAvailabilityBoardContent(
-            board: board,
-            isInternal: isInternal,
-            kitPhotos: kitPhotos,
-            headerMargin: compact ? EdgeInsets.zero : null,
+          child: MatchCompositionKitScope(
+            matchId: isInternal ? null : matchId,
+            child: MatchAvailabilityBoardContent(
+              board: board,
+              isInternal: isInternal,
+              kitPhotos: kitPhotos,
+              headerMargin: compact ? EdgeInsets.zero : null,
+            ),
           ),
         );
       },
