@@ -185,9 +185,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     if (_savingUsualSquadSize || value < 1 || value > 30) return;
     setState(() => _savingUsualSquadSize = true);
     try {
-      final saved = await ref
-          .read(clubRepositoryProvider)
-          .updateUsualSquadSize(value);
+      final saved =
+          await ref.read(clubRepositoryProvider).updateUsualSquadSize(value);
       if (!mounted) return;
       setState(() => _usualSquadSize = saved);
       // Les formulaires de futurs matchs relisent le quota du club.
@@ -206,9 +205,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     if (club == null || _savingColors) return;
     setState(() => _savingColors = true);
     try {
-      final updated = await ref
-          .read(clubRepositoryProvider)
-          .updateColors(
+      final updated = await ref.read(clubRepositoryProvider).updateColors(
             primary: primary ?? club.primaryColor ?? '#1A4AC0',
             secondary: secondary ?? club.secondaryColor ?? '#FBE80C',
           );
@@ -355,9 +352,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
 
     setState(() => _renewingCode = true);
     try {
-      final code = await ref
-          .read(clubRepositoryProvider)
-          .regenerateInviteCode();
+      final code =
+          await ref.read(clubRepositoryProvider).regenerateInviteCode();
       if (!mounted) return;
       final club = _club;
       if (club != null) {
@@ -402,9 +398,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   Future<void> _setRule(ClubRule rule, int? value) async {
     setState(() => _pendingRules.add(rule.key));
     try {
-      final rules = await ref
-          .read(clubRepositoryProvider)
-          .setRule(rule.key, value);
+      final rules =
+          await ref.read(clubRepositoryProvider).setRule(rule.key, value);
       if (!mounted) return;
       setState(() => _rules = rules);
       applyClubRules(rules);
@@ -440,11 +435,11 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       );
 
   Widget _labelWithInfo(String key, String label, String description) => Row(
-    children: [
-      Expanded(child: Text(label)),
-      _infoButton(key, label, description),
-    ],
-  );
+        children: [
+          Expanded(child: Text(label)),
+          _infoButton(key, label, description),
+        ],
+      );
 
   Widget _section(
     String key,
@@ -452,23 +447,24 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     IconData icon,
     List<Widget> children, {
     bool expanded = false,
-  }) => Card(
-    clipBehavior: Clip.antiAlias,
-    margin: const EdgeInsets.only(bottom: 10),
-    child: ExpansionTile(
-      key: ValueKey('club-section-$key'),
-      initiallyExpanded: expanded,
-      leading: Icon(icon),
-      title: Text(title),
-      childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: children,
+  }) =>
+      Card(
+        clipBehavior: Clip.antiAlias,
+        margin: const EdgeInsets.only(bottom: 10),
+        child: ExpansionTile(
+          key: ValueKey('club-section-$key'),
+          initiallyExpanded: expanded,
+          leading: Icon(icon),
+          title: Text(title),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: children,
+            ),
+          ],
         ),
-      ],
-    ),
-  );
+      );
 
   String _moduleCategory(ClubModule module) {
     if (module == ClubModule.weather || module == ClubModule.liveMode) {
@@ -487,8 +483,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   String _ruleCategory(ClubRule rule) {
     if (rule.key == ClubRules.waitlistModeKey ||
         rule.key == ClubRules.featuresOpenDaysKey ||
-        rule.key == ClubRules.featuresOpenHourKey)
-      return 'squad';
+        rule.key == ClubRules.featuresOpenHourKey) return 'squad';
     if (rule.key == ClubRules.correctionWindowHoursKey) return 'matches';
     if (rule.key.startsWith('prediction_')) return 'predictions';
     return 'other';
@@ -498,71 +493,71 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       rule.key != 'waitlist_cutoff_days' && rule.key != 'waitlist_cutoff_hour';
 
   List<Widget> _modulesFor(String category) => [
-    for (final module in ClubModule.values)
-      if (_moduleCategory(module) == category)
-        SwitchListTile.adaptive(
-          key: ValueKey('club-module-' + module.key),
-          contentPadding: EdgeInsets.zero,
-          title: _labelWithInfo(
-            'module-' + module.key,
-            module.label,
-            module.description +
-                '\n\nLa désactivation conserve les données existantes.',
-          ),
-          value: _modules.isEnabled(module),
-          onChanged: _pendingModules.contains(module)
-              ? null
-              : (value) => _setModule(module, value),
-        ),
-  ];
+        for (final module in ClubModule.values)
+          if (_moduleCategory(module) == category)
+            SwitchListTile.adaptive(
+              key: ValueKey('club-module-' + module.key),
+              contentPadding: EdgeInsets.zero,
+              title: _labelWithInfo(
+                'module-' + module.key,
+                module.label,
+                module.description +
+                    '\n\nLa désactivation conserve les données existantes.',
+              ),
+              value: _modules.isEnabled(module),
+              onChanged: _pendingModules.contains(module)
+                  ? null
+                  : (value) => _setModule(module, value),
+            ),
+      ];
 
   List<Widget> _rulesFor(String category) => [
-    for (final rule in _rules)
-      if (_isRelevantRule(rule) && _ruleCategory(rule) == category)
-        if (rule.key == ClubRules.waitlistModeKey)
-          _waitlistModeTile(rule)
-        else
-          ListTile(
-            key: ValueKey('club-rule-' + rule.key),
-            contentPadding: EdgeInsets.zero,
-            title: _labelWithInfo(
-              'rule-' + rule.key,
-              rule.label,
-              rule.description +
-                  '\n\nValeur par défaut : ' +
-                  _ruleValueLabel(rule, rule.defaultValue),
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  key: ValueKey('club-rule-' + rule.key + '-minus'),
-                  tooltip: 'Diminuer',
-                  icon: const Icon(Icons.remove_circle_outline),
-                  onPressed:
-                      _pendingRules.contains(rule.key) || rule.value <= rule.min
-                      ? null
-                      : () => _setRule(rule, rule.value - 1),
+        for (final rule in _rules)
+          if (_isRelevantRule(rule) && _ruleCategory(rule) == category)
+            if (rule.key == ClubRules.waitlistModeKey)
+              _waitlistModeTile(rule)
+            else
+              ListTile(
+                key: ValueKey('club-rule-' + rule.key),
+                contentPadding: EdgeInsets.zero,
+                title: _labelWithInfo(
+                  'rule-' + rule.key,
+                  rule.label,
+                  rule.description +
+                      '\n\nValeur par défaut : ' +
+                      _ruleValueLabel(rule, rule.defaultValue),
                 ),
-                Text(_ruleValueLabel(rule, rule.value)),
-                IconButton(
-                  key: ValueKey('club-rule-' + rule.key + '-plus'),
-                  tooltip: 'Augmenter',
-                  icon: const Icon(Icons.add_circle_outline),
-                  onPressed:
-                      _pendingRules.contains(rule.key) || rule.value >= rule.max
-                      ? null
-                      : () => _setRule(rule, rule.value + 1),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      key: ValueKey('club-rule-' + rule.key + '-minus'),
+                      tooltip: 'Diminuer',
+                      icon: const Icon(Icons.remove_circle_outline),
+                      onPressed: _pendingRules.contains(rule.key) ||
+                              rule.value <= rule.min
+                          ? null
+                          : () => _setRule(rule, rule.value - 1),
+                    ),
+                    Text(_ruleValueLabel(rule, rule.value)),
+                    IconButton(
+                      key: ValueKey('club-rule-' + rule.key + '-plus'),
+                      tooltip: 'Augmenter',
+                      icon: const Icon(Icons.add_circle_outline),
+                      onPressed: _pendingRules.contains(rule.key) ||
+                              rule.value >= rule.max
+                          ? null
+                          : () => _setRule(rule, rule.value + 1),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-  ];
+              ),
+      ];
 
   String _ruleValueLabel(ClubRule rule, int value) =>
       rule.unit == ClubRules.multiplierUnit
-      ? ClubRules.formatMultiplier(value)
-      : '$value ' + rule.unit;
+          ? ClubRules.formatMultiplier(value)
+          : '$value ' + rule.unit;
 
   Widget _waitlistModeTile(ClubRule rule) {
     final current = WaitlistMode.fromValue(rule.value);
@@ -632,110 +627,115 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       key: const Key('club-settings-list'),
       padding: const EdgeInsets.all(12),
       children: [
-        _section('identity', 'Identité et maillots', Icons.shield_outlined, [
-          const SizedBox(height: 12),
-          TextField(
-            key: const Key('club-settings-name'),
-            controller: _nameController,
-            textCapitalization: TextCapitalization.words,
-            decoration: const InputDecoration(
-              labelText: 'Nom du club',
-              prefixIcon: Icon(Icons.shield_outlined),
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            key: const Key('club-settings-short-name'),
-            controller: _shortNameController,
-            textCapitalization: TextCapitalization.characters,
-            decoration: InputDecoration(
-              labelText: 'Nom court',
-              suffixIcon: _infoButton(
-                'short-name',
-                'Nom court',
-                'Utilisé quand la place manque (2 à 12 caractères).',
-              ),
-              prefixIcon: Icon(Icons.short_text),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: FilledButton(
-              onPressed: _savingIdentity ? null : _saveIdentity,
-              child: Text(_savingIdentity ? 'Enregistrement…' : 'Enregistrer'),
-            ),
-          ),
-
-          _labelWithInfo(
-            'logo',
-            'Écusson du club',
-            'Écusson affiché dans l’application. Image JPEG, PNG ou WebP, de préférence carrée.',
-          ),
-          const SizedBox(height: 8),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Image(image: ClubIdentity.crestImage, width: 56, height: 56),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Wrap(
-                  spacing: 12,
-                  runSpacing: 8,
-                  children: [
-                    FilledButton.tonalIcon(
-                      key: const Key('club-logo-pick'),
-                      onPressed: _savingLogo ? null : _pickLogo,
-                      icon: const Icon(Icons.image_outlined, size: 18),
-                      label: Text(_savingLogo ? 'Envoi…' : 'Choisir un logo'),
-                    ),
-                    if (club.logoPath != null)
-                      OutlinedButton(
-                        key: const Key('club-logo-remove'),
-                        onPressed: _savingLogo ? null : _removeLogo,
-                        child: const Text('Retirer'),
-                      ),
-                  ],
+        _section(
+            'identity',
+            'Identité et maillots',
+            Icons.shield_outlined,
+            [
+              const SizedBox(height: 12),
+              TextField(
+                key: const Key('club-settings-name'),
+                controller: _nameController,
+                textCapitalization: TextCapitalization.words,
+                decoration: const InputDecoration(
+                  labelText: 'Nom du club',
+                  prefixIcon: Icon(Icons.shield_outlined),
                 ),
               ),
+              const SizedBox(height: 12),
+              TextField(
+                key: const Key('club-settings-short-name'),
+                controller: _shortNameController,
+                textCapitalization: TextCapitalization.characters,
+                decoration: InputDecoration(
+                  labelText: 'Nom court',
+                  suffixIcon: _infoButton(
+                    'short-name',
+                    'Nom court',
+                    'Utilisé quand la place manque (2 à 12 caractères).',
+                  ),
+                  prefixIcon: Icon(Icons.short_text),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: FilledButton(
+                  onPressed: _savingIdentity ? null : _saveIdentity,
+                  child:
+                      Text(_savingIdentity ? 'Enregistrement…' : 'Enregistrer'),
+                ),
+              ),
+              _labelWithInfo(
+                'logo',
+                'Écusson du club',
+                'Écusson affiché dans l’application. Image JPEG, PNG ou WebP, de préférence carrée.',
+              ),
+              const SizedBox(height: 8),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Image(image: ClubIdentity.crestImage, width: 56, height: 56),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Wrap(
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: [
+                        FilledButton.tonalIcon(
+                          key: const Key('club-logo-pick'),
+                          onPressed: _savingLogo ? null : _pickLogo,
+                          icon: const Icon(Icons.image_outlined, size: 18),
+                          label:
+                              Text(_savingLogo ? 'Envoi…' : 'Choisir un logo'),
+                        ),
+                        if (club.logoPath != null)
+                          OutlinedButton(
+                            key: const Key('club-logo-remove'),
+                            onPressed: _savingLogo ? null : _removeLogo,
+                            child: const Text('Retirer'),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              _labelWithInfo(
+                'colors',
+                'Couleurs du club',
+                'Couleurs de l’interface pour tous les membres du club.',
+              ),
+              const SizedBox(height: 8),
+              const SizedBox(height: 12),
+              _colorRow(
+                'Couleur principale',
+                'club-color-primary',
+                club.primaryColor,
+                (hex) => _setColors(primary: hex),
+              ),
+              const SizedBox(height: 14),
+              _colorRow(
+                'Couleur secondaire',
+                'club-color-secondary',
+                club.secondaryColor,
+                (hex) => _setColors(secondary: hex),
+              ),
+              const SizedBox(height: 12),
+              ListTile(
+                key: const ValueKey('club-kits-entry'),
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.checkroom_rounded),
+                title: _labelWithInfo(
+                  'kits',
+                  'Maillots du club',
+                  'Choisis les tenues des joueurs et des gardiens. Elles sont '
+                      'utilisées dans les compositions et les matchs.',
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => context.push('/admin/club/maillots'),
+              ),
             ],
-          ),
-
-          _labelWithInfo(
-            'colors',
-            'Couleurs du club',
-            'Couleurs de l’interface pour tous les membres du club.',
-          ),
-          const SizedBox(height: 8),
-          const SizedBox(height: 12),
-          _colorRow(
-            'Couleur principale',
-            'club-color-primary',
-            club.primaryColor,
-            (hex) => _setColors(primary: hex),
-          ),
-          const SizedBox(height: 14),
-          _colorRow(
-            'Couleur secondaire',
-            'club-color-secondary',
-            club.secondaryColor,
-            (hex) => _setColors(secondary: hex),
-          ),
-          const SizedBox(height: 12),
-          ListTile(
-            key: const ValueKey('club-kits-entry'),
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.checkroom_rounded),
-            title: _labelWithInfo(
-              'kits',
-              'Maillots du club',
-              'Choisis les tenues des joueurs et des gardiens. Elles sont '
-                  'utilisées dans les compositions et les matchs.',
-            ),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => context.push('/admin/club/maillots'),
-          ),
-        ], expanded: true),
+            expanded: true),
         _section('squad', 'Effectif et convocations', Icons.groups_outlined, [
           const SizedBox(height: 8),
           ListTile(
@@ -767,7 +767,6 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
               ],
             ),
           ),
-
           ..._rulesFor('squad'),
         ]),
         _section('matches', 'Matchs et direct', Icons.sports_soccer_outlined, [
@@ -802,7 +801,6 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
               ),
             ),
           ),
-
           ..._modulesFor('matches'),
           ..._rulesFor('matches'),
         ]),
