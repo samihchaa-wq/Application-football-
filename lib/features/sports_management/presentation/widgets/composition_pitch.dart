@@ -837,12 +837,10 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
     // L'habillage est ajouté seulement quand une trame photo a été décodée.
     // Le réseau peut afficher des initiales pendant le chargement : celles-ci
     // restent sans maillot ; c'est vrai aussi en cas d'erreur de téléchargement.
-    final portraitKit = showPhoto && size >= 44 && kit?.dressPlayers == true
-        ? kit
-        : null;
-    final avatar = showPhoto
-        ? _photo(url, kit: portraitKit)
-        : _initials(visualSize);
+    final portraitKit =
+        showPhoto && size >= 44 && kit?.dressPlayers == true ? kit : null;
+    final avatar =
+        showPhoto ? _photo(url, kit: portraitKit) : _initials(visualSize);
 
     return SizedBox(
       width: size,
