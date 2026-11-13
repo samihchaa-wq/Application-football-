@@ -1,8 +1,11 @@
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:as_grinta/core/club/club_kits.dart';
 import 'package:as_grinta/core/storage/avatar_image.dart';
+import 'package:as_grinta/core/widgets/kit_portrait.dart';
 import 'package:as_grinta/core/widgets/photo_crop_preview.dart';
+import 'package:as_grinta/core/widgets/portrait_alignment_guide.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
@@ -81,29 +84,62 @@ void main() {
   tearDown(ClubKits.reset);
 
   testWidgets(
-    'le patron validé affiche guides, conseils, exemples et aperçu final',
+    'le recadrage ne montre que les patrons maillot et couronne',
     (tester) async {
       final exported = await _crop(
         tester,
         _photo(400, 400),
         beforeExport: () async {
           expect(find.text('Ajouter la photo du joueur'), findsOneWidget);
-          expect(find.text('Patron de cadrage'), findsOneWidget);
-          expect(find.text('Conseils'), findsOneWidget);
-          expect(find.text('Sommet de la tête'), findsOneWidget);
-          expect(find.text('Hauteur des yeux'), findsOneWidget);
-          expect(find.text('Base du menton'), findsOneWidget);
-          expect(find.text('Haut du maillot'), findsOneWidget);
-          expect(find.text('Correct'), findsOneWidget);
-          expect(find.text('Trop haut'), findsOneWidget);
-          expect(find.text('Décalé'), findsOneWidget);
-          expect(find.text('Aperçu final'), findsOneWidget);
+          expect(find.byType(KitPortrait), findsOneWidget);
+          expect(find.byType(PortraitAlignmentGuide), findsOneWidget);
+          expect(find.byKey(const ValueKey('portrait-crown-guide')),
+              findsOneWidget);
           expect(find.byType(InteractiveViewer), findsOneWidget);
+          for (final label in [
+            'Patron de cadrage',
+            'Patron du cadrage',
+            'Conseils',
+            'Sommet de la tête',
+            'Hauteur des yeux',
+            'Base du menton',
+            'Haut du maillot',
+            'Correct',
+            'Trop haut',
+            'Décalé',
+            'Aperçu final',
+          ]) {
+            expect(find.text(label), findsNothing, reason: label);
+          }
         },
       );
       expect(exported, isNotNull);
     },
   );
+
+  test('le patron dessine une couronne sans cercle ni lignes de guidage',
+      () async {
+    final recorder = ui.PictureRecorder();
+    const CrownPlacementPainter().paint(
+      ui.Canvas(recorder),
+      const ui.Size(300, 300),
+    );
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(300, 300);
+    final pixels = (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!
+        .buffer
+        .asUint8List();
+
+    int alpha(int x, int y) => pixels[(y * 300 + x) * 4 + 3];
+
+    expect(alpha(150, 5), greaterThan(0)); // Pointe haute.
+    expect(alpha(150, 150), 0); // Aucun trait central.
+    expect(alpha(150, 105), 0); // Aucun repère yeux/visage.
+    expect(alpha(20, 171), 0); // Aucun niveau horizontal.
+
+    image.dispose();
+    picture.dispose();
+  });
 
   testWidgets(
     'une photo détourée garde sa transparence au lieu d’un fond blanc',
@@ -123,7 +159,7 @@ void main() {
   );
 
   testWidgets(
-    'le patron laisse passer les gestes : la photo glisse sous l’ovale',
+    'les deux patrons laissent passer les gestes sur la photo',
     (tester) async {
       // Moitié gauche rouge, moitié droite bleue.
       final halves = img.Image(width: 400, height: 400);
@@ -138,7 +174,7 @@ void main() {
         Uint8List.fromList(img.encodeJpg(halves, quality: 95)),
         beforeExport: () async {
           // Glissé lent vers la droite, au centre de l'aperçu, en plein
-          // sur l'ovale : sans élan, la photo s'arrête où le doigt la laisse.
+          // sur le portrait : sans élan, la photo s'arrête où le doigt la laisse.
           final gesture = await tester.startGesture(
             tester.getCenter(find.byType(InteractiveViewer)),
           );
@@ -166,7 +202,7 @@ void main() {
   );
 
   testWidgets(
-    'ni le maillot, ni l’ovale, ni la couronne ne sont enregistrés dans la photo',
+    'ni le maillot ni la couronne ne sont enregistrés dans la photo',
     (tester) async {
       ClubKits.setFromJson([
         for (final kit in ClubKits.all)
