@@ -42,12 +42,36 @@ create policy deny_client_access on private.waitlist_auto_activation
   as restrictive for all to anon, authenticated
   using (false) with check (false);
 
-create policy club_scope_access on private.waitlist_auto_processed_matches
-  for all to club_scope using (true) with check (true);
+-- Compatibilite avec les environnements ou une politique a deja ete
+-- creee par une migration ou un outil de gouvernance. Le registre doit
+-- toujours posseder les deux politiques, sans double CREATE POLICY.
+do $waitlist_policies$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'private'
+      and tablename = 'waitlist_auto_processed_matches'
+      and policyname = 'club_isolation'
+  ) then
+    create policy club_isolation
+      on private.waitlist_auto_processed_matches
+      as restrictive for all to public
+      using (club_id = (select private.current_club_id()))
+      with check (club_id = (select private.current_club_id()));
+  end if;
 
--- Le trigger de gouvernance multiclub pose automatiquement la politique
--- restrictive club_isolation sur toute nouvelle table avec club_id.
--- Ne pas la creer une seconde fois.
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'private'
+      and tablename = 'waitlist_auto_processed_matches'
+      and policyname = 'club_scope_access'
+  ) then
+    create policy club_scope_access
+      on private.waitlist_auto_processed_matches
+      for all to club_scope using (true) with check (true);
+  end if;
+end
+$waitlist_policies$;
 revoke all on private.waitlist_auto_activation,
   private.waitlist_auto_processed_matches from public, anon, authenticated;
 
