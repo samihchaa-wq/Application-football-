@@ -32,6 +32,8 @@ Le retour sur smartphone montrait un grand demi-cercle coloré, un col trop
 (`PortraitJerseyPainter`) a été repris : épaules en pente, silhouette de
 manches courtes, emmanchures discrètes, liserés de manches et col rond fin.
 Les seuls pointillés du recadrage restent ceux de l'ovale du visage.
+Le rayon des coins intérieurs de l'aperçu passe également de 45 à 14 px :
+le cadrage ne transforme plus le bas du maillot en disque arrondi.
 
 Cette correction ne change ni les couleurs et motifs enregistrés, ni le choix
 du maillot par match, ni les portraits stockés. Elle est visible sur toutes les
