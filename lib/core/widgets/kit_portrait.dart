@@ -44,34 +44,78 @@ class KitPortrait extends StatelessWidget {
       );
 }
 
+/// Patron partagé par la découpe photo et le tissu. Le bord intérieur du
+/// col et la découpe du cou ont EXACTEMENT le même tracé pour éviter les
+/// décalages et les vêtements d'origine apparents.
+abstract final class _PortraitGeometry {
+  static const neckLeft = .336;
+  static const neckRight = .664;
+
+  /// Ouverture arrondie et large : 33 % du portrait entre les deux attaches.
+  /// La photo reste visible jusqu'au bord intérieur, sans fausse peau.
+  static Path headClip(Size size) {
+    final w = size.width;
+    final h = size.height;
+    return Path()
+      ..moveTo(0, 0)
+      ..lineTo(w, 0)
+      ..lineTo(w, h * .613)
+      ..lineTo(w * neckRight, h * .613)
+      ..lineTo(w * neckRight, h * .655)
+      ..cubicTo(w * .637, h * .711, w * .585, h * .744, w * .5, h * .748)
+      ..cubicTo(w * .415, h * .744, w * .363, h * .711, w * neckLeft, h * .655)
+      ..lineTo(w * neckLeft, h * .613)
+      ..lineTo(0, h * .613)
+      ..close();
+  }
+
+  /// Silhouette de buste : épaules arrondies, trapèzes et manches hors champ.
+  /// Contrairement à l'ancien patron, le dessus n'est pas un triangle plat.
+  static Path shirt() => Path()
+    ..moveTo(neckLeft, .640)
+    ..cubicTo(.284, .644, .241, .655, .196, .675)
+    ..cubicTo(.111, .706, .039, .746, -.025, .788)
+    ..lineTo(-.025, 1.03)
+    ..lineTo(1.025, 1.03)
+    ..lineTo(1.025, .788)
+    ..cubicTo(.961, .746, .889, .706, .804, .675)
+    ..cubicTo(.759, .655, .716, .644, neckRight, .640)
+    ..lineTo(neckRight, .655)
+    ..cubicTo(.637, .711, .585, .744, .5, .748)
+    ..cubicTo(.415, .744, .363, .711, neckLeft, .655)
+    ..close();
+
+  /// Bande souple de col côtelé, réellement plus ouverte que l'ancien
+  /// anneau épais en demi-cercle. La partie intérieure suit headClip.
+  static Path collar() => Path()
+    ..moveTo(.316, .642)
+    ..cubicTo(.343, .728, .410, .776, .5, .777)
+    ..cubicTo(.590, .776, .657, .728, .684, .642)
+    ..lineTo(neckRight, .655)
+    ..cubicTo(.637, .711, .585, .744, .5, .748)
+    ..cubicTo(.415, .744, .363, .711, neckLeft, .655)
+    ..close();
+
+  static Path innerCollar() => Path()
+    ..moveTo(neckLeft, .655)
+    ..cubicTo(.363, .711, .415, .744, .5, .748)
+    ..cubicTo(.585, .744, .637, .711, neckRight, .655);
+}
+
 class _HeadClipper extends CustomClipper<Path> {
   const _HeadClipper();
 
   @override
-  Path getClip(Size size) {
-    final w = size.width;
-    final h = size.height;
-    // La photo reste visible dans le col : menton et cou ne sont jamais
-    // remplacés par un dessin de maillot.
-    return Path()
-      ..lineTo(w, 0)
-      ..lineTo(w, h * .635)
-      ..lineTo(w * .608, h * .635)
-      ..lineTo(w * .608, h * .658)
-      ..cubicTo(w * .588, h * .695, w * .553, h * .715, w * .5, h * .715)
-      ..cubicTo(w * .447, h * .715, w * .412, h * .695, w * .392, h * .658)
-      ..lineTo(w * .392, h * .635)
-      ..lineTo(0, h * .635)
-      ..close();
-  }
+  Path getClip(Size size) => _PortraitGeometry.headClip(size);
 
   @override
   bool shouldReclip(_HeadClipper oldClipper) => false;
 }
 
-/// Repères communs à l'aperçu et aux compositions : visage entre 13 et 55 %,
-/// base du cou vers 63 %, col près de 71 %. La silhouette conserve le haut
-/// du buste et des manches réalistes sans recouvrir le visage.
+/// Habillage procédural à la taille du portrait. Le rendu Info reste le
+/// pictogramme KitJersey ; ici la lumière, les plis et les coutures
+/// sont peints sur un buste aux épaules arrondies. Le visage est toujours
+/// la photographie réelle, sans transformation de ses pixels.
 class PortraitJerseyPainter extends CustomPainter {
   const PortraitJerseyPainter({
     required this.body,
@@ -83,180 +127,222 @@ class PortraitJerseyPainter extends CustomPainter {
   final Color trim;
   final KitPattern pattern;
 
+  static Color _mix(Color a, Color b, double t) => Color.lerp(a, b, t)!;
+
   @override
   void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
     canvas.save();
     canvas.scale(size.width, size.height);
 
-    // Portrait serré, comme une photo officielle de joueur : seules les
-    // épaules et le haut de poitrine sont visibles. Les manches, bras et
-    // poignets sont volontairement hors cadre, sur tous les formats.
-    final shirt = Path()
-      ..moveTo(.392, .635)
-      ..cubicTo(.334, .641, .276, .659, .218, .686)
-      ..cubicTo(.115, .712, .025, .758, -.035, .795)
-      ..lineTo(-.035, 1.02)
-      ..lineTo(1.035, 1.02)
-      ..lineTo(1.035, .795)
-      ..cubicTo(.975, .758, .885, .712, .782, .686)
-      ..cubicTo(.724, .659, .666, .641, .608, .635)
-      ..lineTo(.608, .658)
-      ..cubicTo(.588, .695, .553, .715, .5, .715)
-      ..cubicTo(.447, .715, .412, .695, .392, .658)
-      ..close();
-
+    final shirt = _PortraitGeometry.shirt();
     canvas.save();
     canvas.clipPath(shirt);
-    canvas.drawPath(shirt, Paint()..color = body);
+
+    // Teinte de base plus photographique : le centre capte la lumière,
+    // les flancs, l'emmanchure et les manches tombent dans l'ombre.
+    canvas.drawPath(
+      shirt,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          stops: const [0, .18, .44, .62, .82, 1],
+          colors: [
+            _mix(body, Colors.black, .24),
+            _mix(body, Colors.black, .10),
+            _mix(body, Colors.white, .055),
+            _mix(body, Colors.white, .025),
+            _mix(body, Colors.black, .13),
+            _mix(body, Colors.black, .29),
+          ],
+        ).createShader(const Rect.fromLTWH(0, .625, 1, .4)),
+    );
+
     paintKitPattern(
       canvas,
-      const Rect.fromLTWH(.12, .635, .76, .365),
+      const Rect.fromLTWH(0, .64, 1, .38),
       pattern,
       trim,
     );
 
-    // Relief du tissu sur le portrait, absent du pictogramme « Info » :
-    // lumière sur le haut du torse, côtés et plis plus sombres. Le calque
-    // est uniquement dans le tracé du maillot et ne touche pas au visage.
-    canvas.drawPath(
-      shirt,
+    // Le modelé doit éclairer aussi les motifs : une bande imprimée est
+    // sur le même textile, elle ne flotte pas par-dessus sa matière.
+    canvas.drawRect(
+      const Rect.fromLTWH(0, .64, 1, .38),
       Paint()
         ..shader = const LinearGradient(
-          begin: Alignment(-1, -.6),
-          end: Alignment(1, .6),
-          stops: [0, .19, .43, .71, 1],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          stops: [0, .18, .47, .73, 1],
           colors: [
-            Color(0x33000000),
-            Color(0x13FFFFFF),
-            Color(0x21FFFFFF),
-            Color(0x08000000),
-            Color(0x42000000),
+            Color(0x40000000),
+            Color(0x07000000),
+            Color(0x14FFFFFF),
+            Color(0x0C000000),
+            Color(0x46000000),
           ],
-        ).createShader(const Rect.fromLTWH(-.035, .635, 1.07, .385)),
+        ).createShader(const Rect.fromLTWH(0, .64, 1, .38)),
+    );
+    canvas.drawRect(
+      const Rect.fromLTWH(0, .64, 1, .38),
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          stops: [0, .27, .68, 1],
+          colors: [
+            Color(0x10FFFFFF),
+            Color(0x06FFFFFF),
+            Color(0x00000000),
+            Color(0x22000000),
+          ],
+        ).createShader(const Rect.fromLTWH(0, .64, 1, .38)),
     );
 
-    // Couture discrète suivant la pente des épaules : la ligne ne fait pas
-    // de tour brusque sur le cou et reste sous les trois bandes décoratives.
-    final shoulderSeam = Path()
-      ..moveTo(.385, .648)
-      ..cubicTo(.31, .668, .247, .693, .186, .723)
-      ..cubicTo(.13, .751, .076, .781, .02, .817);
-    final seamPaint = Paint()
-      ..color = const Color(0x39000000)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = .0045
-      ..strokeCap = StrokeCap.round;
-    canvas.drawPath(shoulderSeam, seamPaint);
-    canvas.save();
-    canvas.translate(1, 0);
-    canvas.scale(-1, 1);
-    canvas.drawPath(shoulderSeam, seamPaint);
-    canvas.restore();
-
-    // Trois bandes fines sur le DESSUS des épaules, comme le modèle validé.
-    // Elles suivent la pente des épaules, jamais les manches ou les bras.
-    for (var i = 0; i < 3; i++) {
-      final offset = i * .016;
-      final stripe = Path()
-        ..moveTo(.392 - offset * .5, .648 + offset)
-        ..cubicTo(.325 - offset, .657 + offset, .263 - offset, .674 + offset,
-            .208 - offset, .697 + offset)
-        ..cubicTo(.12 - offset, .72 + offset, .05 - offset, .754 + offset,
-            -.035, .807 + offset);
-      final stripePaint = Paint()
-        ..color = trim
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = .009
-        ..strokeCap = StrokeCap.round;
-      canvas.drawPath(stripe, stripePaint);
+    // Pli de tissu près de l'emmanchure : une ombre fondue plutôt qu'une
+    // ligne épaisse qui dessinerait un torse de bande dessinée.
+    for (final reflected in [false, true]) {
       canvas.save();
-      canvas.translate(1, 0);
-      canvas.scale(-1, 1);
-      canvas.drawPath(stripe, stripePaint);
-      canvas.restore();
-    }
-
-    // Modelé textile non destructif : volume de poitrine, ombre aux
-    // emmanchures et micro-plis très discrets. Le motif reste visible dessous.
-    final shading = Paint()
-      ..shader = const RadialGradient(
-        center: Alignment(0, -.32),
-        radius: .88,
-        colors: [
-          Color(0x17FFFFFF),
-          Color(0x00000000),
-          Color(0x36000000),
-        ],
-        stops: [0, .57, 1],
-      ).createShader(const Rect.fromLTWH(0, .60, 1, .58));
-    canvas.drawRect(const Rect.fromLTWH(0, .63, 1, .37), shading);
-
-    final foldPaint = Paint()
-      ..color = const Color(0x24000000)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = .011
-      ..strokeCap = StrokeCap.round;
-    for (final mirror in [false, true]) {
-      canvas.save();
-      if (mirror) {
+      if (reflected) {
         canvas.translate(1, 0);
         canvas.scale(-1, 1);
       }
+      final armShadow = Path()
+        ..moveTo(.153, .71)
+        ..cubicTo(.218, .762, .252, .813, .278, .941)
+        ..cubicTo(.242, .835, .197, .771, .137, .731)
+        ..close();
       canvas.drawPath(
-        Path()
-          ..moveTo(.20, .755)
-          ..cubicTo(.27, .79, .31, .825, .33, .91),
-        foldPaint,
-      );
-      canvas.drawPath(
-        Path()
-          ..moveTo(.28, .77)
-          ..cubicTo(.34, .805, .355, .84, .36, .875),
+        armShadow,
         Paint()
-          ..color = const Color(0x15FFFFFF)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = .008,
+          ..shader = const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0x00000000),
+              Color(0x36000000),
+              Color(0x00000000),
+            ],
+          ).createShader(const Rect.fromLTWH(.13, .69, .18, .29)),
+      );
+
+      final underArm = Path()
+        ..moveTo(.015, .789)
+        ..cubicTo(.078, .764, .109, .753, .145, .738)
+        ..cubicTo(.134, .779, .127, .824, .107, .865)
+        ..cubicTo(.079, .829, .051, .807, .015, .789)
+        ..close();
+      canvas.drawPath(
+        underArm,
+        Paint()
+          ..shader = const RadialGradient(
+            center: Alignment(-.5, -.3),
+            radius: 1,
+            colors: [Color(0x36000000), Color(0x00000000)],
+          ).createShader(const Rect.fromLTWH(.005, .73, .18, .16)),
+      );
+
+      final lightFold = Path()
+        ..moveTo(.264, .81)
+        ..cubicTo(.328, .842, .354, .897, .356, 1.04)
+        ..cubicTo(.338, .908, .316, .862, .256, .825)
+        ..close();
+      canvas.drawPath(
+        lightFold,
+        Paint()
+          ..shader = const LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              Color(0x00FFFFFF),
+              Color(0x17FFFFFF),
+              Color(0x00FFFFFF),
+            ],
+          ).createShader(const Rect.fromLTWH(.25, .8, .12, .22)),
       );
       canvas.restore();
     }
 
-    // Grain de tissu discret, indépendant de la couleur choisie par le club.
-    final weave = Paint()
-      ..color = const Color(0x0BFFFFFF)
-      ..strokeWidth = .0013;
-    for (var y = .74; y < 1; y += .009) {
-      canvas.drawLine(Offset(0, y), Offset(1, y), weave);
+    // Trame du tissu très fine, sans les grosses rayures horizontales
+    // et les contours opaques qui donnaient l'impression d'un dessin.
+    final yarn = Paint()
+      ..color = const Color(0x0AFFFFFF)
+      ..strokeWidth = .0007;
+    final yarnShadow = Paint()
+      ..color = const Color(0x09000000)
+      ..strokeWidth = .00065;
+    for (var y = .705; y < 1.01; y += .0075) {
+      canvas.drawLine(Offset(0, y), Offset(1, y), yarn);
+    }
+    for (var x = .005; x < 1; x += .014) {
+      canvas.drawLine(Offset(x, .64), Offset(x, 1.02), yarnShadow);
     }
     canvas.restore();
 
-    // Col en trois couches, légèrement en relief, et non un trait plat.
-    final collar = Path()
-      ..moveTo(.392, .658)
-      ..cubicTo(.414, .695, .449, .724, .5, .724)
-      ..cubicTo(.551, .724, .586, .695, .608, .658);
+    // Coutures textiles fondues sur l'épaule, sans bandes fluo permanentes.
+    // Le motif du club assure les éventuelles rayures visibles.
+    for (final reflected in [false, true]) {
+      canvas.save();
+      if (reflected) {
+        canvas.translate(1, 0);
+        canvas.scale(-1, 1);
+      }
+      final shoulder = Path()
+        ..moveTo(.326, .653)
+        ..cubicTo(.282, .664, .224, .682, .174, .71)
+        ..cubicTo(.106, .745, .063, .774, .012, .808);
+      canvas.drawPath(
+        shoulder,
+        Paint()
+          ..color = const Color(0x27000000)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = .003,
+      );
+      canvas.drawPath(
+        shoulder.shift(const Offset(0, -.003)),
+        Paint()
+          ..color = const Color(0x18FFFFFF)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = .0014,
+      );
+      canvas.restore();
+    }
+
+    // D'abord l'ombre d'insertion sous le bord du col. Elle donne du
+    // volume au tissu sans poser de halo autour de la peau.
+    final collarBand = _PortraitGeometry.collar();
     canvas.drawPath(
-      collar,
+      collarBand,
       Paint()
-        ..color = const Color(0x88000000)
+        ..color = const Color(0x28000000)
         ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round
-        ..strokeWidth = .039,
+        ..strokeWidth = .007,
     );
     canvas.drawPath(
-      collar,
+      collarBand,
       Paint()
-        ..color = trim
-        ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round
-        ..strokeWidth = .026,
+        ..shader = LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          stops: const [0, .43, 1],
+          colors: [
+            _mix(trim, Colors.black, .18),
+            _mix(trim, Colors.white, .05),
+            _mix(trim, Colors.black, .22),
+          ],
+        ).createShader(const Rect.fromLTWH(.315, .64, .37, .14)),
     );
+
+    // Joint intérieur très fin : le col touche visuellement le cou,
+    // l'image réelle n'est jamais retouchée, recolorée ou repeinte.
     canvas.drawPath(
-      collar,
+      _PortraitGeometry.innerCollar(),
       Paint()
-        ..color = const Color(0x55FFFFFF)
+        ..color = const Color(0x49000000)
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
-        ..strokeWidth = .004,
+        ..strokeWidth = .0035,
     );
     canvas.restore();
   }
