@@ -32,6 +32,12 @@ grant select on private.waitlist_auto_activation,
   private.waitlist_auto_processed_matches to postgres;
 alter table private.waitlist_auto_activation enable row level security;
 alter table private.waitlist_auto_processed_matches enable row level security;
+-- Comme toutes les tables avec club_id, le registre a une politique de
+-- cloisonnement restrictive, y compris si les droits evoluent plus tard.
+create policy club_isolation on private.waitlist_auto_processed_matches
+  as restrictive for all to public
+  using (club_id = (select private.current_club_id()))
+  with check (club_id = (select private.current_club_id()));
 revoke all on private.waitlist_auto_activation,
   private.waitlist_auto_processed_matches from public, anon, authenticated;
 
