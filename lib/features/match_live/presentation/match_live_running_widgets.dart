@@ -834,9 +834,12 @@ class _MatchLiveSpectatorViewState
         if (lineup != null)
           MediaQuery.withClampedTextScaling(
             maxScaleFactor: 1,
-            child: CompositionPitchWithBench(
-              field: withStats(MatchCompositionZone.field),
-              bench: withStats(MatchCompositionZone.bench),
+            child: MatchCompositionKitScope(
+              matchId: session.matchId,
+              child: CompositionPitchWithBench(
+                field: withStats(MatchCompositionZone.field),
+                bench: withStats(MatchCompositionZone.bench),
+              ),
             ),
           ),
         const SizedBox(height: AppSpacing.sectionGap),
