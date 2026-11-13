@@ -214,10 +214,7 @@ class _LiveHeaderBar extends ConsumerWidget {
                   ],
                 ),
               ),
-            if (bottom != null) ...[
-              const Divider(height: 12),
-              bottom!,
-            ],
+            if (bottom != null) ...[const Divider(height: 12), bottom!],
           ],
         ),
       ),
@@ -717,11 +714,7 @@ class _Message extends StatelessWidget {
 /// (buts) et chaussures (passes décisives) comme sur la fiche d'après-match,
 /// puis le journal, sans les repères réservés au pilote.
 class MatchLiveSpectatorView extends ConsumerStatefulWidget {
-  const MatchLiveSpectatorView({
-    super.key,
-    required this.bundle,
-    this.header,
-  });
+  const MatchLiveSpectatorView({super.key, required this.bundle, this.header});
 
   final MatchLiveStateBundle bundle;
 
@@ -834,9 +827,12 @@ class _MatchLiveSpectatorViewState
         if (lineup != null)
           MediaQuery.withClampedTextScaling(
             maxScaleFactor: 1,
-            child: CompositionPitchWithBench(
-              field: withStats(MatchCompositionZone.field),
-              bench: withStats(MatchCompositionZone.bench),
+            child: MatchCompositionKitScope(
+              matchId: session.matchId,
+              child: CompositionPitchWithBench(
+                field: withStats(MatchCompositionZone.field),
+                bench: withStats(MatchCompositionZone.bench),
+              ),
             ),
           ),
         const SizedBox(height: AppSpacing.sectionGap),

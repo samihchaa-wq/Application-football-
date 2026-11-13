@@ -382,6 +382,10 @@ select is(
         -- État du club lisible même quand il est suspendu.
         'get_my_club_access()',
         -- Aide posée par l'amorce des tests, absente d'une vraie base.
+        -- Privileged trigger-only snapshot capture: EXECUTE revoked from clients;
+        -- the snapshot table has restrictive tenant RLS and read-only grants.
+        'private.capture_match_kit_snapshot(uuid)',
+        'private.trigger_match_kit_snapshot()',
         'private.ci_direct_player_identity_default()'
       )
   ),

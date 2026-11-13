@@ -1,4 +1,5 @@
 import 'package:as_grinta/core/club/club_kits.dart';
+import 'package:as_grinta/core/club/match_kit_snapshot.dart';
 import 'package:as_grinta/core/logging/app_logger.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/utils/app_errors.dart';
@@ -17,6 +18,7 @@ import 'package:as_grinta/features/sports_management/domain/player_position_prof
 import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
 import 'package:as_grinta/features/sports_management/domain/internal_team_formation.dart';
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart'
     show CompositionPlayerTile, PlayerAvatar, SubstituteHistoryBadge;
 import 'package:as_grinta/features/sports_management/presentation/widgets/formation_pitch_editor.dart';
@@ -341,7 +343,10 @@ class _InternalTeamCompositionViewState
       _showMessage('Composition enregistrée.');
     } catch (error, stackTrace) {
       AppLogger.error(
-          'sports.internal_composition.save_paper', error, stackTrace);
+        'sports.internal_composition.save_paper',
+        error,
+        stackTrace,
+      );
       if (mounted) _showMessage(humanizeError(error));
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -630,53 +635,68 @@ class _InternalTeamCompositionViewState
                       group,
                 )
                 .toList(growable: false);
-        final unassignedDefenders =
-            unassignedGroup(InternalPlayerGroup.defenders);
-        final unassignedMidfielders =
-            unassignedGroup(InternalPlayerGroup.midfielders);
-        final unassignedAttackers =
-            unassignedGroup(InternalPlayerGroup.attackers);
+        final unassignedDefenders = unassignedGroup(
+          InternalPlayerGroup.defenders,
+        );
+        final unassignedMidfielders = unassignedGroup(
+          InternalPlayerGroup.midfielders,
+        );
+        final unassignedAttackers = unassignedGroup(
+          InternalPlayerGroup.attackers,
+        );
         final unassignedOther = unassignedGroup(InternalPlayerGroup.other);
         final team1 = entries.where((entry) => entry.teamNo == 1).toList();
         final team2 = entries.where((entry) => entry.teamNo == 2).toList();
+        // En lecture historique, les deux équipes doivent garder les
+        // couleurs fixées le jour du match, gardiens compris.
+        final kitHistory =
+            ref.watch(matchKitSnapshotProvider(widget.matchId)).valueOrNull;
+        final frozenTeam1Kit = widget.editable ? null : kitHistory?.team1Kit;
+        final frozenTeam2Kit = widget.editable ? null : kitHistory?.team2Kit;
         final benchCounts =
             benchCountsAsync.valueOrNull ?? const <String, int>{};
         final validation = _validation(entries);
-        final expectedTeam1Code =
-            internalDefaultFormationForPlayerCount(team1.length)?.code;
-        final expectedTeam2Code =
-            internalDefaultFormationForPlayerCount(team2.length)?.code;
+        final expectedTeam1Code = internalDefaultFormationForPlayerCount(
+          team1.length,
+        )?.code;
+        final expectedTeam2Code = internalDefaultFormationForPlayerCount(
+          team2.length,
+        )?.code;
         final legacyReadOnly = !widget.editable &&
             (!composition.isVisualComplete ||
                 composition.team1FormationCode != expectedTeam1Code ||
                 composition.team2FormationCode != expectedTeam2Code);
 
         final terrainEntries = _terrainTeam == 1 ? team1 : team2;
-        final terrainCard = _InternalTeamCard(
-          name: _terrainTeam == 1
-              ? (_team1Controller.text.isEmpty
-                  ? composition.team1Name
-                  : _team1Controller.text)
-              : (_team2Controller.text.isEmpty
-                  ? composition.team2Name
-                  : _team2Controller.text),
-          controller: widget.editable
-              ? (_terrainTeam == 1 ? _team1Controller : _team2Controller)
-              : null,
-          teamNo: _terrainTeam,
-          jersey: _terrainTeam == 1 ? _team1Jersey : _team2Jersey,
-          unavailableJersey: _terrainTeam == 1 ? _team2Jersey : _team1Jersey,
-          entries: terrainEntries,
-          editable: widget.editable,
-          canReceiveSelected:
-              _selectedEntry != null && _selectedEntry!.teamNo != _terrainTeam,
-          onAssignSelected: () => _assignSelectedToTeam(_terrainTeam),
-          onJerseySelected: (jersey) => _changeJersey(_terrainTeam, jersey),
-          onDroppedOnSlot: (moving, slot) =>
-              _dropOnClassicSlot(_terrainTeam, moving, slot),
-          onRemoveFromField: (moving) =>
-              _moveClassicToBench(_terrainTeam, moving),
-          finishedBenchCounts: benchCounts,
+        final terrainCard = CompositionKitScope(
+          kit: (_terrainTeam == 1 ? frozenTeam1Kit : frozenTeam2Kit) ??
+              (_terrainTeam == 1 ? _team1Jersey : _team2Jersey).kit,
+          child: _InternalTeamCard(
+            name: _terrainTeam == 1
+                ? (_team1Controller.text.isEmpty
+                    ? composition.team1Name
+                    : _team1Controller.text)
+                : (_team2Controller.text.isEmpty
+                    ? composition.team2Name
+                    : _team2Controller.text),
+            controller: widget.editable
+                ? (_terrainTeam == 1 ? _team1Controller : _team2Controller)
+                : null,
+            teamNo: _terrainTeam,
+            jersey: _terrainTeam == 1 ? _team1Jersey : _team2Jersey,
+            unavailableJersey: _terrainTeam == 1 ? _team2Jersey : _team1Jersey,
+            entries: terrainEntries,
+            editable: widget.editable,
+            canReceiveSelected: _selectedEntry != null &&
+                _selectedEntry!.teamNo != _terrainTeam,
+            onAssignSelected: () => _assignSelectedToTeam(_terrainTeam),
+            onJerseySelected: (jersey) => _changeJersey(_terrainTeam, jersey),
+            onDroppedOnSlot: (moving, slot) =>
+                _dropOnClassicSlot(_terrainTeam, moving, slot),
+            onRemoveFromField: (moving) =>
+                _moveClassicToBench(_terrainTeam, moving),
+            finishedBenchCounts: benchCounts,
+          ),
         );
 
         return Column(
@@ -734,6 +754,8 @@ class _InternalTeamCompositionViewState
                 team2Controller: widget.editable ? _team2Controller : null,
                 team1Jersey: _team1Jersey,
                 team2Jersey: _team2Jersey,
+                frozenTeam1Kit: frozenTeam1Kit,
+                frozenTeam2Kit: frozenTeam2Kit,
                 team1: team1,
                 team2: team2,
                 editable: widget.editable,
@@ -793,9 +815,10 @@ class _InternalTeamCompositionViewState
                 Text(
                   validation.message,
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: Theme.of(context).colorScheme.error),
                 ),
               const SizedBox(height: 8),
               OutlinedButton.icon(

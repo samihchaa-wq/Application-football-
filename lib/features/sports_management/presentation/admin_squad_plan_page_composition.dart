@@ -539,9 +539,9 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
                           'Live. Le dispositif, le terrain et le banc y '
                           'restent corrigeables jusqu’au coup d’envoi.',
                           style: TextStyle(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSecondaryContainer,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSecondaryContainer,
                           ),
                         ),
                       ),
@@ -565,12 +565,18 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
             // Les joueurs calés sur leur poste, comme chez les joueurs : la
             // vidéo s'y pose exactement.
-            child: CompositionPitchWithBench(
-              key: _publishedLanding.area,
-              pitchKey: _publishedLanding.pitch,
-              field: alignFieldToFormation(_composition?.formationCode, field),
-              bench: bench,
-              maxWidth: 520,
+            child: MatchCompositionKitScope(
+              matchId: _selectedMatchId,
+              child: CompositionPitchWithBench(
+                key: _publishedLanding.area,
+                pitchKey: _publishedLanding.pitch,
+                field: alignFieldToFormation(
+                  _composition?.formationCode,
+                  field,
+                ),
+                bench: bench,
+                maxWidth: 520,
+              ),
             ),
           ),
         ),
@@ -625,9 +631,8 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
       if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
       if (fromNotification) {
         // L'adresse perd sa marque : recharger ne relance pas la vidéo.
-        GoRouter.maybeOf(context)?.replace(
-          '/matches/$matchId/lineup?section=composition',
-        );
+        GoRouter.maybeOf(context)
+            ?.replace('/matches/$matchId/lineup?section=composition');
       }
       unawaited(store.markSeen(matchId));
       await _previewCompositionVideo(
@@ -678,12 +683,30 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
       }
     }
     if (!mounted) return;
+    ClubKit? selectedKit;
+    try {
+      selectedKit =
+          (await ref.read(matchKitSnapshotProvider(matchId).future))?.kit;
+    } catch (_) {
+      // Si la migration historique manque, l'aperçu lit Infos.
+    }
+    if (selectedKit == null) {
+      try {
+        final info = await ref.read(matchInfoProvider(matchId).future);
+        selectedKit =
+            (JerseyOption.fromId(info.jerseyNote) ?? JerseyOption.france).kit;
+      } catch (_) {
+        // Un aperçu sans fiche match reste neutre plutôt que faussement coloré.
+      }
+    }
+    if (!mounted) return;
     await showCompositionPresentation(
       context,
       preview: preview,
       landing: landing,
       returnToPage: returnToPage,
       data: buildCompositionPresentationData(
+        kit: selectedKit,
         formationCode: composition.formationCode,
         field: field,
         bench: bench,
@@ -713,10 +736,13 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
         : ref.watch(matchKitPhotoOverridesProvider(matchId)).valueOrNull ??
             const <String, String>{};
     final field = withMatchKitPhotos(
-        composition.entriesFor(MatchCompositionZone.field), kitPhotos);
+      composition.entriesFor(MatchCompositionZone.field),
+      kitPhotos,
+    );
     final bench = withMatchKitPhotos(
-        composition.entriesFor(MatchCompositionZone.bench), kitPhotos)
-      ..removeWhere(
+      composition.entriesFor(MatchCompositionZone.bench),
+      kitPhotos,
+    )..removeWhere(
         (entry) =>
             _desiredEffectifStatuses[entry.participantId] !=
             ConvocationStatus.convoked,
@@ -757,9 +783,9 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
                           'Live. Le dispositif, le terrain et le banc y '
                           'restent corrigeables jusqu’au coup d’envoi.',
                           style: TextStyle(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSecondaryContainer,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSecondaryContainer,
                           ),
                         ),
                       ),
@@ -809,8 +835,9 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
                                 ? null
                                 : _simulateComposition,
                             style: OutlinedButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
                             ),
                             child: const Text(
                               'Simuler une composition',
@@ -828,14 +855,17 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
         ),
         const SizedBox(height: 14),
         Center(
-          child: FormationPitchEditor(
-            slots: formationForCode(composition.formationCode).slots,
-            entries: field,
-            editable: !_compositionLocked,
-            onDroppedOnSlot: _dropOnSlot,
-            onRemoveFromField: _moveToBench,
-            finishedBenchCounts: _postMatch ? const {} : _finishedBenchCounts,
-            benchedLastTime: _postMatch ? const {} : _benchedLastTime,
+          child: MatchCompositionKitScope(
+            matchId: _selectedMatchId,
+            child: FormationPitchEditor(
+              slots: formationForCode(composition.formationCode).slots,
+              entries: field,
+              editable: !_compositionLocked,
+              onDroppedOnSlot: _dropOnSlot,
+              onRemoveFromField: _moveToBench,
+              finishedBenchCounts: _postMatch ? const {} : _finishedBenchCounts,
+              benchedLastTime: _postMatch ? const {} : _benchedLastTime,
+            ),
           ),
         ),
         const SizedBox(height: 14),
@@ -853,9 +883,10 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
                 children: [
                   Text(
                     'Remplaçants (${bench.length})',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w400,
-                        ),
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w400),
                   ),
                   const SizedBox(height: 8),
                   if (bench.isEmpty)

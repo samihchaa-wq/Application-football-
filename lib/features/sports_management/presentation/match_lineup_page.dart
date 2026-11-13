@@ -16,6 +16,7 @@ import 'package:as_grinta/features/sports_management/domain/formation_display.da
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
 import 'package:as_grinta/features/sports_management/presentation/admin_squad_plan_page.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_presentation.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/internal_team_composition_view.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/player_composition_video.dart';
@@ -170,7 +171,9 @@ class MatchLineupPage extends ConsumerWidget {
                           ),
                         if (!isInternal && !tooFarAway && !liveTooEarly)
                           const ButtonSegment(
-                              value: 'live', label: Text('Live')),
+                            value: 'live',
+                            label: Text('Live'),
+                          ),
                         if (!isInternal && !tooFarAway && !predictionClosed)
                           const ButtonSegment(
                             value: 'prediction',
@@ -198,7 +201,9 @@ class MatchLineupPage extends ConsumerWidget {
                       ),
                     if (showComposition && isInternal)
                       InternalTeamCompositionView(
-                          matchId: matchId, editable: false)
+                        matchId: matchId,
+                        editable: false,
+                      )
                     else if (showComposition)
                       PlayerCompositionTab(
                         matchId: matchId,
@@ -419,35 +424,38 @@ class PublishedLineupPreview extends ConsumerWidget {
               const SizedBox(height: AppSpacing.microGap),
               Text(
                 'Composition publiée',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: secondary,
-                      fontWeight: FontWeight.w400,
-                    ),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: secondary, fontWeight: FontWeight.w400),
               ),
               const SizedBox(height: AppSpacing.sectionGap),
               Text(
                 'Remplaçants (${composition.benchCount})',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: foreground,
-                      fontWeight: FontWeight.w400,
-                    ),
+                style: Theme.of(context)
+                    .textTheme
+                    .titleSmall
+                    ?.copyWith(color: foreground, fontWeight: FontWeight.w400),
               ),
               const SizedBox(height: AppSpacing.contentGap),
-              CompositionPitchWithBench(
-                key: landing?.area,
-                pitchKey: landing?.pitch,
-                field: alignFieldToFormation(
-                  composition.formationCode,
-                  withMatchKitPhotos(
-                    composition.entriesFor(MatchCompositionZone.field),
+              MatchCompositionKitScope(
+                matchId: matchId,
+                child: CompositionPitchWithBench(
+                  key: landing?.area,
+                  pitchKey: landing?.pitch,
+                  field: alignFieldToFormation(
+                    composition.formationCode,
+                    withMatchKitPhotos(
+                      composition.entriesFor(MatchCompositionZone.field),
+                      kitPhotos,
+                    ),
+                  ),
+                  bench: withMatchKitPhotos(
+                    composition.entriesFor(MatchCompositionZone.bench),
                     kitPhotos,
                   ),
+                  maxWidth: expanded ? 520 : 420,
                 ),
-                bench: withMatchKitPhotos(
-                  composition.entriesFor(MatchCompositionZone.bench),
-                  kitPhotos,
-                ),
-                maxWidth: expanded ? 520 : 420,
               ),
               if (showLists && beforeKickoff) ...[
                 const SizedBox(height: AppSpacing.sectionGap),

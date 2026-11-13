@@ -4,6 +4,7 @@ import 'package:as_grinta/core/utils/name_validation.dart';
 import 'package:as_grinta/core/widgets/match_contribution_icons.dart';
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/football_pitch.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
 import 'package:flutter/material.dart';
 
 class CompositionPitch extends StatefulWidget {
@@ -250,10 +251,7 @@ class CompositionPitchWithBench extends StatelessWidget {
                 SizedBox(
                   width: benchWidth,
                   height: _pitchHeight,
-                  child: _CompositionBench(
-                    entries: bench,
-                    columns: columns,
-                  ),
+                  child: _CompositionBench(entries: bench, columns: columns),
                 ),
                 const SizedBox(width: _pitchGap),
                 SizedBox(
@@ -270,10 +268,7 @@ class CompositionPitchWithBench extends StatelessWidget {
 }
 
 class _CompositionBench extends StatelessWidget {
-  const _CompositionBench({
-    required this.entries,
-    required this.columns,
-  });
+  const _CompositionBench({required this.entries, required this.columns});
 
   final List<MatchCompositionEntry> entries;
   final int columns;
@@ -318,9 +313,7 @@ class _CompositionBench extends StatelessWidget {
                                 height: 92,
                               );
                             }
-                            return CompositionPlayerTile(
-                              entry: entries[index],
-                            );
+                            return CompositionPlayerTile(entry: entries[index]);
                           },
                         ),
                       ),
@@ -426,9 +419,10 @@ class CompositionDropZone extends StatelessWidget {
                   Expanded(
                     child: Text(
                       '$title (${entries.length})',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w400,
-                          ),
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w400),
                     ),
                   ),
                 ],
@@ -825,7 +819,11 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
     final size = widget.size;
     final fallbackScale = widget.fallbackScale.clamp(.5, 1).toDouble();
     final fallbackSize = size * fallbackScale;
-    final border = widget.isGoalkeeper ? const Color(0xFFE59A1F) : Colors.white;
+    final kit = CompositionKitScope.maybeOf(context);
+    final bodyColor = widget.isGoalkeeper ? kit?.goalkeeperBody : kit?.body;
+    final trimColor = widget.isGoalkeeper ? kit?.goalkeeperTrim : kit?.trim;
+    final border = trimColor ??
+        (widget.isGoalkeeper ? const Color(0xFFE59A1F) : Colors.white);
     final original = widget.photoUrl?.trim();
     final hasPhoto = original != null && original.isNotEmpty;
     final url = _resolvedPhotoUrl;
@@ -835,36 +833,74 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
     return SizedBox(
       width: size,
       height: size,
-      child: Center(
-        child: Container(
-          width: visualSize,
-          height: visualSize,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(visualSize * 0.28),
-            border: showPhoto ? null : Border.all(color: border, width: 2),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Center(
+            child: Container(
+              width: visualSize,
+              height: visualSize,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(visualSize * 0.28),
+                border: showPhoto && kit == null
+                    ? null
+                    : Border.all(color: border, width: 2),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: showPhoto ? _photo(url) : _initials(visualSize),
+            ),
           ),
-          clipBehavior: Clip.antiAlias,
-          child: showPhoto ? _photo(url) : _initials(visualSize),
-        ),
+          // Avec ou sans portrait, rendre le maillot réellement identifiable.
+          // Les autres avatars de l'application restent inchangés.
+          if (kit != null)
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: Container(
+                key: ValueKey(
+                  'composition-kit-${widget.isGoalkeeper ? 'goalkeeper' : 'field'}',
+                ),
+                width: size * .29,
+                height: size * .29,
+                decoration: BoxDecoration(
+                  color: trimColor,
+                  borderRadius: BorderRadius.circular(size * .07),
+                  border: Border.all(color: Colors.white, width: 1),
+                ),
+                child: Icon(
+                  Icons.checkroom,
+                  color: bodyColor,
+                  size: size * .23,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
 
   Widget _initials(double visualSize) {
     final initials = avatarInitials(widget.name);
+    final kit = CompositionKitScope.maybeOf(context);
+    final color = widget.isGoalkeeper ? kit?.goalkeeperBody : kit?.body;
+    final accent = widget.isGoalkeeper ? kit?.goalkeeperTrim : kit?.trim;
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: _avatarColors,
+          colors: kit == null ? _avatarColors : [color!, accent!],
         ),
       ),
       child: Center(
         child: Text(
           initials,
           style: TextStyle(
-            color: Colors.white,
+            color: color == null ||
+                    ThemeData.estimateBrightnessForColor(color) ==
+                        Brightness.dark
+                ? Colors.white
+                : Colors.black,
             fontWeight: FontWeight.w400,
             fontSize: visualSize * 0.32,
             shadows: const [Shadow(color: Colors.black26, blurRadius: 2)],

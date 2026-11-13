@@ -1,8 +1,13 @@
 import 'package:as_grinta/core/club/club_identity.dart';
+import 'package:as_grinta/core/club/club_kits.dart';
+import 'package:as_grinta/core/club/match_kit_snapshot.dart';
+
 import 'dart:async';
 
 import 'package:as_grinta/core/providers/supabase_provider.dart';
 import 'package:as_grinta/core/widgets/match_detail_header_card.dart';
+import 'package:as_grinta/features/matches/data/match_info_repository.dart';
+import 'package:as_grinta/features/matches/domain/jersey_option.dart';
 import 'package:as_grinta/features/matches/presentation/widgets/upcoming_match_fixture_header.dart';
 import 'package:as_grinta/features/sports_management/data/match_availability_board_repository.dart';
 import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
@@ -51,6 +56,7 @@ CompositionPresentationData buildCompositionPresentationData({
   String? fallbackOpponent,
   DateTime? fallbackKickoffAt,
   CompositionPresentationCoach? coach,
+  ClubKit? kit,
 }) {
   final opponent = fixture?.opponentName ?? fallbackOpponent ?? 'Adversaire';
   final grintaIsHome = fixture?.grintaIsHome ?? true;
@@ -68,6 +74,7 @@ CompositionPresentationData buildCompositionPresentationData({
         : calendarMatchTypeLabel(fixture.matchType, fixture.championshipRound),
     address: fixture?.address,
     formationCode: formationCode,
+    kit: kit,
   );
 }
 
@@ -142,8 +149,9 @@ typedef SeasonPlayerPhotoLookup = Future<String?> Function(
   String seasonPlayerId,
 );
 
-final seasonPlayerPhotoLookupProvider =
-    Provider<SeasonPlayerPhotoLookup>((ref) {
+final seasonPlayerPhotoLookupProvider = Provider<SeasonPlayerPhotoLookup>((
+  ref,
+) {
   final client = ref.watch(supabaseClientProvider);
   return (seasonPlayerId) async {
     final row = await client
@@ -163,8 +171,9 @@ final seasonPlayerPhotoLookupProvider =
   };
 });
 
-final compositionVideoSeenStoreProvider =
-    Provider<CompositionVideoSeenStore>((ref) {
+final compositionVideoSeenStoreProvider = Provider<CompositionVideoSeenStore>((
+  ref,
+) {
   return const CompositionVideoSeenStore();
 });
 
@@ -215,9 +224,9 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
         .watch(publishedMatchCompositionProvider(widget.matchId))
         .valueOrNull;
     final playable = composition != null &&
-        composition.entriesFor(MatchCompositionZone.field).any(
-              (entry) => !entry.isVacant,
-            );
+        composition
+            .entriesFor(MatchCompositionZone.field)
+            .any((entry) => !entry.isVacant);
     if (playable && _autoChecked != composition.version) {
       _autoChecked = composition.version;
       WidgetsBinding.instance.addPostFrameCallback(
@@ -267,9 +276,7 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
       // relance pas la vidéo.
       final router = GoRouter.maybeOf(context);
       if (router != null) {
-        router.replace(
-          '/matches/${widget.matchId}/lineup?section=composition',
-        );
+        router.replace('/matches/${widget.matchId}/lineup?section=composition');
       }
     }
     await _play(composition);
@@ -284,11 +291,7 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
       unawaited(store.markSeen(widget.matchId));
       final data = await _loadData(composition);
       if (!mounted) return;
-      await showCompositionPresentation(
-        context,
-        data: data,
-        landing: _landing,
-      );
+      await showCompositionPresentation(context, data: data, landing: _landing);
     } finally {
       if (mounted) setState(() => _playing = false);
     }
@@ -348,17 +351,39 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
     try {
       // Wait for the actual match kit instead of briefly showing France
       // when a slow connection exceeds the old four-second timeout.
-      kitPhotos =
-          await ref.read(matchKitPhotoOverridesProvider(matchId).future);
+      kitPhotos = await ref.read(
+        matchKitPhotoOverridesProvider(matchId).future,
+      );
     } catch (_) {
       // Les portraits France restent toujours disponibles en repli.
     }
+    ClubKit? selectedKit;
+    try {
+      selectedKit =
+          (await ref.read(matchKitSnapshotProvider(matchId).future))?.kit;
+    } catch (_) {
+      // Migration historique pas encore appliquée : repli sur Infos.
+    }
+    if (selectedKit == null) {
+      try {
+        final info = await ref.read(matchInfoProvider(matchId).future);
+        selectedKit =
+            (JerseyOption.fromId(info.jerseyNote) ?? JerseyOption.france).kit;
+      } catch (_) {
+        // Ne pas inventer une couleur en cas de fiche match indisponible.
+      }
+    }
     return buildCompositionPresentationData(
+      kit: selectedKit,
       formationCode: composition.formationCode,
       field: withMatchKitPhotos(
-          composition.entriesFor(MatchCompositionZone.field), kitPhotos),
+        composition.entriesFor(MatchCompositionZone.field),
+        kitPhotos,
+      ),
       bench: withMatchKitPhotos(
-          composition.entriesFor(MatchCompositionZone.bench), kitPhotos),
+        composition.entriesFor(MatchCompositionZone.bench),
+        kitPhotos,
+      ),
       fixture: fixture,
       fallbackKickoffAt: kickoffAt,
       coach: coach == null
