@@ -36,16 +36,30 @@ void main() {
   }) async {
     await tester.binding.setSurfaceSize(Size(width, 700));
     addTearDown(() => tester.binding.setSurfaceSize(null));
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          matchLiveNotificationStatusProvider.overrideWith(
-            (ref, matchId) async => MatchLiveNotificationStatus(
-              eligible: eligible,
-              subscribed: false,
-            ),
+    final container = ProviderContainer(
+      overrides: [
+        matchLiveNotificationStatusProvider.overrideWith(
+          (ref, matchId) async => MatchLiveNotificationStatus(
+            eligible: eligible,
+            subscribed: false,
           ),
-        ],
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    // Charger la famille avant le premier rendu : la position des actions
+    // ne doit pas dépendre de l'ordonnancement du FutureProvider.
+    final status = matchLiveNotificationStatusProvider(match.id);
+    final subscription = container.listen(status, (_, __) {});
+    addTearDown(subscription.close);
+    final resolved = await container.read(status.future);
+    expect(resolved.eligible, eligible);
+    expect(match.isFinished, isFalse);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
         child: MaterialApp(
           home: Scaffold(
             body: HomeNextMatchCard(
@@ -58,8 +72,6 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    // Un FutureProvider.autoDispose peut compléter après la première frame.
-    await tester.pump(const Duration(milliseconds: 50));
   }
 
   testWidgets('cloche et crayon au niveau de la date, pas des équipes', (
