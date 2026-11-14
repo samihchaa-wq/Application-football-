@@ -95,8 +95,8 @@ void main() {
     picture.dispose();
   });
 
-  testWidgets('texture tricotée réelle du maillot, sans toucher au visage',
-      (tester) async {
+  test('texture tricotée réelle du maillot, sans toucher au visage',
+      () async {
     final bytes =
         await rootBundle.load('assets/composition/jersey_fabric_luma.png');
     final codec = await ui.instantiateImageCodec(
