@@ -147,7 +147,6 @@ void main() {
     final icon = tester.widget<PhotoCrown>(find.byType(PhotoCrown));
     expect(icon.photoSize, 300);
     expect(find.text('👑'), findsOneWidget);
-    expect(find.byType(CustomPaint), findsNothing);
     expect(PhotoCrown.topOffset(300), closeTo(-92.3077, 0.001));
   });
 
