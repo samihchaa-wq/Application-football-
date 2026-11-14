@@ -36,8 +36,7 @@ class JerseyOption {
   }
 
   @override
-  bool operator ==(Object other) =>
-      other is JerseyOption && other.id == id;
+  bool operator ==(Object other) => other is JerseyOption && other.id == id;
 
   @override
   int get hashCode => id.hashCode;
