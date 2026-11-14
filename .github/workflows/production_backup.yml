@@ -43,16 +43,18 @@ jobs:
           import os,sys
           from urllib.parse import urlsplit,unquote
           sys.path.insert(0,'tool/qa')
-          from commercial_backup_bundle import PROJECT_REF, validate_database_url
-          url=os.environ.get('PRODUCTION_DB_URL','')
-          validate_database_url(url,PROJECT_REF)
+          from commercial_backup_bundle import PROJECT_REF, normalize_database_url
+          url=normalize_database_url(os.environ.get('PRODUCTION_DB_URL',''),PROJECT_REF)
+          print('::add-mask::' + url)
           password=os.environ.get('SUPABASE_DB_PASSWORD') or unquote(urlsplit(url).password or '')
           if not password or chr(10) in password or chr(13) in password:
               raise ValueError('Mot de passe DB absent ou invalide')
           print('::add-mask::' + password)
           with open(os.environ['GITHUB_ENV'],'a',encoding='utf-8') as out:
               print('SUPABASE_DB_PASSWORD='+password,file=out)
-          print('Mot de passe DB commercial disponible depuis le secret URL vérifié.')
+              print('PRODUCTION_DB_URL='+url,file=out)
+              print('DB_URL='+url,file=out)
+          print('Connexion commerciale nettoyée et vérifiée ; mot de passe DB disponible.')
           PY
 
       - name: Fail closed if secrets, encryption or project identity are unsafe
