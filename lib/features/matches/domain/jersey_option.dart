@@ -1,32 +1,47 @@
 import 'package:as_grinta/core/club/club_kits.dart';
 
-/// Les trois emplacements de maillot d'un club. La valeur stockée en base
-/// (`jersey_note` d'un match, maillots d'une composition « entre nous ») est
-/// l'identifiant de l'emplacement.
-///
-/// Les identifiants historiques sont gardés tels quels pour rester compatibles
-/// avec les données existantes ; ils ne sont jamais affichés. Le nom et les
-/// couleurs de chaque maillot sont réglés par le club ([ClubKits]).
-enum JerseyOption {
-  france('france'),
-  orange('orange'),
-  blue('blue');
+/// Identifiant stable d'une tenue. Les trois identifiants historiques restent
+/// lisibles, mais les clubs peuvent désormais ajouter des tenues libres.
+class JerseyOption {
+  const JerseyOption._(this.id);
 
-  const JerseyOption(this.id);
+  static const france = JerseyOption._('france');
+  static const orange = JerseyOption._('orange');
+  static const blue = JerseyOption._('blue');
 
   final String id;
 
-  /// Le maillot du club à cet emplacement (nom, couleurs).
-  ClubKit get kit => ClubKits.of(this);
+  static final RegExp _customId = RegExp(r'^kit_[a-z0-9_]{1,48}$');
 
-  /// Nom du maillot choisi par le club.
+  /// Inclut les identifiants historiques pour décoder les anciens matchs.
+  /// Les nouvelles tenues utilisent un identifiant stable par club.
+  static List<JerseyOption> get values => [
+        france,
+        orange,
+        blue,
+        for (final kit in ClubKits.all)
+          if (kit.slot != france && kit.slot != orange && kit.slot != blue)
+            kit.slot,
+      ];
+
+  ClubKit get kit => ClubKits.of(this);
   String get label => kit.label;
 
   static JerseyOption? fromId(String? id) {
     if (id == null) return null;
-    for (final option in values) {
-      if (option.id == id) return option;
-    }
-    return null;
+    if (id == france.id) return france;
+    if (id == orange.id) return orange;
+    if (id == blue.id) return blue;
+    return _customId.hasMatch(id) ? JerseyOption._(id) : null;
   }
+
+  @override
+  bool operator ==(Object other) =>
+      other is JerseyOption && other.id == id;
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  String toString() => 'JerseyOption($id)';
 }
