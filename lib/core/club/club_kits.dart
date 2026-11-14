@@ -317,6 +317,17 @@ abstract final class ClubKits {
         enabled: enabled,
       ));
     }
-    return activeCount > 0 ? result : null;
+    if (activeCount == 0) return null;
+    // Garder l'ordre historique pour les clubs qui avaient trois emplacements.
+    final legacy = [
+      JerseyOption.france,
+      JerseyOption.orange,
+      JerseyOption.blue,
+    ];
+    if (result.every((kit) => legacy.contains(kit.slot))) {
+      result.sort((a, b) =>
+          legacy.indexOf(a.slot).compareTo(legacy.indexOf(b.slot)));
+    }
+    return result;
   }
 }
