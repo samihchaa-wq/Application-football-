@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:as_grinta/core/club/club_kits.dart';
@@ -6,6 +7,7 @@ import 'package:as_grinta/features/matches/domain/jersey_option.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -63,34 +65,118 @@ void main() {
   });
 
   test('le col est plus large et laisse le vrai cou visible', () async {
-    final recorder = ui.PictureRecorder();
-    const PortraitJerseyPainter(
-      body: Colors.red,
-      trim: Colors.yellow,
-      pattern: KitPattern.plain,
-    ).paint(Canvas(recorder), const Size(180, 180));
-    final picture = recorder.endRecording();
-    final raster = await picture.toImage(180, 180);
-    final bytes = (await raster.toByteData(
+    for (final dimension in [90, 180, 360]) {
+      final scale = dimension / 180;
+      final recorder = ui.PictureRecorder();
+      const PortraitJerseyPainter(
+        body: Colors.red,
+        trim: Colors.yellow,
+        pattern: KitPattern.plain,
+      ).paint(Canvas(recorder), Size.square(dimension.toDouble()));
+      final picture = recorder.endRecording();
+      final raster = await picture.toImage(dimension, dimension);
+      final bytes = (await raster.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      ))!
+          .buffer
+          .asUint8List();
+
+      int channel(int x, int y, int component) =>
+          bytes[((y * scale).round() * dimension + (x * scale).round()) * 4 +
+              component];
+
+      // Au-dessus du col, seule la photo réelle du cou doit être visible,
+      // même après le flou de l'ombre et à différentes tailles d'avatar.
+      expect(channel(90, 132, 3), 0, reason: 'cou ouvert à $dimension px');
+      expect(channel(90, 141, 3), 255);
+      // Épaule : de la matière rouge ombrée, pas trois grosses bandes jaunes
+      // systématiquement collées sur chaque maillot uni.
+      expect(channel(30, 141, 3), 255);
+      expect(channel(30, 141, 0), greaterThan(channel(30, 141, 1) + 40));
+
+      raster.dispose();
+      picture.dispose();
+    }
+  });
+
+  test('texture tricotée réelle du maillot, sans toucher au visage', () async {
+    final bytes =
+        await rootBundle.load('assets/composition/jersey_fabric_luma.png');
+    final codec = await ui.instantiateImageCodec(
+      bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
+    );
+    final frame = await codec.getNextFrame();
+    final material = frame.image;
+    codec.dispose();
+    expect(material.width, 256);
+    expect(material.height, 256);
+
+    Future<ui.Image> painted(ui.Image? texture) async {
+      final recorder = ui.PictureRecorder();
+      PortraitJerseyPainter(
+        body: const Color(0xFFE33A29),
+        trim: Colors.amber,
+        pattern: KitPattern.plain,
+        material: texture,
+      ).paint(Canvas(recorder), const Size(300, 300));
+      final picture = recorder.endRecording();
+      final result = await picture.toImage(300, 300);
+      picture.dispose();
+      return result;
+    }
+
+    final before = await painted(null);
+    final after = await painted(material);
+    final without = (await before.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    ))!
+        .buffer
+        .asUint8List();
+    final withTexture = (await after.toByteData(
       format: ui.ImageByteFormat.rawRgba,
     ))!
         .buffer
         .asUint8List();
 
-    int channel(int x, int y, int component) =>
-        bytes[(y * 180 + x) * 4 + component];
+    int channel(Uint8List data, int x, int y, int component) =>
+        data[(y * 300 + x) * 4 + component];
 
-    // Au-dessus du col, seule la photo réelle du cou doit être visible.
-    // L'ancien anneau étroit peignait déjà cette zone en jaune.
-    expect(channel(90, 132, 3), 0);
-    expect(channel(90, 141, 3), 255);
-    // Épaule : de la matière rouge ombrée, pas trois grosses bandes jaunes
-    // systématiquement collées sur chaque maillot uni.
-    expect(channel(30, 141, 3), 255);
-    expect(channel(30, 141, 0), greaterThan(channel(30, 141, 1) + 40));
+    // Une vraie différence de matière apparaît sur la poitrine.
+    expect(
+      channel(without, 150, 260, 0),
+      isNot(channel(withTexture, 150, 260, 0)),
+    );
+    // Aucune matière ne passe au-dessus du maillot et du col.
+    expect(channel(withTexture, 150, 130, 3), 0);
+    expect(channel(withTexture, 150, 260, 3), 255);
 
-    raster.dispose();
-    picture.dispose();
+    before.dispose();
+    after.dispose();
+    material.dispose();
+  });
+
+  testWidgets('la photo est découpée en courbe et non au cutter sous la joue',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: SizedBox.square(
+          dimension: 180,
+          child: KitPortrait(
+            kit: ClubKits.of(JerseyOption.france),
+            child: const ColoredBox(color: Colors.blue),
+          ),
+        ),
+      ),
+    ));
+
+    final clip = tester.widget<ClipPath>(find.byType(ClipPath));
+    final mask = clip.clipper!.getClip(const Size(180, 180));
+    // Ancien masque : ligne horizontale dès 61,3 %, un rectangle
+    // apparaissait au niveau de la mâchoire lorsque le visage était large.
+    expect(mask.contains(const Offset(55, 115)), isTrue);
+    expect(mask.contains(const Offset(20, 135)), isFalse);
+    expect(mask.contains(const Offset(90, 125)), isTrue);
+    expect(mask.contains(const Offset(90, 145)), isFalse);
   });
 
   testWidgets('le patron découpe la photo exactement au bord intérieur du col',

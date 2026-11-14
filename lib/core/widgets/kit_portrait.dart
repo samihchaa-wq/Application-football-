@@ -1,6 +1,9 @@
+import 'dart:ui' as ui;
+
 import 'package:as_grinta/core/club/club_kits.dart';
 import 'package:as_grinta/core/widgets/kit_pattern_paint.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 /// Habille le portrait sans retoucher ni stocker une nouvelle photo. Le visage
 /// reste celui de l'image source. Le même repère carré est utilisé au recadrage,
@@ -17,6 +20,27 @@ class KitPortrait extends StatelessWidget {
   final bool isGoalkeeper;
   final Widget child;
 
+  /// Une seule texture, décodée une fois pour toutes les fiches, les joueurs
+  /// de l'effectif et les compositions. Aucun appel réseau ni traitement du
+  /// visage. Le maillot vectoriel reste disponible si l'asset tarde.
+  static final Future<ui.Image?> _fabricMaterial = _loadFabricMaterial();
+
+  static Future<ui.Image?> _loadFabricMaterial() async {
+    try {
+      final data =
+          await rootBundle.load('assets/composition/jersey_fabric_luma.png');
+      final codec = await ui.instantiateImageCodec(
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+      );
+      final frame = await codec.getNextFrame();
+      codec.dispose();
+      return frame.image;
+    } catch (_) {
+      // Degradation gracieuse en mode hors ligne / moteur Flutter réduit.
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Stack(
         fit: StackFit.expand,
@@ -27,14 +51,19 @@ class KitPortrait extends StatelessWidget {
               child: Semantics(
                 label: '${isGoalkeeper ? 'Gardien' : 'Joueur'} — ${kit.label}',
                 image: true,
-                child: CustomPaint(
-                  key: ValueKey(
-                    'portrait-jersey-${isGoalkeeper ? 'goalkeeper' : 'field'}',
-                  ),
-                  painter: PortraitJerseyPainter(
-                    body: isGoalkeeper ? kit.goalkeeperBody : kit.body,
-                    trim: isGoalkeeper ? kit.goalkeeperTrim : kit.trim,
-                    pattern: isGoalkeeper ? kit.goalkeeperPattern : kit.pattern,
+                child: FutureBuilder<ui.Image?>(
+                  future: _fabricMaterial,
+                  builder: (context, snapshot) => CustomPaint(
+                    key: ValueKey(
+                      'portrait-jersey-${isGoalkeeper ? 'goalkeeper' : 'field'}',
+                    ),
+                    painter: PortraitJerseyPainter(
+                      body: isGoalkeeper ? kit.goalkeeperBody : kit.body,
+                      trim: isGoalkeeper ? kit.goalkeeperTrim : kit.trim,
+                      pattern:
+                          isGoalkeeper ? kit.goalkeeperPattern : kit.pattern,
+                      material: snapshot.data,
+                    ),
                   ),
                 ),
               ),
@@ -56,16 +85,20 @@ abstract final class _PortraitGeometry {
   static Path headClip(Size size) {
     final w = size.width;
     final h = size.height;
+    // L'ancien tracé quittait le bord par une grande ligne HORIZONTALE
+    // à 61,3 % et coupait net la mâchoire des joueurs au visage large.
+    // Cette silhouette organique se resserre derrière la mâchoire, puis
+    // rejoint exactement l'ouverture intérieure du col. Aucun angle droit.
     return Path()
       ..moveTo(0, 0)
       ..lineTo(w, 0)
-      ..lineTo(w, h * .613)
-      ..lineTo(w * neckRight, h * .613)
-      ..lineTo(w * neckRight, h * .655)
+      ..lineTo(w, h * .485)
+      ..cubicTo(w * .925, h * .520, w * .845, h * .570, w * .777, h * .625)
+      ..cubicTo(w * .738, h * .662, w * .704, h * .639, w * neckRight, h * .655)
       ..cubicTo(w * .637, h * .711, w * .585, h * .744, w * .5, h * .748)
       ..cubicTo(w * .415, h * .744, w * .363, h * .711, w * neckLeft, h * .655)
-      ..lineTo(w * neckLeft, h * .613)
-      ..lineTo(0, h * .613)
+      ..cubicTo(w * .296, h * .639, w * .262, h * .662, w * .223, h * .625)
+      ..cubicTo(w * .155, h * .570, w * .075, h * .520, 0, h * .485)
       ..close();
   }
 
@@ -121,11 +154,13 @@ class PortraitJerseyPainter extends CustomPainter {
     required this.body,
     required this.trim,
     required this.pattern,
+    this.material,
   });
 
   final Color body;
   final Color trim;
   final KitPattern pattern;
+  final ui.Image? material;
 
   static Color _mix(Color a, Color b, double t) => Color.lerp(a, b, t)!;
 
@@ -200,6 +235,30 @@ class PortraitJerseyPainter extends CustomPainter {
         ).createShader(const Rect.fromLTWH(0, .64, 1, .38)),
     );
 
+    // Matière tricotée : carte de luminance 256px réutilisée pour tous les
+    // portraits. Le mode multiply garde les véritables couleurs et motifs
+    // du club, mais leur applique les mêmes micro-ombres et le relief.
+    // Les composants du maillot (dont le col) restent parfaitement nets.
+    if (material != null) {
+      canvas.drawImageRect(
+        material!,
+        Rect.fromLTWH(
+          0,
+          0,
+          material!.width.toDouble(),
+          material!.height.toDouble(),
+        ),
+        const Rect.fromLTWH(0, 0, 1, 1),
+        Paint()
+          ..blendMode = BlendMode.multiply
+          ..colorFilter = const ColorFilter.mode(
+            Color(0xAFFFFFFF),
+            BlendMode.modulate,
+          )
+          ..filterQuality = FilterQuality.medium,
+      );
+    }
+
     // Pli de tissu près de l'emmanchure : une ombre fondue plutôt qu'une
     // ligne épaisse qui dessinerait un torse de bande dessinée.
     for (final reflected in [false, true]) {
@@ -264,19 +323,58 @@ class PortraitJerseyPainter extends CustomPainter {
       canvas.restore();
     }
 
-    // Trame du tissu très fine, sans les grosses rayures horizontales
-    // et les contours opaques qui donnaient l'impression d'un dessin.
-    final yarn = Paint()
-      ..color = const Color(0x0AFFFFFF)
-      ..strokeWidth = .0007;
-    final yarnShadow = Paint()
-      ..color = const Color(0x09000000)
-      ..strokeWidth = .00065;
-    for (var y = .705; y < 1.01; y += .0075) {
-      canvas.drawLine(Offset(0, y), Offset(1, y), yarn);
+    // L'asset de tricot remplace l'ancien quadrillage de traits plats.
+    // Garder une microtrame légère uniquement en cas de chargement impossible
+    // garantit un maillot lisible même sans asset.
+    if (material == null) {
+      final yarn = Paint()
+        ..color = const Color(0x0BFFFFFF)
+        ..strokeWidth = .00065;
+      for (var y = .705; y < 1.01; y += .008) {
+        canvas.drawLine(Offset(0, y), Offset(1, y), yarn);
+      }
     }
-    for (var x = .005; x < 1; x += .014) {
-      canvas.drawLine(Offset(x, .64), Offset(x, 1.02), yarnShadow);
+
+    // Volume textile central : les zones d'ombre sont fondues au lieu de
+    // traits dessinés au feutre. Les replis suivent la pente des épaules.
+    for (final reflected in [false, true]) {
+      canvas.save();
+      if (reflected) {
+        canvas.translate(1, 0);
+        canvas.scale(-1, 1);
+      }
+      final clavicle = Path()
+        ..moveTo(.30, .686)
+        ..cubicTo(.278, .725, .301, .755, .336, .784);
+      canvas.drawPath(
+        clavicle,
+        Paint()
+          ..color = const Color(0x27000000)
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..strokeWidth = .018
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, .009),
+      );
+      canvas.drawPath(
+        clavicle.shift(const Offset(.020, -.004)),
+        Paint()
+          ..color = const Color(0x1BFFFFFF)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = .009
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, .007),
+      );
+      final chestDrape = Path()
+        ..moveTo(.379, .809)
+        ..cubicTo(.341, .861, .336, .915, .354, 1.02);
+      canvas.drawPath(
+        chestDrape,
+        Paint()
+          ..color = const Color(0x17000000)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = .023
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, .015),
+      );
+      canvas.restore();
     }
     canvas.restore();
 
@@ -311,6 +409,10 @@ class PortraitJerseyPainter extends CustomPainter {
 
     // D'abord l'ombre d'insertion sous le bord du col. Elle donne du
     // volume au tissu sans poser de halo autour de la peau.
+    // Protéger aussi l'ouverture du cou des traits de bordure : à petite
+    // taille, leur anticrénelage peut déborder même sans ombre floutée.
+    canvas.save();
+    canvas.clipPath(shirt);
     final collarBand = _PortraitGeometry.collar();
     canvas.drawPath(
       collarBand,
@@ -334,6 +436,44 @@ class PortraitJerseyPainter extends CustomPainter {
         ).createShader(const Rect.fromLTWH(.315, .64, .37, .14)),
     );
 
+    // Relief côtelé très discret : chaque maille reprend exactement la
+    // couleur du col. Le patron parait cousu plutôt que posé en anneau plat.
+    canvas.save();
+    canvas.clipPath(collarBand);
+    final collarRib = Paint()
+      ..color = const Color(0x27000000)
+      ..strokeWidth = .0016;
+    final collarGlint = Paint()
+      ..color = const Color(0x23FFFFFF)
+      ..strokeWidth = .0011;
+    for (var x = .317; x < .683; x += .009) {
+      canvas.drawLine(
+        Offset(x, .638),
+        Offset(x + .014, .788),
+        collarRib,
+      );
+      canvas.drawLine(
+        Offset(x + .002, .638),
+        Offset(x + .016, .788),
+        collarGlint,
+      );
+    }
+    canvas.restore();
+
+    // Ombre courte à la naissance du cou et lumière sur la bordure haute
+    // du col. Le flou doit rester sur le tissu : sans ce masque, il déborde
+    // dans l'ouverture transparente réservée à la photographie du cou.
+    canvas.save();
+    canvas.clipPath(collarBand);
+    canvas.drawPath(
+      _PortraitGeometry.innerCollar(),
+      Paint()
+        ..color = const Color(0x33000000)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = .006
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, .005),
+    );
+    canvas.restore();
     // Joint intérieur très fin : le col touche visuellement le cou,
     // l'image réelle n'est jamais retouchée, recolorée ou repeinte.
     canvas.drawPath(
@@ -345,11 +485,13 @@ class PortraitJerseyPainter extends CustomPainter {
         ..strokeWidth = .0035,
     );
     canvas.restore();
+    canvas.restore();
   }
 
   @override
   bool shouldRepaint(PortraitJerseyPainter oldDelegate) =>
       oldDelegate.body != body ||
       oldDelegate.trim != trim ||
-      oldDelegate.pattern != pattern;
+      oldDelegate.pattern != pattern ||
+      oldDelegate.material != material;
 }
