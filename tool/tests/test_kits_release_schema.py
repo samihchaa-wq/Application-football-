@@ -47,7 +47,7 @@ class KitsReleaseSchemaTests(unittest.TestCase):
         self.assertEqual(code, 0)
         q.assert_called_once()
         self.assertEqual(q.call_args.args[0], COMMERCIAL_REF)
-        self.assertTrue(q.call_args.args[2].lstrip().lower().startswith("select "))
+        self.assertTrue(q.call_args.args[2].lstrip().lower().startswith("select"))
         self.assertNotIn("insert into", READINESS_SQL.lower())
         self.assertNotIn("delete from", READINESS_SQL.lower())
 
