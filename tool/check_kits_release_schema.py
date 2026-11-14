@@ -76,7 +76,7 @@ def run(ref: str, token: str, migration_path: Path = MIGRATION_PATH) -> int:
         result = query(ref, token, READINESS_SQL)
     except Exception as exc:
         print(
-            "::error::Schéma maillots illisibile : "
+            "::error::Schéma maillots illisible : "
             f"{type(exc).__name__}. Aucune publication."
         )
         return 2
