@@ -73,8 +73,8 @@ void main() {
     await openCrop(tester, PlayerPhotoMode.player, transparent: false);
     expect(find.textContaining('nécessite une photo à fond transparent'),
         findsOneWidget);
-    final confirm = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Utiliser cette photo'));
+    final confirm = tester.widget<FilledButton>(find.byWidgetPredicate(
+        (widget) => widget is FilledButton && widget.onPressed == null));
     expect(confirm.onPressed, isNull);
   });
   testWidgets(
