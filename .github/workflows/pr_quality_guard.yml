@@ -29,6 +29,9 @@ jobs:
       - name: Test read-only migration state audit
         run: python3 -m unittest discover -s tool/tests -p 'test_commercial_migration_state.py' -v
 
+      - name: Test fail-closed kit release schema gate
+        run: python3 -m unittest discover -s tool/tests -p 'test_kits_release_schema.py' -v
+
       - name: Verify prior SQL migrations have not been rewritten
         if: github.event_name == 'pull_request'
         env:
