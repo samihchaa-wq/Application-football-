@@ -11,6 +11,18 @@ Ce document est une feuille de route d'exécution, pas un certificat de conformi
 
 Statuts : **NON COMMENCÉ / EN COURS / À TESTER / VALIDÉ / BLOQUÉ**. Priorités : **P0** empêche d'accueillir de vrais clients, **P1** indispensable avant boutique ou paiement, **P2** après lancement si sans risque.
 
+## Décisions du propriétaire — validées le 14 novembre 2026
+
+Ces décisions ont été données explicitement pour l'orientation du plan et sont **retenues pour le cadrage V1**. Elles ne constituent pas une approbation des prix, des dépenses, des migrations, des premiers recrutements, des fusions de PR ni de la publication.
+
+| Référence | Choix retenu | Conséquence sur la feuille de route | À préciser |
+| --- | --- | --- | --- |
+| **DEC-V1-B** — périmètre V1 | **B : fonctions essentielles + options déjà prêtes, nouveautés non essentielles en V1.1** | Prioriser la stabilité, les parcours métier critiques et les fonctionnalités existantes prêtes ; tout ajout non indispensable doit aller dans le backlog V1.1. Les bugs P0/P1 restent à corriger. | Matrice définitive « indispensable / déjà prêt / à reporter », à signer lors de G0. |
+| **DEC-OFFRE-A** — modèle commercial | **A : abonnement annuel par club** | Un club souscrit un seul abonnement annuel pour son espace ; ses joueurs ne sont pas facturés individuellement par Petit Filet. Concevoir tarifs et gestion d'accès selon cette logique. | Prix, limites éventuelles, essai, TVA, facturation, renouvellement, paiement et règles stores non arrêtés. |
+| **DEC-PILOTE-B** — clubs pilotes | **B : un premier club, puis deux autres progressivement** | Appliquer une ouverture séquentielle A → B → C, avec bilan et feu vert à chaque changement d'échelle. | Clubs, dates et conditions d'accueil réel à confirmer après les portes de sécurité et de droit. |
+
+**Statut de ces trois décisions : APPROUVÉES au niveau du cadrage ; leur exécution reste soumise aux gates et autorisations particulières ci-dessous.**
+
 ## 1. Photographie vérifiée le 14 novembre 2026
 
 - Branche main : commit 7f28d9eb84bcea4e5c811f5c9c182271fbf15e1a, CI Flutter et déploiement Cloudflare verts. Branche non protégée.
@@ -25,21 +37,21 @@ Statuts : **NON COMMENCÉ / EN COURS / À TESTER / VALIDÉ / BLOQUÉ**. Priorit�
 
 ## 2. Définition du premier lancement (MVP commercial)
 
-Le MVP garde les fonctions qui font la différence : création d'un club, invitation et validation des joueurs, effectif, saisons et matchs, indisponibilités/convocations, compositions, Live, pronostics, badges/statistiques, réglages individuels par club, profil et photos, notifications (ou alternative fiable), administration et historique. Les fonctions optionnelles doivent pouvoir être désactivées sans casser la navigation ni exposer leurs API.
+**Décision DEC-V1-B :** la première publication comprend les parcours essentiels et les fonctionnalités déjà prêtes et validables ; les évolutions facultatives non indispensables sont reportées en V1.1. Le périmètre métier envisagé comprend la création d'un club, l'invitation et la validation des joueurs, l'effectif, les saisons et matchs, les disponibilités/convocations, les compositions, le Live, les pronostics, les badges/statistiques, les réglages par club, le profil et les photos, les notifications (ou une alternative fiable), l'administration et l'historique. M00/M01/M02 doivent valider les éléments exacts dans la matrice G0, sans présumer qu'ils sont tous déjà fiables. Les fonctions optionnelles doivent pouvoir être désactivées sans casser la navigation ni exposer leurs API.
 
 À décider et figer : football à 11 en première version, rôle du coach, nombre de clubs par utilisateur, gratuit/payant, nombre de tenues et modèle visuel, suppression des +1 automatiques, comportement sans réseau, fonctionnalités accessibles aux clubs en essai.
 
-**Hors périmètre de la première publication sauf nécessité établie :** nouveaux sports, nouvelles catégories complexes, nouvelles animations non essentielles, marketplace, réseau social, personnalisation infinie. La liste des reports entre dans une section backlog V1.1. Le gel ne supprime pas les corrections de bugs P0/P1.
+**Backlog V1.1 approuvé par principe (DEC-V1-B) :** les nouvelles fonctionnalités non indispensables et les modules non suffisamment prêts à la date du gel. Exemples possibles à arbitrer : nouveaux sports, nouvelles catégories complexes, nouvelles animations non essentielles, marketplace, réseau social, personnalisation infinie. La liste finale est établie par M01/M02 et validée par M00 ; un défaut P0/P1 sur une fonction essentielle ne doit jamais être reporté par facilité.
 
 ### Portes GO/NO-GO
 
 | Porte | Feu vert exigé | Preuve à joindre |
 | --- | --- | --- |
-| G0 — Cadrage figé | Périmètre V1 et tarifs/paiements arbitrés ; exigences M01-M02 signées | Matrice 164 fonctionnalités, décisions et backlog |
+| G0 — Cadrage figé | Choix V1=B et abonnement annuel par club=A inscrits ; périmètre exact V1/V1.1 validé, prix et paiements restant à arbitrer avant G5 ; exigences M01-M02 signées | Matrice 164 fonctionnalités, registre de décisions et backlog V1.1 |
 | G1 — Sécurité du socle | Aucun accès interclub non autorisé ; rôles et comptes suspendus testés ; sauvegarde/restauration DB + fichiers démontrée | Campagne A/B, rapports RLS/RPC/Storage/Edge/Realtime, exercice de restauration |
 | G2 — Recette métier | Aucun P0 ni P1 ouvert ; parcours critiques réellement exécutés ; saison complète simulée sur environnement isolé | Journal QA horodaté, captures, assertions et anomalies clôturées |
 | G3 — Version mobile | iOS et Android installables ; identité, photo, push, liens et reprises fonctionnels ; performances acceptables | Builds signés, essais appareils réels, rapport TestFlight / Google interne |
-| G4 — Réel pilote | Trois clubs adultes volontaires, au moins deux matchs chacun, fonctionnement autonome raisonnable et remontées traitées | Comptes rendus de séances, consentements, indicateurs et GO utilisateur |
+| G4 — Réel pilote | Ouverture séquentielle A puis B puis C : chaque club rejoint après feu vert du précédent et des validations sécurité/juridiques ; deux matchs par club visés ; autonomie et remontées évaluées | Compte rendu A avant B, puis B avant C, consentements, indicateurs et GO utilisateur |
 | G5 — Juridique / commerce | Éditeur identifié, marque et ressources revues, CGU/CGV/RGPD, suppression, paiement conforme et support prêts | Validation M07/M06, liens publics, preuves de test facturation |
 | G6 — Boutiques | Fiches et déclarations complètes, certificats valides, testeurs/Apple Review, zéro défaut bloquant | Liens des builds, résolutions App Review et Play Console |
 | G7 — Ouverture | G1–G6 verts, pilotage de publication, monitoring et procédure retour arrière approuvés | PV de décision GO signé, commit/tag et plan de lancement |
@@ -144,9 +156,9 @@ Les seuils métier proposés ci-dessous ne sont pas des résultats mesurés ; il
 **Sortie :** URL publiques légales valables, registre de traitements, preuves d'effacement, licences, accord pour premiers clients.
 
 ### LOT 09 — Offre, abonnement et paiement (M06/M02/M07 ; P1 ; novembre–mars)
-1. Segment cible : premier lancement clubs loisirs adultes de football à 11, un tarif par club ou par joueur, décideur admin/association. Valider qu'aucun joueur ne doit payer séparément par défaut.
+1. **Décision DEC-OFFRE-A validée : abonnement annuel par club.** Construire l'offre et le modèle d'accès autour d'un seul abonnement souscrit par le club, avec administrateur/association comme interlocuteur commercial à qualifier. Les joueurs de ce club ne sont pas facturés individuellement par Petit Filet. Premier segment envisagé : clubs loisirs adultes de football à 11 (positionnement précis encore à confirmer).
 2. Arbitrer période d'essai, accès à la fin de l'essai, compte propriétaire, limites de stockage, club suspendu, données à récupérer, changement de saison.
-3. Tester 3 grilles tarifaires sur coûts et enquêtes pilotes (prix dans le code = hypothèse, pas prix officiel). Évaluer simplification à forfait club pour faciliter la vente et la gestion des licenciés.
+3. Tester plusieurs **prix annuels par club** à partir des coûts et enquêtes pilotes (le prix par joueur présent dans le code n'est pas un tarif officiel). Arbitrer les éventuelles limites d'effectif, options ou quotas sans transformer implicitement le modèle approuvé en facturation individuelle. Comparer seuil de rentabilité, saisonnalité et risque de support.
 4. Choisir parcours de facturation : virement + facture pour très peu de clubs si conforme au marché et aux règles stores, ou Stripe côté Web avec webhooks signés et état d'accès côté serveur. Les achats de services numériques dans les apps sont soumis aux politiques Apple 3.1 et Google Play Payments, variables selon canal, pays et clientèle : faire valider le parcours avant de coder des liens d'achat externes.
 5. Tester échec de paiement, remboursement, prolongation, changement d'effectif, annulation et réactivation, expiration et maintien de l'accès aux données conformément au contrat.
 6. Calculer marge nette à 5, 10, 25, 50 clubs en incluant services cloud, commissions, comptabilité, support, taxes et temps de travail. Aucun tarif final sans décision.
@@ -154,8 +166,8 @@ Les seuils métier proposés ci-dessous ne sont pas des résultats mesurés ; il
 **Sortie :** offre compréhensible, facturation testée, conformité boutiques validée, coûts suivis.
 
 ### LOT 10 — Pilotes indépendants (M08/M03/M06 ; P0 avant vente ; février–avril)
-1. N'inviter de vrais clubs qu'après G1 sécurité et droit conforme. Proposition : trois clubs adultes de 15–30 joueurs avec consentement et administrateur volontaire, au moins deux rencontres chacun.
-2. Club A en premier, puis B et C progressivement ; ne pas appeler les 3 en même temps si onboarding A n'est pas maîtrisé.
+1. **Décision DEC-PILOTE-B validée : pilote progressif, un club A puis deux clubs B et C.** N'inviter de vrais clubs qu'après G1 sécurité et conformité juridique nécessaire. Proposition de dimension : trois clubs adultes de 15–30 joueurs avec consentement et administrateur volontaire, au moins deux rencontres chacun, à ajuster selon leurs calendriers.
+2. Ouvrir d'abord au **club A** ; faire vérifier l'onboarding, les parcours de match, les incidents et l'autonomie de son administrateur avant feu vert M00/M03/M04/M07 pour **club B**. Reproduire l'évaluation de B avant d'accueillir **club C** ; ne pas ouvrir les trois simultanément.
 3. Donner uniquement un guide simple et observer : créer club, saison, équipe, invitation, match, composition, pronostics, Live, résultats, stats, réglages et support.
 4. Mesurer : délai jusqu'au premier match, activation joueurs J+7, bugs, utilisateurs actifs, fréquence d'ouverture, charge de support par club, satisfaction et volonté de payer.
 5. Seuils proposés à confirmer : 0 fuite/incident P0, 0 crash reproductible bloquant, 100 % des parcours cœur réalisés, >= 80 % d'admin pilotes autonomes sur les tâches essentielles, >= 2 rencontres par club sans intervention directe de l'éditeur sur leurs données. Les métriques d'engagement servent à décider, pas à masquer les incidents.
@@ -219,15 +231,15 @@ En parallèle : identité, marque, structure juridique, domaine, compte dévelop
 
 ## 6. Matrice de décisions attendues du propriétaire
 
-- D01 — périmètre V1 : fonctionnalités indispensables et celles reportées.
+- **D01 — CHOISI B (DEC-V1-B)** : fonctionnalités essentielles et déjà prêtes en V1 ; nouvelles fonctions non indispensables en V1.1. Reste l'inventaire précis et la validation de G0.
 - D02 — type de société / entreprise individuelle et nom du vendeur affiché Apple.
 - D03 — positionnement : clubs de foot loisirs adultes uniquement au départ ?
-- D04 — modèle économique : abonnement club fixe, par joueur ou hybride ; essai.
+- **D04 — CHOISI A (DEC-OFFRE-A)** : abonnement annuel par club, aucun paiement individuel imposé au joueur. Reste à chiffrer prix, conditions, essai, facturation et renouvellement.
 - D05 — mode de paiement : facture/virement, Stripe Web, achats intégrés si règles l'exigent.
 - D06 — marque, domaine et adresse de contact public.
 - D07 — budget maximum mensuel, sauvegardes, CI iOS/macOS et relecture juridique.
 - D08 — accord d'utilisation d'un staging distinct, de comptes de test et de sauvegardes (pas de modifications irréversibles sans validation).
-- D09 — conditions de recrutement de trois clubs pilotes adultes.
+- **D09 — CHOISI B (DEC-PILOTE-B)** : recrutement/ouverture séquentiels, un premier club puis les deux autres progressivement ; conditions d'invitation, sécurité et dates restent à valider.
 - D10 — approbation expresse des dépenses développeur et publication aux boutiques.
 
 Une question à la fois avec choix A/B/C, recommandation, impacts coûts et délai. Une absence de réponse ne vaut pas validation.
@@ -250,7 +262,7 @@ Une tâche n'est « terminée » que si le niveau exigé par son gate est attein
 
 | Ordre | Responsable | Tâche | Critère de sortie |
 | --- | --- | --- | --- |
-| 1 | M00 / propriétaire | Arbitrer scope V1 et marge mai | Backlog P0/P1 figé |
+| 1 | M00 / propriétaire | Décliner le choix V1=B dans la matrice des fonctions et les reports V1.1 ; arbitrer la marge mai | Backlog P0/P1/V1.1 signé |
 | 2 | M02/M05 | Conclure PR #115 et finir les défauts visibles priorisés | CI verte + contrôle smartphone + aucun conflit |
 | 3 | M04/M00 | Vérifier main protégée et historique Git | Ruleset actif, rapport confidentialité privé |
 | 4 | M03 | Organiser recette avec jeu fictif isolé et accès autorisés | 164 tests attribués, preuves et planning |
@@ -258,8 +270,8 @@ Une tâche n'est « terminée » que si le niveau exigé par son gate est attein
 | 6 | M09 | Vérifier restore DB + Storage et alertes | Exercice et logs probants |
 | 7 | M02 | Audit de faisabilité iOS/Android des plugins | Liste incompatibilités/estimations et PR de socle mobile |
 | 8 | M07 | Lister mentions/consentements/données non conformes | Blocants juridiques priorisés |
-| 9 | M06 | Définir 2–3 tarifs et parcours de paiement possibles | Arbitrage sans codage prématuré |
-| 10 | M08 | Préparer protocole et recrutement conditionnel des pilotes | Invitations non envoyées avant G1/G5 pertinents |
+| 9 | M06 | Définir 2–3 **prix annuels par club** et parcours de paiement compatibles avec les boutiques | Arbitrage du montant sans codage prématuré |
+| 10 | M08 | Préparer le protocole de pilote séquentiel A → B → C | Invitations non envoyées avant G1 et garanties juridiques pertinentes ; revue obligatoire avant chaque extension |
 
 ## 9. Références de traçabilité
 
