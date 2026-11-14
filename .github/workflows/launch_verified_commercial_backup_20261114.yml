@@ -25,6 +25,9 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
+      - name: Checkout repository for GitHub CLI context
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
       - name: Vérifier dépôt et branche commerciale
         shell: bash
         run: |
@@ -47,7 +50,7 @@ jobs:
           done
           test -n "$backup_id" || { echo '::error::Exécution de sauvegarde non identifiée.'; exit 1; }
           echo "Run sauvegarde : https://github.com/$GITHUB_REPOSITORY/actions/runs/$backup_id"
-          gh run watch "$backup_id" --exit-status --interval 10
+          gh run watch "$backup_id" --repo "$GITHUB_REPOSITORY" --exit-status --interval 10
           artifact_count="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/$backup_id/artifacts" --jq '[.artifacts[] | select(.expired == false and (.name | startswith("commercial-complete-backup-")))] | length')"
           test "$artifact_count" -ge 1 || { echo '::error::Sauvegarde réussie sans archive chiffrée enregistrée.'; exit 1; }
           echo 'Archive chiffrée présente. ATTENTION : une restauration isolée réelle reste indispensable avant migration.'
