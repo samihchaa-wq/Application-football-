@@ -90,7 +90,7 @@ class CompositionPresentationData {
                 position: entry.x == null || entry.y == null
                     ? null
                     : Offset(entry.x!, entry.y!),
-                isGoalkeeper: entry.isGoalkeeper,
+                isGoalkeeper: entry.wearsGoalkeeperKit,
               ),
         ],
         bench: [
@@ -319,7 +319,7 @@ class _CompositionPresentationPageState
           name: entry.displayName,
           lastName: entry.lastInitial,
           photoUrl: entry.photoUrl,
-          isGoalkeeper: entry.isGoalkeeper,
+          isGoalkeeper: entry.wearsGoalkeeperKit,
         ),
       if (data.coach != null)
         CompositionPresentationData._coachId: _Face(

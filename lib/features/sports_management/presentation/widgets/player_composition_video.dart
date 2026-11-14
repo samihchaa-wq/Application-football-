@@ -12,7 +12,6 @@ import 'package:as_grinta/features/matches/domain/jersey_option.dart';
 import 'package:as_grinta/features/matches/presentation/widgets/upcoming_match_fixture_header.dart';
 import 'package:as_grinta/features/sports_management/data/match_availability_board_repository.dart';
 import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
-import 'package:as_grinta/features/sports_management/data/match_kit_photo_overrides.dart';
 import 'package:as_grinta/features/sports_management/domain/formation_display.dart';
 import 'package:as_grinta/features/sports_management/domain/match_availability_board.dart';
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
@@ -316,7 +315,6 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
       // Sans la fiche du match, l'accroche se contente de l'effectif.
     }
     CompositionPresentationCoach? coach;
-    String? coachSeasonPlayerId;
     DateTime? kickoffAt;
     try {
       final board = await ref
@@ -333,7 +331,6 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
       if (player != null) {
         String? photoUrl;
         final seasonPlayerId = player.seasonPlayerId;
-        coachSeasonPlayerId = seasonPlayerId;
         if (seasonPlayerId != null) {
           try {
             photoUrl = await ref
@@ -352,17 +349,6 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
     } catch (_) {
       // Sans l'effectif, la vidéo se passe de l'écran du coach.
     }
-    // La vidéo et le terrain utilisent les mêmes photos du maillot choisi.
-    var kitPhotos = const <String, String>{};
-    try {
-      // Wait for the actual match kit instead of briefly showing France
-      // when a slow connection exceeds the old four-second timeout.
-      kitPhotos = await ref.read(
-        matchKitPhotoOverridesProvider(matchId).future,
-      );
-    } catch (_) {
-      // Les portraits France restent toujours disponibles en repli.
-    }
     ClubKit? selectedKit;
     try {
       selectedKit =
@@ -379,14 +365,8 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
     return buildCompositionPresentationData(
       kit: selectedKit,
       formationCode: composition.formationCode,
-      field: withMatchKitPhotos(
-        composition.entriesFor(MatchCompositionZone.field),
-        kitPhotos,
-      ),
-      bench: withMatchKitPhotos(
-        composition.entriesFor(MatchCompositionZone.bench),
-        kitPhotos,
-      ),
+      field: composition.entriesFor(MatchCompositionZone.field),
+      bench: composition.entriesFor(MatchCompositionZone.bench),
       fixture: fixture,
       fallbackKickoffAt: kickoffAt,
       coach: coach == null
@@ -394,11 +374,7 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
           : CompositionPresentationCoach(
               id: coach.id,
               name: coach.name,
-              photoUrl: coachPhotoForMatchKit(
-                seasonPlayerId: coachSeasonPlayerId,
-                francePhotoUrl: coach.photoUrl,
-                photoOverrides: kitPhotos,
-              ),
+              photoUrl: coach.photoUrl,
             ),
     );
   }

@@ -676,19 +676,6 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
     final coach = convocations?.players
         .where((player) => player.isCoach && player.isAvailable)
         .firstOrNull;
-    // Comme les joueurs, il porte la tenue choisie dans Infos pour ce match.
-    // En cas d'absence de variante ou d'erreur réseau : portrait France.
-    var kitPhotos = const <String, String>{};
-    if (coach != null) {
-      try {
-        kitPhotos = await ref
-            .read(matchKitPhotoOverridesProvider(matchId).future)
-            .timeout(const Duration(seconds: 4));
-      } catch (_) {
-        // Ne jamais empêcher l'aperçu de démarrer pour une photo manquante.
-      }
-    }
-    if (!mounted) return;
     ClubKit? selectedKit;
     try {
       selectedKit =
@@ -721,11 +708,7 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
             : CompositionPresentationCoach(
                 id: coach.participantId,
                 name: coach.shortName,
-                photoUrl: coachPhotoForMatchKit(
-                  seasonPlayerId: coach.seasonPlayerId,
-                  francePhotoUrl: coach.photoUrl,
-                  photoOverrides: kitPhotos,
-                ),
+                photoUrl: coach.photoUrl,
               ),
       ),
     );
@@ -733,19 +716,9 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
 
   Widget _buildComposition() {
     final composition = _composition!;
-    final matchId = _selectedMatchId;
-    final kitPhotos = matchId == null
-        ? const <String, String>{}
-        : ref.watch(matchKitPhotoOverridesProvider(matchId)).valueOrNull ??
-            const <String, String>{};
-    final field = withMatchKitPhotos(
-      composition.entriesFor(MatchCompositionZone.field),
-      kitPhotos,
-    );
-    final bench = withMatchKitPhotos(
-      composition.entriesFor(MatchCompositionZone.bench),
-      kitPhotos,
-    )..removeWhere(
+    final field = composition.entriesFor(MatchCompositionZone.field);
+    final bench = composition.entriesFor(MatchCompositionZone.bench)
+      ..removeWhere(
         (entry) =>
             _desiredEffectifStatuses[entry.participantId] !=
             ConvocationStatus.convoked,
