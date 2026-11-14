@@ -61,7 +61,10 @@ void main() {
       'club_id': 'club-A',
       'jersey_id': 'blue',
       'kit': ClubKits.of(JerseyOption.blue).toJson(),
-      'kits': [for (final kit in [ClubKits.all.first, ClubKits.of(JerseyOption.blue)]) kit.toJson()],
+      'kits': [
+        for (final kit in [ClubKits.all.first, ClubKits.of(JerseyOption.blue)])
+          kit.toJson()
+      ],
       'captured_at': '2026-11-01T10:00:00Z',
     };
     expect(MatchKitSnapshot.fromJson(valid)?.kit.slot, JerseyOption.blue);
