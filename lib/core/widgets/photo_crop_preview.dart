@@ -103,8 +103,9 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
   void initState() {
     super.initState();
     _prepare().catchError((Object error) {
-      if (mounted)
+      if (mounted) {
         setState(() => _imageError = 'Impossible de lire cette image.');
+      }
     });
   }
 
@@ -121,22 +122,24 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
     if (widget.requireTransparent) {
       final pixels = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
       var transparent = false;
-      if (pixels != null)
+      if (pixels != null) {
         for (var i = 3; i < pixels.lengthInBytes; i += 4) {
           if (pixels.getUint8(i) == 0) {
             transparent = true;
             break;
           }
         }
+      }
       if (!transparent) {
         image.dispose();
         codec.dispose();
-        if (mounted)
+        if (mounted) {
           setState(
             () => _imageError =
                 'Le mode Type joueur nécessite une photo à fond transparent. '
                     'Fournis une photo détourée ou choisis Autre.',
           );
+        }
         return;
       }
     }
