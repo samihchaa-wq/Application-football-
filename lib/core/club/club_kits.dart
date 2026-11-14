@@ -55,6 +55,7 @@ class ClubKit {
   /// Option du club, conservée dans la tenue figée du match. Les anciennes
   /// photos restent intactes ; le maillot est composé uniquement à l'écran.
   final bool dressPlayers;
+
   /// Une tenue supprimée reste en base pour les anciens matchs.
   final bool archived;
   final bool enabled;
@@ -325,8 +326,8 @@ abstract final class ClubKits {
       JerseyOption.blue,
     ];
     if (result.every((kit) => legacy.contains(kit.slot))) {
-      result.sort((a, b) =>
-          legacy.indexOf(a.slot).compareTo(legacy.indexOf(b.slot)));
+      result.sort(
+          (a, b) => legacy.indexOf(a.slot).compareTo(legacy.indexOf(b.slot)));
     }
     return result;
   }
