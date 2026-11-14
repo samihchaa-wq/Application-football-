@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import subprocess
 import sys
 import tarfile
 import tempfile
@@ -87,6 +88,34 @@ class VerifyCommercialBackupTarTests(unittest.TestCase):
         self.assertEqual(summary["project_ref"], PROJECT_REF)
         self.assertEqual(summary["objects_checked"], 1)
         self.assertEqual(summary["sql_files_checked"], 3)
+
+    def test_workflow_tar_command_includes_safe_root_directory(self):
+        root = Path(self.temp.name)
+        for name, data in self.files.items():
+            file = root / name
+            file.parent.mkdir(parents=True, exist_ok=True)
+            file.write_bytes(data)
+        subprocess.run(
+            ["tar", "-C", str(root), "-czf", str(self.path), "payload"],
+            check=True, capture_output=True,
+        )
+        with tarfile.open(self.path, "r:gz") as archive:
+            member = archive.getmember("payload")
+            self.assertTrue(member.isdir())
+        self.assertEqual(verify_archive(self.path)["objects_checked"], 1)
+
+    def test_root_file_is_rejected(self):
+        self.files["payload"] = b"not a directory"
+        self.assert_rejects()
+
+    def test_root_symlink_is_rejected(self):
+        with tarfile.open(self.path, "w:gz") as archive:
+            link = tarfile.TarInfo("payload")
+            link.type = tarfile.SYMTYPE
+            link.linkname = "/outside"
+            archive.addfile(link)
+        with self.assertRaises(UnsafeBackup):
+            verify_archive(self.path)
 
     def test_changed_object_byte_is_rejected(self):
         self.files[self.file] = b"altered"
