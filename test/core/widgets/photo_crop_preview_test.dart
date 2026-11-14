@@ -190,8 +190,9 @@ void main() {
           final viewer = find.byType(InteractiveViewer);
           final rect = tester.getRect(viewer);
           final start = Offset(rect.center.dx, rect.top + rect.height * .2);
-          final controller =
-              tester.widget<InteractiveViewer>(viewer).transformationController!;
+          final controller = tester
+              .widget<InteractiveViewer>(viewer)
+              .transformationController!;
           final initialX = controller.value.getTranslation().x;
           final gesture = await tester.startGesture(start);
           for (var i = 0; i < 12; i++) {
