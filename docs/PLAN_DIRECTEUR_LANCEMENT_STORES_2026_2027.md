@@ -33,6 +33,13 @@ Constats majeurs datés : **pas de projet iOS/Android**, push mobile absent (`pu
 
 **Ordre de traitement :** protections GitHub/contrôles obligatoires et kits #117 → parité Admin/onboarding → matrice exhaustive réglages → recette saison/Live/compositions/pronos/badges → qualité portrait/vidéo → applications natives → push/e-mails → juridique/offre et pilotes. Les dépendances sont détaillées dans l'audit ; les PR de code seront distinctes et soumises à validation.
 
+### Actualisation opérationnelle T0/T1 — 14 novembre 2026
+
+- **T0 (sécurité GitHub) — BLOQUÉ PAR PERMISSION ADMINISTRATIVE :** `main` non protégée et aucun ruleset ; procédure + contrôles requis documentés dans l'[issue #45](https://github.com/samihchaa-wq/Application-football-/issues/45). La création d'un ruleset doit être réalisée par un administrateur GitHub du dépôt, cette connexion ne pouvant pas le faire. Ne pas déclarer ce chantier terminé.
+- **T1 (maillots) — CODE FUSIONNÉ, BASE NON PRÊTE :** PR [#117](https://github.com/samihchaa-wq/Application-football-/pull/117) fusionnée dans `main` (`3dedb4b7`). Supabase commercial **ne possède pas la migration `20261120000000`** ; la contrainte et la RPC imposent toujours trois tenues. Publication **NO-GO** jusqu'à synchronisation autorisée, essais et preuve.
+- **Protection complémentaire de publication :** [PR #118](https://github.com/samihchaa-wq/Application-football-/pull/118) **en brouillon**, créée pour empêcher le déploiement Cloudflare si la migration n'est pas enregistrée et si les contraintes/RPC restent anciennes ; contrôles sur SHA exact requis avant éventuelle fusion.
+- **Restrictions inchangées :** aucune migration, fusion de PR, publication ou dépense autorisée par le présent plan ; AS Grinta original totalement hors périmètre.
+
 ## Décisions complémentaires du propriétaire — Q01 à Q12, validées le 14 novembre 2026
 
 **Portée :** choix explicites du propriétaire pour la première version commerciale de Petit Filet. Les **12 réponses sont A**. Ils précisent et, lorsqu'ils sont plus exigeants, **prévalent sur la règle antérieure DEC-V1-B** (« fonctionnalités essentielles et options déjà prêtes ») : toutes les fonctionnalités expressément déclarées obligatoires ci-dessous doivent être **développées, testées et livrées**, même si elles ne sont pas encore prêtes.
