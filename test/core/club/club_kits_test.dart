@@ -163,5 +163,4 @@ void main() {
     expect(JerseyOption.fromId('kit_1'), isNotNull);
     expect(JerseyOption.fromId('invalide'), isNull);
   });
-
 }
