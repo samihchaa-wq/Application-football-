@@ -323,19 +323,58 @@ class PortraitJerseyPainter extends CustomPainter {
       canvas.restore();
     }
 
-    // Trame du tissu très fine, sans les grosses rayures horizontales
-    // et les contours opaques qui donnaient l'impression d'un dessin.
-    final yarn = Paint()
-      ..color = const Color(0x0AFFFFFF)
-      ..strokeWidth = .0007;
-    final yarnShadow = Paint()
-      ..color = const Color(0x09000000)
-      ..strokeWidth = .00065;
-    for (var y = .705; y < 1.01; y += .0075) {
-      canvas.drawLine(Offset(0, y), Offset(1, y), yarn);
+    // L'asset de tricot remplace l'ancien quadrillage de traits plats.
+    // Garder une microtrame légère uniquement en cas de chargement impossible
+    // garantit un maillot lisible même sans asset.
+    if (material == null) {
+      final yarn = Paint()
+        ..color = const Color(0x0BFFFFFF)
+        ..strokeWidth = .00065;
+      for (var y = .705; y < 1.01; y += .008) {
+        canvas.drawLine(Offset(0, y), Offset(1, y), yarn);
+      }
     }
-    for (var x = .005; x < 1; x += .014) {
-      canvas.drawLine(Offset(x, .64), Offset(x, 1.02), yarnShadow);
+
+    // Volume textile central : les zones d'ombre sont fondues au lieu de
+    // traits dessinés au feutre. Les replis suivent la pente des épaules.
+    for (final reflected in [false, true]) {
+      canvas.save();
+      if (reflected) {
+        canvas.translate(1, 0);
+        canvas.scale(-1, 1);
+      }
+      final clavicle = Path()
+        ..moveTo(.30, .686)
+        ..cubicTo(.278, .725, .301, .755, .336, .784);
+      canvas.drawPath(
+        clavicle,
+        Paint()
+          ..color = const Color(0x27000000)
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..strokeWidth = .018
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, .009),
+      );
+      canvas.drawPath(
+        clavicle.shift(const Offset(.020, -.004)),
+        Paint()
+          ..color = const Color(0x1BFFFFFF)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = .009
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, .007),
+      );
+      final chestDrape = Path()
+        ..moveTo(.379, .809)
+        ..cubicTo(.341, .861, .336, .915, .354, 1.02);
+      canvas.drawPath(
+        chestDrape,
+        Paint()
+          ..color = const Color(0x17000000)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = .023
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, .015),
+      );
+      canvas.restore();
     }
     canvas.restore();
 
@@ -393,6 +432,40 @@ class PortraitJerseyPainter extends CustomPainter {
         ).createShader(const Rect.fromLTWH(.315, .64, .37, .14)),
     );
 
+    // Relief côtelé très discret : chaque maille reprend exactement la
+    // couleur du col. Le patron parait cousu plutôt que posé en anneau plat.
+    canvas.save();
+    canvas.clipPath(collarBand);
+    final collarRib = Paint()
+      ..color = const Color(0x27000000)
+      ..strokeWidth = .0016;
+    final collarGlint = Paint()
+      ..color = const Color(0x23FFFFFF)
+      ..strokeWidth = .0011;
+    for (var x = .317; x < .683; x += .009) {
+      canvas.drawLine(
+        Offset(x, .638),
+        Offset(x + .014, .788),
+        collarRib,
+      );
+      canvas.drawLine(
+        Offset(x + .002, .638),
+        Offset(x + .016, .788),
+        collarGlint,
+      );
+    }
+    canvas.restore();
+
+    // Ombre courte à la naissance du cou et lumière sur la bordure haute
+    // du col : aucune couleur n'est déposée sur les pixels du visage.
+    canvas.drawPath(
+      _PortraitGeometry.innerCollar(),
+      Paint()
+        ..color = const Color(0x33000000)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = .006
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, .005),
+    );
     // Joint intérieur très fin : le col touche visuellement le cou,
     // l'image réelle n'est jamais retouchée, recolorée ou repeinte.
     canvas.drawPath(
