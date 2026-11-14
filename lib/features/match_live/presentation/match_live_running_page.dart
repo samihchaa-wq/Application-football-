@@ -527,6 +527,23 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
           padding: const EdgeInsets.fromLTRB(8, 10, 8, 0),
           child: pitchArea,
         ),
+        if (ClubRules.enabled(ClubFeature.liveJournalExpanded))
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: _LiveJournal(
+              events: bundle.events,
+              expanded: _journalExpanded,
+              canEdit: canEdit,
+              onExpandedChanged: (value) =>
+                  setState(() => _journalExpanded = value),
+              onEditScorer: (event) =>
+                  _pickGoalScorer(context, controller, event, scorerCandidates),
+              onEditAssist: (event) =>
+                  _pickGoalAssist(context, controller, event, scorerCandidates),
+              onDelete: (event) =>
+                  _confirmDeleteEvent(context, controller, event),
+            ),
+          ),
         // Sous le terrain : buts à attribuer et changements en attente.
         if (canEdit && (_pending.isNotEmpty || goalsToAttribute.isNotEmpty))
           Material(
@@ -742,7 +759,9 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
     required MatchCompositionEntry playerIn,
     required MatchCompositionEntry playerOut,
   }) {
-    if (!ClubRules.enabled(ClubFeature.liveSubstitutions)) return;
+    if (!ClubRules.enabled(ClubFeature.liveSubstitutions)) {
+      return;
+    }
     final alreadyUsed = _pending.any(
       (pair) =>
           pair.playerIn == playerIn.participantId ||
@@ -955,8 +974,9 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
     required String scorerParticipantId,
     required int minute,
   }) async {
-    if (!ClubRules.enabled(ClubFeature.liveAssists))
+    if (!ClubRules.enabled(ClubFeature.liveAssists)) {
       return (answered: false, participantId: null);
+    }
     final choice = await pickMatchLiveScorer(
       context,
       candidates: [
@@ -1093,9 +1113,13 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
     FootballFormationSlot slot,
   ) async {
     if (moving.zone == MatchCompositionZone.field &&
-        !ClubRules.enabled(ClubFeature.liveFormationChanges)) return;
+        !ClubRules.enabled(ClubFeature.liveFormationChanges)) {
+      return;
+    }
     if (moving.zone != MatchCompositionZone.field &&
-        !ClubRules.enabled(ClubFeature.liveSubstitutions)) return;
+        !ClubRules.enabled(ClubFeature.liveSubstitutions)) {
+      return;
+    }
     if (_isPendingParticipant(moving.participantId)) {
       _showMessage(
         context,

@@ -99,8 +99,9 @@ class CompositionVideoSeenStore {
     if (!ClubRules.enabled(ClubFeature.compositionVideoAutoplay)) return false;
     if (await publishedHere(matchId)) return false;
     if (fromNotification &&
-        ClubRules.enabled(ClubFeature.compositionVideoNotificationReplay))
+        ClubRules.enabled(ClubFeature.compositionVideoNotificationReplay)) {
       return true;
+    }
     return !await hasSeen(matchId);
   }
 

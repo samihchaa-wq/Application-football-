@@ -180,8 +180,9 @@ Future<void> showCompositionPresentation(
   CompositionLanding? landing,
   bool returnToPage = false,
 }) {
-  if (!ClubRules.enabled(ClubFeature.compositionVideo))
+  if (!ClubRules.enabled(ClubFeature.compositionVideo)) {
     return Future<void>.value();
+  }
   primeStadiumVideo();
   // La page d'arrivée doit être affichée pour qu'on s'y pose. Sans terrain où
   // se poser, [returnToPage] rend quand même la page : la vidéo s'efface

@@ -74,6 +74,16 @@ void main() {
       expect(find.text('Prendre la main'), findsNothing);
       expect(find.text('Faits de match'), findsOneWidget);
     });
+    testWidgets(
+        'journal déplié : visible directement sous le terrain du pilote',
+        (tester) async {
+      ClubRules.set({'live_journal_expanded': 1});
+      await _pump(tester, state: 'running');
+      expect(find.text('Journal du match'), findsOneWidget);
+      expect(find.text('Aucun événement pour le moment.'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('un joueur voit directement le live, sans la barre', (
       tester,
     ) async {

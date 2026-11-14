@@ -301,7 +301,9 @@ class _MatchLivePreKickoffPageState
   ) async {
     if (_busy ||
         _savingFormation ||
-        !ClubRules.enabled(ClubFeature.liveFormationChanges)) return;
+        !ClubRules.enabled(ClubFeature.liveFormationChanges)) {
+      return;
+    }
     final nextCode = formationForCode(formationCode).code;
     if (formationForCode(lineup.formationCode).code == nextCode) return;
 
@@ -334,9 +336,13 @@ class _MatchLivePreKickoffPageState
     FootballFormationSlot slot,
   ) async {
     if (moving.zone == MatchCompositionZone.field &&
-        !ClubRules.enabled(ClubFeature.liveFormationChanges)) return;
+        !ClubRules.enabled(ClubFeature.liveFormationChanges)) {
+      return;
+    }
     if (moving.zone != MatchCompositionZone.field &&
-        !ClubRules.enabled(ClubFeature.liveSubstitutions)) return;
+        !ClubRules.enabled(ClubFeature.liveSubstitutions)) {
+      return;
+    }
     final next = placeEntryOnSlot(lineup, moving, slot);
     await _controller.saveLiveLineup(
       entries: [for (final entry in next.entries) entry.toRpcJson()],
@@ -348,7 +354,9 @@ class _MatchLivePreKickoffPageState
     MatchComposition lineup,
     MatchCompositionEntry moving,
   ) async {
-    if (!ClubRules.enabled(ClubFeature.liveSubstitutions)) return;
+    if (!ClubRules.enabled(ClubFeature.liveSubstitutions)) {
+      return;
+    }
     final next = moveEntryToBench(lineup, moving);
     await _controller.saveLiveLineup(
       entries: [for (final entry in next.entries) entry.toRpcJson()],

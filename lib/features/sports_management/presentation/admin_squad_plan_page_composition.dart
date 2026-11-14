@@ -340,7 +340,9 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
     if (composition == null ||
         _compositionLocked ||
         _postMatch ||
-        !ClubRules.enabled(ClubFeature.compositionSimulation)) return;
+        !ClubRules.enabled(ClubFeature.compositionSimulation)) {
+      return;
+    }
 
     if (composition.fieldCount > 0) {
       final confirmed = await _confirmAction(
