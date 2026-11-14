@@ -60,7 +60,10 @@ void main() {
     final resolved = await container.read(status.future);
     await container.read(clubModulesProvider.future);
     expect(resolved.eligible, eligible);
-    expect(container.read(clubModuleEnabledProvider(ClubModule.liveMode)), isTrue);
+    expect(
+      container.read(clubModuleEnabledProvider(ClubModule.liveMode)),
+      isTrue,
+    );
     expect(match.isFinished, isFalse);
 
     await tester.pumpWidget(
