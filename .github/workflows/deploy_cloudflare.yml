@@ -131,6 +131,15 @@ jobs:
       - name: Bloquer une mauvaise configuration
         run: python3 tool/check_commercial_deploy.py
 
+      # La migration du nouveau modèle maillot doit exister réellement en
+      # base AVANT de rendre public le client qui sait créer N tenues.
+      # Lecture seule : ce contrôle ne lance jamais de migration.
+      - name: Vérifier le schéma commercial des maillots avant publication
+        env:
+          SUPABASE_PROJECT_REF: jvxkhgdopslctpcjrhzw
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: python3 tool/check_kits_release_schema.py
+
       - name: Préparer la politique de sécurité du navigateur (CSP)
         run: python3 tool/stamp_commercial_csp.py
 
