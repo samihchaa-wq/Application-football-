@@ -1,9 +1,9 @@
 import 'dart:typed_data';
-import 'dart:ui' as ui;
 
 import 'package:as_grinta/core/club/club_kits.dart';
 import 'package:as_grinta/core/storage/avatar_image.dart';
 import 'package:as_grinta/core/widgets/kit_portrait.dart';
+import 'package:as_grinta/core/widgets/match_contribution_icons.dart';
 import 'package:as_grinta/core/widgets/photo_crop_preview.dart';
 import 'package:as_grinta/core/widgets/portrait_alignment_guide.dart';
 import 'package:flutter/material.dart';
@@ -95,7 +95,22 @@ void main() {
           expect(find.byType(PortraitAlignmentGuide), findsOneWidget);
           expect(find.byKey(const ValueKey('portrait-crown-guide')),
               findsOneWidget);
+          expect(find.byType(PhotoCrown), findsOneWidget);
+          expect(find.text('👑'), findsOneWidget);
           expect(find.byType(InteractiveViewer), findsOneWidget);
+
+          // Le sommet de la couronne est au-dessus du carré exactement
+          // comme en composition : même widget, même topOffset par pixel.
+          final photo = tester.getRect(
+            find.byKey(const ValueKey('portrait-crop-frame')),
+          );
+          final crown = tester.getRect(
+            find.byKey(const ValueKey('portrait-crown-guide')),
+          );
+          expect(
+            crown.top - photo.top,
+            closeTo(PhotoCrown.topOffset(photo.width), 1.0),
+          );
           for (final label in [
             'Patron de cadrage',
             'Patron du cadrage',
@@ -117,28 +132,23 @@ void main() {
     },
   );
 
-  test('le patron dessine une couronne sans cercle ni lignes de guidage',
-      () async {
-    final recorder = ui.PictureRecorder();
-    const CrownPlacementPainter().paint(
-      ui.Canvas(recorder),
-      const ui.Size(300, 300),
+  testWidgets('le patron emploie la même couronne que la composition',
+      (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 300,
+            child: PortraitAlignmentGuide(photoSize: 300),
+          ),
+        ),
+      ),
     );
-    final picture = recorder.endRecording();
-    final image = await picture.toImage(300, 300);
-    final pixels = (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!
-        .buffer
-        .asUint8List();
-
-    int alpha(int x, int y) => pixels[(y * 300 + x) * 4 + 3];
-
-    expect(alpha(150, 5), greaterThan(0)); // Pointe haute.
-    expect(alpha(150, 150), 0); // Aucun trait central.
-    expect(alpha(150, 105), 0); // Aucun repère yeux/visage.
-    expect(alpha(20, 171), 0); // Aucun niveau horizontal.
-
-    image.dispose();
-    picture.dispose();
+    final icon = tester.widget<PhotoCrown>(find.byType(PhotoCrown));
+    expect(icon.photoSize, 300);
+    expect(find.text('👑'), findsOneWidget);
+    expect(find.byType(CustomPaint), findsNothing);
+    expect(PhotoCrown.topOffset(300), closeTo(-92.3077, 0.001));
   });
 
   testWidgets(
@@ -219,7 +229,8 @@ void main() {
             find.byKey(const ValueKey('portrait-kit-preview')),
             findsNothing,
           );
-          expect(find.text('👑'), findsNothing);
+          // Présente sur l'écran, jamais dans l'image exportée.
+          expect(find.text('👑'), findsOneWidget);
         },
       );
 
