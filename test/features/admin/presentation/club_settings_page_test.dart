@@ -67,7 +67,8 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('identité et maillots reste replié avant ouverture', (tester) async {
+  testWidgets('identité et maillots reste replié avant ouverture',
+      (tester) async {
     await pumpPage(tester);
     expect(find.byKey(const Key('club-settings-name')), findsNothing);
     expect(find.byKey(const ValueKey('club-kits-entry')), findsNothing);
