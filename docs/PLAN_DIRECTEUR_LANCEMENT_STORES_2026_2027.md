@@ -23,6 +23,16 @@ Ces décisions ont été données explicitement pour l'orientation du plan et so
 
 **Statut de ces trois décisions : APPROUVÉES au niveau du cadrage ; leur exécution reste soumise aux gates et autorisations particulières ci-dessous.**
 
+## Audit d'écart et plan d'exécution — 14 novembre 2026
+
+**Rapport de référence :** [`AUDIT_ECART_V1_Q01_Q12_20261114.md`](AUDIT_ECART_V1_Q01_Q12_20261114.md).
+
+Ce rapport confronte **les 12 QCM** au **code réel de `main` (SHA `94ee5d81`)**, aux documents de recette, aux tests présents et à **Supabase commercial en lecture seule**. Il relève les acquis, les lacunes démontrées et les validations non effectuées, propose **T0–T9** dans un ordre tenant compte des dépendances, et attribue les responsabilités aux missions. **Il ne certifie aucune recette E2E**.
+
+Constats majeurs datés : **pas de projet iOS/Android**, push mobile absent (`push_client_stub.dart` désactivé hors Web), **kits limités à trois sur `main`**, [PR #117](https://github.com/samihchaa-wq/Application-football-/pull/117) en préparation non fusionnée, **parité octet-pour-octet du composant `admin_profiles_section_v2.dart` avec AS Grinta original**, mais Administration globale non testée, **0 événement Live et 0 bilan `season_wrapped`** dans les données fictives consultées, et absence de saison complète jouée. L'existence de fonctions et de nombreux tests ne constitue pas un GO.
+
+**Ordre de traitement :** protections GitHub/contrôles obligatoires et kits #117 → parité Admin/onboarding → matrice exhaustive réglages → recette saison/Live/compositions/pronos/badges → qualité portrait/vidéo → applications natives → push/e-mails → juridique/offre et pilotes. Les dépendances sont détaillées dans l'audit ; les PR de code seront distinctes et soumises à validation.
+
 ## Décisions complémentaires du propriétaire — Q01 à Q12, validées le 14 novembre 2026
 
 **Portée :** choix explicites du propriétaire pour la première version commerciale de Petit Filet. Les **12 réponses sont A**. Ils précisent et, lorsqu'ils sont plus exigeants, **prévalent sur la règle antérieure DEC-V1-B** (« fonctionnalités essentielles et options déjà prêtes ») : toutes les fonctionnalités expressément déclarées obligatoires ci-dessous doivent être **développées, testées et livrées**, même si elles ne sont pas encore prêtes.
