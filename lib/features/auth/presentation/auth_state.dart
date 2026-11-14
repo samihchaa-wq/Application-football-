@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:as_grinta/core/storage/player_photo_mode.dart';
 import 'package:as_grinta/core/logging/app_logger.dart';
 import 'package:as_grinta/features/auth/data/auth_profile_cache.dart';
 import 'package:as_grinta/features/auth/data/auth_repository.dart';
@@ -325,10 +326,7 @@ class AuthController extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       await _repository
-          .signInWithUsername(
-            username: username,
-            password: password,
-          )
+          .signInWithUsername(username: username, password: password)
           .timeout(_signInTimeout);
       await _refreshProfile(retryAfterSignIn: true);
     } catch (error) {
@@ -427,12 +425,14 @@ class AuthController extends StateNotifier<AuthState> {
   Future<void> uploadPhoto({
     required Uint8List bytes,
     required String fileExt,
+    PlayerPhotoMode mode = PlayerPhotoMode.player,
   }) async {
     state = state.copyWith(isSaving: true, clearError: true);
     try {
       final profile = await _repository.uploadProfilePhoto(
         bytes: bytes,
         fileExt: fileExt,
+        mode: mode,
       );
       _profileFromCache = false;
       unawaited(_profileCache?.remember(profile));
@@ -480,19 +480,20 @@ class AuthController extends StateNotifier<AuthState> {
   }
 }
 
-final authControllerProvider =
-    StateNotifierProvider<AuthController, AuthState>((ref) {
-  final repository = ref.watch(authRepositoryProvider);
-  return AuthController(
-    repository,
-    unsubscribeDevice: () =>
-        ref.read(pushSubscriptionsRepositoryProvider).disable(),
-    profileCache: AuthProfileCache(
-      currentUserId: () =>
-          supabase.Supabase.instance.client.auth.currentUser?.id,
-    ),
-  );
-});
+final authControllerProvider = StateNotifierProvider<AuthController, AuthState>(
+  (ref) {
+    final repository = ref.watch(authRepositoryProvider);
+    return AuthController(
+      repository,
+      unsubscribeDevice: () =>
+          ref.read(pushSubscriptionsRepositoryProvider).disable(),
+      profileCache: AuthProfileCache(
+        currentUserId: () =>
+            supabase.Supabase.instance.client.auth.currentUser?.id,
+      ),
+    );
+  },
+);
 
 final isRealAdminProvider = Provider<bool>((ref) {
   return ref.watch(authControllerProvider).profile?.role.isAdmin == true;

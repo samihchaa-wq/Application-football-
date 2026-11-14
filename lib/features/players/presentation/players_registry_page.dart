@@ -1,7 +1,7 @@
+import 'package:as_grinta/core/widgets/player_photo_mode_picker.dart';
+import 'package:as_grinta/core/storage/player_photo_mode.dart';
 import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/features/matches/domain/jersey_option.dart';
 import 'package:as_grinta/features/players/data/roster_repository.dart';
-import 'package:as_grinta/features/sports_management/data/match_kit_photo_overrides.dart';
 import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
 import 'package:as_grinta/core/widgets/grinta_empty_state.dart';
 import 'package:as_grinta/core/widgets/photo_crop_preview.dart';
@@ -166,8 +166,10 @@ class _RosterList extends ConsumerWidget {
                             return;
                           }
                           if (action == 'delete') {
-                            final confirmed =
-                                await _confirmDelete(context, player);
+                            final confirmed = await _confirmDelete(
+                              context,
+                              player,
+                            );
                             if (!confirmed) return;
                             await repo.deletePlayer(player.id);
                           } else if (action == 'archive') {
@@ -191,7 +193,7 @@ class _RosterList extends ConsumerWidget {
                         ),
                         const PopupMenuItem(
                           value: 'photo',
-                          child: Text('Changer photos'),
+                          child: Text('Changer la photo'),
                         ),
                         PopupMenuItem(
                           value: 'link',
@@ -208,8 +210,9 @@ class _RosterList extends ConsumerWidget {
                           ),
                         PopupMenuItem(
                           value: player.isActive ? 'archive' : 'restore',
-                          child:
-                              Text(player.isActive ? 'Archiver' : 'Réactiver'),
+                          child: Text(
+                            player.isActive ? 'Archiver' : 'Réactiver',
+                          ),
                         ),
                         const PopupMenuItem(
                           value: 'delete',
@@ -227,121 +230,47 @@ class _RosterList extends ConsumerWidget {
   }
 }
 
-/// Trois emplacements distincts. La France reprend la photo qui existait deja.
+/// Une photo unique partagée par toutes les tenues.
 Future<void> _chooseRosterPhoto(
   BuildContext context,
   WidgetRef ref, {
   required String seasonId,
   required RosterPlayer player,
 }) async {
-  final kit = await showDialog<String>(
-    context: context,
-    builder: (dialogContext) => SimpleDialog(
-      title: Text('Changer photos — ${player.displayName}'),
-      children: [
-        for (final option in [
-          (
-            'france',
-            'Photo maillot ${JerseyOption.france.label} (par défaut)',
-            player.photoUrl,
-          ),
-          (
-            'netherlands',
-            'Photo maillot ${JerseyOption.orange.label}',
-            player.netherlandsPhotoUrl,
-          ),
-          (
-            'brazil',
-            'Photo maillot ${JerseyOption.blue.label}',
-            player.brazilPhotoUrl,
-          ),
-        ])
-          SimpleDialogOption(
-            onPressed: () => Navigator.of(dialogContext).pop(option.$1),
-            child: Row(
-              children: [
-                PlayerAvatar(
-                  photoUrl: option.$3,
-                  name: player.displayName,
-                  lastName: player.lastName,
-                  size: 52,
-                ),
-                const SizedBox(width: 12),
-                Expanded(child: Text(option.$2)),
-                Icon(option.$3 == null || option.$3!.isEmpty
-                    ? Icons.add_photo_alternate_outlined
-                    : Icons.edit_outlined),
-              ],
-            ),
-          ),
-      ],
-    ),
-  );
-  if (kit == null || !context.mounted) return;
-  await _pickAndUploadRosterPhoto(
+  final mode = await choosePlayerPhotoMode(
     context,
-    ref,
-    seasonId: seasonId,
-    player: player,
-    kitId: kit,
+    current: PlayerPhotoMode.fromPhotoUrl(player.photoUrl),
   );
-}
-
-Future<void> _pickAndUploadRosterPhoto(
-  BuildContext context,
-  WidgetRef ref, {
-  required String seasonId,
-  required RosterPlayer player,
-  required String kitId,
-}) async {
-  // Pas de compression au moment du choix : elle convertirait un PNG en JPEG
-  // et ferait perdre la transparence avant meme le recadrage.
+  if (mode == null || !context.mounted) return;
   final file = await ImagePicker().pickImage(source: ImageSource.gallery);
   if (file == null) return;
   final bytes = await file.readAsBytes();
   if (!context.mounted) return;
-  // Meme editeur que les photos de profil (deplacer, zoomer, dezoomer).
-  // Il exporte en PNG si l'image a des zones transparentes, sinon en JPEG ;
-  // le format reel est relu depuis le contenu au moment de l'envoi.
   final cropped = await cropProfilePhoto(
     context,
     bytes,
-    kit: (JerseyOption.fromId(kitId) ?? JerseyOption.france).kit,
+    mode: mode,
+    requireTransparent: mode == PlayerPhotoMode.player,
     isGoalkeeper: player.isGoalkeeper,
   );
   if (cropped == null || !context.mounted) return;
-  const extension = 'jpg';
   try {
-    final repository = ref.read(rosterRepositoryProvider);
-    if (kitId == 'france') {
-      await repository.uploadPlayerPhoto(
-        seasonPlayerId: player.id,
-        linkedProfileId: player.linkedProfileId,
-        bytes: cropped,
-        fileExt: extension,
-      );
-    } else {
-      await repository.uploadPlayerKitPhoto(
-        seasonPlayerId: player.id,
-        kitId: kitId,
-        bytes: cropped,
-        fileExt: extension,
-      );
-    }
+    await ref.read(rosterRepositoryProvider).uploadPlayerPhoto(
+          seasonPlayerId: player.id,
+          linkedProfileId: player.linkedProfileId,
+          bytes: cropped,
+          fileExt: 'png',
+          mode: mode,
+        );
     ref.invalidate(rosterProvider(seasonId));
-    // Toute composition ouverte recupere aussitot la nouvelle variante.
-    ref.invalidate(matchKitPhotoOverridesProvider);
-    if (context.mounted) {
+    if (context.mounted)
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Photo de ${player.displayName} mise à jour.')),
       );
-    }
   } catch (error) {
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(humanizeError(error))),
-      );
-    }
+    if (context.mounted)
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(humanizeError(error))));
   }
 }
 
@@ -358,9 +287,8 @@ Future<void> _showProfileLinkDialog(
     profiles = await repo.fetchLinkableProfiles();
   } catch (error) {
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(humanizeError(error))),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(humanizeError(error))));
     }
     return;
   }
@@ -401,9 +329,7 @@ Future<void> _showProfileLinkDialog(
                 DropdownButtonFormField<String>(
                   initialValue: selectedProfileId,
                   isExpanded: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Pronostiqueur',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Pronostiqueur'),
                   items: [
                     const DropdownMenuItem(
                       value: '',
@@ -434,9 +360,7 @@ Future<void> _showProfileLinkDialog(
                 const SizedBox(height: 12),
                 Text(
                   error!,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ],
             ],
@@ -498,10 +422,7 @@ Future<void> _showProfileLinkDialog(
   );
 }
 
-Future<bool> _confirmUnlink(
-  BuildContext context,
-  RosterPlayer player,
-) async {
+Future<bool> _confirmUnlink(BuildContext context, RosterPlayer player) async {
   return await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
@@ -611,9 +532,7 @@ Future<void> _showPlayerDialog(
               if (error != null)
                 Text(
                   error!,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
             ],
           ),
@@ -732,20 +651,13 @@ class RosterPlayerMenu extends ConsumerWidget {
             return;
           }
           if (action == 'unlink') {
-            final confirmed = await _confirmUnlink(
-              context,
-              player,
-            );
+            final confirmed = await _confirmUnlink(context, player);
             if (!confirmed) return;
-            await repo.setProfileLink(
-              seasonPlayerId: player.id,
-            );
+            await repo.setProfileLink(seasonPlayerId: player.id);
             ref.invalidate(rosterProvider(seasonId));
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Liaison supprimée.'),
-                ),
+                const SnackBar(content: Text('Liaison supprimée.')),
               );
             }
             return;
@@ -762,21 +674,14 @@ class RosterPlayerMenu extends ConsumerWidget {
           ref.invalidate(rosterProvider(seasonId));
         } catch (error) {
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(humanizeError(error))),
-            );
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(humanizeError(error))));
           }
         }
       },
       itemBuilder: (_) => [
-        const PopupMenuItem(
-          value: 'edit',
-          child: Text('Modifier le joueur'),
-        ),
-        const PopupMenuItem(
-          value: 'photo',
-          child: Text('Changer photos'),
-        ),
+        const PopupMenuItem(value: 'edit', child: Text('Modifier le joueur')),
+        const PopupMenuItem(value: 'photo', child: Text('Changer la photo')),
         PopupMenuItem(
           value: 'link',
           child: Text(
@@ -798,10 +703,7 @@ class RosterPlayerMenu extends ConsumerWidget {
                 : 'Remettre dans l’effectif',
           ),
         ),
-        const PopupMenuItem(
-          value: 'delete',
-          child: Text('Supprimer'),
-        ),
+        const PopupMenuItem(value: 'delete', child: Text('Supprimer')),
       ],
     );
   }
@@ -815,12 +717,7 @@ Future<void> showRosterPlayerDialog(
   required String seasonId,
   RosterPlayer? existing,
 }) =>
-    _showPlayerDialog(
-      context,
-      ref,
-      seasonId: seasonId,
-      existing: existing,
-    );
+    _showPlayerDialog(context, ref, seasonId: seasonId, existing: existing);
 
 Future<void> chooseRosterPhoto(
   BuildContext context,
@@ -828,9 +725,4 @@ Future<void> chooseRosterPhoto(
   required String seasonId,
   required RosterPlayer player,
 }) =>
-    _chooseRosterPhoto(
-      context,
-      ref,
-      seasonId: seasonId,
-      player: player,
-    );
+    _chooseRosterPhoto(context, ref, seasonId: seasonId, player: player);

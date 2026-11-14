@@ -96,6 +96,13 @@ class MatchCompositionEntry {
   final String? lastInitial;
   final bool isGuest;
   final bool isGoalkeeper;
+
+  /// Le poste placé sur le terrain prime sur le poste habituel.
+  bool get wearsGoalkeeperKit => zone == MatchCompositionZone.field &&
+          slotLabel != null &&
+          slotLabel!.trim().isNotEmpty
+      ? slotLabel!.trim().toUpperCase() == 'GB'
+      : isGoalkeeper;
   final MatchCompositionZone zone;
   final double? x;
   final double? y;

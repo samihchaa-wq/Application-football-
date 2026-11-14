@@ -11,7 +11,6 @@ import 'package:as_grinta/features/matches/presentation/widgets/upcoming_match_f
 import 'package:as_grinta/features/predictions/presentation/widgets/inline_match_prediction_card.dart';
 import 'package:as_grinta/features/sports_management/data/match_availability_board_repository.dart';
 import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
-import 'package:as_grinta/features/sports_management/data/match_kit_photo_overrides.dart';
 import 'package:as_grinta/features/sports_management/domain/formation_display.dart';
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
 import 'package:as_grinta/features/sports_management/presentation/admin_squad_plan_page.dart';
@@ -363,9 +362,6 @@ class PublishedLineupPreview extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final lineup = ref.watch(publishedMatchCompositionProvider(matchId));
-    final kitPhotos =
-        ref.watch(matchKitPhotoOverridesProvider(matchId)).valueOrNull ??
-            const <String, String>{};
     return Padding(
       padding: EdgeInsets.only(top: topSpacing, bottom: bottomSpacing),
       child: lineup.when(
@@ -445,15 +441,9 @@ class PublishedLineupPreview extends ConsumerWidget {
                   pitchKey: landing?.pitch,
                   field: alignFieldToFormation(
                     composition.formationCode,
-                    withMatchKitPhotos(
-                      composition.entriesFor(MatchCompositionZone.field),
-                      kitPhotos,
-                    ),
+                    composition.entriesFor(MatchCompositionZone.field),
                   ),
-                  bench: withMatchKitPhotos(
-                    composition.entriesFor(MatchCompositionZone.bench),
-                    kitPhotos,
-                  ),
+                  bench: composition.entriesFor(MatchCompositionZone.bench),
                   maxWidth: expanded ? 520 : 420,
                 ),
               ),

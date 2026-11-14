@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:as_grinta/core/storage/player_photo_mode.dart';
 import 'package:as_grinta/core/providers/supabase_provider.dart';
 import 'package:as_grinta/core/utils/name_validation.dart';
 import 'package:as_grinta/core/storage/image_mime.dart';
@@ -19,8 +20,6 @@ class RosterPlayer {
     required this.linkedProfileUsername,
     this.linkedProfileSurnom,
     this.photoUrl,
-    this.brazilPhotoUrl,
-    this.netherlandsPhotoUrl,
   });
 
   final String id;
@@ -34,8 +33,6 @@ class RosterPlayer {
   final String? linkedProfileUsername;
   final String? linkedProfileSurnom;
   final String? photoUrl;
-  final String? brazilPhotoUrl;
-  final String? netherlandsPhotoUrl;
 
   /// Le nom saisi dans l'effectif, indépendamment du compte rattaché.
   String get rosterName {
@@ -117,7 +114,6 @@ class RosterRepository {
       is_active,
       profile_id,
       photo_url,
-      season_player_kit_photos(brazil_url, netherlands_url),
       profiles!season_players_profile_id_fkey(
         id,
         first_name,
@@ -128,8 +124,6 @@ class RosterRepository {
     ''').eq('season_id', seasonId);
     final players = (rows as List).map((row) {
       final map = Map<String, dynamic>.from(row);
-      final kitRaw = map['season_player_kit_photos'];
-      final kit = kitRaw is Map ? Map<String, dynamic>.from(kitRaw) : null;
       final profileRaw = map['profiles'];
       final profile =
           profileRaw is Map ? Map<String, dynamic>.from(profileRaw) : null;
@@ -152,8 +146,6 @@ class RosterRepository {
         linkedProfileUsername: null,
         linkedProfileSurnom: profile?['surnom']?.toString(),
         photoUrl: photo,
-        brazilPhotoUrl: kit?['brazil_url']?.toString(),
-        netherlandsPhotoUrl: kit?['netherlands_url']?.toString(),
       );
     }).toList();
     players.sort(
@@ -190,10 +182,7 @@ class RosterRepository {
   }) async {
     final result = await _client.rpc(
       'staff_set_season_player_profile',
-      params: {
-        'p_season_player_id': seasonPlayerId,
-        'p_profile_id': profileId,
-      },
+      params: {'p_season_player_id': seasonPlayerId, 'p_profile_id': profileId},
     );
     if (result != true) {
       throw StateError('La liaison n’a pas pu être enregistrée.');
@@ -326,13 +315,14 @@ class RosterRepository {
     String? linkedProfileId,
     required Uint8List bytes,
     required String fileExt,
+    PlayerPhotoMode mode = PlayerPhotoMode.player,
   }) async {
     final image = validateImageUpload(bytes, fileExt: fileExt);
     final stamp = DateTime.now().millisecondsSinceEpoch;
     final bucket = _client.storage.from('profile-photos');
     final profileId = linkedProfileId?.trim() ?? '';
     if (profileId.isNotEmpty) {
-      final path = '$profileId/avatar_$stamp.${image.extension}';
+      final path = '$profileId/${mode.filename(stamp, image.extension)}';
       await bucket.uploadBinary(
         path,
         bytes,
@@ -356,14 +346,12 @@ class RosterRepository {
       }
       return;
     }
-    final path = 'season/$seasonPlayerId/avatar_$stamp.${image.extension}';
+    final path =
+        'season/$seasonPlayerId/${mode.filename(stamp, image.extension)}';
     await bucket.uploadBinary(
       path,
       bytes,
-      fileOptions: FileOptions(
-        contentType: image.mimeType,
-        upsert: false,
-      ),
+      fileOptions: FileOptions(contentType: image.mimeType, upsert: false),
     );
     try {
       // L'ancienne photo est supprimée du stockage côté serveur (trigger sur
@@ -377,51 +365,6 @@ class RosterRepository {
           .maybeSingle();
       if (updated == null) {
         throw StateError('La photo du joueur n’a pas pu être enregistrée.');
-      }
-    } catch (_) {
-      await bucket.remove([path]);
-      rethrow;
-    }
-  }
-
-  /// Charge une photo alternative de la composition sans modifier la photo
-  /// France (qui reste le portrait du profil ou de l'effectif).
-  Future<void> uploadPlayerKitPhoto({
-    required String seasonPlayerId,
-    required String kitId,
-    required Uint8List bytes,
-    required String fileExt,
-  }) async {
-    if (kitId != 'brazil' && kitId != 'netherlands') {
-      throw ArgumentError.value(kitId, 'kitId', 'Maillot inconnu');
-    }
-    final image = validateImageUpload(bytes, fileExt: fileExt);
-    final stamp = DateTime.now().microsecondsSinceEpoch;
-    final path = 'kits/$seasonPlayerId/${kitId}_$stamp.${image.extension}';
-    final table = _client.from('season_player_kit_photos');
-    final existing = await table
-        .select('brazil_url,netherlands_url')
-        .eq('season_player_id', seasonPlayerId)
-        .maybeSingle();
-    final bucket = _client.storage.from('profile-photos');
-    await bucket.uploadBinary(
-      path,
-      bytes,
-      fileOptions: FileOptions(contentType: image.mimeType, upsert: false),
-    );
-    try {
-      final updated = await table
-          .upsert({
-            'season_player_id': seasonPlayerId,
-            'brazil_url': kitId == 'brazil' ? path : existing?['brazil_url'],
-            'netherlands_url':
-                kitId == 'netherlands' ? path : existing?['netherlands_url'],
-            'updated_at': DateTime.now().toUtc().toIso8601String(),
-          }, onConflict: 'season_player_id')
-          .select('season_player_id')
-          .maybeSingle();
-      if (updated == null) {
-        throw StateError('La photo du maillot n’a pas pu être enregistrée.');
       }
     } catch (_) {
       await bucket.remove([path]);
@@ -462,7 +405,9 @@ final openSeasonIdProvider = FutureProvider<String?>((ref) {
   return ref.watch(rosterRepositoryProvider).openSeasonId();
 });
 
-final rosterProvider =
-    FutureProvider.family<List<RosterPlayer>, String>((ref, seasonId) {
+final rosterProvider = FutureProvider.family<List<RosterPlayer>, String>((
+  ref,
+  seasonId,
+) {
   return ref.watch(rosterRepositoryProvider).fetchRoster(seasonId);
 });

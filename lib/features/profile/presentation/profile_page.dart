@@ -1,3 +1,5 @@
+import 'package:as_grinta/core/widgets/player_photo_mode_picker.dart';
+import 'package:as_grinta/core/storage/player_photo_mode.dart';
 import 'package:as_grinta/core/security/password_policy.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/utils/name_validation.dart';
@@ -181,6 +183,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   ),
                 ),
               ),
+              TextButton.icon(
+                onPressed: busy ? null : _pickAndUploadPhoto,
+                icon: const Icon(Icons.photo_camera_outlined),
+                label: Text(
+                  'Photo : ${PlayerPhotoMode.fromPhotoUrl(profile?.photoUrl).label}',
+                ),
+              ),
               SizedBox(height: sectionGap),
               Card(
                 child: Padding(
@@ -295,6 +304,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   }
 
   Future<void> _pickAndUploadPhoto() async {
+    final mode = await choosePlayerPhotoMode(
+      context,
+      current: PlayerPhotoMode.fromPhotoUrl(
+        ref.read(authControllerProvider).profile?.photoUrl,
+      ),
+    );
+    if (mode == null || !mounted) return;
     final picker = ImagePicker();
     final file = await picker.pickImage(source: ImageSource.gallery);
     if (file == null) return;
@@ -303,13 +319,15 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final cropped = await cropProfilePhoto(
       context,
       bytes,
+      mode: mode,
+      requireTransparent: mode == PlayerPhotoMode.player,
       isGoalkeeper:
           ref.read(authControllerProvider).profile?.isGoalkeeper ?? false,
     );
     if (cropped == null) return;
     await ref
         .read(authControllerProvider.notifier)
-        .uploadPhoto(bytes: cropped, fileExt: 'jpg');
+        .uploadPhoto(bytes: cropped, fileExt: 'png', mode: mode);
     if (!mounted) return;
     final error = ref.read(authControllerProvider).error;
     ScaffoldMessenger.of(context)
