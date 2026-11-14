@@ -189,6 +189,14 @@ select set_config('test.match2',
     ((now()+interval '6 days') at time zone 'Europe/Paris')::time,
     'domicile', 2.10, 3.20, 2.90, 2
   )::text, true);
+-- Le match est à J+6 : avant midi en France, son ouverture par défaut
+-- est encore future. Ce scénario vérifie le classement, pas les horaires ;
+-- son prérequis doit être explicite quelle que soit l’heure de la CI.
+reset role;
+update public.match_sport_workflows
+set availability_opens_at = now() - interval '1 hour'
+where match_id = current_setting('test.match2')::uuid;
+set local role authenticated;
 select public.admin_override_match_availability(
   current_setting('test.match2')::uuid, player.id, 'available', null, 'Test'
 ) from (values
