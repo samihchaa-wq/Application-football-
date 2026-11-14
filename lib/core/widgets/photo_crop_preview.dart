@@ -258,20 +258,18 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
                     left: 0,
                     right: 0,
                     height: _cropSize,
-                    child: DecoratedBox(
+                    child: Container(
                       key: const ValueKey('portrait-crop-frame'),
-                      decoration: BoxDecoration(
+                      // Border au premier plan, sans padding : la photo
+                      // occupe vraiment 300 x 300 et garde les proportions
+                      // exactes de l'avatar du terrain et de son export.
+                      foregroundDecoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: _outline, width: 2),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(3),
-                        // La photographie reste un carré de 300 px, identique
-                        // à la matrice d'export. Seule la couronne déborde.
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(13),
-                          child: _photoFrame(),
-                        ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(13),
+                        child: _photoFrame(),
                       ),
                     ),
                   ),
