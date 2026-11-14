@@ -1,3 +1,6 @@
+import 'package:as_grinta/core/club/club_rules.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/formation_pitch_editor.dart';
+import 'package:as_grinta/features/match_live/presentation/widgets/live_bench_tile.dart';
 import 'package:as_grinta/features/match_live/data/match_live_repository.dart';
 import 'package:as_grinta/features/match_live/domain/match_live_add_player_options.dart';
 import 'package:as_grinta/features/match_live/domain/match_live_state_bundle.dart';
@@ -12,7 +15,65 @@ import 'package:flutter_test/flutter_test.dart';
 /// Le pilote n'est plus simulé par un état local : le faux dépôt reproduit la
 /// réponse du serveur (personne / ce téléphone / un autre téléphone).
 void main() {
+  setUp(ClubRules.reset);
+  tearDown(ClubRules.reset);
   group('Live : pilote et spectateur', () {
+    testWidgets('les commandes du coach suivent les réglages sur mobile',
+        (tester) async {
+      ClubRules.set({
+        'live_restart': 0,
+        'live_pause': 0,
+        'live_formation_changes': 0,
+        'live_add_players': 0,
+        'live_remove_players': 0
+      });
+      await _pump(tester, state: 'running');
+      for (final tooltip in [
+        'Recommencer le match',
+        'Pause',
+        'Changer de dispositif',
+        'Ajouter un joueur',
+        'Retirer un joueur du banc'
+      ]) {
+        final button = tester.widget<InkWell>(find
+            .descendant(
+                of: find.byTooltip(tooltip), matching: find.byType(InkWell))
+            .first);
+        expect(button.onTap, isNull, reason: tooltip);
+      }
+      expect(find.text('Fin'), findsOneWidget); // pas de blocage de la clôture
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('prénoms seuls et compteurs masqués ne changent pas le banc',
+        (tester) async {
+      ClubRules.set({
+        'live_names_only': 1,
+        'live_show_bench_counts': 0,
+        'live_show_playing_time': 0,
+        'live_next_out': 0
+      });
+      await _pump(tester, state: 'running');
+      final pitch = tester
+          .widget<FormationPitchEditor>(find.byType(FormationPitchEditor));
+      expect(pitch.namesOnly, isTrue);
+      expect(pitch.nameSuffixes, isEmpty);
+      expect(pitch.nameColors, isEmpty);
+      expect(pitch.finishedBenchCounts, isEmpty);
+      final bench = tester.widget<LiveBenchTile>(find.byType(LiveBenchTile));
+      expect(bench.namesOnly, isTrue);
+      expect(bench.timesBenched, 0);
+      expect(find.text('Remplaçant'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('reprise de main coupée : spectateur sans bouton',
+        (tester) async {
+      ClubRules.set({'live_takeover': 0});
+      await _pump(tester, state: 'running', otherPilot: true);
+      expect(find.text('Prendre la main'), findsNothing);
+      expect(find.text('Faits de match'), findsOneWidget);
+    });
     testWidgets('un joueur voit directement le live, sans la barre', (
       tester,
     ) async {

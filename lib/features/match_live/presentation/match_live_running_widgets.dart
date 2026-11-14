@@ -62,7 +62,9 @@ class _LiveHeaderBar extends ConsumerWidget {
       MatchLiveState.running => (
           tooltip: 'Pause',
           icon: Icons.pause_rounded,
-          callback: onPause as VoidCallback?,
+          callback: ClubRules.enabled(ClubFeature.livePause)
+              ? onPause as VoidCallback?
+              : null,
           filled: false,
         ),
       MatchLiveState.paused => (
@@ -197,7 +199,9 @@ class _LiveHeaderBar extends ConsumerWidget {
                         action(
                           tooltip: 'Recommencer',
                           icon: Icons.restart_alt_rounded,
-                          onPressed: onRestart,
+                          onPressed: ClubRules.enabled(ClubFeature.liveRestart)
+                              ? onRestart
+                              : null,
                         ),
                         action(
                           tooltip: 'Fin du match',
@@ -449,7 +453,10 @@ class _LiveScore extends StatelessWidget {
             if (canEdit)
               IconButton(
                 tooltip: 'Retirer un but à $fullName',
-                onPressed: score > 0 ? onDecrement : null,
+                onPressed: score > 0 &&
+                        ClubRules.enabled(ClubFeature.liveEventDeletion)
+                    ? onDecrement
+                    : null,
                 padding: EdgeInsets.zero,
                 constraints: BoxConstraints.tightFor(
                   width: buttonSize,
@@ -566,11 +573,14 @@ class _BenchColumn extends StatelessWidget {
                           entry: entry,
                           draggable: canEdit,
                           metrics: metrics,
-                          timesBenched: bundle.timesBenched(
-                            entry.participantId,
-                          ),
+                          timesBenched:
+                              ClubRules.enabled(ClubFeature.liveShowBenchCounts)
+                                  ? bundle.timesBenched(entry.participantId)
+                                  : 0,
                           lastExit: lastExits[entry.participantId],
-                          namesOnly: false,
+                          namesOnly: ClubRules.enabled(
+                            ClubFeature.liveNamesOnly,
+                          ),
                         );
                       },
                     ),

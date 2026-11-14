@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_rules.dart';
 import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/club/club_kits.dart';
 import 'package:as_grinta/core/club/match_kit_snapshot.dart';
@@ -95,8 +96,11 @@ class CompositionVideoSeenStore {
     String matchId, {
     required bool fromNotification,
   }) async {
+    if (!ClubRules.enabled(ClubFeature.compositionVideoAutoplay)) return false;
     if (await publishedHere(matchId)) return false;
-    if (fromNotification) return true;
+    if (fromNotification &&
+        ClubRules.enabled(ClubFeature.compositionVideoNotificationReplay))
+      return true;
     return !await hasSeen(matchId);
   }
 
@@ -223,7 +227,8 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
     final composition = ref
         .watch(publishedMatchCompositionProvider(widget.matchId))
         .valueOrNull;
-    final playable = composition != null &&
+    final playable = ClubRules.enabled(ClubFeature.compositionVideo) &&
+        composition != null &&
         composition
             .entriesFor(MatchCompositionZone.field)
             .any((entry) => !entry.isVacant);
@@ -283,7 +288,7 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
   }
 
   Future<void> _play(MatchComposition composition) async {
-    if (_playing) return;
+    if (_playing || !ClubRules.enabled(ClubFeature.compositionVideo)) return;
     setState(() => _playing = true);
     try {
       final store = ref.read(compositionVideoSeenStoreProvider);

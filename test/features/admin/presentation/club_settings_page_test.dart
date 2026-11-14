@@ -78,6 +78,7 @@ void main() {
     await openSection(tester, 'matches');
     await openSection(tester, 'predictions');
     await openSection(tester, 'rewards');
+    await openSection(tester, 'live');
     for (final module in ClubModule.values) {
       expect(find.text(module.label), findsOneWidget);
     }
@@ -411,7 +412,7 @@ void main() {
     addRule('notify_admin_signups', 'Notification : nouvelle inscription',
         'bool', 1, 0, 1);
     await pumpPage(tester);
-    await openSection(tester, 'matches');
+    await openSection(tester, 'live');
 
     final finder = find.byKey(const ValueKey('club-rule-notify_live_goals'));
     await tester.ensureVisible(finder);
@@ -474,6 +475,7 @@ void main() {
     await pumpPage(tester);
     await openSection(tester, 'matches');
 
+    await openSection(tester, 'live');
     final select =
         find.byKey(const ValueKey('club-rule-live_pilot_mode-select'));
     await tester.ensureVisible(select);
@@ -485,6 +487,39 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('club-module-live_mode')));
     await tester.pumpAndSettle();
     expect(tester.widget<DropdownButton<int>>(select).onChanged, isNotNull);
+  });
+  testWidgets('32 options visibles, persistées, avec dépendances',
+      (tester) async {
+    for (final feature in ClubFeature.values) {
+      addRule(feature.key, feature.key, 'bool', feature.defaultEnabled ? 1 : 0,
+          0, 1);
+    }
+    await pumpPage(tester);
+    for (final section in [
+      'squad',
+      'composition',
+      'live',
+      'matches',
+      'rewards'
+    ]) {
+      await openSection(tester, section);
+    }
+    for (final feature in ClubFeature.values) {
+      expect(find.byKey(ValueKey('club-rule-${feature.key}')), findsOneWidget);
+    }
+    final scorer = find.byKey(const ValueKey('club-rule-live_scorers'));
+    final assist = find.byKey(const ValueKey('club-rule-live_assists'));
+    await tester.ensureVisible(scorer);
+    await tester.tap(scorer);
+    await tester.pumpAndSettle();
+    expect(repository.ruleValues['live_scorers'], 0);
+    expect(tester.widget<SwitchListTile>(assist).onChanged, isNull);
+    expect(repository.ruleValues['live_assists'], 1); // conservé, pas effacé
+    await tester.ensureVisible(scorer);
+    await tester.tap(scorer);
+    await tester.pumpAndSettle();
+    expect(tester.widget<SwitchListTile>(assist).onChanged, isNotNull);
+    expect(ClubRules.enabled(ClubFeature.liveAssists), isTrue);
   });
 }
 

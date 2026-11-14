@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_rules.dart';
 import 'package:as_grinta/core/widgets/drag_auto_scroll.dart';
 import 'package:as_grinta/features/match_live/domain/substitution_salvos.dart';
 import 'package:as_grinta/features/match_live/presentation/widgets/substitution_salvo_frame.dart';
@@ -68,11 +69,15 @@ class LiveBenchTile extends StatelessWidget {
                     child: SubstituteHistoryBadge(
                       count: timesBenched,
                       label: liveBenchLabel(lastExit, timesBenched),
-                      color: switch (lastExit) {
-                        final exit? =>
-                          substitutionSalvoColorAt(exit.colorIndex),
-                        null => substitutionStartColor,
-                      },
+                      color:
+                          !ClubRules.enabled(ClubFeature.liveSubstitutionColors)
+                              ? Theme.of(context).colorScheme.onSurfaceVariant
+                              : switch (lastExit) {
+                                  final exit? => substitutionSalvoColorAt(
+                                      exit.colorIndex,
+                                    ),
+                                  null => substitutionStartColor,
+                                },
                     ),
                   ),
               ],
@@ -150,10 +155,12 @@ class LiveBenchTile extends StatelessWidget {
           SubstituteHistoryBadge(
             count: timesBenched,
             label: liveBenchLabel(lastExit, timesBenched),
-            color: switch (lastExit) {
-              final exit? => substitutionSalvoColorAt(exit.colorIndex),
-              null => substitutionStartColor,
-            },
+            color: !ClubRules.enabled(ClubFeature.liveSubstitutionColors)
+                ? Theme.of(context).colorScheme.onSurfaceVariant
+                : switch (lastExit) {
+                    final exit? => substitutionSalvoColorAt(exit.colorIndex),
+                    null => substitutionStartColor,
+                  },
           ),
       ],
     );
@@ -162,10 +169,7 @@ class LiveBenchTile extends StatelessWidget {
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: outlineColor ?? Colors.transparent,
-          width: 2,
-        ),
+        border: Border.all(color: outlineColor ?? Colors.transparent, width: 2),
       ),
       child: content,
     );

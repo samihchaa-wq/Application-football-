@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_rules.dart';
 import 'package:as_grinta/features/matches/presentation/widgets/upcoming_match_fixture_header.dart';
 import 'package:as_grinta/features/sports_management/data/match_availability_board_repository.dart';
 import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
@@ -20,9 +21,40 @@ import 'support_composition_landing.dart';
 /// - par l'onglet Compo, seulement à la première visite après publication ;
 /// - « Aperçu de la vidéo » la relance quand on veut.
 void main() {
-  setUp(() => debugPresentationBackground = _plainBackground);
+  setUp(() {
+    ClubRules.reset();
+    debugPresentationBackground = _plainBackground;
+  });
+  tearDown(ClubRules.reset);
   tearDown(() => debugPresentationBackground = null);
 
+  testWidgets('vidéo coupée : terrain présent, aucun aperçu ni lancement',
+      (tester) async {
+    ClubRules.set({'composition_video': 0});
+    await _pump(tester, store: _MemoryStore(), fromNotification: true);
+    expect(find.byType(CompositionPresentationPage), findsNothing);
+    expect(find.text('Aperçu de la vidéo'), findsNothing);
+    expect(find.text('Compo publiée'), findsOneWidget);
+  });
+
+  testWidgets('automatique coupé : aperçu manuel encore utilisable',
+      (tester) async {
+    ClubRules.set({'composition_video_autoplay': 0});
+    await _pump(tester, store: _MemoryStore(), fromNotification: true);
+    expect(find.byType(CompositionPresentationPage), findsNothing);
+    await tester.tap(find.text('Aperçu de la vidéo'));
+    await _settle(tester);
+    expect(find.byType(CompositionPresentationPage), findsOneWidget);
+  });
+
+  testWidgets('notification : rejouer coupé respecte une vidéo déjà vue',
+      (tester) async {
+    ClubRules.set({'composition_video_notification_replay': 0});
+    await _pump(tester,
+        store: _MemoryStore()..seen.add('match-1'), fromNotification: true);
+    expect(find.byType(CompositionPresentationPage), findsNothing);
+    expect(find.text('Aperçu de la vidéo'), findsOneWidget);
+  });
   testWidgets('onglet Compo : vidéo à la première visite, pas à la suivante',
       (tester) async {
     final store = _MemoryStore();

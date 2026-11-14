@@ -1,3 +1,5 @@
+import 'package:as_grinta/core/club/club_rules.dart';
+
 import 'dart:async';
 
 import 'package:as_grinta/core/utils/app_errors.dart';
@@ -216,10 +218,7 @@ class _PilotPlaceAvailable extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 32, 16, 32),
       child: Column(
         children: [
-          const Text(
-            'Personne ne pilote le Live',
-            textAlign: TextAlign.center,
-          ),
+          const Text('Personne ne pilote le Live', textAlign: TextAlign.center),
           const SizedBox(height: 16),
           FilledButton(
             onPressed: () => unawaited(onClaim()),
@@ -249,33 +248,34 @@ class _SomeoneElsePilots extends ConsumerWidget {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 16),
-          OutlinedButton(
-            onPressed: () async {
-              final confirmed = await showDialog<bool>(
-                context: context,
-                builder: (dialogContext) => AlertDialog(
-                  title: const Text('Prendre la main ?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(dialogContext, false),
-                      child: const Text('Annuler'),
-                    ),
-                    FilledButton(
-                      onPressed: () => Navigator.pop(dialogContext, true),
-                      child: const Text('Prendre la main'),
-                    ),
-                  ],
-                ),
-              );
-              if (confirmed != true) return;
-              try {
-                await ref
-                    .read(matchLiveStateProvider(matchId).notifier)
-                    .takeOverPilot();
-              } catch (_) {}
-            },
-            child: const Text('Prendre la main'),
-          ),
+          if (ClubRules.enabled(ClubFeature.liveTakeover))
+            OutlinedButton(
+              onPressed: () async {
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (dialogContext) => AlertDialog(
+                    title: const Text('Prendre la main ?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, false),
+                        child: const Text('Annuler'),
+                      ),
+                      FilledButton(
+                        onPressed: () => Navigator.pop(dialogContext, true),
+                        child: const Text('Prendre la main'),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirmed != true) return;
+                try {
+                  await ref
+                      .read(matchLiveStateProvider(matchId).notifier)
+                      .takeOverPilot();
+                } catch (_) {}
+              },
+              child: const Text('Prendre la main'),
+            ),
         ],
       ),
     );

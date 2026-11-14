@@ -493,9 +493,9 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     'notify_composition': 'squad',
     ClubRules.correctionWindowHoursKey: 'matches',
     'match_duration_minutes': 'matches',
-    ClubRules.livePilotModeKey: 'matches',
-    'notify_live_kickoff': 'matches',
-    'notify_live_goals': 'matches',
+    ClubRules.livePilotModeKey: 'live',
+    'notify_live_kickoff': 'live',
+    'notify_live_goals': 'live',
     'notify_match_changes': 'matches',
     'notify_prediction_reminder': 'predictions',
     'motm_window_hours': 'rewards',
@@ -515,11 +515,13 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
         key == 'notify_prediction_reminder') {
       return ClubModule.predictions;
     }
+    if (ClubFeature.forKey(key)?.section == 'live') return ClubModule.liveMode;
     if (key == ClubRules.livePilotModeKey ||
         key == 'notify_live_kickoff' ||
         key == 'notify_live_goals') {
       return ClubModule.liveMode;
     }
+    if (key == 'notify_motm_winner') return ClubModule.manOfTheMatch;
     if (key.startsWith('motm_') || key.startsWith('notify_motm_')) {
       return ClubModule.manOfTheMatch;
     }
@@ -529,6 +531,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   }
 
   String _ruleCategory(ClubRule rule) {
+    final feature = ClubFeature.forKey(rule.key);
+    if (feature != null) return feature.section;
     final section = _ruleSections[rule.key];
     if (section != null) return section;
     if (rule.key.startsWith('prediction_') || rule.key.startsWith('odds_')) {
@@ -537,9 +541,37 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     return 'other';
   }
 
+  static const _ruleParents = <String, String>{
+    'live_assists': 'live_scorers',
+    'live_own_goals': 'live_scorers',
+    'composition_video_autoplay': 'composition_video',
+    'composition_video_notification_replay': 'composition_video_autoplay',
+    'notify_availability_j3': 'notify_availability_reminders',
+    'notify_availability_j1': 'notify_availability_reminders',
+    'notify_live_full_time': 'notify_live_kickoff',
+    'notify_live_goal_us': 'notify_live_goals',
+    'notify_live_goal_them': 'notify_live_goals',
+    'notify_match_cancelled': 'notify_match_changes',
+    'notify_match_rescheduled_date': 'notify_match_changes',
+    'notify_match_rescheduled_time': 'notify_match_changes',
+    'notify_convocation_promoted': 'notify_convocation',
+    'notify_convocation_demoted': 'notify_convocation',
+    'notify_motm_winner': 'notify_motm_result',
+  };
+
+  bool _parentDisabled(String key) {
+    final parent = _ruleParents[key];
+    if (parent == null) return false;
+    for (final rule in _rules) {
+      if (rule.key == parent && rule.value == 0) return true;
+    }
+    return _parentDisabled(parent);
+  }
+
   bool _ruleLocked(ClubRule rule) {
     final module = _ruleModule(rule.key);
-    return _pendingRules.contains(rule.key) ||
+    return _parentDisabled(rule.key) ||
+        _pendingRules.contains(rule.key) ||
         (module != null && !_modules.isEnabled(module));
   }
 
@@ -548,6 +580,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     final lines = [
       rule.description,
       'Valeur par défaut : ${_ruleValueLabel(rule, rule.defaultValue)}',
+      if (_parentDisabled(rule.key))
+        'Activez d’abord le réglage parent pour modifier cette option.',
       if (module != null && !_modules.isEnabled(module))
         'Sans effet tant que « ${module.label} » est désactivé.',
     ];
@@ -926,6 +960,15 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           ..._modulesFor('matches'),
           ..._rulesFor('matches'),
         ]),
+        _section(
+          'composition',
+          'Composition et vidéo',
+          Icons.view_quilt_outlined,
+          [..._rulesFor('composition')],
+        ),
+        _section('live', 'Direct : outils du coach', Icons.timer_outlined, [
+          ..._rulesFor('live'),
+        ]),
         _section('predictions', 'Pronostics', Icons.emoji_events_outlined, [
           ..._modulesFor('predictions'),
           ..._rulesFor('predictions'),
@@ -934,7 +977,19 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           'rewards',
           'Statistiques et récompenses',
           Icons.bar_chart_rounded,
-          [..._modulesFor('rewards'), ..._rulesFor('rewards')],
+          [
+            ..._modulesFor('rewards'),
+            ..._rulesFor('rewards'),
+            ListTile(
+              key: const Key('club-settings-badge-catalogue'),
+              leading: const Icon(Icons.workspace_premium_outlined),
+              title: const Text('Catalogue et seuils des badges'),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: _modules.isEnabled(ClubModule.badges)
+                  ? () => context.push('/admin/badges')
+                  : null,
+            ),
+          ],
         ),
         if (ClubModule.values.any((m) => _moduleCategory(m) == 'other') ||
             _rules.any(
