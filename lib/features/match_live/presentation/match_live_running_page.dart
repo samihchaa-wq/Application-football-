@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_rules.dart';
 import 'package:as_grinta/core/club/club_identity.dart';
 
 import 'dart:async';
@@ -66,7 +67,7 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
   final GlobalKey _journalKey = GlobalKey();
   bool _saving = false;
   bool _savingFormation = false;
-  bool _journalExpanded = false;
+  bool _journalExpanded = ClubRules.enabled(ClubFeature.liveJournalExpanded);
 
   String get matchId => widget.matchId;
   MatchLiveStateBundle get bundle => widget.bundle;
@@ -121,116 +122,146 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
         _saving || _savingFormation || _pending.isNotEmpty;
 
     final pitchArea = MatchCompositionKitScope(
-        matchId: matchId,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final metrics = benchAndPitchMetrics(constraints.maxWidth);
-            final lastExits = lastExitMarksByParticipant(bundle.events);
-            // Prochains à sortir : calculés sur la dernière salve validée.
-            // Ils restent affichés pendant la préparation de la suivante, pour
-            // choisir parmi les joueurs en orange ceux qui restent à sortir.
-            final nextOut = nextOutPlayers(
-              field: lineup.entriesFor(MatchCompositionZone.field),
-              events: bundle.events,
-              substituteCounts: bundle.substituteCounts,
-              benchCount: lineup.entriesFor(MatchCompositionZone.bench).length,
-            );
-            return IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _BenchColumn(
-                    bench: bench,
-                    bundle: bundle,
-                    canEdit: canEdit,
-                    metrics: metrics,
-                    pendingOutIds: pendingOutIds,
-                    onFieldPlayerDropped: (playerOut, playerIn) =>
-                        _stage(playerIn: playerIn, playerOut: playerOut),
-                    footer: widget.fullScreen && canEdit
-                        ? Column(
-                            children: [
-                              _BenchAction(
-                                icon: Icons.person_add_alt_1_rounded,
-                                label: 'Ajouter',
-                                tooltip: 'Ajouter un joueur',
-                                onPressed: setupControlsDisabled
-                                    ? null
-                                    : () => showMatchLiveAddPlayerSheet(
-                                          context,
-                                          ref,
-                                          matchId: matchId,
-                                        ),
+      matchId: matchId,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final metrics = benchAndPitchMetrics(constraints.maxWidth);
+          final lastExits = lastExitMarksByParticipant(bundle.events);
+          // Prochains à sortir : calculés sur la dernière salve validée.
+          // Ils restent affichés pendant la préparation de la suivante, pour
+          // choisir parmi les joueurs en orange ceux qui restent à sortir.
+          final nextOut = !ClubRules.enabled(ClubFeature.liveNextOut)
+              ? NextOutPlayers.none
+              : nextOutPlayers(
+                  field: lineup.entriesFor(MatchCompositionZone.field),
+                  events: bundle.events,
+                  substituteCounts: bundle.substituteCounts,
+                  benchCount:
+                      lineup.entriesFor(MatchCompositionZone.bench).length,
+                );
+          return IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _BenchColumn(
+                  bench: bench,
+                  bundle: bundle,
+                  canEdit: canEdit &&
+                      ClubRules.enabled(ClubFeature.liveSubstitutions),
+                  metrics: metrics,
+                  pendingOutIds: pendingOutIds,
+                  onFieldPlayerDropped: (playerOut, playerIn) =>
+                      _stage(playerIn: playerIn, playerOut: playerOut),
+                  footer: widget.fullScreen && canEdit
+                      ? Column(
+                          children: [
+                            _BenchAction(
+                              icon: Icons.person_add_alt_1_rounded,
+                              label: 'Ajouter',
+                              tooltip: 'Ajouter un joueur',
+                              onPressed: setupControlsDisabled ||
+                                      !ClubRules.enabled(
+                                        ClubFeature.liveAddPlayers,
+                                      )
+                                  ? null
+                                  : () => showMatchLiveAddPlayerSheet(
+                                        context,
+                                        ref,
+                                        matchId: matchId,
+                                      ),
+                            ),
+                            _BenchAction(
+                              icon: Icons.person_remove_rounded,
+                              label: 'Retirer',
+                              tooltip: 'Retirer un joueur du banc',
+                              onPressed: setupControlsDisabled ||
+                                      !ClubRules.enabled(
+                                        ClubFeature.liveRemovePlayers,
+                                      ) ||
+                                      lineup
+                                          .entriesFor(
+                                            MatchCompositionZone.bench,
+                                          )
+                                          .isEmpty
+                                  ? null
+                                  : () =>
+                                      _removeBenchPlayer(lineup, controller),
+                            ),
+                          ],
+                        )
+                      : null,
+                ),
+                const SizedBox(width: _benchGap),
+                Expanded(
+                  child: FormationPitchEditor(
+                    slots: formationForCode(lineup.formationCode).slots,
+                    entries: field,
+                    editable: canEdit &&
+                        (ClubRules.enabled(ClubFeature.liveSubstitutions) ||
+                            ClubRules.enabled(
+                              ClubFeature.liveFormationChanges,
+                            )),
+                    finishedBenchCounts:
+                        ClubRules.enabled(ClubFeature.liveShowBenchCounts)
+                            ? bundle.substituteCounts
+                            : const {},
+                    benchLabels:
+                        !ClubRules.enabled(ClubFeature.liveShowBenchCounts)
+                            ? const {}
+                            : {
+                                for (final MapEntry(:key, :value)
+                                    in bundle.substituteCounts.entries)
+                                  key: liveBenchLabel(lastExits[key], value),
+                              },
+                    benchColors:
+                        !ClubRules.enabled(ClubFeature.liveSubstitutionColors)
+                            ? const {}
+                            : {
+                                for (final key in bundle.substituteCounts.keys)
+                                  key: switch (lastExits[key]) {
+                                    final exit? => substitutionSalvoColorAt(
+                                        exit.colorIndex,
+                                      ),
+                                    null => substitutionStartColor,
+                                  },
+                              },
+                    namesOnly: ClubRules.enabled(ClubFeature.liveNamesOnly),
+                    nameSuffixes: !ClubRules.enabled(
+                            ClubFeature.liveShowPlayingTime)
+                        ? const {}
+                        : {
+                            for (final MapEntry(:key, :value) in minutesOnField(
+                              field: lineup.entriesFor(
+                                MatchCompositionZone.field,
                               ),
-                              _BenchAction(
-                                icon: Icons.person_remove_rounded,
-                                label: 'Retirer',
-                                tooltip: 'Retirer un joueur du banc',
-                                onPressed: setupControlsDisabled ||
-                                        lineup
-                                            .entriesFor(
-                                                MatchCompositionZone.bench)
-                                            .isEmpty
-                                    ? null
-                                    : () =>
-                                        _removeBenchPlayer(lineup, controller),
-                              ),
-                            ],
-                          )
-                        : null,
-                  ),
-                  const SizedBox(width: _benchGap),
-                  Expanded(
-                    child: FormationPitchEditor(
-                      slots: formationForCode(lineup.formationCode).slots,
-                      entries: field,
-                      editable: canEdit,
-                      finishedBenchCounts: bundle.substituteCounts,
-                      benchLabels: {
-                        for (final MapEntry(:key, :value)
-                            in bundle.substituteCounts.entries)
-                          key: liveBenchLabel(lastExits[key], value),
-                      },
-                      benchColors: {
-                        for (final key in bundle.substituteCounts.keys)
-                          key: switch (lastExits[key]) {
-                            final exit? => substitutionSalvoColorAt(
-                                exit.colorIndex,
-                              ),
-                            null => substitutionStartColor,
+                              events: bundle.events,
+                              elapsed: bundle.session.elapsedAt(DateTime.now()),
+                            ).entries)
+                              key: "$value'",
                           },
-                      },
-                      namesOnly: false,
-                      nameSuffixes: {
-                        for (final MapEntry(:key, :value) in minutesOnField(
-                          field: lineup.entriesFor(MatchCompositionZone.field),
-                          events: bundle.events,
-                          elapsed: bundle.session.elapsedAt(DateTime.now()),
-                        ).entries)
-                          key: "$value'",
-                      },
-                      nameColors: {
-                        for (final id in nextOut.sure) id: nextOutSureColor,
-                        for (final id in nextOut.toChoose)
-                          id: nextOutToChooseColor,
-                      },
-                      markerMetrics: metrics,
-                      onDroppedOnSlot: (moving, slot) => _handlePitchDrop(
-                        context,
-                        controller,
-                        lineup,
-                        moving,
-                        slot,
-                      ),
-                      onRemoveFromField: (entry) =>
-                          _explainHowToSubstitute(context),
+                    nameColors: {
+                      for (final id in nextOut.sure) id: nextOutSureColor,
+                      for (final id in nextOut.toChoose)
+                        id: nextOutToChooseColor,
+                    },
+                    markerMetrics: metrics,
+                    onDroppedOnSlot: (moving, slot) => _handlePitchDrop(
+                      context,
+                      controller,
+                      lineup,
+                      moving,
+                      slot,
                     ),
+                    onRemoveFromField: (entry) =>
+                        _explainHowToSubstitute(context),
                   ),
-                ],
-              ),
-            );
-          },
-        ));
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
 
     if (widget.fullScreen) {
       return _buildFullScreen(
@@ -278,7 +309,8 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
                         child: Text(formation.code),
                       ),
                   ],
-                  onChanged: setupControlsDisabled
+                  onChanged: setupControlsDisabled ||
+                          !ClubRules.enabled(ClubFeature.liveFormationChanges)
                       ? null
                       : (value) {
                           if (value != null) {
@@ -292,7 +324,8 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
                 child: SizedBox(
                   height: 56,
                   child: OutlinedButton(
-                    onPressed: setupControlsDisabled
+                    onPressed: setupControlsDisabled ||
+                            !ClubRules.enabled(ClubFeature.liveAddPlayers)
                         ? null
                         : () => showMatchLiveAddPlayerSheet(
                               context,
@@ -379,7 +412,10 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
         session.half == 1 && session.state != MatchLiveState.halftime;
     final goalsToAttribute = [
       for (final event in bundle.events)
-        if (event.type == MatchLiveEventType.goalUs && event.needsScorer) event,
+        if (ClubRules.enabled(ClubFeature.liveScorers) &&
+            event.type == MatchLiveEventType.goalUs &&
+            event.needsScorer)
+          event,
     ];
 
     return Column(
@@ -422,13 +458,17 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
                     icon: Icons.restart_alt_rounded,
                     label: 'Reset',
                     tooltip: 'Recommencer le match',
-                    onPressed: () => _confirmRestart(context, controller),
+                    onPressed: ClubRules.enabled(ClubFeature.liveRestart)
+                        ? () => _confirmRestart(context, controller)
+                        : null,
                   ),
                   switch (session.state) {
                     MatchLiveState.running => _MatchModeAction(
                         icon: Icons.pause_rounded,
                         label: 'Pause',
-                        onPressed: () => controller.setClockState('pause'),
+                        onPressed: ClubRules.enabled(ClubFeature.livePause)
+                            ? () => controller.setClockState('pause')
+                            : null,
                       ),
                     MatchLiveState.paused => _MatchModeAction(
                         icon: Icons.play_arrow_rounded,
@@ -469,7 +509,8 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
                     icon: Icons.grid_view_rounded,
                     label: formationForCode(lineup.formationCode).code,
                     tooltip: 'Changer de dispositif',
-                    onPressed: setupControlsDisabled
+                    onPressed: setupControlsDisabled ||
+                            !ClubRules.enabled(ClubFeature.liveFormationChanges)
                         ? null
                         : () => _onMatchMenu(
                               context,
@@ -486,6 +527,23 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
           padding: const EdgeInsets.fromLTRB(8, 10, 8, 0),
           child: pitchArea,
         ),
+        if (ClubRules.enabled(ClubFeature.liveJournalExpanded))
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: _LiveJournal(
+              events: bundle.events,
+              expanded: _journalExpanded,
+              canEdit: canEdit,
+              onExpandedChanged: (value) =>
+                  setState(() => _journalExpanded = value),
+              onEditScorer: (event) =>
+                  _pickGoalScorer(context, controller, event, scorerCandidates),
+              onEditAssist: (event) =>
+                  _pickGoalAssist(context, controller, event, scorerCandidates),
+              onDelete: (event) =>
+                  _confirmDeleteEvent(context, controller, event),
+            ),
+          ),
         // Sous le terrain : buts à attribuer et changements en attente.
         if (canEdit && (_pending.isNotEmpty || goalsToAttribute.isNotEmpty))
           Material(
@@ -538,6 +596,7 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
     MatchComposition lineup,
     MatchLiveStateController controller,
   ) async {
+    if (!ClubRules.enabled(ClubFeature.liveRemovePlayers)) return;
     final removed = await showMatchLiveRemovePlayerPicker(
       context,
       candidates: lineup.entriesFor(MatchCompositionZone.bench),
@@ -700,6 +759,9 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
     required MatchCompositionEntry playerIn,
     required MatchCompositionEntry playerOut,
   }) {
+    if (!ClubRules.enabled(ClubFeature.liveSubstitutions)) {
+      return;
+    }
     final alreadyUsed = _pending.any(
       (pair) =>
           pair.playerIn == playerIn.participantId ||
@@ -829,12 +891,14 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
     MatchLiveEvent event,
     List<MatchCompositionEntry> candidates,
   ) async {
+    if (!ClubRules.enabled(ClubFeature.liveScorers)) return;
     final choice = await pickMatchLiveScorer(
       context,
       candidates: candidates,
       title:
           'Qui a marqué à la ${AppFormats.ordinalFeminine(event.minute)} minute ?',
-      extraChoiceLabel: 'CSC adverse',
+      extraChoiceLabel:
+          ClubRules.enabled(ClubFeature.liveOwnGoals) ? 'CSC adverse' : null,
       extraChoiceIcon: Icons.shield_moon_outlined,
       // Proposé seulement si le but est déjà attribué : c'est le moyen de
       // revenir en arrière sur un buteur désigné par erreur.
@@ -883,6 +947,7 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
     MatchLiveEvent event,
     List<MatchCompositionEntry> candidates,
   ) async {
+    if (!ClubRules.enabled(ClubFeature.liveAssists)) return;
     final scorer = event.scorerParticipantId;
     if (scorer == null) return;
     final assist = await _askAssist(
@@ -909,6 +974,9 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
     required String scorerParticipantId,
     required int minute,
   }) async {
+    if (!ClubRules.enabled(ClubFeature.liveAssists)) {
+      return (answered: false, participantId: null);
+    }
     final choice = await pickMatchLiveScorer(
       context,
       candidates: [
@@ -1044,6 +1112,14 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
     MatchCompositionEntry moving,
     FootballFormationSlot slot,
   ) async {
+    if (moving.zone == MatchCompositionZone.field &&
+        !ClubRules.enabled(ClubFeature.liveFormationChanges)) {
+      return;
+    }
+    if (moving.zone != MatchCompositionZone.field &&
+        !ClubRules.enabled(ClubFeature.liveSubstitutions)) {
+      return;
+    }
     if (_isPendingParticipant(moving.participantId)) {
       _showMessage(
         context,

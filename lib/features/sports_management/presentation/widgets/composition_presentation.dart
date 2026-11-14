@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_rules.dart';
 import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/core/club/club_kits.dart';
 
@@ -179,6 +180,9 @@ Future<void> showCompositionPresentation(
   CompositionLanding? landing,
   bool returnToPage = false,
 }) {
+  if (!ClubRules.enabled(ClubFeature.compositionVideo)) {
+    return Future<void>.value();
+  }
   primeStadiumVideo();
   // La page d'arrivée doit être affichée pour qu'on s'y pose. Sans terrain où
   // se poser, [returnToPage] rend quand même la page : la vidéo s'efface

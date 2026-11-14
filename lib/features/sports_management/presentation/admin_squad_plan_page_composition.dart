@@ -337,7 +337,12 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
   /// déplaçable.
   Future<void> _simulateComposition() async {
     final composition = _composition;
-    if (composition == null || _compositionLocked || _postMatch) return;
+    if (composition == null ||
+        _compositionLocked ||
+        _postMatch ||
+        !ClubRules.enabled(ClubFeature.compositionSimulation)) {
+      return;
+    }
 
     if (composition.fieldCount > 0) {
       final confirmed = await _confirmAction(
@@ -582,13 +587,14 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(
-          onPressed: field.isEmpty
-              ? null
-              : () => _previewCompositionVideo(
-                    field,
-                    bench,
-                    landing: _publishedLanding,
-                  ),
+          onPressed:
+              field.isEmpty || !ClubRules.enabled(ClubFeature.compositionVideo)
+                  ? null
+                  : () => _previewCompositionVideo(
+                        field,
+                        bench,
+                        landing: _publishedLanding,
+                      ),
           icon: const Icon(Icons.play_circle_outline_rounded),
           label: const Text('Aperçu de la vidéo'),
         ),
@@ -828,7 +834,10 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
                         child: SizedBox(
                           height: 56,
                           child: OutlinedButton(
-                            onPressed: _compositionLocked
+                            onPressed: _compositionLocked ||
+                                    !ClubRules.enabled(
+                                      ClubFeature.compositionSimulation,
+                                    )
                                 ? null
                                 : _simulateComposition,
                             style: OutlinedButton.styleFrom(
@@ -918,7 +927,8 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
             // l'écran, sans rien enregistrer ni prévenir personne.
             if (!_postMatch) ...[
               OutlinedButton.icon(
-                onPressed: field.isEmpty
+                onPressed: field.isEmpty ||
+                        !ClubRules.enabled(ClubFeature.compositionVideo)
                     ? null
                     : () => _previewCompositionVideo(
                           field,

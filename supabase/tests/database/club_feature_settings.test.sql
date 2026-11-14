@@ -70,8 +70,8 @@ select is(
 );
 select is(
   (select count(*) from jsonb_array_elements(public.get_club_rules())),
-  34::bigint,
-  'les 14 règles existantes sont toujours là'
+  66::bigint,
+  'les règles existantes et les 32 nouvelles restent accessibles'
 );
 select is(
   (select count(*) from jsonb_array_elements(public.get_club_rules()) rule

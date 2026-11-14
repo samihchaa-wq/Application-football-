@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_rules.dart';
 import 'package:as_grinta/core/logging/app_logger.dart';
 import 'package:as_grinta/core/utils/app_errors.dart';
 import 'package:as_grinta/core/widgets/grinta_loader.dart';
@@ -154,7 +155,9 @@ class _MatchLivePreKickoffPageState
         // d'après-match : un seul éditeur d'effectif dans toute l'application.
         MatchSquadEditor(
           lineup: lineup,
-          editable: widget.canEdit,
+          editable: widget.canEdit &&
+              (ClubRules.enabled(ClubFeature.liveSubstitutions) ||
+                  ClubRules.enabled(ClubFeature.liveFormationChanges)),
           header: widget.canEdit ? _buildSetupControls(lineup) : null,
           onDroppedOnSlot: (moving, slot) => _dropOnSlot(lineup, moving, slot),
           onMoveToBench: (entry) => _moveToBench(lineup, entry),
@@ -223,7 +226,8 @@ class _MatchLivePreKickoffPageState
               for (final item in footballFormations)
                 DropdownMenuItem(value: item.code, child: Text(item.code)),
             ],
-            onChanged: controlsDisabled
+            onChanged: controlsDisabled ||
+                    !ClubRules.enabled(ClubFeature.liveFormationChanges)
                 ? null
                 : (value) {
                     if (value != null) _changeFormation(lineup, value);
@@ -234,25 +238,30 @@ class _MatchLivePreKickoffPageState
         iconAction(
           icon: Icons.person_add_alt_1_rounded,
           tooltip: 'Ajouter un joueur',
-          onPressed: controlsDisabled
-              ? null
-              : () => showMatchLiveAddPlayerSheet(
-                    context,
-                    ref,
-                    matchId: widget.matchId,
-                  ),
+          onPressed:
+              controlsDisabled || !ClubRules.enabled(ClubFeature.liveAddPlayers)
+                  ? null
+                  : () => showMatchLiveAddPlayerSheet(
+                        context,
+                        ref,
+                        matchId: widget.matchId,
+                      ),
         ),
         const SizedBox(width: 6),
         iconAction(
           icon: Icons.person_remove_rounded,
           tooltip: 'Retirer un joueur',
-          onPressed: controlsDisabled ? null : () => _removePlayer(lineup),
+          onPressed: controlsDisabled ||
+                  !ClubRules.enabled(ClubFeature.liveRemovePlayers)
+              ? null
+              : () => _removePlayer(lineup),
         ),
       ],
     );
   }
 
   Future<void> _removePlayer(MatchComposition lineup) async {
+    if (!ClubRules.enabled(ClubFeature.liveRemovePlayers)) return;
     final removed = await showMatchLiveRemovePlayerPicker(
       context,
       candidates: [
@@ -290,7 +299,11 @@ class _MatchLivePreKickoffPageState
     MatchComposition lineup,
     String formationCode,
   ) async {
-    if (_busy || _savingFormation) return;
+    if (_busy ||
+        _savingFormation ||
+        !ClubRules.enabled(ClubFeature.liveFormationChanges)) {
+      return;
+    }
     final nextCode = formationForCode(formationCode).code;
     if (formationForCode(lineup.formationCode).code == nextCode) return;
 
@@ -322,6 +335,14 @@ class _MatchLivePreKickoffPageState
     MatchCompositionEntry moving,
     FootballFormationSlot slot,
   ) async {
+    if (moving.zone == MatchCompositionZone.field &&
+        !ClubRules.enabled(ClubFeature.liveFormationChanges)) {
+      return;
+    }
+    if (moving.zone != MatchCompositionZone.field &&
+        !ClubRules.enabled(ClubFeature.liveSubstitutions)) {
+      return;
+    }
     final next = placeEntryOnSlot(lineup, moving, slot);
     await _controller.saveLiveLineup(
       entries: [for (final entry in next.entries) entry.toRpcJson()],
@@ -333,6 +354,9 @@ class _MatchLivePreKickoffPageState
     MatchComposition lineup,
     MatchCompositionEntry moving,
   ) async {
+    if (!ClubRules.enabled(ClubFeature.liveSubstitutions)) {
+      return;
+    }
     final next = moveEntryToBench(lineup, moving);
     await _controller.saveLiveLineup(
       entries: [for (final entry in next.entries) entry.toRpcJson()],

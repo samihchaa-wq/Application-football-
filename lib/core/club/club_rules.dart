@@ -1,4 +1,7 @@
+import 'package:as_grinta/core/club/club_feature.dart';
 import 'package:flutter/foundation.dart';
+
+export 'package:as_grinta/core/club/club_feature.dart';
 
 /// Règles du club qui pilotent les horaires d'un match (ouverture des
 /// pronostics, fermeture, mode live…). Les valeurs par défaut sont celles
@@ -46,7 +49,9 @@ abstract final class ClubRules {
         _ => 1,
       };
 
-  static const Map<String, int> defaults = {
+  static final Map<String, int> defaults = {
+    for (final feature in ClubFeature.values)
+      feature.key: feature.defaultEnabled ? 1 : 0,
     featuresOpenDaysKey: 6,
     featuresOpenHourKey: 12,
     predictionCloseMinutesKey: 15,
@@ -80,6 +85,23 @@ abstract final class ClubRules {
   static ValueListenable<int> get revision => _revision;
 
   static int _get(String key) => _values[key] ?? defaults[key]!;
+
+  /// Une dépendance coupée rend ses sous-options inactives sans les effacer.
+  static bool enabled(ClubFeature feature) {
+    if (_get(feature.key) != 1) return false;
+    return switch (feature) {
+      ClubFeature.liveAssists ||
+      ClubFeature.liveOwnGoals =>
+        enabled(ClubFeature.liveScorers),
+      ClubFeature.compositionVideoAutoplay => enabled(
+          ClubFeature.compositionVideo,
+        ),
+      ClubFeature.compositionVideoNotificationReplay => enabled(
+          ClubFeature.compositionVideoAutoplay,
+        ),
+      _ => true,
+    };
+  }
 
   static int get featuresOpenDays => _get(featuresOpenDaysKey);
   static int get featuresOpenHour => _get(featuresOpenHourKey);

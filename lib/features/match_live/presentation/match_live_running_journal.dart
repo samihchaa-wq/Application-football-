@@ -34,10 +34,11 @@ class _LiveJournal extends StatelessWidget {
   Widget build(BuildContext context) {
     final ordered = events.reversed.toList();
     final latest = ordered.isEmpty ? null : ordered.first;
-    final salvos = plain
-        ? <MatchLiveEvent, SubstitutionSalvo>{}
-        : substitutionSalvosByEvent(events);
-    final marks = plain
+    final salvos =
+        plain || !ClubRules.enabled(ClubFeature.liveSubstitutionColors)
+            ? <MatchLiveEvent, SubstitutionSalvo>{}
+            : substitutionSalvosByEvent(events);
+    final marks = plain || !ClubRules.enabled(ClubFeature.liveShowBenchCounts)
         ? <MatchLiveEvent, SubstitutionExitMark>{}
         : substitutionExitMarksByEvent(events);
 
@@ -61,9 +62,10 @@ class _LiveJournal extends StatelessWidget {
                   Expanded(
                     child: Text(
                       title,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w400,
-                          ),
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w400),
                     ),
                   ),
                   if (events.isNotEmpty)
@@ -215,8 +217,13 @@ class _JournalEventRow extends StatelessWidget {
     final hasScore =
         event.scoreAsGrintaAfter != null && event.scoreAdverseAfter != null;
     final canChooseScorer = canEditScorer &&
+        ClubRules.enabled(ClubFeature.liveScorers) &&
         event.type == MatchLiveEventType.goalUs &&
         event.needsScorer;
+    final canCorrect = canEdit &&
+        (ClubRules.enabled(ClubFeature.liveEventDeletion) ||
+            (event.type == MatchLiveEventType.goalUs &&
+                ClubRules.enabled(ClubFeature.liveScorers)));
     final isSubstitution = event.type == MatchLiveEventType.substitution;
     final isOpponentGoal = event.type == MatchLiveEventType.goalThem;
     final goalIndent =
@@ -235,7 +242,8 @@ class _JournalEventRow extends StatelessWidget {
             }
           },
           itemBuilder: (context) => [
-            if (event.type == MatchLiveEventType.goalUs)
+            if (ClubRules.enabled(ClubFeature.liveScorers) &&
+                event.type == MatchLiveEventType.goalUs)
               PopupMenuItem(
                 value: _JournalAction.scorer,
                 child: Row(
@@ -250,7 +258,8 @@ class _JournalEventRow extends StatelessWidget {
                   ],
                 ),
               ),
-            if (event.type == MatchLiveEventType.goalUs &&
+            if (ClubRules.enabled(ClubFeature.liveAssists) &&
+                event.type == MatchLiveEventType.goalUs &&
                 event.scorerParticipantId != null)
               PopupMenuItem(
                 value: _JournalAction.assist,
@@ -266,16 +275,17 @@ class _JournalEventRow extends StatelessWidget {
                   ],
                 ),
               ),
-            const PopupMenuItem(
-              value: _JournalAction.delete,
-              child: Row(
-                children: [
-                  Icon(Icons.delete_outline_rounded),
-                  SizedBox(width: AppSpacing.contentGap),
-                  Text('Retirer'),
-                ],
+            if (ClubRules.enabled(ClubFeature.liveEventDeletion))
+              const PopupMenuItem(
+                value: _JournalAction.delete,
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_outline_rounded),
+                    SizedBox(width: AppSpacing.contentGap),
+                    Text('Retirer'),
+                  ],
+                ),
               ),
-            ),
           ],
         );
 
@@ -303,10 +313,7 @@ class _JournalEventRow extends StatelessWidget {
                 fontWeight: FontWeight.w400,
               ),
             ),
-            if (canEdit) ...[
-              const SizedBox(width: 2),
-              actions(),
-            ],
+            if (canCorrect) ...[const SizedBox(width: 2), actions()],
           ],
         ),
       );
@@ -387,10 +394,7 @@ class _JournalEventRow extends StatelessWidget {
                   fontWeight: FontWeight.w400,
                 ),
               ),
-              if (canEdit) ...[
-                const SizedBox(width: 2),
-                actions(),
-              ],
+              if (canCorrect) ...[const SizedBox(width: 2), actions()],
             ],
           ),
         );
