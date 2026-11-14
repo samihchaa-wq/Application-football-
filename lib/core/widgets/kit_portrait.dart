@@ -409,6 +409,10 @@ class PortraitJerseyPainter extends CustomPainter {
 
     // D'abord l'ombre d'insertion sous le bord du col. Elle donne du
     // volume au tissu sans poser de halo autour de la peau.
+    // Protéger aussi l'ouverture du cou des traits de bordure : à petite
+    // taille, leur anticrénelage peut déborder même sans ombre floutée.
+    canvas.save();
+    canvas.clipPath(shirt);
     final collarBand = _PortraitGeometry.collar();
     canvas.drawPath(
       collarBand,
@@ -480,6 +484,7 @@ class PortraitJerseyPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round
         ..strokeWidth = .0035,
     );
+    canvas.restore();
     canvas.restore();
   }
 
