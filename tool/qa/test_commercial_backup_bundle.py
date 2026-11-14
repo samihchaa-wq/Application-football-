@@ -11,8 +11,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from commercial_backup_bundle import (  # noqa: E402
-    PROJECT_REF, UnsafeBackup, check_environment, read_inventory,
-    validate_database_url, verify_and_manifest, write_bucket_list,
+    PROJECT_REF, UnsafeBackup, check_environment, database_password,
+    read_inventory, validate_database_url, verify_and_manifest,
+    write_bucket_list,
 )
 
 
@@ -78,18 +79,33 @@ class CommercialBackupTests(unittest.TestCase):
                 f"postgresql://postgres:secret@db.{PROJECT_REF}.supabase.co/postgres"
             ),
             "SUPABASE_ACCESS_TOKEN": "token",
-            "SUPABASE_DB_PASSWORD": "fake",
             "BACKUP_PASSPHRASE": "b123XyZ@!nP70Qrs#$2TuVw89GhJkiLM*5cdeFG67hiKLN9@zP4q",
         }
         check_environment(valid)
         for key, replacement in [
             ("SUPABASE_PROJECT_REF", "ovzijmqrnsgcmryinkfa"),
             ("SUPABASE_ACCESS_TOKEN", ""),
-            ("SUPABASE_DB_PASSWORD", ""),
+            ("PRODUCTION_DB_URL", ""),
             ("BACKUP_PASSPHRASE", "a" * 60),
         ]:
             with self.subTest(key=key), self.assertRaises(UnsafeBackup):
                 check_environment({**valid, key: replacement})
+
+    def test_password_from_commercial_url_is_decoded_and_project_checked(self):
+        url = (
+            f"postgresql://postgres:pa%24%40%3A%23secret@"
+            f"db.{PROJECT_REF}.supabase.co/postgres"
+        )
+        self.assertEqual(database_password(url), "pa$@:#secret")
+        with self.assertRaises(UnsafeBackup):
+            database_password(
+                "postgresql://postgres:fake@"
+                "db.ovzijmqrnsgcmryinkfa.supabase.co/postgres"
+            )
+        with self.assertRaises(UnsafeBackup):
+            database_password(
+                f"postgresql://postgres:%00@db.{PROJECT_REF}.supabase.co/postgres"
+            )
 
     def test_hashes_all_objects_and_preserves_empty_bucket(self):
         m = verify_and_manifest(
