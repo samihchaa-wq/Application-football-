@@ -47,7 +47,7 @@ jobs:
           url=os.environ.get('PRODUCTION_DB_URL','')
           validate_database_url(url,PROJECT_REF)
           password=os.environ.get('SUPABASE_DB_PASSWORD') or unquote(urlsplit(url).password or '')
-          if not password or any(c in password for c in '\\r\\n'):
+          if not password or chr(10) in password or chr(13) in password:
               raise ValueError('Mot de passe DB absent ou invalide')
           print('::add-mask::' + password)
           with open(os.environ['GITHUB_ENV'],'a',encoding='utf-8') as out:
