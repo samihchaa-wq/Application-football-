@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:as_grinta/core/storage/player_photo_mode.dart';
 import 'package:as_grinta/core/config/app_config.dart';
 import 'package:as_grinta/core/providers/supabase_provider.dart';
 import 'package:as_grinta/core/security/password_policy.dart';
@@ -229,9 +230,7 @@ class AuthRepository {
     final existing = _profileFetchesInFlight[retryAfterSignIn];
     if (existing != null) return existing;
 
-    final request = _fetchProfileFromServer(
-      retryAfterSignIn: retryAfterSignIn,
-    );
+    final request = _fetchProfileFromServer(retryAfterSignIn: retryAfterSignIn);
     _profileFetchesInFlight[retryAfterSignIn] = request;
     return request.whenComplete(() {
       if (identical(_profileFetchesInFlight[retryAfterSignIn], request)) {
@@ -251,9 +250,7 @@ class AuthRepository {
             .rpc('get_my_profile')
             .timeout(const Duration(seconds: 12));
         if (response == null) return null;
-        return AuthProfile.fromJson(
-          Map<String, dynamic>.from(response as Map),
-        );
+        return AuthProfile.fromJson(Map<String, dynamic>.from(response as Map));
       } catch (error) {
         lastError = error;
         if (attempt + 1 < attempts) {
@@ -304,6 +301,7 @@ class AuthRepository {
   Future<AuthProfile> uploadProfilePhoto({
     required Uint8List bytes,
     required String fileExt,
+    PlayerPhotoMode mode = PlayerPhotoMode.player,
   }) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) {
@@ -312,7 +310,7 @@ class AuthRepository {
 
     final image = validateImageUpload(bytes, fileExt: fileExt);
     final path =
-        '$userId/avatar_${DateTime.now().millisecondsSinceEpoch}.${image.extension}';
+        '$userId/${mode.filename(DateTime.now().millisecondsSinceEpoch, image.extension)}';
     final bucket = _client.storage.from('profile-photos');
 
     // Un retry reprend exactement le même chemin avec upsert=true : si le
@@ -323,10 +321,7 @@ class AuthRepository {
         await bucket.uploadBinary(
           path,
           bytes,
-          fileOptions: FileOptions(
-            contentType: image.mimeType,
-            upsert: true,
-          ),
+          fileOptions: FileOptions(contentType: image.mimeType, upsert: true),
         );
       },
     );

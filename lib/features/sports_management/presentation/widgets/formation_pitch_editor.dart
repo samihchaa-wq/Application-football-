@@ -570,7 +570,8 @@ class _FormationPitchEditorState extends State<FormationPitchEditor> {
                           ? [
                               BoxShadow(
                                 color: formationSelectionColor.withValues(
-                                    alpha: .8),
+                                  alpha: .8,
+                                ),
                                 blurRadius: 9,
                                 spreadRadius: 1,
                               ),
@@ -651,7 +652,7 @@ class _FormationPitchEditorState extends State<FormationPitchEditor> {
                                 photoUrl: entry.photoUrl,
                                 name: entry.displayName,
                                 lastName: entry.lastInitial,
-                                isGoalkeeper: entry.isGoalkeeper,
+                                isGoalkeeper: entry.wearsGoalkeeperKit,
                                 size: avatarSize,
                               ),
                               if (finishedBenchCount > 0)

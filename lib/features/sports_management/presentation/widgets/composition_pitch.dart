@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/storage/player_photo_mode.dart';
 import 'package:as_grinta/core/club/club_kits.dart';
 import 'package:as_grinta/core/storage/profile_photo_urls.dart';
 import 'package:as_grinta/core/widgets/kit_portrait.dart';
@@ -350,7 +351,7 @@ class CompositionPlayerChip extends StatelessWidget {
         photoUrl: entry.photoUrl,
         name: entry.displayName,
         lastName: entry.lastInitial,
-        isGoalkeeper: entry.isGoalkeeper,
+        isGoalkeeper: entry.wearsGoalkeeperKit,
         size: 24,
       ),
       label: Text(entry.displayName),
@@ -502,7 +503,7 @@ class CompositionPlayerTile extends StatelessWidget {
                     photoUrl: entry.photoUrl,
                     name: entry.displayName,
                     lastName: entry.lastInitial,
-                    isGoalkeeper: entry.isGoalkeeper,
+                    isGoalkeeper: entry.wearsGoalkeeperKit,
                     size: photoSize,
                   ),
                 ),
@@ -834,9 +835,8 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
     final size = widget.size;
     final fallbackScale = widget.fallbackScale.clamp(.5, 1).toDouble();
     final fallbackSize = size * fallbackScale;
-    // Ne JAMAIS montrer la photo brute dès qu'elle est disponible.
-    // Le rendu photographique est le même pour tout PlayerAvatar, y compris
-    // les miniatures du profil, de l'effectif et des listes de membres.
+    // Type joueur : un visage unique habillé selon la tenue. Autre : la photo
+    // reste entière. La couronne est gérée séparément par les écrans.
     // En contexte de match, la tenue choisie (ou son snapshot) prime ; dans
     // les autres écrans, afficher la première tenue activée du club.
     final original = widget.photoUrl?.trim();
@@ -858,11 +858,7 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
       width: size,
       height: size,
       child: Center(
-        child: SizedBox(
-          width: visualSize,
-          height: visualSize,
-          child: avatar,
-        ),
+        child: SizedBox(width: visualSize, height: visualSize, child: avatar),
       ),
     );
   }
@@ -903,7 +899,9 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
       gaplessPlayback: true,
       filterQuality: FilterQuality.medium,
       frameBuilder: (context, child, frame, wasSynchronouslyLoaded) =>
-          frame == null
+          frame == null ||
+                  PlayerPhotoMode.fromPhotoUrl(widget.photoUrl) ==
+                      PlayerPhotoMode.other
               ? child
               : KitPortrait(
                   kit: kit,

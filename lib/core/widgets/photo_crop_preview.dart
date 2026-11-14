@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:as_grinta/core/storage/player_photo_mode.dart';
 import 'package:as_grinta/core/club/club_kits.dart';
 import 'package:as_grinta/core/widgets/kit_portrait.dart';
 import 'package:as_grinta/core/widgets/match_contribution_icons.dart';
@@ -34,6 +35,8 @@ Future<Uint8List?> cropProfilePhoto(
   Color previewBorderColor = const Color(0xFF6DAD8B),
   ClubKit? kit,
   bool isGoalkeeper = false,
+  PlayerPhotoMode mode = PlayerPhotoMode.player,
+  bool requireTransparent = false,
 }) {
   return showDialog<Uint8List?>(
     context: context,
@@ -47,6 +50,8 @@ Future<Uint8List?> cropProfilePhoto(
       previewBorderColor: previewBorderColor,
       kit: kit,
       isGoalkeeper: isGoalkeeper,
+      mode: mode,
+      requireTransparent: requireTransparent,
     ),
   );
 }
@@ -61,6 +66,8 @@ class _PhotoCropDialog extends StatefulWidget {
     required this.previewBorderColor,
     required this.kit,
     required this.isGoalkeeper,
+    required this.mode,
+    required this.requireTransparent,
   });
 
   final Uint8List bytes;
@@ -71,6 +78,8 @@ class _PhotoCropDialog extends StatefulWidget {
   final Color previewBorderColor;
   final ClubKit? kit;
   final bool isGoalkeeper;
+  final PlayerPhotoMode mode;
+  final bool requireTransparent;
 
   @override
   State<_PhotoCropDialog> createState() => _PhotoCropDialogState();
@@ -88,11 +97,16 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
   double _childHeight = _cropSize;
   bool _ready = false;
   bool _busy = false;
+  String? _imageError;
 
   @override
   void initState() {
     super.initState();
-    _prepare();
+    _prepare().catchError((Object error) {
+      if (mounted) {
+        setState(() => _imageError = 'Impossible de lire cette image.');
+      }
+    });
   }
 
   @override
@@ -105,6 +119,30 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
     final codec = await ui.instantiateImageCodec(widget.bytes);
     final frame = await codec.getNextFrame();
     final image = frame.image;
+    if (widget.requireTransparent) {
+      final pixels = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      var transparent = false;
+      if (pixels != null) {
+        for (var i = 3; i < pixels.lengthInBytes; i += 4) {
+          if (pixels.getUint8(i) == 0) {
+            transparent = true;
+            break;
+          }
+        }
+      }
+      if (!transparent) {
+        image.dispose();
+        codec.dispose();
+        if (mounted) {
+          setState(
+            () => _imageError =
+                'Le mode Type joueur nécessite une photo à fond transparent. '
+                    'Fournis une photo détourée ou choisis Autre.',
+          );
+        }
+        return;
+      }
+    }
     final coverScale = math.max(
       _cropSize / image.width,
       _cropSize / image.height,
@@ -220,11 +258,14 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
         fit: StackFit.expand,
         children: [
           const TransparentPhotoBackground(),
-          KitPortrait(
-            kit: _previewKit,
-            isGoalkeeper: widget.isGoalkeeper,
-            child: photo,
-          ),
+          if (widget.mode == PlayerPhotoMode.player)
+            KitPortrait(
+              kit: _previewKit,
+              isGoalkeeper: widget.isGoalkeeper,
+              child: photo,
+            )
+          else
+            photo,
         ],
       ),
     );
@@ -315,8 +356,11 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
               padding: const EdgeInsets.fromLTRB(16, 14, 12, 12),
               child: Row(
                 children: [
-                  const Icon(Icons.checkroom_outlined,
-                      size: 27, color: Colors.white),
+                  const Icon(
+                    Icons.checkroom_outlined,
+                    size: 27,
+                    color: Colors.white,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -344,7 +388,12 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(14),
-                child: _mainPreview(),
+                child: _imageError == null
+                    ? _mainPreview()
+                    : Text(
+                        _imageError!,
+                        style: const TextStyle(color: Colors.white),
+                      ),
               ),
             ),
             const Divider(color: _outline, height: 1),
@@ -357,8 +406,9 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
                       onPressed:
                           _busy ? null : () => Navigator.pop(context, null),
                       style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          side: const BorderSide(color: _outline)),
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: _outline),
+                      ),
                       child: const Text('Annuler'),
                     ),
                   ),
@@ -372,7 +422,10 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
                               width: 16,
                               height: 16,
                               child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.black))
+                                strokeWidth: 2,
+                                color: Colors.black,
+                              ),
+                            )
                           : const Icon(Icons.check_circle_outline),
                       label: Text(widget.confirmLabel),
                       style: FilledButton.styleFrom(

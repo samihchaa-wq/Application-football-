@@ -32,6 +32,10 @@ class InternalCompositionEntry {
   final String? photoUrl;
   final bool isGuest;
   final bool isGoalkeeper;
+  bool get wearsGoalkeeperKit =>
+      isField && slotLabel != null && slotLabel!.trim().isNotEmpty
+          ? slotLabel!.trim().toUpperCase() == 'GB'
+          : isGoalkeeper;
   final int? teamNo;
 
   /// Même sémantique que les compositions classiques : available tant que le
