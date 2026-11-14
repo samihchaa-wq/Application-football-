@@ -24,7 +24,6 @@ class JerseyOptionPicker extends StatelessWidget {
   final ValueChanged<JerseyOption?>? onChanged;
 
   static const double _spacing = 12;
-  static const double _maxTileWidth = 130;
 
   @override
   Widget build(BuildContext context) {
