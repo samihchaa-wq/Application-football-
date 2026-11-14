@@ -53,6 +53,10 @@ def verify_archive(path: Path) -> dict:
         actual = {}
         for member in archive:
             n = member.name
+            # GNU tar, utilisé par le workflow, écrit d'abord ce dossier.
+            # Seul le dossier exact est admis ; fichier/lien restent refusés.
+            if n == "payload" and member.isdir():
+                continue
             if not n.startswith("payload/") or "\\" in n:
                 raise UnsafeBackup("Entrée d'archive hors périmètre.")
             if any(part in ("", ".", "..") for part in n.rstrip("/").split("/")):
@@ -159,7 +163,10 @@ def main(args: list[str]) -> int:
     try:
         summary = verify_archive(Path(args[0]))
     except (UnsafeBackup, OSError, ValueError, UnicodeError, tarfile.TarError) as exc:
-        print(f"::error::Restauration préliminaire refusée : {type(exc).__name__}")
+        # Les messages UnsafeBackup sont fixes et ne contiennent aucun nom
+        # privé ; les autres exceptions peuvent contenir un chemin du runner.
+        reason = str(exc) if isinstance(exc, UnsafeBackup) else type(exc).__name__
+        print(f"::error::Restauration préliminaire refusée : {reason}")
         return 1
     print(
         f"Archive commerciale cohérente : {summary['sql_files_checked']} exports SQL,"
