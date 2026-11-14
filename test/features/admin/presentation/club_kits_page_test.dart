@@ -105,7 +105,8 @@ void main() {
     expect(repository.saved, isNull);
     expect(find.text('Au moins un maillot doit être proposé.'), findsOneWidget);
   });
-  testWidgets('ajout et suppression conservent une tenue archivée', (tester) async {
+  testWidgets('ajout et suppression conservent une tenue archivée',
+      (tester) async {
     await pumpPage(tester);
     expect(find.byKey(const ValueKey('kit-label-france')), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('club-kits-add')));
@@ -122,7 +123,6 @@ void main() {
     expect(ClubKits.enabled, hasLength(1));
     expect(find.text('Maillots archivés'), findsOneWidget);
   });
-
 }
 
 class _FakeClubRepository implements ClubRepository {
