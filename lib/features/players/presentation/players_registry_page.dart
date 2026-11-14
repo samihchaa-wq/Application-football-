@@ -263,14 +263,16 @@ Future<void> _chooseRosterPhoto(
           mode: mode,
         );
     ref.invalidate(rosterProvider(seasonId));
-    if (context.mounted)
+    if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Photo de ${player.displayName} mise à jour.')),
       );
+    }
   } catch (error) {
-    if (context.mounted)
+    if (context.mounted) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(humanizeError(error))));
+    }
   }
 }
 
