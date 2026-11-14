@@ -1,4 +1,5 @@
 import 'package:as_grinta/core/widgets/match_date_column.dart';
+import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/home/presentation/home_next_match_card.dart';
 import 'package:as_grinta/features/match_live/data/match_live_notification_repository.dart';
 import 'package:as_grinta/features/matches/domain/match_model.dart';
@@ -38,6 +39,9 @@ void main() {
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final container = ProviderContainer(
       overrides: [
+        clubModulesProvider.overrideWith(
+          (ref) async => const ClubModules.allEnabled(),
+        ),
         matchLiveNotificationStatusProvider.overrideWith(
           (ref, matchId) async => MatchLiveNotificationStatus(
             eligible: eligible,
@@ -54,7 +58,9 @@ void main() {
     final subscription = container.listen(status, (_, __) {});
     addTearDown(subscription.close);
     final resolved = await container.read(status.future);
+    await container.read(clubModulesProvider.future);
     expect(resolved.eligible, eligible);
+    expect(container.read(clubModuleEnabledProvider(ClubModule.liveMode)), isTrue);
     expect(match.isFinished, isFalse);
 
     await tester.pumpWidget(
