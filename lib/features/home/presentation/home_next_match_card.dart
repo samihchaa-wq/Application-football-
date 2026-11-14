@@ -4,6 +4,7 @@ import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/theme/calendar_card_palette.dart';
 import 'package:as_grinta/core/widgets/match_address_sheet.dart';
 import 'package:as_grinta/core/widgets/match_date_column.dart';
+import 'package:as_grinta/core/widgets/calendar_scoreline.dart';
 import 'package:as_grinta/core/widgets/match_fixture.dart';
 import 'package:as_grinta/features/match_live/data/match_live_notification_repository.dart';
 import 'package:as_grinta/features/match_live/presentation/widgets/match_live_notification_bell.dart';
@@ -46,6 +47,31 @@ class HomeNextMatchCard extends ConsumerWidget {
         : null;
     final showGoalBell = goalAlertStatus?.eligible == true;
 
+    // Les actions appartiennent au bandeau de date, pas à la ligne des équipes.
+    // Même implantation que les autres cartes du calendrier.
+    final actionWidgets = <Widget>[
+      if (showGoalBell)
+        SizedBox.square(
+          dimension: CalendarCardActionsOverlay.actionExtent,
+          child: MatchLiveNotificationBell(
+            matchId: match.id,
+            subscribed: goalAlertStatus!.subscribed,
+          ),
+        ),
+      if (isAdmin && AdminMatchOptionsButton.hasOptions(match))
+        SizedBox.square(
+          dimension: CalendarCardActionsOverlay.actionExtent,
+          child: IconTheme(
+            data: IconThemeData(color: cardBorder),
+            child: AdminMatchOptionsButton(match: match),
+          ),
+        ),
+    ];
+    final actionCount = actionWidgets.length;
+    final cardActions = actionWidgets.isEmpty
+        ? null
+        : Row(mainAxisSize: MainAxisSize.min, children: actionWidgets);
+
     final fixtureRow = Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -73,26 +99,6 @@ class HomeNextMatchCard extends ConsumerWidget {
                   textAlign: TextAlign.start,
                 ),
         ),
-        if (showGoalBell) ...[
-          const SizedBox(width: AppSpacing.microGap),
-          SizedBox(
-            width: 40,
-            child: MatchLiveNotificationBell(
-              matchId: match.id,
-              subscribed: goalAlertStatus!.subscribed,
-            ),
-          ),
-        ],
-        if (isAdmin && AdminMatchOptionsButton.hasOptions(match)) ...[
-          const SizedBox(width: AppSpacing.microGap),
-          SizedBox(
-            width: 48,
-            child: IconTheme(
-              data: IconThemeData(color: cardBorder),
-              child: AdminMatchOptionsButton(match: match),
-            ),
-          ),
-        ],
         const Icon(
           Icons.arrow_forward_ios_rounded,
           size: 14,
@@ -116,6 +122,7 @@ class HomeNextMatchCard extends ConsumerWidget {
             foreground: AppTheme.textPrimary,
             secondary: AppTheme.textPrimary,
             dividerColor: cardBorder,
+            dateEndInset: CalendarCardActionsOverlay.dateInsetFor(actionCount),
             child: fixtureRow,
           ),
           const SizedBox(height: 7),
@@ -171,11 +178,15 @@ class HomeNextMatchCard extends ConsumerWidget {
         side: BorderSide(color: cardBorder, width: 1.2),
       ),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => context.push(
-          '/matches/${match.id}/lineup?section=$initialSection',
+      child: CalendarCardActionsOverlay(
+        actions: cardActions,
+        actionsWidth: actionCount * CalendarCardActionsOverlay.actionExtent,
+        child: InkWell(
+          onTap: () => context.push(
+            '/matches/${match.id}/lineup?section=$initialSection',
+          ),
+          child: content,
         ),
-        child: content,
       ),
     );
   }
