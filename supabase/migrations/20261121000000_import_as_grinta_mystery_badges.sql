@@ -24,7 +24,7 @@ values
   ('custom_minimum_syndical_1790777345623', 'Minimum syndical', 'Marquer l’unique but du match et gagner.', 'lone_winning_goal'),
   ('custom_rira_bien_qui_rira_le_dernier_1790778180908', 'Rira bien qui rira le dernier', 'Encaisser le premier but, ne plus en encaisser et gagner.', 'comeback_after_first_goal'),
   ('custom_jamais_2_sans_3_1790777301116', 'Jamais 2 sans 3', 'Marquer lors de 3 matchs consécutifs.', 'three_match_scoring_streak'),
-  ('custom_doubl_hdm_1790772063214', 'Doublé HDM', 'Être élu Homme du match deux matchs de suite.', 'back_to_back_motm'),
+  ('custom_doubl_hdm_1790772063214', 'Doublé HDM', 'Être élu Étoile du match deux matchs de suite.', 'back_to_back_motm'),
   ('custom_tripl_chrono_1790937793669', 'Triplé Chrono', 'Marquer un triplé en une mi-temps.', 'hat_trick_in_half'),
   ('custom_la_glissade_1790198393809', 'La glissade', 'Glisser et perdre le ballon.', null),
   ('custom_r_galade_1790198505439', 'Régalade', 'Marquer sur un retourné acrobatique.', null),
