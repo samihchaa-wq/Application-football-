@@ -43,16 +43,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gh workflow run production_backup.yml --ref main
-          sleep 8
-          backup_id=''
-          for attempt in $(seq 1 12); do
-            backup_id=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/production_backup.yml/runs?event=workflow_dispatch&per_page=30" \
-              --jq ".workflow_runs | map(select(.head_sha == \"$GITHUB_SHA\")) | sort_by(.created_at) | last | .id // empty")
-            test -n "$backup_id" && break
-            sleep 5
-          done
-          test -n "$backup_id" || { echo '::error::Sauvegarde non déclenchée.'; exit 1; }
+          # L'URL retournée par gh identifie précisément CE lancement :
+          # les anciens runs peuvent être en échec et le SHA de main a pu changer.
+          backup_link=$(gh workflow run production_backup.yml --ref main)
+          backup_id="${backup_link##*/}"
+          if [[ ! "$backup_id" =~ ^[0-9]+$ ]]; then
+            echo '::error::ID de sauvegarde absent : impossible de vérifier ce lancement.'
+            exit 1
+          fi
           echo "Sauvegarde : https://github.com/$GITHUB_REPOSITORY/actions/runs/$backup_id"
           gh run watch "$backup_id" --exit-status --interval 10
           echo 'Sauvegarde chiffrée et contrôlée avant migration.'
@@ -109,18 +107,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gh workflow run deploy_cloudflare.yml --ref main -f target_sha="$GITHUB_SHA"
-          echo 'Publication Cloudflare demandée pour le commit validé.'
-          sleep 8
-          run_id=''
-          for attempt in $(seq 1 12); do
-            run_id=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/deploy_cloudflare.yml/runs?event=workflow_dispatch&per_page=30" \
-              --jq ".workflow_runs | map(select(.head_sha == \"$GITHUB_SHA\")) | sort_by(.created_at) | last | .id // empty")
-            test -n "$run_id" && break
-            sleep 5
-          done
-          if [[ -z "$run_id" ]]; then
-            echo '::error::Workflow Cloudflare non retrouvé après lancement.'
+          deploy_link=$(gh workflow run deploy_cloudflare.yml --ref main -f target_sha="$GITHUB_SHA")
+          run_id="${deploy_link##*/}"
+          if [[ ! "$run_id" =~ ^[0-9]+$ ]]; then
+            echo '::error::ID de publication absent : impossible de vérifier ce lancement.'
             exit 1
           fi
           echo "Workflow Cloudflare : https://github.com/$GITHUB_REPOSITORY/actions/runs/$run_id"
