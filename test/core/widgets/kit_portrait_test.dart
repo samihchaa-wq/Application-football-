@@ -6,6 +6,7 @@ import 'package:as_grinta/features/matches/domain/jersey_option.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -91,6 +92,87 @@ void main() {
 
     raster.dispose();
     picture.dispose();
+  });
+
+  testWidgets('texture tricotée réelle du maillot, sans toucher au visage',
+      (tester) async {
+    final bytes =
+        await rootBundle.load('assets/composition/jersey_fabric_luma.png');
+    final codec = await ui.instantiateImageCodec(
+      bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
+    );
+    final frame = await codec.getNextFrame();
+    final material = frame.image;
+    codec.dispose();
+    expect(material.width, 256);
+    expect(material.height, 256);
+
+    Future<ui.Image> painted(ui.Image? texture) async {
+      final recorder = ui.PictureRecorder();
+      PortraitJerseyPainter(
+        body: const Color(0xFFE33A29),
+        trim: Colors.amber,
+        pattern: KitPattern.plain,
+        material: texture,
+      ).paint(Canvas(recorder), const Size(300, 300));
+      final picture = recorder.endRecording();
+      final result = await picture.toImage(300, 300);
+      picture.dispose();
+      return result;
+    }
+
+    final before = await painted(null);
+    final after = await painted(material);
+    final without = (await before.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    ))!
+        .buffer
+        .asUint8List();
+    final withTexture = (await after.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    ))!
+        .buffer
+        .asUint8List();
+
+    int channel(Uint8List data, int x, int y, int component) =>
+        data[(y * 300 + x) * 4 + component];
+
+    // Une vraie différence de matière apparaît sur la poitrine.
+    expect(
+      channel(without, 150, 260, 0),
+      isNot(channel(withTexture, 150, 260, 0)),
+    );
+    // Aucune matière ne passe au-dessus du maillot et du col.
+    expect(channel(withTexture, 150, 130, 3), 0);
+    expect(channel(withTexture, 150, 260, 3), 255);
+
+    before.dispose();
+    after.dispose();
+    material.dispose();
+  });
+
+  testWidgets('la photo est découpée en courbe et non au cutter sous la joue',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: SizedBox.square(
+          dimension: 180,
+          child: KitPortrait(
+            kit: ClubKits.of(JerseyOption.france),
+            child: const ColoredBox(color: Colors.blue),
+          ),
+        ),
+      ),
+    ));
+
+    final clip = tester.widget<ClipPath>(find.byType(ClipPath));
+    final mask = clip.clipper!.getClip(const Size(180, 180));
+    // Ancien masque : ligne horizontale dès 61,3 %, un rectangle
+    // apparaissait au niveau de la mâchoire lorsque le visage était large.
+    expect(mask.contains(const Offset(55, 115)), isTrue);
+    expect(mask.contains(const Offset(20, 135)), isFalse);
+    expect(mask.contains(const Offset(90, 125)), isTrue);
+    expect(mask.contains(const Offset(90, 145)), isFalse);
   });
 
   testWidgets('le patron découpe la photo exactement au bord intérieur du col',
