@@ -67,7 +67,8 @@ class _ClubKitsPageState extends ConsumerState<ClubKitsPage> {
       (kit) => !kit.archived,
       orElse: () => ClubKits.defaultsFor().first,
     );
-    final kit = template.copyWith(label: 'Maillot ${_kits.where((k) => !k.archived).length + 1}');
+    final kit = template.copyWith(
+        label: 'Maillot ${_kits.where((k) => !k.archived).length + 1}');
     // copyWith conserve le slot : on crée une nouvelle tenue avec son ID.
     final created = ClubKit(
       slot: slot!,
@@ -89,7 +90,8 @@ class _ClubKitsPageState extends ConsumerState<ClubKitsPage> {
   void _archive(int index) {
     final kit = _kits[index];
     if (_kits.where((entry) => entry.enabled && !entry.archived).length <= 1 &&
-        kit.enabled && !kit.archived) {
+        kit.enabled &&
+        !kit.archived) {
       _showMessage('Conserve au moins un maillot actif.');
       return;
     }
@@ -171,26 +173,26 @@ class _ClubKitsPageState extends ConsumerState<ClubKitsPage> {
           const SizedBox(height: 16),
           for (var i = 0; i < _kits.length; i++)
             if (!_kits[i].archived) ...[
-            _KitEditor(
-              key: ValueKey('kit-editor-${_kits[i].slot.id}'),
-              kit: _kits[i],
-              labelController: _labels[i],
-              palette: palette,
-              enabled: !_saving,
-              onChanged: (kit) => _update(i, kit),
-              onLabelChanged: () => setState(() {}),
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                key: ValueKey('kit-archive-${_kits[i].slot.id}'),
-                onPressed: _saving ? null : () => _archive(i),
-                icon: const Icon(Icons.delete_outline),
-                label: const Text('Supprimer ce maillot'),
+              _KitEditor(
+                key: ValueKey('kit-editor-${_kits[i].slot.id}'),
+                kit: _kits[i],
+                labelController: _labels[i],
+                palette: palette,
+                enabled: !_saving,
+                onChanged: (kit) => _update(i, kit),
+                onLabelChanged: () => setState(() {}),
               ),
-            ),
-            const SizedBox(height: 16),
-          ],
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  key: ValueKey('kit-archive-${_kits[i].slot.id}'),
+                  onPressed: _saving ? null : () => _archive(i),
+                  icon: const Icon(Icons.delete_outline),
+                  label: const Text('Supprimer ce maillot'),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
           OutlinedButton.icon(
             key: const ValueKey('club-kits-add'),
             onPressed: _saving ? null : _addKit,
