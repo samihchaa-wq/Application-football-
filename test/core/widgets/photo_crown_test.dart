@@ -46,8 +46,14 @@ Future<_CrownPlacement> _pitchCrown(
     ),
   );
   return _placement(
-    tester.getRect(find.text('👑')),
-    tester.getRect(find.byType(PlayerAvatar)),
+    tester.getRect(find.descendant(
+      of: find.byType(CompositionPlayerTile),
+      matching: find.text('👑'),
+    )),
+    tester.getRect(find.descendant(
+      of: find.byType(CompositionPlayerTile),
+      matching: find.byType(PlayerAvatar),
+    )),
   );
 }
 
@@ -91,7 +97,10 @@ void main() {
       expect(find.byType(InteractiveViewer), findsOneWidget);
       expect(find.text('👑'), findsOneWidget);
       final editor = _placement(
-        tester.getRect(find.text('👑')),
+        tester.getRect(find.descendant(
+          of: find.byKey(const ValueKey('portrait-crown-guide')),
+          matching: find.text('👑'),
+        )),
         tester.getRect(find.byKey(const ValueKey('portrait-crop-frame'))),
       );
 
