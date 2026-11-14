@@ -80,10 +80,12 @@ void main() {
     await pumpCard(tester, isAdmin: true);
 
     final date = tester.getRect(
-      find.descendant(
-        of: find.byType(MatchDateHeader),
-        matching: find.byType(Text),
-      ).first,
+      find
+          .descendant(
+            of: find.byType(MatchDateHeader),
+            matching: find.byType(Text),
+          )
+          .first,
     );
     final bell = tester.getRect(
       find.byIcon(Icons.notifications_none_rounded),
@@ -111,10 +113,12 @@ void main() {
   ) async {
     await pumpCard(tester, isAdmin: true, width: 320);
     final date = tester.getRect(
-      find.descendant(
-        of: find.byType(MatchDateHeader),
-        matching: find.byType(Text),
-      ).first,
+      find
+          .descendant(
+            of: find.byType(MatchDateHeader),
+            matching: find.byType(Text),
+          )
+          .first,
     );
     final bell = tester.getRect(find.byIcon(Icons.notifications_none_rounded));
     expect(date.right, lessThanOrEqualTo(bell.left));
