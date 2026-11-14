@@ -60,7 +60,8 @@ class KitPortrait extends StatelessWidget {
                     painter: PortraitJerseyPainter(
                       body: isGoalkeeper ? kit.goalkeeperBody : kit.body,
                       trim: isGoalkeeper ? kit.goalkeeperTrim : kit.trim,
-                      pattern: isGoalkeeper ? kit.goalkeeperPattern : kit.pattern,
+                      pattern:
+                          isGoalkeeper ? kit.goalkeeperPattern : kit.pattern,
                       material: snapshot.data,
                     ),
                   ),
@@ -93,8 +94,7 @@ abstract final class _PortraitGeometry {
       ..lineTo(w, 0)
       ..lineTo(w, h * .485)
       ..cubicTo(w * .925, h * .520, w * .845, h * .570, w * .777, h * .625)
-      ..cubicTo(w * .738, h * .662, w * .704, h * .683,
-          w * neckRight, h * .655)
+      ..cubicTo(w * .738, h * .662, w * .704, h * .683, w * neckRight, h * .655)
       ..cubicTo(w * .637, h * .711, w * .585, h * .744, w * .5, h * .748)
       ..cubicTo(w * .415, h * .744, w * .363, h * .711, w * neckLeft, h * .655)
       ..cubicTo(w * .296, h * .683, w * .262, h * .662, w * .223, h * .625)
