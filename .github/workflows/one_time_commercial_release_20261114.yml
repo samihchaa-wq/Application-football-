@@ -46,8 +46,7 @@ jobs:
           # L'URL retournée par gh identifie précisément CE lancement :
           # les anciens runs peuvent être en échec et le SHA de main a pu changer.
           backup_link=$(gh workflow run production_backup.yml --ref main)
-          backup_id=$(printf '%s\\n' "$backup_link" |
-            sed -nE 's#^.*/actions/runs/([0-9]+)$#\\1#p' | tail -n 1)
+          backup_id="${backup_link##*/}"
           if [[ ! "$backup_id" =~ ^[0-9]+$ ]]; then
             echo '::error::ID de sauvegarde absent : impossible de vérifier ce lancement.'
             exit 1
@@ -109,8 +108,7 @@ jobs:
         run: |
           set -euo pipefail
           deploy_link=$(gh workflow run deploy_cloudflare.yml --ref main -f target_sha="$GITHUB_SHA")
-          run_id=$(printf '%s\\n' "$deploy_link" |
-            sed -nE 's#^.*/actions/runs/([0-9]+)$#\\1#p' | tail -n 1)
+          run_id="${deploy_link##*/}"
           if [[ ! "$run_id" =~ ^[0-9]+$ ]]; then
             echo '::error::ID de publication absent : impossible de vérifier ce lancement.'
             exit 1
