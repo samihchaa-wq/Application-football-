@@ -69,7 +69,7 @@ void main() {
   );
 
   testWidgets(
-    'le recadrage ne superpose aucune couronne',
+    'le patron et le terrain partagent la couronne, la taille et la position',
     (tester) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -89,7 +89,18 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byType(InteractiveViewer), findsOneWidget);
-      expect(find.text('👑'), findsNothing);
+      expect(find.text('👑'), findsOneWidget);
+      final editor = _placement(
+        tester.getRect(find.text('👑')),
+        tester.getRect(find.byKey(const ValueKey('portrait-crop-frame'))),
+      );
+
+      final pitch = await _pitchCrown(tester);
+      // Même emoji et mêmes proportions. Les fractions de pixels du
+      // layout peuvent légèrement différer entre 58 px et 300 px.
+      expect(editor.top, closeTo(pitch.top, .03));
+      expect(editor.width, closeTo(pitch.width, .03));
+      expect(editor.centerShift, closeTo(pitch.centerShift, .03));
     },
   );
 }
