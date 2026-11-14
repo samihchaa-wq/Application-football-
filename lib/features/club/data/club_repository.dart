@@ -235,7 +235,7 @@ class ClubRepository {
     return Club.fromJson(row);
   }
 
-  /// Enregistre les trois maillots du club. Réservé aux administrateurs.
+  /// Enregistre les maillots du club, en nombre libre. Réservé aux administrateurs.
   Future<List<ClubKit>> updateKits(List<ClubKit> kits) async {
     final result = await _client.rpc(
       'admin_update_club_kits',

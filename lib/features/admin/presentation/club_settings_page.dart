@@ -891,7 +891,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
                 onTap: () => context.push('/admin/club/maillots'),
               ),
             ],
-            expanded: true),
+            expanded: false),
         _section('squad', 'Effectif et convocations', Icons.groups_outlined, [
           const SizedBox(height: 8),
           ListTile(

@@ -67,10 +67,21 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('identité et maillots reste replié avant ouverture',
+      (tester) async {
+    await pumpPage(tester);
+    expect(find.byKey(const Key('club-settings-name')), findsNothing);
+    expect(find.byKey(const ValueKey('club-kits-entry')), findsNothing);
+    await openSection(tester, 'identity');
+    expect(find.byKey(const Key('club-settings-name')), findsOneWidget);
+    expect(find.byKey(const ValueKey('club-kits-entry')), findsOneWidget);
+  });
+
   testWidgets('la page montre le nom, le code et les fonctionnalités', (
     tester,
   ) async {
     await pumpPage(tester);
+    await openSection(tester, 'identity');
 
     expect(find.widgetWithText(TextField, 'Nom du club'), findsOneWidget);
     await openSection(tester, 'members');
@@ -114,6 +125,7 @@ void main() {
 
   testWidgets('le nom du club est enregistré', (tester) async {
     await pumpPage(tester);
+    await openSection(tester, 'identity');
 
     await tester.enterText(
       find.byKey(const Key('club-settings-name')),
@@ -130,6 +142,7 @@ void main() {
     tester,
   ) async {
     await pumpPage(tester);
+    await openSection(tester, 'identity');
 
     await tester.enterText(find.byKey(const Key('club-settings-name')), 'X');
     await tester.tap(find.text('Enregistrer'));
@@ -337,6 +350,7 @@ void main() {
       logoPath: 'club-logos/club-1/1.png',
     );
     await pumpPage(tester);
+    await openSection(tester, 'identity');
 
     await tester.ensureVisible(find.byKey(const Key('club-logo-remove')));
     await tester.tap(find.byKey(const Key('club-logo-remove')));
@@ -351,6 +365,7 @@ void main() {
     tester,
   ) async {
     await pumpPage(tester);
+    await openSection(tester, 'identity');
     expect(AppTheme.primary, AppTheme.defaultPrimary);
 
     await tester.tap(find.byKey(const ValueKey('club-color-primary-#D62828')));

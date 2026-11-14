@@ -24,7 +24,6 @@ class JerseyOptionPicker extends StatelessWidget {
   final ValueChanged<JerseyOption?>? onChanged;
 
   static const double _spacing = 12;
-  static const double _maxTileWidth = 130;
 
   @override
   Widget build(BuildContext context) {
@@ -41,29 +40,29 @@ class JerseyOptionPicker extends StatelessWidget {
       for (final option in JerseyOption.values)
         if (option.kit.enabled || option == selected) option,
     ];
-    return Row(
-      children: [
-        for (var i = 0; i < options.length; i++) ...[
-          if (i > 0) const SizedBox(width: _spacing),
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: _maxTileWidth),
-                child: JerseyOptionTile(
-                  option: options[i],
-                  selected: selected == options[i],
-                  onTap: onChanged == null
-                      ? null
-                      : () => onChanged!(
-                            selected == options[i] ? null : options[i],
-                          ),
-                ),
+    // Le nombre de maillots n'est plus plafonné : défilement horizontal
+    // plutôt qu'une rangée qui devient illisible ou déborde.
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (var i = 0; i < options.length; i++) ...[
+            if (i > 0) const SizedBox(width: _spacing),
+            SizedBox(
+              width: 108,
+              child: JerseyOptionTile(
+                option: options[i],
+                selected: selected == options[i],
+                onTap: onChanged == null
+                    ? null
+                    : () => onChanged!(
+                          selected == options[i] ? null : options[i],
+                        ),
               ),
             ),
-          ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }

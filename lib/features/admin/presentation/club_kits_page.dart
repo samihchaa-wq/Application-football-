@@ -2,11 +2,12 @@ import 'package:as_grinta/core/club/club_kits.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
 import 'package:as_grinta/features/club/data/club_repository.dart';
+import 'package:as_grinta/features/matches/domain/jersey_option.dart';
 import 'package:as_grinta/features/matches/presentation/widgets/kit_jersey.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Maillots du club, réservés aux administrateurs : jusqu'à trois maillots,
+/// Maillots du club, réservés aux administrateurs : ajout libre de maillots,
 /// chacun avec les couleurs des joueurs et du gardien, et proposé ou non
 /// au choix pour un match.
 class ClubKitsPage extends ConsumerStatefulWidget {
@@ -53,6 +54,55 @@ class _ClubKitsPageState extends ConsumerState<ClubKitsPage> {
   }
 
   void _update(int index, ClubKit kit) => setState(() => _kits[index] = kit);
+
+  void _addKit() {
+    var serial = _kits.length;
+    JerseyOption? slot;
+    do {
+      slot = JerseyOption.fromId(
+        'kit_${DateTime.now().microsecondsSinceEpoch}_${serial++}',
+      );
+    } while (_kits.any((kit) => kit.slot == slot));
+    final template = _kits.firstWhere(
+      (kit) => !kit.archived,
+      orElse: () => ClubKits.defaultsFor().first,
+    );
+    final kit = template.copyWith(
+        label: 'Maillot ${_kits.where((k) => !k.archived).length + 1}');
+    // copyWith conserve le slot : on crée une nouvelle tenue avec son ID.
+    final created = ClubKit(
+      slot: slot!,
+      label: kit.label,
+      body: kit.body,
+      trim: kit.trim,
+      goalkeeperBody: kit.goalkeeperBody,
+      goalkeeperTrim: kit.goalkeeperTrim,
+      pattern: kit.pattern,
+      goalkeeperPattern: kit.goalkeeperPattern,
+      enabled: true,
+    );
+    setState(() {
+      _kits.add(created);
+      _labels.add(TextEditingController(text: created.label));
+    });
+  }
+
+  void _archive(int index) {
+    final kit = _kits[index];
+    if (_kits.where((entry) => entry.enabled && !entry.archived).length <= 1 &&
+        kit.enabled &&
+        !kit.archived) {
+      _showMessage('Conserve au moins un maillot actif.');
+      return;
+    }
+    setState(() {
+      _kits[index] = kit.copyWith(archived: true, enabled: false);
+    });
+  }
+
+  void _restore(int index) => setState(() {
+        _kits[index] = _kits[index].copyWith(archived: false, enabled: true);
+      });
 
   Future<void> _save() async {
     final kits = [
@@ -121,18 +171,51 @@ class _ClubKitsPageState extends ConsumerState<ClubKitsPage> {
             ),
           ],
           const SizedBox(height: 16),
-          for (var i = 0; i < _kits.length; i++) ...[
-            _KitEditor(
-              key: ValueKey('kit-editor-${_kits[i].slot.id}'),
-              kit: _kits[i],
-              labelController: _labels[i],
-              palette: palette,
-              enabled: !_saving,
-              onChanged: (kit) => _update(i, kit),
-              onLabelChanged: () => setState(() {}),
+          for (var i = 0; i < _kits.length; i++)
+            if (!_kits[i].archived) ...[
+              _KitEditor(
+                key: ValueKey('kit-editor-${_kits[i].slot.id}'),
+                kit: _kits[i],
+                labelController: _labels[i],
+                palette: palette,
+                enabled: !_saving,
+                onChanged: (kit) => _update(i, kit),
+                onLabelChanged: () => setState(() {}),
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  key: ValueKey('kit-archive-${_kits[i].slot.id}'),
+                  onPressed: _saving ? null : () => _archive(i),
+                  icon: const Icon(Icons.delete_outline),
+                  label: const Text('Supprimer ce maillot'),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          OutlinedButton.icon(
+            key: const ValueKey('club-kits-add'),
+            onPressed: _saving ? null : _addKit,
+            icon: const Icon(Icons.add),
+            label: const Text('Ajouter un maillot'),
+          ),
+          if (_kits.any((kit) => kit.archived))
+            ExpansionTile(
+              title: const Text('Maillots archivés'),
+              children: [
+                for (var i = 0; i < _kits.length; i++)
+                  if (_kits[i].archived)
+                    ListTile(
+                      title: Text(_kits[i].label),
+                      trailing: TextButton(
+                        key: ValueKey('kit-restore-${_kits[i].slot.id}'),
+                        onPressed: _saving ? null : () => _restore(i),
+                        child: const Text('Restaurer'),
+                      ),
+                    ),
+              ],
             ),
-            const SizedBox(height: 16),
-          ],
+          const SizedBox(height: 16),
           FilledButton(
             key: const ValueKey('club-kits-save'),
             onPressed: _saving ? null : _save,

@@ -35,7 +35,9 @@ void main() {
       'Rouge et noir',
     );
     await tester.tap(find.byKey(const ValueKey('kit-body-france-#D62828')));
-    await tester.tap(find.byKey(const ValueKey('kit-enabled-blue')));
+    await tester.tap(find.byKey(const ValueKey('club-kits-add')));
+    await tester.pumpAndSettle();
+    expect(find.text('Maillot 2'), findsOneWidget);
     await tester.pump();
     await tester.tap(find.byKey(const ValueKey('club-kits-save')));
     await tester.pumpAndSettle();
@@ -43,7 +45,8 @@ void main() {
     final saved = repository.saved!;
     expect(saved.first.label, 'Rouge et noir');
     expect(saved.first.toJson()['body'], '#D62828');
-    expect(saved.last.enabled, isFalse);
+    expect(saved, hasLength(2));
+    expect(saved.last.enabled, isTrue);
     expect(JerseyOption.france.label, 'Rouge et noir');
     expect(ClubKits.enabled, hasLength(2));
     expect(find.text('Maillots enregistrés.'), findsOneWidget);
@@ -94,15 +97,31 @@ void main() {
 
   testWidgets('au moins un maillot doit rester proposé', (tester) async {
     await pumpPage(tester);
-    for (final slot in ['france', 'orange', 'blue']) {
-      await tester.tap(find.byKey(ValueKey('kit-enabled-$slot')));
-      await tester.pump();
-    }
+    await tester.tap(find.byKey(const ValueKey('kit-enabled-france')));
+    await tester.pump();
     await tester.tap(find.byKey(const ValueKey('club-kits-save')));
     await tester.pumpAndSettle();
 
     expect(repository.saved, isNull);
     expect(find.text('Au moins un maillot doit être proposé.'), findsOneWidget);
+  });
+  testWidgets('ajout et suppression conservent une tenue archivée',
+      (tester) async {
+    await pumpPage(tester);
+    expect(find.byKey(const ValueKey('kit-label-france')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('club-kits-add')));
+    await tester.pumpAndSettle();
+    expect(find.byType(TextField), findsNWidgets(2));
+    await tester.tap(find.text('Supprimer ce maillot').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('club-kits-save')));
+    await tester.pumpAndSettle();
+
+    expect(repository.saved, hasLength(2));
+    expect(repository.saved!.last.archived, isTrue);
+    expect(repository.saved!.last.enabled, isFalse);
+    expect(ClubKits.enabled, hasLength(1));
+    expect(find.text('Maillots archivés'), findsOneWidget);
   });
 }
 
