@@ -457,7 +457,10 @@ class PortraitJerseyPainter extends CustomPainter {
     canvas.restore();
 
     // Ombre courte à la naissance du cou et lumière sur la bordure haute
-    // du col : aucune couleur n'est déposée sur les pixels du visage.
+    // du col. Le flou doit rester sur le tissu : sans ce masque, il déborde
+    // dans l'ouverture transparente réservée à la photographie du cou.
+    canvas.save();
+    canvas.clipPath(collarBand);
     canvas.drawPath(
       _PortraitGeometry.innerCollar(),
       Paint()
@@ -466,6 +469,7 @@ class PortraitJerseyPainter extends CustomPainter {
         ..strokeWidth = .006
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, .005),
     );
+    canvas.restore();
     // Joint intérieur très fin : le col touche visuellement le cou,
     // l'image réelle n'est jamais retouchée, recolorée ou repeinte.
     canvas.drawPath(

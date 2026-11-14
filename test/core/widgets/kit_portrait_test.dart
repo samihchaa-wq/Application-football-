@@ -65,34 +65,38 @@ void main() {
   });
 
   test('le col est plus large et laisse le vrai cou visible', () async {
-    final recorder = ui.PictureRecorder();
-    const PortraitJerseyPainter(
-      body: Colors.red,
-      trim: Colors.yellow,
-      pattern: KitPattern.plain,
-    ).paint(Canvas(recorder), const Size(180, 180));
-    final picture = recorder.endRecording();
-    final raster = await picture.toImage(180, 180);
-    final bytes = (await raster.toByteData(
-      format: ui.ImageByteFormat.rawRgba,
-    ))!
-        .buffer
-        .asUint8List();
+    for (final dimension in [90, 180, 360]) {
+      final scale = dimension / 180;
+      final recorder = ui.PictureRecorder();
+      const PortraitJerseyPainter(
+        body: Colors.red,
+        trim: Colors.yellow,
+        pattern: KitPattern.plain,
+      ).paint(Canvas(recorder), Size.square(dimension.toDouble()));
+      final picture = recorder.endRecording();
+      final raster = await picture.toImage(dimension, dimension);
+      final bytes = (await raster.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      ))!
+          .buffer
+          .asUint8List();
 
-    int channel(int x, int y, int component) =>
-        bytes[(y * 180 + x) * 4 + component];
+      int channel(int x, int y, int component) =>
+          bytes[((y * scale).round() * dimension + (x * scale).round()) * 4 +
+              component];
 
-    // Au-dessus du col, seule la photo réelle du cou doit être visible.
-    // L'ancien anneau étroit peignait déjà cette zone en jaune.
-    expect(channel(90, 132, 3), 0);
-    expect(channel(90, 141, 3), 255);
-    // Épaule : de la matière rouge ombrée, pas trois grosses bandes jaunes
-    // systématiquement collées sur chaque maillot uni.
-    expect(channel(30, 141, 3), 255);
-    expect(channel(30, 141, 0), greaterThan(channel(30, 141, 1) + 40));
+      // Au-dessus du col, seule la photo réelle du cou doit être visible,
+      // même après le flou de l'ombre et à différentes tailles d'avatar.
+      expect(channel(90, 132, 3), 0, reason: 'cou ouvert à $dimension px');
+      expect(channel(90, 141, 3), 255);
+      // Épaule : de la matière rouge ombrée, pas trois grosses bandes jaunes
+      // systématiquement collées sur chaque maillot uni.
+      expect(channel(30, 141, 3), 255);
+      expect(channel(30, 141, 0), greaterThan(channel(30, 141, 1) + 40));
 
-    raster.dispose();
-    picture.dispose();
+      raster.dispose();
+      picture.dispose();
+    }
   });
 
   test('texture tricotée réelle du maillot, sans toucher au visage', () async {

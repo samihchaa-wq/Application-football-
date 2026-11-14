@@ -25,3 +25,7 @@ Les captures iPhone de Petit Filet montraient un maillot trop proche d'une illus
 ## Impact et sécurité
 
 Flutter UI + asset ; pas de SQL ni de migration, pas de nouveaux packages, pas de coûts, aucune modification de l'AS Grinta original ni de ses données. Aucune publication Cloudflare automatique.
+
+## Déblocage de la PR #114
+
+Le contrôle Flutter échouait sur `le col est plus large et laisse le vrai cou visible` : l'ombre floutée du bord intérieur déposait une opacité de 2/255 dans l'ouverture du cou. Le flou est désormais limité à la bande de tissu du col, sans modifier son intensité ni assouplir l'assertion de transparence. Le test historique couvre les portraits de 90, 180 et 360 pixels. Analyse, tests et compilation Web doivent être relancés sur le commit corrigé avant fusion.
