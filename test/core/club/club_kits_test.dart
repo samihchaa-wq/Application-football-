@@ -37,11 +37,12 @@ void main() {
       secondary: const Color(0xFF00AA00),
     );
     expect(ClubKits.usesDefaults, isTrue);
-    expect(ClubKits.all.map((kit) => kit.slot), JerseyOption.values);
+    expect(ClubKits.all, hasLength(1));
+    expect(ClubKits.all.single.slot, JerseyOption.france);
     expect(ClubKits.of(JerseyOption.france).body, const Color(0xFFAA0000));
     expect(ClubKits.of(JerseyOption.france).trim, const Color(0xFF00AA00));
     expect(JerseyOption.france.label, 'Domicile');
-    expect(ClubKits.enabled, hasLength(3));
+    expect(ClubKits.enabled, hasLength(1));
   });
 
   test('les maillots enregistrés remplacent les maillots par défaut', () {
@@ -60,13 +61,13 @@ void main() {
     json[2]['enabled'] = false;
     ClubKits.setFromJson(json);
     expect(ClubKits.enabled, hasLength(1));
-    expect(ClubKits.forInternalMatch, hasLength(3));
+    expect(ClubKits.forInternalMatch, hasLength(2));
   });
 
   test('une valeur illisible ramène aux maillots par défaut', () {
     expect(ClubKits.parse(null), isNull);
     expect(ClubKits.parse('x'), isNull);
-    expect(ClubKits.parse(savedJson().sublist(0, 2)), isNull);
+    expect(ClubKits.parse(savedJson().sublist(0, 2)), isNotNull);
     final badColor = savedJson();
     badColor[0]['body'] = 'rouge';
     expect(ClubKits.parse(badColor), isNull);
@@ -129,7 +130,38 @@ void main() {
       'pattern': 'plain',
       'goalkeeper_pattern': 'plain',
       'dress_players': false,
+      'archived': false,
       'enabled': true,
     });
   });
+  test('un club peut avoir 1, 4 ou davantage de maillots', () {
+    final one = [ClubKits.defaultsFor().single.toJson()];
+    expect(ClubKits.parse(one), hasLength(1));
+    for (var i = 1; i <= 6; i++) {
+      one.add({
+        ...ClubKits.defaultsFor().single.toJson(),
+        'slot': 'kit_$i',
+        'label': 'Tenue $i',
+      });
+    }
+    final all = ClubKits.parse(one);
+    expect(all, hasLength(7));
+    expect(all!.last.slot.id, 'kit_6');
+    ClubKits.setFromJson(one);
+    expect(ClubKits.enabled, hasLength(7));
+    expect(JerseyOption.fromId('kit_6')!.kit.label, 'Tenue 6');
+  });
+
+  test('archive sans supprimer les références d’un match ancien', () {
+    final saved = savedJson();
+    saved[2]['archived'] = true;
+    saved[2]['enabled'] = false;
+    ClubKits.setFromJson(saved);
+    expect(ClubKits.all, hasLength(3));
+    expect(ClubKits.enabled.map((k) => k.slot), [JerseyOption.france]);
+    expect(JerseyOption.orange.kit.archived, isTrue);
+    expect(JerseyOption.fromId('kit_1'), isNotNull);
+    expect(JerseyOption.fromId('invalide'), isNull);
+  });
+
 }
