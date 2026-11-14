@@ -1,6 +1,9 @@
+import 'dart:ui' as ui;
+
 import 'package:as_grinta/core/club/club_kits.dart';
 import 'package:as_grinta/core/widgets/kit_pattern_paint.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 /// Habille le portrait sans retoucher ni stocker une nouvelle photo. Le visage
 /// reste celui de l'image source. Le même repère carré est utilisé au recadrage,
@@ -17,6 +20,27 @@ class KitPortrait extends StatelessWidget {
   final bool isGoalkeeper;
   final Widget child;
 
+  /// Une seule texture, décodée une fois pour toutes les fiches, les joueurs
+  /// de l'effectif et les compositions. Aucun appel réseau ni traitement du
+  /// visage. Le maillot vectoriel reste disponible si l'asset tarde.
+  static final Future<ui.Image?> _fabricMaterial = _loadFabricMaterial();
+
+  static Future<ui.Image?> _loadFabricMaterial() async {
+    try {
+      final data =
+          await rootBundle.load('assets/composition/jersey_fabric_luma.png');
+      final codec = await ui.instantiateImageCodec(
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+      );
+      final frame = await codec.getNextFrame();
+      codec.dispose();
+      return frame.image;
+    } catch (_) {
+      // Degradation gracieuse en mode hors ligne / moteur Flutter réduit.
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Stack(
         fit: StackFit.expand,
@@ -27,14 +51,18 @@ class KitPortrait extends StatelessWidget {
               child: Semantics(
                 label: '${isGoalkeeper ? 'Gardien' : 'Joueur'} — ${kit.label}',
                 image: true,
-                child: CustomPaint(
-                  key: ValueKey(
-                    'portrait-jersey-${isGoalkeeper ? 'goalkeeper' : 'field'}',
-                  ),
-                  painter: PortraitJerseyPainter(
-                    body: isGoalkeeper ? kit.goalkeeperBody : kit.body,
-                    trim: isGoalkeeper ? kit.goalkeeperTrim : kit.trim,
-                    pattern: isGoalkeeper ? kit.goalkeeperPattern : kit.pattern,
+                child: FutureBuilder<ui.Image?>(
+                  future: _fabricMaterial,
+                  builder: (context, snapshot) => CustomPaint(
+                    key: ValueKey(
+                      'portrait-jersey-${isGoalkeeper ? 'goalkeeper' : 'field'}',
+                    ),
+                    painter: PortraitJerseyPainter(
+                      body: isGoalkeeper ? kit.goalkeeperBody : kit.body,
+                      trim: isGoalkeeper ? kit.goalkeeperTrim : kit.trim,
+                      pattern: isGoalkeeper ? kit.goalkeeperPattern : kit.pattern,
+                      material: snapshot.data,
+                    ),
                   ),
                 ),
               ),
@@ -56,16 +84,21 @@ abstract final class _PortraitGeometry {
   static Path headClip(Size size) {
     final w = size.width;
     final h = size.height;
+    // L'ancien tracé quittait le bord par une grande ligne HORIZONTALE
+    // à 61,3 % et coupait net la mâchoire des joueurs au visage large.
+    // Cette silhouette organique se resserre derrière la mâchoire, puis
+    // rejoint exactement l'ouverture intérieure du col. Aucun angle droit.
     return Path()
       ..moveTo(0, 0)
       ..lineTo(w, 0)
-      ..lineTo(w, h * .613)
-      ..lineTo(w * neckRight, h * .613)
-      ..lineTo(w * neckRight, h * .655)
+      ..lineTo(w, h * .485)
+      ..cubicTo(w * .925, h * .520, w * .845, h * .570, w * .777, h * .625)
+      ..cubicTo(w * .738, h * .662, w * .704, h * .683,
+          w * neckRight, h * .655)
       ..cubicTo(w * .637, h * .711, w * .585, h * .744, w * .5, h * .748)
       ..cubicTo(w * .415, h * .744, w * .363, h * .711, w * neckLeft, h * .655)
-      ..lineTo(w * neckLeft, h * .613)
-      ..lineTo(0, h * .613)
+      ..cubicTo(w * .296, h * .683, w * .262, h * .662, w * .223, h * .625)
+      ..cubicTo(w * .155, h * .570, w * .075, h * .520, 0, h * .485)
       ..close();
   }
 
@@ -121,11 +154,13 @@ class PortraitJerseyPainter extends CustomPainter {
     required this.body,
     required this.trim,
     required this.pattern,
+    this.material,
   });
 
   final Color body;
   final Color trim;
   final KitPattern pattern;
+  final ui.Image? material;
 
   static Color _mix(Color a, Color b, double t) => Color.lerp(a, b, t)!;
 
@@ -199,6 +234,30 @@ class PortraitJerseyPainter extends CustomPainter {
           ],
         ).createShader(const Rect.fromLTWH(0, .64, 1, .38)),
     );
+
+    // Matière tricotée : carte de luminance 256px réutilisée pour tous les
+    // portraits. Le mode multiply garde les véritables couleurs et motifs
+    // du club, mais leur applique les mêmes micro-ombres et le relief.
+    // Les composants du maillot (dont le col) restent parfaitement nets.
+    if (material != null) {
+      canvas.drawImageRect(
+        material!,
+        Rect.fromLTWH(
+          0,
+          0,
+          material!.width.toDouble(),
+          material!.height.toDouble(),
+        ),
+        const Rect.fromLTWH(0, 0, 1, 1),
+        Paint()
+          ..blendMode = BlendMode.multiply
+          ..colorFilter = const ColorFilter.mode(
+            Color(0xAFFFFFFF),
+            BlendMode.modulate,
+          )
+          ..filterQuality = FilterQuality.medium,
+      );
+    }
 
     // Pli de tissu près de l'emmanchure : une ombre fondue plutôt qu'une
     // ligne épaisse qui dessinerait un torse de bande dessinée.
@@ -351,5 +410,6 @@ class PortraitJerseyPainter extends CustomPainter {
   bool shouldRepaint(PortraitJerseyPainter oldDelegate) =>
       oldDelegate.body != body ||
       oldDelegate.trim != trim ||
-      oldDelegate.pattern != pattern;
+      oldDelegate.pattern != pattern ||
+      oldDelegate.material != material;
 }
