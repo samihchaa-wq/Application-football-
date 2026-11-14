@@ -101,8 +101,9 @@ jobs:
           # Vérifie que le déchiffrement et l'extraction fonctionnent ; les
           # fichiers clairs restent uniquement dans le runner éphémère.
           gpg --batch --yes --pinentry-mode loopback             --passphrase "$BACKUP_PASSPHRASE"             --decrypt -o "$work/probe.tar.gz" "$encrypted"
-          tar -tzf "$work/probe.tar.gz" > /dev/null
-          tar -xOzf "$work/probe.tar.gz" payload/manifest.json             | cmp - "$payload/manifest.json"
+          # Contrôler tous les exports SQL et octets Storage après déchiffrement,
+          # sans extraire de fichiers ni afficher de chemins privés.
+          python3 tool/qa/verify_commercial_backup_tar.py "$work/probe.tar.gz"
 
           (cd "$RUNNER_TEMP" && sha256sum "$(basename "$encrypted")")             > "$encrypted.sha256"
           echo "Sauvegarde commerciale chiffrée et relue. Aucun fichier clair déposé."
