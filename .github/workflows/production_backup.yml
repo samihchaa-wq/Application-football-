@@ -108,8 +108,14 @@ jobs:
           # Liste exacte tirée de storage.objects, pas une liste fixe de buckets.
           # Le moindre oubli échoue lors de la comparaison avec PostgreSQL.
           while IFS= read -r bucket; do
-            mkdir -p "$payload/storage/$bucket"
-            supabase storage cp "ss:///$bucket" "$payload/storage/$bucket"               --recursive --experimental --linked
+            # La CLI ajoute le nom du bucket si la destination existe déjà.
+            # La laisser absente évite un dossier bucket/bucket et garde le
+            # chemin exact vérifié ensuite contre storage.objects.
+            if ! supabase storage cp "ss:///$bucket" "$payload/storage/$bucket" \
+                --recursive --experimental --linked > "$work/storage-copy.log" 2>&1; then
+              echo '::error::Copie Storage incomplète : aucune archive ne sera publiée.'
+              exit 1
+            fi
           done < "$work/buckets.txt"
 
           psql "$DB_URL" -X -qAt -v ON_ERROR_STOP=1             -c "$inventory_sql" > "$payload/inventory-after.json"
