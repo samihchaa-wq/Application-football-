@@ -1,0 +1,183 @@
+name: Publier les 32 réglages approuvés — opération ponctuelle
+'on':
+  push:
+    branches:
+    - ops/publish-settings-20261114
+permissions:
+  contents: read
+concurrency:
+  group: cloudflare-pages
+  cancel-in-progress: false
+env:
+  TARGET_SHA: 0c7db313cc7409bae09ad6776c6430d6106a105a
+  COMMERCIAL_APP_URL_VAR: ${{ vars.COMMERCIAL_APP_URL }}
+  PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT || 'petit-filet' }}
+  WRANGLER_VERSION: 4.150.0
+jobs:
+  migrations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_PROJECT_REF: jvxkhgdopslctpcjrhzw
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+    steps:
+    - name: Lire uniquement la version validée sur main
+      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      with:
+        ref: 0c7db313cc7409bae09ad6776c6430d6106a105a
+    - name: Appliquer uniquement les deux migrations approuvées
+      shell: bash
+      run: 'set -euo pipefail
+
+        python3 tool/check_commercial_deploy.py
+
+        python3 tool/check_commercial_migration_state.py
+
+        python3 - <<''PYGATE''
+
+        import os,sys
+
+        from pathlib import Path
+
+        sys.path.insert(0,''tool'')
+
+        from commercial_supabase_setup import query,COMMERCIAL_REF
+
+        assert os.environ[''SUPABASE_PROJECT_REF'']==COMMERCIAL_REF==''jvxkhgdopslctpcjrhzw''
+
+        done={r[''version''] for r in query(COMMERCIAL_REF,os.environ[''SUPABASE_ACCESS_TOKEN''],''select version from supabase_migrations.schema_migrations'')}
+
+        files={p.name.split(''_'',1)[0]:p.name for p in Path(''supabase/migrations'').glob(''*.sql'')}
+
+        assert not done-set(files), ''Unknown migrations: stop before writes''
+
+        pending=set(files)-done
+
+        assert pending <= {''20261118001000'',''20261119000000''}, ''Unapproved migrations: stop before writes''
+
+        print(''Approved pending migrations:'', '', ''.join(sorted(pending)) or ''none'')
+
+        PYGATE
+
+        python3 tool/commercial_supabase_setup.py migrations
+
+        '
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - name: Vérifier les réglages Cloudflare
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID || '3eac3b573d991d43901ec78c94c3dd53'
+          }}
+      shell: bash
+      run: "set -euo pipefail\n# Secrets collés depuis un téléphone : retirer les blancs invisibles.\nCLOUDFLARE_API_TOKEN=\"\
+        $(printf '%s' \"$CLOUDFLARE_API_TOKEN\" | tr -d '[:space:]')\"\nCLOUDFLARE_ACCOUNT_ID=\"$(printf '%s' \"$CLOUDFLARE_ACCOUNT_ID\"\
+        \ | tr -d '[:space:]')\"\nmissing=()\n[[ -n \"${CLOUDFLARE_API_TOKEN}\" ]] || missing+=('secret CLOUDFLARE_API_TOKEN')\n\
+        [[ -n \"${CLOUDFLARE_ACCOUNT_ID}\" ]] || missing+=('secret CLOUDFLARE_ACCOUNT_ID')\n[[ -n \"${PAGES_PROJECT}\" ]]\
+        \ || missing+=('variable CLOUDFLARE_PAGES_PROJECT')\nif (( ${#missing[@]} )); then\n  for item in \"${missing[@]}\"\
+        ; do echo \"::error::Manque : $item (voir docs/MISE_EN_LIGNE.md).\"; done\n  exit 1\nfi\nif [[ ! \"$PAGES_PROJECT\"\
+        \ =~ ^[a-z0-9][a-z0-9-]{0,57}$ ]]; then\n  echo '::error::CLOUDFLARE_PAGES_PROJECT : minuscules, chiffres et tirets\
+        \ uniquement.'\n  exit 1\nfi\n"
+    - name: Préparer le projet Cloudflare Pages
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID || '3eac3b573d991d43901ec78c94c3dd53'
+          }}
+      shell: bash
+      run: "set -euo pipefail\ntoken=\"$(printf '%s' \"$CLOUDFLARE_API_TOKEN\" | tr -d '[:space:]')\"\naccount=\"$(printf\
+        \ '%s' \"$CLOUDFLARE_ACCOUNT_ID\" | tr -d '[:space:]')\"\napi=\"https://api.cloudflare.com/client/v4/accounts/${account}/pages/projects\"\
+        \nauth=(-H \"Authorization: Bearer ${token}\" -H 'Content-Type: application/json')\nproject=$(curl -sS \"${auth[@]}\"\
+        \ \"${api}/${PAGES_PROJECT}\")\nif [[ \"$(jq -r '.success' <<<\"$project\")\" != \"true\" ]]; then\n  echo \"Projet\
+        \ ${PAGES_PROJECT} absent : création.\"\n  project=$(curl -sS -X POST \"${auth[@]}\" \"$api\" \\\n    --data \"$(jq\
+        \ -n --arg n \"$PAGES_PROJECT\" '{name: $n, production_branch: \"main\"}')\")\n  if [[ \"$(jq -r '.success' <<<\"\
+        $project\")\" != \"true\" ]]; then\n    echo '::error::Projet Cloudflare Pages ni lisible ni créable : vérifier le\
+        \ jeton, ses droits (Cloudflare Pages > Modifier) et l ID de compte.'\n    jq -r '.errors[]? | \"\\(.code) \\(.message)\"\
+        ' <<<\"$project\"\n    exit 1\n  fi\nfi\nsubdomain=$(jq -r '.result.subdomain // empty' <<<\"$project\")\nif [[ -z\
+        \ \"$subdomain\" ]]; then\n  echo \"::error::Cloudflare n'a pas renvoyé l'adresse du projet.\"\n  exit 1\nfi\necho\
+        \ \"Adresse Cloudflare du projet : https://${subdomain}/\"\nurl=\"$(printf '%s' \"${COMMERCIAL_APP_URL_VAR}\" | tr\
+        \ -d '[:space:]')\"\n[[ -n \"$url\" ]] || url=\"https://${subdomain}/\"\necho \"Adresse publique utilisée : $url\"\
+        \necho \"COMMERCIAL_PUBLIC_URL=$url\" >> \"$GITHUB_ENV\"\n"
+    - name: Récupérer la version validée
+      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      with:
+        ref: ${{ env.TARGET_SHA }}
+        fetch-depth: 0
+    - name: Refuser un commit absent de main
+      shell: bash
+      run: "set -euo pipefail\nif [[ ! \"$TARGET_SHA\" =~ ^[0-9a-f]{40}$ ]]; then\n  echo '::error::target_sha doit être un\
+        \ SHA complet de 40 caractères.'\n  exit 1\nfi\ngit fetch origin main\nif ! git merge-base --is-ancestor \"$TARGET_SHA\"\
+        \ origin/main; then\n  echo '::error::Seuls les commits déjà présents dans main peuvent être publiés.'\n  exit 1\n\
+        fi\n"
+    - name: Pointer la configuration vers l'adresse définitive
+      shell: bash
+      run: "set -euo pipefail\njq --arg url \"$COMMERCIAL_PUBLIC_URL\" '.PUBLIC_APP_URL = $url' \\\n  config/production.json\
+        \ > /tmp/production.json\nmv /tmp/production.json config/production.json\n"
+    - name: Bloquer une mauvaise configuration
+      run: python3 tool/check_commercial_deploy.py
+    - name: Préparer la politique de sécurité du navigateur (CSP)
+      run: python3 tool/stamp_commercial_csp.py
+    - name: Installer Flutter
+      uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
+      with:
+        channel: stable
+        flutter-version: 3.47.9
+        cache: true
+    - name: Installer les dépendances verrouillées
+      run: flutter pub get --enforce-lockfile
+    - name: Lire et estampiller la version
+      shell: bash
+      run: "set -euo pipefail\nversion=$(awk '/^version:/{print $2}' pubspec.yaml)\ntest -n \"$version\"\nweb_version=\"${version}-${TARGET_SHA:0:12}\"\
+        \ncat > web/build_version.js <<JS\n(function (globalScope) {\n  globalScope.AS_GRINTA_WEB_VERSION = '${web_version}';\n\
+        })(typeof self !== 'undefined' ? self : window);\nJS\necho \"APP_VERSION=$version\" >> \"$GITHUB_ENV\"\necho \"WEB_VERSION=$web_version\"\
+        \ >> \"$GITHUB_ENV\"\n"
+    - name: Construire l'appli web
+      run: "flutter build web \\\n  --release \\\n  --base-href \"/\" \\\n  --pwa-strategy=none \\\n  --no-web-resources-cdn\
+        \ \\\n  --dart-define-from-file=config/production.json \\\n  --dart-define=APP_VERSION=\"$APP_VERSION\"\n"
+    - name: Versionner les fichiers critiques
+      run: python3 tool/stamp_web_release.py
+    - name: Respecter le budget de poids
+      env:
+        MAX_MAIN_DART_JS_BYTES: '6000000'
+        MAX_MAIN_DART_JS_GZIP_BYTES: '1700000'
+      run: python3 tool/check_web_performance_budget.py
+    - name: En-têtes de sécurité et de cache
+      shell: bash
+      run: "set -euo pipefail\n# Pas de 404.html : Cloudflare Pages renvoie alors index.html pour\n# toute adresse inconnue\
+        \ (navigation de l'appli).\nrm -f build/web/404.html\ncat > build/web/_headers <<'TXT'\n/*\n  Strict-Transport-Security:\
+        \ max-age=31536000; includeSubDomains\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n\
+        \  X-Frame-Options: DENY\n/index.html\n  Cache-Control: no-cache\n/sw.js\n  Cache-Control: no-cache\n/build_version.js\n\
+        \  Cache-Control: no-cache\nTXT\n"
+    - name: Contrôler le contenu construit
+      shell: bash
+      run: "set -euo pipefail\nfor f in index.html app_shell.js build_version.js flutter_bootstrap.js main.dart.js favicon.svg\
+        \ _headers; do\n  test -s \"build/web/$f\"\ndone\ngrep -Fq \"$WEB_VERSION\" build/web/build_version.js\ngrep -q '<base\
+        \ href=\"/\">' build/web/index.html\ngrep -q 'Content-Security-Policy' build/web/index.html\nif grep -Fq 'a-remplacer.supabase.co'\
+        \ build/web/index.html; then\n  echo '::error::CSP resté sur la configuration provisoire.'\n  exit 1\nfi\n"
+    - name: Installer Node
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+      with:
+        node-version: '24'
+    - name: Publier sur Cloudflare Pages
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID || '3eac3b573d991d43901ec78c94c3dd53'
+          }}
+      shell: bash
+      run: "set -euo pipefail\nCLOUDFLARE_API_TOKEN=\"$(printf '%s' \"$CLOUDFLARE_API_TOKEN\" | tr -d '[:space:]')\"\nCLOUDFLARE_ACCOUNT_ID=\"\
+        $(printf '%s' \"$CLOUDFLARE_ACCOUNT_ID\" | tr -d '[:space:]')\"\nexport CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID\n\
+        wrangler=\"npx --yes wrangler@${WRANGLER_VERSION}\"\nif ! $wrangler pages project list 2>/dev/null | grep -qw \"$PAGES_PROJECT\"\
+        ; then\n  $wrangler pages project create \"$PAGES_PROJECT\" --production-branch=main\nfi\n$wrangler pages deploy build/web\
+        \ \\\n  --project-name=\"$PAGES_PROJECT\" \\\n  --branch=main \\\n  --commit-hash=\"$TARGET_SHA\" \\\n  --commit-dirty=true\n"
+    - name: Vérifier le site en ligne
+      shell: bash
+      run: "set -euo pipefail\nbase=\"$COMMERCIAL_PUBLIC_URL\"\nproject_host=$(jq -r '.SUPABASE_URL | sub(\"^https://\"; \"\
+        \") | sub(\"/$\"; \"\")' config/production.json)\nok=0\nfor attempt in 1 2 3 4 5 6 7 8 9 10; do\n  if curl -LfsS \"\
+        ${base}build_version.js?audit=$(date +%s)\" -o /tmp/build_version.js \\\n     && grep -Fq \"$WEB_VERSION\" /tmp/build_version.js;\
+        \ then\n    ok=1; break\n  fi\n  sleep 15\ndone\nif (( ! ok )); then\n  echo \"::error::La nouvelle version n'est\
+        \ pas visible sur $base (domaine pas encore relié ?).\"\n  exit 1\nfi\ncurl -LfsS \"${base}?audit=$(date +%s)\" -o\
+        \ /tmp/index.html\ngrep -Fq \"https://$project_host\" /tmp/index.html\ngrep -Fq \"wss://$project_host\" /tmp/index.html\n\
+        curl -I -LfsS \"$base\" -o /tmp/headers.txt\ngrep -qi '^strict-transport-security:' /tmp/headers.txt\necho \"Site\
+        \ publié et vérifié : $base\"\n"
+    needs: migrations
