@@ -222,8 +222,7 @@ begin
     'enabled', coalesce((v_kit ->> 'enabled')::boolean, true)
   );
 end;
-$function$
-
+$function$;
 
 CREATE OR REPLACE FUNCTION private.capture_match_kit_snapshot(p_match_id uuid)
  RETURNS void
