@@ -34,7 +34,7 @@ class NativeDumpTests(unittest.TestCase):
         self.environment.start()
         self.addCleanup(self.environment.stop)
 
-    def install_clients(self, major=17, fail=False):
+    def install_clients(self, major=17, fail=False, connection_fail=False, malformed_version=False):
         # Le programme vérifie les vrais arguments et l'environnement transmis
         # par bash, mais ne se connecte nulle part et ne lance aucune commande.
         source = f'''#!{sys.executable}
@@ -43,18 +43,19 @@ program=pathlib.Path(sys.argv[0]).name
 if "--version" in sys.argv:
     print(program + " (PostgreSQL) {major}.6")
     raise SystemExit(0)
-assert os.environ["PGPASSWORD"] == {self.password!r}
-assert os.environ["PGUSER"] == "postgres.{PROJECT_REF}"
-assert os.environ["PGDATABASE"] == "postgres"
-assert os.environ["PGSSLMODE"] == "require"
-assert os.environ["PGPASSWORD"] not in " ".join(sys.argv)
+assert os.environ["BACKUP_DATABASE_URI"] == {self.url!r}
+assert os.environ["BACKUP_DATABASE_URI"] in sys.argv
+assert "PGPASSWORD" not in os.environ
 with open({str(self.calls)!r}, "a") as out:
     out.write(json.dumps({{"program": program,"args":sys.argv[1:]}}) + "\\n")
 if program == "psql":
-    print("170006")
+    if {connection_fail!r}:
+        print("FATAL: password authentication failed " + os.environ["BACKUP_DATABASE_URI"], file=sys.stderr)
+        raise SystemExit(2)
+    print("unexpected" if {malformed_version!r} else "170006")
 elif {fail!r}:
     print("partial export")
-    print(os.environ["PGPASSWORD"], file=sys.stderr)
+    print(os.environ["BACKUP_DATABASE_URI"], file=sys.stderr)
     raise SystemExit(2)
 elif program == "pg_dumpall":
     print('CREATE ROLE "postgres";')
@@ -72,10 +73,10 @@ else:
             file.write_text(source)
             file.chmod(0o700)
 
-    def test_connection_uses_the_exact_url_password_without_shell_expansion(self):
+    def test_connection_uses_the_exact_verified_uri_without_shell_expansion(self):
         env = database_environment(" \t" + self.url + "\r\n")
-        self.assertEqual(env["PGPASSWORD"], self.password)
-        self.assertEqual(env["PGUSER"], f"postgres.{PROJECT_REF}")
+        self.assertEqual(env["BACKUP_DATABASE_URI"], self.url)
+        self.assertNotIn("PGPASSWORD", env)
         self.assertNotIn("SUPABASE_ACCESS_TOKEN", env)
         self.assertNotIn("BACKUP_PASSPHRASE", env)
 
@@ -98,12 +99,12 @@ else:
         self.assertIn('-- private content', data)
         calls = [json.loads(line) for line in self.calls.read_text().splitlines()]
         role = next(call for call in calls if call["program"] == "pg_dumpall")
-        self.assertIn(f"user=postgres.{PROJECT_REF}", " ".join(role["args"]))
+        self.assertIn(self.url, role["args"])
         for output in self.output.iterdir():
             self.assertEqual(output.stat().st_mode & 0o777, 0o600)
             self.assertNotIn(self.password, output.read_text())
         dumps = [call for call in calls if call["program"] == "pg_dump"]
-        self.assertTrue(all(f"postgres.{PROJECT_REF}" in call["args"] for call in dumps))
+        self.assertTrue(all(self.url in call["args"] for call in dumps))
         data_call = next(call for call in dumps if "--data-only" in call["args"])
         exclusions = data_call["args"][data_call["args"].index("--exclude-schema") + 1].split("|")
         self.assertNotIn("auth", exclusions)
@@ -121,7 +122,21 @@ else:
         with self.assertRaises(UnsafeBackup) as failure:
             dump_database(self.url, self.output)
         self.assertNotIn(self.password, str(failure.exception))
+        self.assertNotIn(self.url, str(failure.exception))
         self.assertFalse((self.output / "roles.sql").exists())
+
+    def test_connection_errors_are_classified_without_exposing_the_uri(self):
+        self.install_clients(connection_fail=True)
+        with self.assertRaisesRegex(UnsafeBackup, "authentification refusée") as failure:
+            dump_database(self.url, self.output)
+        self.assertNotIn(self.url, str(failure.exception))
+        self.assertFalse(self.output.exists())
+
+    def test_malformed_server_version_is_rejected_before_exports(self):
+        self.install_clients(malformed_version=True)
+        with self.assertRaisesRegex(UnsafeBackup, "format inattendu"):
+            dump_database(self.url, self.output)
+        self.assertFalse(self.output.exists())
 
 
 if __name__ == "__main__":

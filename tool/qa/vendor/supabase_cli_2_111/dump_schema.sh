@@ -3,11 +3,7 @@
 # MIT license: see LICENSE in this directory. Uses the verified host connection.
 set -euo pipefail
 
-export PGHOST="$PGHOST"
-export PGPORT="$PGPORT"
-export PGUSER="$PGUSER"
-export PGPASSWORD="$PGPASSWORD"
-export PGDATABASE="$PGDATABASE"
+# URI libpq identique à celle de l’inventaire ; aucun set -x ni log d’arguments.
 
 # Explanation of pg_dump flags:
 #
@@ -26,7 +22,7 @@ export PGDATABASE="$PGDATABASE"
 #   - do not create publication "supabase_realtime"
 #   - do not set transaction_timeout which requires pg17
 pg_dump \
-    --host "$PGHOST" --port "$PGPORT" --username "$PGUSER" --dbname "$PGDATABASE" \
+    --dbname "$BACKUP_DATABASE_URI" \
     --schema-only \
     --quote-all-identifier \
     --role "postgres" \

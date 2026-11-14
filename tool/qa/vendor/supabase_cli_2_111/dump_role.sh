@@ -3,11 +3,7 @@
 # MIT license: see LICENSE in this directory. Uses the verified host connection.
 set -euo pipefail
 
-export PGHOST="$PGHOST"
-export PGPORT="$PGPORT"
-export PGUSER="$PGUSER"
-export PGPASSWORD="$PGPASSWORD"
-export PGDATABASE="$PGDATABASE"
+# URI libpq identique à celle de l’inventaire ; aucun set -x ni log d’arguments.
 
 # Explanation of pg_dumpall flags:
 #
@@ -21,7 +17,7 @@ export PGDATABASE="$PGDATABASE"
 #   - discard role attributes that require superuser, ie. nosuperuser, noreplication
 #   - do not alter membership grants by supabase_admin role
 pg_dumpall \
-    --database "host=$PGHOST port=$PGPORT user=$PGUSER dbname=$PGDATABASE sslmode=require" \
+    --database "$BACKUP_DATABASE_URI" \
     --roles-only \
     --role "postgres" \
     --quote-all-identifier \
