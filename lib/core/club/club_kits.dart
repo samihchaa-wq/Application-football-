@@ -31,6 +31,7 @@ class ClubKit {
     this.pattern = KitPattern.plain,
     this.goalkeeperPattern = KitPattern.plain,
     this.dressPlayers = false,
+    this.archived = false,
     required this.enabled,
   });
 
@@ -54,6 +55,8 @@ class ClubKit {
   /// Option du club, conservée dans la tenue figée du match. Les anciennes
   /// photos restent intactes ; le maillot est composé uniquement à l'écran.
   final bool dressPlayers;
+  /// Une tenue supprimée reste en base pour les anciens matchs.
+  final bool archived;
   final bool enabled;
 
   ClubKit copyWith({
@@ -65,6 +68,7 @@ class ClubKit {
     KitPattern? pattern,
     KitPattern? goalkeeperPattern,
     bool? dressPlayers,
+    bool? archived,
     bool? enabled,
   }) =>
       ClubKit(
@@ -77,6 +81,7 @@ class ClubKit {
         pattern: pattern ?? this.pattern,
         goalkeeperPattern: goalkeeperPattern ?? this.goalkeeperPattern,
         dressPlayers: dressPlayers ?? this.dressPlayers,
+        archived: archived ?? this.archived,
         enabled: enabled ?? this.enabled,
       );
 
@@ -90,6 +95,7 @@ class ClubKit {
         'pattern': pattern.name,
         'goalkeeper_pattern': goalkeeperPattern.name,
         'dress_players': dressPlayers,
+        'archived': archived,
         'enabled': enabled,
       };
 
@@ -105,6 +111,7 @@ class ClubKit {
       other.pattern == pattern &&
       other.goalkeeperPattern == goalkeeperPattern &&
       other.dressPlayers == dressPlayers &&
+      other.archived == archived &&
       other.enabled == enabled;
 
   @override
@@ -118,6 +125,7 @@ class ClubKit {
         pattern,
         goalkeeperPattern,
         dressPlayers,
+        archived,
         enabled,
       );
 }
@@ -128,7 +136,7 @@ String colorToHex(Color color) {
   return '#${rgb.toRadixString(16).padLeft(6, '0').toUpperCase()}';
 }
 
-/// Les trois maillots du club du compte connecté.
+/// Les tenues configurables du club du compte connecté.
 ///
 /// Tenus ici, comme le nom du club ([ClubIdentity]), parce qu'ils s'affichent
 /// dans plusieurs écrans (formulaire de match, fiche du match, compositions
@@ -141,6 +149,7 @@ abstract final class ClubKits {
         JerseyOption.france => const Color(0xFF168A52),
         JerseyOption.orange => const Color(0xFFF5A300),
         JerseyOption.blue => const Color(0xFF1F6FEB),
+        _ => const Color(0xFF168A52),
       };
 
   static Color defaultGoalkeeperTrimFor(JerseyOption slot) =>
@@ -154,9 +163,13 @@ abstract final class ClubKits {
   /// Change à chaque mise à jour des maillots.
   static ValueListenable<int> get revision => _revision;
 
-  /// Maillots proposés par défaut, à partir des couleurs du club (ou des
-  /// couleurs neutres de l'application s'il n'en a pas choisi).
-  static List<ClubKit> defaultsFor({Color? primary, Color? secondary}) {
+  /// Un nouveau club ne commence qu'avec un maillot Domicile.
+  static List<ClubKit> defaultsFor({Color? primary, Color? secondary}) =>
+      [_legacyDefaults(primary: primary, secondary: secondary).first];
+
+  /// Conserver les trois identifiants d'origine pour lire les anciens matchs.
+  /// Les tenues absentes ne sont PAS proposées aux nouveaux matchs.
+  static List<ClubKit> _legacyDefaults({Color? primary, Color? secondary}) {
     final main = primary ?? AppTheme.defaultPrimary;
     final second = secondary ?? const Color(0xFFFFFFFF);
     return [
@@ -165,8 +178,6 @@ abstract final class ClubKits {
         label: 'Domicile',
         body: main,
         trim: second,
-        goalkeeperBody: defaultGoalkeeperBodyFor(JerseyOption.france),
-        goalkeeperTrim: defaultGoalkeeperTrimFor(JerseyOption.france),
         enabled: true,
       ),
       ClubKit(
@@ -175,8 +186,7 @@ abstract final class ClubKits {
         body: const Color(0xFFFFFFFF),
         trim: main,
         goalkeeperBody: defaultGoalkeeperBodyFor(JerseyOption.orange),
-        goalkeeperTrim: defaultGoalkeeperTrimFor(JerseyOption.orange),
-        enabled: true,
+        enabled: false,
       ),
       ClubKit(
         slot: JerseyOption.blue,
@@ -184,34 +194,57 @@ abstract final class ClubKits {
         body: const Color(0xFF1B1F2A),
         trim: second,
         goalkeeperBody: defaultGoalkeeperBodyFor(JerseyOption.blue),
-        goalkeeperTrim: defaultGoalkeeperTrimFor(JerseyOption.blue),
-        enabled: true,
+        enabled: false,
       ),
     ];
   }
 
-  /// Les trois maillots, dans l'ordre des emplacements.
   static List<ClubKit> get all =>
       _saved ?? defaultsFor(primary: _clubPrimary, secondary: _clubSecondary);
 
   /// Vrai quand le club n'a encore rien réglé.
   static bool get usesDefaults => _saved == null;
 
-  /// Les maillots que l'administrateur propose pour un match.
+  /// Les maillots actifs proposés aux matchs ordinaires.
   static List<ClubKit> get enabled => [
         for (final kit in all)
-          if (kit.enabled) kit,
+          if (kit.enabled && !kit.archived) kit,
       ];
 
-  /// Les maillots au choix pour un match « entre nous », où il en faut deux
-  /// différents : si le club n'en propose qu'un, les trois restent au choix.
+  /// Entre-nous nécessite deux tenues différentes. Si le club n'en possède
+  /// qu'une, offrir une tenue de contraste historique sans l'ajouter à ses
+  /// réglages : aucune nouvelle entrée n'est créée à son insu.
   static List<ClubKit> get forInternalMatch {
     final list = enabled;
-    return list.length >= 2 ? list : all;
+    if (list.length >= 2) return list;
+    if (list.isEmpty) return defaultsFor();
+    final contrasting = _legacyDefaults(
+      primary: _clubPrimary,
+      secondary: _clubSecondary,
+    ).firstWhere((kit) => kit.slot != list.first.slot);
+    return [...list, contrasting.copyWith(enabled: true)];
   }
 
-  static ClubKit of(JerseyOption slot) =>
-      all.firstWhere((kit) => kit.slot == slot);
+  /// Une référence de match ancienne ou archivée reste résoluble.
+  static ClubKit of(JerseyOption slot) {
+    for (final kit in all) {
+      if (kit.slot == slot) return kit;
+    }
+    for (final kit in _legacyDefaults(
+      primary: _clubPrimary,
+      secondary: _clubSecondary,
+    )) {
+      if (kit.slot == slot) return kit.copyWith(enabled: false);
+    }
+    return ClubKit(
+      slot: slot,
+      label: 'Maillot archivé',
+      body: const Color(0xFF1B1F2A),
+      trim: const Color(0xFFFFFFFF),
+      enabled: false,
+      archived: true,
+    );
+  }
 
   /// Retient les couleurs du club, qui servent aux maillots par défaut.
   static void setClubColors({Color? primary, Color? secondary}) {
@@ -237,20 +270,19 @@ abstract final class ClubKits {
     _revision.value += 1;
   }
 
-  /// Lit les maillots enregistrés. Renvoie null si la valeur ne décrit pas
-  /// exactement les trois emplacements : rien ne doit casser l'affichage.
+  /// Lit de 1 à N tenues, y compris les historiques archivées.
+  /// Une valeur malformée ne doit jamais contaminer un autre club.
   static List<ClubKit>? parse(Object? json) {
-    if (json is! List || json.length != JerseyOption.values.length) {
-      return null;
-    }
-    final bySlot = <JerseyOption, ClubKit>{};
+    if (json is! List || json.isEmpty) return null;
+    final result = <ClubKit>[];
+    final seen = <String>{};
+    var activeCount = 0;
     for (final item in json) {
       if (item is! Map) return null;
       final slot = JerseyOption.fromId(item['slot']?.toString());
-      if (slot == null) return null;
+      if (slot == null || !seen.add(slot.id)) return null;
       final body = AppTheme.parseHex(item['body']?.toString());
       final trim = AppTheme.parseHex(item['trim']?.toString());
-      // Les maillots antérieurs restent lisibles grâce à ces valeurs stables.
       final goalkeeperBody = item.containsKey('goalkeeper_body')
           ? AppTheme.parseHex(item['goalkeeper_body']?.toString())
           : defaultGoalkeeperBodyFor(slot);
@@ -262,10 +294,16 @@ abstract final class ClubKits {
           trim == null ||
           goalkeeperBody == null ||
           goalkeeperTrim == null ||
-          label.isEmpty) {
+          label.isEmpty ||
+          label.length > maxLabelLength ||
+          (item.containsKey('enabled') && item['enabled'] is! bool) ||
+          (item.containsKey('archived') && item['archived'] is! bool)) {
         return null;
       }
-      bySlot[slot] = ClubKit(
+      final archived = item['archived'] == true;
+      final enabled = item['enabled'] != false && !archived;
+      if (enabled) activeCount += 1;
+      result.add(ClubKit(
         slot: slot,
         label: label,
         body: body,
@@ -275,10 +313,10 @@ abstract final class ClubKits {
         pattern: KitPattern.fromJson(item['pattern']),
         goalkeeperPattern: KitPattern.fromJson(item['goalkeeper_pattern']),
         dressPlayers: item['dress_players'] == true,
-        enabled: item['enabled'] != false,
-      );
+        archived: archived,
+        enabled: enabled,
+      ));
     }
-    if (bySlot.length != JerseyOption.values.length) return null;
-    return [for (final slot in JerseyOption.values) bySlot[slot]!];
+    return activeCount > 0 ? result : null;
   }
 }
