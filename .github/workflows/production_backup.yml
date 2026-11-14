@@ -32,6 +32,29 @@ jobs:
       - name: Checkout commercial repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
+      # Le mot de passe est déjà dans PRODUCTION_DB_URL (secret GitHub).
+      # Le réutiliser pour supabase link s'il n'existe pas de secret dédié,
+      # après vérification stricte du projet cible. Ne jamais l'afficher.
+      - name: Resolve commercial DB password from verified secret URL
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os,sys
+          from urllib.parse import urlsplit,unquote
+          sys.path.insert(0,'tool/qa')
+          from commercial_backup_bundle import PROJECT_REF, validate_database_url
+          url=os.environ.get('PRODUCTION_DB_URL','')
+          validate_database_url(url,PROJECT_REF)
+          password=os.environ.get('SUPABASE_DB_PASSWORD') or unquote(urlsplit(url).password or '')
+          if not password or any(c in password for c in '\\r\\n'):
+              raise ValueError('Mot de passe DB absent ou invalide')
+          print('::add-mask::' + password)
+          with open(os.environ['GITHUB_ENV'],'a',encoding='utf-8') as out:
+              print('SUPABASE_DB_PASSWORD='+password,file=out)
+          print('Mot de passe DB commercial disponible depuis le secret URL vérifié.')
+          PY
+
       - name: Fail closed if secrets, encryption or project identity are unsafe
         shell: bash
         run: python3 tool/qa/commercial_backup_bundle.py preflight
