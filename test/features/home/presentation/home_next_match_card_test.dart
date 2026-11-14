@@ -6,23 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-class _NotificationStatusRepository implements MatchLiveNotificationRepository {
-  const _NotificationStatusRepository(this.eligible);
-
-  final bool eligible;
-
-  @override
-  Future<MatchLiveNotificationStatus> fetchStatus(String matchId) async =>
-      MatchLiveNotificationStatus(eligible: eligible, subscribed: false);
-
-  @override
-  Future<MatchLiveNotificationStatus> setEnabled({
-    required String matchId,
-    required bool enabled,
-  }) async =>
-      MatchLiveNotificationStatus(eligible: eligible, subscribed: enabled);
-}
-
 void main() {
   final now = DateTime.now();
   final kickoff = DateTime(
@@ -56,8 +39,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          matchLiveNotificationRepositoryProvider.overrideWithValue(
-            _NotificationStatusRepository(eligible),
+          matchLiveNotificationStatusProvider.overrideWith(
+            (ref, matchId) async => MatchLiveNotificationStatus(
+              eligible: eligible,
+              subscribed: false,
+            ),
           ),
         ],
         child: MaterialApp(
@@ -72,6 +58,8 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    // Un FutureProvider.autoDispose peut compléter après la première frame.
+    await tester.pump(const Duration(milliseconds: 50));
   }
 
   testWidgets('cloche et crayon au niveau de la date, pas des équipes', (
