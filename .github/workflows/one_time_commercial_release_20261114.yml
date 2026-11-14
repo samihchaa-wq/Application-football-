@@ -1,0 +1,128 @@
+name: Livraison ponctuelle Petit Filet (14 novembre)
+# Déclenchée une fois à son introduction sur main.
+# Aucun accès à la base d'AS Grinta ni à d'autres projets.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/one_time_commercial_release_20261114.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: one-time-commercial-release-20261114
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Migrer Petit Filet puis publier Cloudflare
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SUPABASE_PROJECT_REF: jvxkhgdopslctpcjrhzw
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout de la version fusionnée
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Vérifier le projet, les secrets et les migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/main'
+          test "$SUPABASE_PROJECT_REF" = 'jvxkhgdopslctpcjrhzw'
+          test -n "$SUPABASE_ACCESS_TOKEN" || { echo '::error::SUPABASE_ACCESS_TOKEN absent'; exit 1; }
+          python3 tool/check_commercial_deploy.py
+          python3 tool/check_commercial_migration_state.py
+
+      - name: Sauvegarder intégralement la base commerciale et le Storage
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run production_backup.yml --ref main
+          sleep 8
+          backup_id=''
+          for attempt in $(seq 1 12); do
+            backup_id=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/production_backup.yml/runs?event=workflow_dispatch&per_page=30" \
+              --jq ".workflow_runs | map(select(.head_sha == \"$GITHUB_SHA\")) | sort_by(.created_at) | last | .id // empty")
+            test -n "$backup_id" && break
+            sleep 5
+          done
+          test -n "$backup_id" || { echo '::error::Sauvegarde non déclenchée.'; exit 1; }
+          echo "Sauvegarde : https://github.com/$GITHUB_REPOSITORY/actions/runs/$backup_id"
+          gh run watch "$backup_id" --exit-status --interval 10
+          echo 'Sauvegarde chiffrée et contrôlée avant migration.'
+
+      - name: Empreinte des maillots existants avant migration
+        id: before
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os,sys
+          sys.path.insert(0,'tool')
+          from commercial_supabase_setup import query
+          sql = ("select count(*)::int as clubs, "
+                 "md5(coalesce(string_agg(id::text || ':' || coalesce(kits::text,'null'),"
+                 " '|' order by id),'')) as fingerprint from public.clubs")
+          rows=query(os.environ['SUPABASE_PROJECT_REF'],os.environ['SUPABASE_ACCESS_TOKEN'],sql)
+          if len(rows)!=1 or rows[0]['clubs'] < 1: raise RuntimeError('clubs absents')
+          with open(os.environ['GITHUB_OUTPUT'],'a') as output:
+              print('clubs='+str(rows[0]['clubs']),file=output)
+              print('fingerprint='+rows[0]['fingerprint'],file=output)
+          print('Contrôle pré-migration : nombre de clubs et empreinte relevés sans données personnelles.')
+          PY
+
+      - name: Appliquer la migration commerciale prévue uniquement
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tool/commercial_supabase_setup.py migrations
+
+      - name: Vérifier schéma, registre et données inchangées
+        env:
+          EXPECTED_CLUBS: ${{ steps.before.outputs.clubs }}
+          EXPECTED_FINGERPRINT: ${{ steps.before.outputs.fingerprint }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tool/check_kits_release_schema.py
+          python3 - <<'PY'
+          import os,sys
+          sys.path.insert(0,'tool')
+          from commercial_supabase_setup import query
+          rows=query(os.environ['SUPABASE_PROJECT_REF'],os.environ['SUPABASE_ACCESS_TOKEN'],
+              "select count(*)::int as clubs, "
+              "md5(coalesce(string_agg(id::text || ':' || coalesce(kits::text,'null'),"
+              " '|' order by id),'')) as fingerprint from public.clubs")
+          if (len(rows)!=1 or str(rows[0]['clubs'])!=os.environ['EXPECTED_CLUBS']
+              or rows[0]['fingerprint']!=os.environ['EXPECTED_FINGERPRINT']):
+              raise RuntimeError('Données des clubs modifiées : bloquer la publication')
+          print('Maillots de tous les clubs préservés ; registre et schéma compatibles.')
+          PY
+
+      - name: Déclencher le workflow officiel Cloudflare
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run deploy_cloudflare.yml --ref main -f target_sha="$GITHUB_SHA"
+          echo 'Publication Cloudflare demandée pour le commit validé.'
+          sleep 8
+          run_id=''
+          for attempt in $(seq 1 12); do
+            run_id=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/deploy_cloudflare.yml/runs?event=workflow_dispatch&per_page=30" \
+              --jq ".workflow_runs | map(select(.head_sha == \"$GITHUB_SHA\")) | sort_by(.created_at) | last | .id // empty")
+            test -n "$run_id" && break
+            sleep 5
+          done
+          if [[ -z "$run_id" ]]; then
+            echo '::error::Workflow Cloudflare non retrouvé après lancement.'
+            exit 1
+          fi
+          echo "Workflow Cloudflare : https://github.com/$GITHUB_REPOSITORY/actions/runs/$run_id"
+          gh run watch "$run_id" --exit-status --interval 10
+          echo 'Publication et contrôle public Cloudflare réussis.'
