@@ -13,7 +13,7 @@ import os
 import re
 import sys
 from pathlib import Path, PurePosixPath
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, unquote
 
 PROJECT_REF = "jvxkhgdopslctpcjrhzw"
 BUCKET_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,100}$")
@@ -47,14 +47,25 @@ def validate_database_url(value: str, project_ref: str = PROJECT_REF) -> None:
         raise UnsafeBackup("Connexion PostgreSQL malformée.") from None
 
 
+def database_password(value: str) -> str:
+    """Read the existing commercial DB URL password; never print in logs.
+
+    The workflow only captures this value in an untraced shell assignment,
+    immediately masks it and uses it to authenticate the linked CLI.
+    """
+    validate_database_url(value)
+    password = unquote(urlsplit(value).password or "")
+    if not password or any(ord(c) < 32 or ord(c) == 127 for c in password):
+        raise UnsafeBackup("Mot de passe PostgreSQL invalide.")
+    return password
+
+
 def check_environment(environment: dict[str, str]) -> None:
     if environment.get("SUPABASE_PROJECT_REF") != PROJECT_REF:
         raise UnsafeBackup("Projet Supabase commercial incorrect.")
-    validate_database_url(environment.get("PRODUCTION_DB_URL", ""))
-    if not environment.get("SUPABASE_ACCESS_TOKEN") or not environment.get(
-        "SUPABASE_DB_PASSWORD"
-    ):
-        raise UnsafeBackup("Accès Supabase commercial non configuré.")
+    database_password(environment.get("PRODUCTION_DB_URL", ""))
+    if not environment.get("SUPABASE_ACCESS_TOKEN"):
+        raise UnsafeBackup("Jeton Supabase commercial non configuré.")
     phrase = environment.get("BACKUP_PASSPHRASE", "")
     if len(phrase) < 48 or len(set(phrase)) < 12:
         raise UnsafeBackup("Phrase de récupération trop faible : minimum 48 caractères aléatoires.")
@@ -173,6 +184,9 @@ def main(arguments: list[str]) -> int:
         if arguments == ["preflight"]:
             check_environment(dict(os.environ))
             print("Prévol sauvegarde commercial validé.")
+        elif arguments == ["db-password"]:
+            # Sensible : cette sortie est capturée, JAMAIS envoyée dans les logs.
+            print(database_password(os.environ.get("PRODUCTION_DB_URL", "")))
         elif len(arguments) == 3 and arguments[0] == "buckets":
             count = write_bucket_list(Path(arguments[1]), Path(arguments[2]))
             print(f"Buckets avec objets à copier : {count}")
