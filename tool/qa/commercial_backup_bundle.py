@@ -47,6 +47,19 @@ def validate_database_url(value: str, project_ref: str = PROJECT_REF) -> None:
         raise UnsafeBackup("Connexion PostgreSQL malformée.") from None
 
 
+def normalize_database_url(value: str, project_ref: str = PROJECT_REF) -> str:
+    """Retire les blancs de collage autour de l'URL, sans toucher au mot de passe.
+
+    urlsplit ignore certains retours ligne, contrairement à libpq/psql : les
+    clients doivent recevoir exactement l'URL qui a été contrôlée.
+    """
+    normalized = value.strip()
+    if "\n" in normalized or "\r" in normalized:
+        raise UnsafeBackup("Retour ligne interne dans l'adresse DB.")
+    validate_database_url(normalized, project_ref)
+    return normalized
+
+
 def check_environment(environment: dict[str, str]) -> None:
     if environment.get("SUPABASE_PROJECT_REF") != PROJECT_REF:
         raise UnsafeBackup("Projet Supabase commercial incorrect.")

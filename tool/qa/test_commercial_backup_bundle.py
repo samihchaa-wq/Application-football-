@@ -11,7 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from commercial_backup_bundle import (  # noqa: E402
-    PROJECT_REF, UnsafeBackup, check_environment, read_inventory,
+    PROJECT_REF, UnsafeBackup, check_environment, normalize_database_url, read_inventory,
     validate_database_url, verify_and_manifest, write_bucket_list,
 )
 
@@ -70,6 +70,23 @@ class CommercialBackupTests(unittest.TestCase):
         ]:
             with self.subTest(value=value), self.assertRaises(UnsafeBackup):
                 validate_database_url(value)
+
+    def test_database_url_strips_only_surrounding_copy_whitespace(self):
+        url = (
+            f"postgresql://postgres.{PROJECT_REF}:p%40ss%20word@"
+            "aws-1-eu-west-3.pooler.supabase.com:5432/postgres"
+        )
+        for value in (url, url + "\n", url + "\r\n", " \t" + url + " \n"):
+            with self.subTest(value=value):
+                self.assertEqual(normalize_database_url(value), url)
+
+    def test_database_url_rejects_internal_newline_and_wrong_project(self):
+        for value in (
+            f"postgresql://postgres:secret@db.{PROJECT_REF}.supabase.co/post\ngres",
+            "postgresql://postgres:secret@db.other.supabase.co/postgres\n",
+        ):
+            with self.subTest(value=value), self.assertRaises(UnsafeBackup):
+                normalize_database_url(value)
 
     def test_preflight_rejects_weak_keys_and_wrong_project(self):
         valid = {
