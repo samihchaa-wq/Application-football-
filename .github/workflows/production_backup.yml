@@ -24,7 +24,6 @@ jobs:
     env:
       SUPABASE_PROJECT_REF: jvxkhgdopslctpcjrhzw
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
       DB_URL: ${{ secrets.PRODUCTION_DB_URL }}
       PRODUCTION_DB_URL: ${{ secrets.PRODUCTION_DB_URL }}
       BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
@@ -50,6 +49,14 @@ jobs:
           trap 'rm -rf "$work"' EXIT
           payload="$work/payload"
           mkdir -p "$payload/database" "$payload/storage"
+
+          # Le secret PRODUCTION_DB_URL contient déjà le mot de passe DB.
+          # Le réutiliser évite un deuxième secret GitHub absent/désynchronisé.
+          # Valeur capturée sans traçage shell et masquée AVANT usage.
+          supabase_db_password="$(python3 tool/qa/commercial_backup_bundle.py db-password)"
+          echo "::add-mask::$supabase_db_password"
+          export SUPABASE_DB_PASSWORD="$supabase_db_password"
+          unset supabase_db_password
 
           # Aucune écriture distante. Le lien CLI est limité au projet commercial.
           supabase link --project-ref "$SUPABASE_PROJECT_REF"
