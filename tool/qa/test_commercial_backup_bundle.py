@@ -79,7 +79,7 @@ class CommercialBackupTests(unittest.TestCase):
             ),
             "SUPABASE_ACCESS_TOKEN": "token",
             "SUPABASE_DB_PASSWORD": "fake",
-            "BACKUP_PASSPHRASE": "b123XyZ@!nP70Qrs#$2TuVw89GhJkiLM*5cdeFG67hiKL",
+            "BACKUP_PASSPHRASE": "b123XyZ@!nP70Qrs#$2TuVw89GhJkiLM*5cdeFG67hiKLN9@zP4q",
         }
         check_environment(valid)
         for key, replacement in [
