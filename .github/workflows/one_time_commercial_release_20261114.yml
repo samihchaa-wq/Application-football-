@@ -39,6 +39,24 @@ jobs:
           python3 tool/check_commercial_deploy.py
           python3 tool/check_commercial_migration_state.py
 
+      - name: Sauvegarder intégralement la base commerciale et le Storage
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run production_backup.yml --ref main
+          sleep 8
+          backup_id=''
+          for attempt in $(seq 1 12); do
+            backup_id=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/production_backup.yml/runs?event=workflow_dispatch&per_page=30" \
+              --jq ".workflow_runs | map(select(.head_sha == \"$GITHUB_SHA\")) | sort_by(.created_at) | last | .id // empty")
+            test -n "$backup_id" && break
+            sleep 5
+          done
+          test -n "$backup_id" || { echo '::error::Sauvegarde non déclenchée.'; exit 1; }
+          echo "Sauvegarde : https://github.com/$GITHUB_REPOSITORY/actions/runs/$backup_id"
+          gh run watch "$backup_id" --exit-status --interval 10
+          echo 'Sauvegarde chiffrée et contrôlée avant migration.'
+
       - name: Empreinte des maillots existants avant migration
         id: before
         shell: bash
