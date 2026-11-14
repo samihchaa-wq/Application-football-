@@ -1,0 +1,133 @@
+import 'package:as_grinta/core/widgets/match_date_column.dart';
+import 'package:as_grinta/features/home/presentation/home_next_match_card.dart';
+import 'package:as_grinta/features/match_live/data/match_live_notification_repository.dart';
+import 'package:as_grinta/features/matches/domain/match_model.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+class _NotificationStatusRepository implements MatchLiveNotificationRepository {
+  const _NotificationStatusRepository(this.eligible);
+
+  final bool eligible;
+
+  @override
+  Future<MatchLiveNotificationStatus> fetchStatus(String matchId) async =>
+      MatchLiveNotificationStatus(eligible: eligible, subscribed: false);
+
+  @override
+  Future<MatchLiveNotificationStatus> setEnabled({
+    required String matchId,
+    required bool enabled,
+  }) async =>
+      MatchLiveNotificationStatus(eligible: eligible, subscribed: enabled);
+}
+
+void main() {
+  final now = DateTime.now();
+  final kickoff = DateTime(
+    now.year,
+    now.month,
+    now.day + 5,
+    15,
+  );
+  final match = MatchModel(
+    id: 'upcoming-test',
+    seasonId: 'season',
+    opponentId: 'opponent',
+    kickoffAt: kickoff,
+    isHome: false,
+    plannedDurationMinutes: 90,
+    status: 'a_venir',
+    grintaScore: null,
+    opponentScore: null,
+    opponentName: 'Adversaire Fictif A',
+    matchType: 'amical',
+  );
+
+  Future<void> pumpCard(
+    WidgetTester tester, {
+    required bool isAdmin,
+    bool eligible = true,
+    double width = 375,
+  }) async {
+    await tester.binding.setSurfaceSize(Size(width, 700));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          matchLiveNotificationRepositoryProvider.overrideWithValue(
+            _NotificationStatusRepository(eligible),
+          ),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: HomeNextMatchCard(
+              match: match,
+              isAdmin: isAdmin,
+              showAvailability: false,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('cloche et crayon au niveau de la date, pas des équipes', (
+    tester,
+  ) async {
+    await pumpCard(tester, isAdmin: true);
+
+    final date = tester.getRect(
+      find.descendant(
+        of: find.byType(MatchDateHeader),
+        matching: find.byType(Text),
+      ).first,
+    );
+    final bell = tester.getRect(
+      find.byIcon(Icons.notifications_none_rounded),
+    );
+    final edit = tester.getRect(find.byIcon(Icons.edit_outlined));
+    final arrow = tester.getRect(
+      find.byIcon(Icons.arrow_forward_ios_rounded),
+    );
+
+    expect((bell.center.dy - date.center.dy).abs(), lessThan(18));
+    expect((edit.center.dy - date.center.dy).abs(), lessThan(18));
+    expect(bell.center.dy, lessThan(arrow.center.dy));
+    expect(edit.center.dy, lessThan(arrow.center.dy));
+    expect(edit.center.dx, greaterThan(bell.center.dx));
+    expect(tester.takeException(), isNull);
+
+    // Le menu administrateur reste actionnable, sans ouvrir la fiche.
+    await tester.tap(find.byIcon(Icons.edit_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('Modifier'), findsOneWidget);
+  });
+
+  testWidgets('sur petit écran, les boutons ne chevauchent pas la date', (
+    tester,
+  ) async {
+    await pumpCard(tester, isAdmin: true, width: 320);
+    final date = tester.getRect(
+      find.descendant(
+        of: find.byType(MatchDateHeader),
+        matching: find.byType(Text),
+      ).first,
+    );
+    final bell = tester.getRect(find.byIcon(Icons.notifications_none_rounded));
+    expect(date.right, lessThanOrEqualTo(bell.left));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('sans autorisation ni alertes, aucun bouton superflu', (
+    tester,
+  ) async {
+    await pumpCard(tester, isAdmin: false, eligible: false);
+    expect(find.byIcon(Icons.notifications_none_rounded), findsNothing);
+    expect(find.byIcon(Icons.edit_outlined), findsNothing);
+    expect(find.byIcon(Icons.arrow_forward_ios_rounded), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+}
