@@ -1,58 +1,37 @@
+import 'package:as_grinta/core/widgets/match_contribution_icons.dart';
 import 'package:flutter/material.dart';
 
-/// Patron discret de couronne : seul repère conservé avec le maillot réel.
-/// Aucun trait horizontal/vertical, ellipse du visage ni étiquette.
-/// Le calque n'intercepte aucun geste et n'est jamais inclus dans l'export.
+/// Patron de l'Étoile du match : utilise EXACTEMENT la couronne du terrain.
+///
+/// Sa largeur et sa hauteur de police sont définies par [PhotoCrown], le
+/// composant posé sur les vrais hommes du match en composition. L'éditeur
+/// ajoute au-dessus du carré photo le débord correspondant à
+/// [-PhotoCrown.topOffset] : rien n'est coupé par le cadre de recadrage.
+///
+/// Cette prévisualisation n'intercepte pas les gestes et n'est jamais
+/// enregistrée dans la photo.
 class PortraitAlignmentGuide extends StatelessWidget {
-  const PortraitAlignmentGuide({super.key});
+  const PortraitAlignmentGuide({
+    super.key,
+    required this.photoSize,
+  });
+
+  final double photoSize;
 
   @override
   Widget build(BuildContext context) => IgnorePointer(
         child: Semantics(
-          label: 'Emplacement de la couronne Homme du match',
+          label: 'Couronne Homme du match, à la même place que sur le terrain',
           image: true,
-          child: const CustomPaint(
-            key: ValueKey('portrait-crown-guide'),
-            painter: CrownPlacementPainter(),
+          child: Center(
+            heightFactor: 1,
+            child: PhotoCrown(
+              key: const ValueKey('portrait-crown-guide'),
+              photoSize: photoSize,
+            ),
           ),
         ),
       );
-}
-
-/// Silhouette d'une couronne ouverte centrée juste au-dessus de la tête.
-/// Ses proportions sont indépendantes du téléphone et du zoom photo.
-class CrownPlacementPainter extends CustomPainter {
-  const CrownPlacementPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (size.isEmpty) return;
-    canvas.save();
-    canvas.scale(size.width, size.height);
-
-    // Cinq pointes délicates, un bord légèrement courbé, sans remplissage :
-    // le front, les cheveux et le damier restent visibles à travers.
-    final outline = Path()
-      ..moveTo(.334, .152)
-      ..lineTo(.275, .062)
-      ..lineTo(.405, .098)
-      ..lineTo(.5, .016)
-      ..lineTo(.595, .098)
-      ..lineTo(.725, .062)
-      ..lineTo(.666, .152)
-      ..quadraticBezierTo(.5, .164, .334, .152);
-    final paint = Paint()
-      ..color = const Color(0xE6FFFFFF)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = .005
-      ..strokeJoin = StrokeJoin.round
-      ..strokeCap = StrokeCap.round;
-    canvas.drawPath(outline, paint);
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(CrownPlacementPainter oldDelegate) => false;
 }
 
 /// Le damier montre la transparence réelle sans la remplacer par du blanc.

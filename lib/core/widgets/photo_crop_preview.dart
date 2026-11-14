@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 
 import 'package:as_grinta/core/club/club_kits.dart';
 import 'package:as_grinta/core/widgets/kit_portrait.dart';
+import 'package:as_grinta/core/widgets/match_contribution_icons.dart';
 import 'package:as_grinta/core/widgets/portrait_alignment_guide.dart';
 import 'package:as_grinta/core/storage/avatar_image.dart';
 import 'package:as_grinta/core/storage/avatar_image_codec.dart'
@@ -224,50 +225,74 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
             isGoalkeeper: widget.isGoalkeeper,
             child: photo,
           ),
-          const PortraitAlignmentGuide(),
         ],
       ),
     );
   }
 
-  Widget _mainPreview() => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          AspectRatio(
-            aspectRatio: 1,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: _outline, width: 2),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(3),
-                // Le repère et l'export utilisent toujours un carré logique
-                // de 300 px ; FittedBox l'adapte à chaque largeur d'écran.
-                // Sans cette mise à l'échelle commune, le visage glisserait
-                // entre le cadrage affiché et le fichier exporté.
-                child: FittedBox(
-                  fit: BoxFit.contain,
-                  child: SizedBox(
-                    width: _cropSize,
+  /// Le badge Homme du match est DÉCALÉ au-dessus de la photo sur le
+  /// terrain, et non dessiné dans son carré. Un espace hors export lui est
+  /// réservé pour montrer son vrai encombrement sans rogner les pointes.
+  ///
+  /// En composition : photo en y=12, couronne en
+  /// y=12 + PhotoCrown.topOffset(photoSize).
+  /// Ici : photo en y=crownSpace, couronne en y=0. Le décalage relatif est
+  /// strictement identique, y compris après FittedBox sur écran mobile.
+  Widget _mainPreview() {
+    final crownSpace = -PhotoCrown.topOffset(_cropSize);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AspectRatio(
+          aspectRatio: _cropSize / (_cropSize + crownSpace),
+          child: FittedBox(
+            fit: BoxFit.contain,
+            child: SizedBox(
+              width: _cropSize,
+              height: _cropSize + crownSpace,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned(
+                    top: crownSpace,
+                    left: 0,
+                    right: 0,
                     height: _cropSize,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(13),
-                      child: _photoFrame(),
+                    child: Container(
+                      key: const ValueKey('portrait-crop-frame'),
+                      // Border au premier plan, sans padding : la photo
+                      // occupe vraiment 300 x 300 et garde les proportions
+                      // exactes de l'avatar du terrain et de son export.
+                      foregroundDecoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: _outline, width: 2),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(13),
+                        child: _photoFrame(),
+                      ),
                     ),
                   ),
-                ),
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: PortraitAlignmentGuide(photoSize: _cropSize),
+                  ),
+                ],
               ),
             ),
           ),
-          const SizedBox(height: 9),
-          const Text(
-            'Déplace la photo ou pince pour zoomer. Maillot et couronne ne seront pas enregistrés.',
-            style: TextStyle(color: Color(0xFFAAB7C7), fontSize: 12),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      );
+        ),
+        const SizedBox(height: 9),
+        const Text(
+          'Déplace la photo ou pince pour zoomer. Maillot et couronne ne seront pas enregistrés.',
+          style: TextStyle(color: Color(0xFFAAB7C7), fontSize: 12),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -283,7 +308,7 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
       ),
       child: SizedBox(
         width: dialogWidth,
-        height: math.min(screen.height - 32, dialogWidth + 205),
+        height: math.min(screen.height - 32, dialogWidth * 1.36 + 210),
         child: Column(
           children: [
             Padding(
