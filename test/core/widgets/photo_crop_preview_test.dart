@@ -182,18 +182,25 @@ void main() {
         tester,
         Uint8List.fromList(img.encodeJpg(halves, quality: 95)),
         beforeExport: () async {
-          // Glissé lent vers la droite, au centre de l'aperçu, en plein
-          // sur le portrait : sans élan, la photo s'arrête où le doigt la laisse.
-          final gesture = await tester.startGesture(
-            tester.getCenter(find.byType(InteractiveViewer)),
-          );
+          // La couronne déborde désormais au-dessus du carré photo :
+          // sur un petit écran de test, la moitié inférieure du portrait
+          // peut nécessiter un scroll. Partir d'une zone effectivement
+          // visible, en haut de la photo, et non d'un point caché derrière
+          // la barre fixe des boutons.
+          final viewer = find.byType(InteractiveViewer);
+          final rect = tester.getRect(viewer);
+          final start = Offset(rect.center.dx, rect.top + rect.height * .2);
+          final controller =
+              tester.widget<InteractiveViewer>(viewer).transformationController!;
+          final initialX = controller.value.getTranslation().x;
+          final gesture = await tester.startGesture(start);
           for (var i = 0; i < 12; i++) {
-            await gesture.moveBy(const Offset(5, 0));
+            await gesture.moveBy(const Offset(8, 0));
             await tester.pump(const Duration(milliseconds: 50));
           }
-          await tester.pump(const Duration(milliseconds: 300));
           await gesture.up();
           await tester.pumpAndSettle();
+          expect(controller.value.getTranslation().x, greaterThan(initialX));
         },
       );
 
