@@ -66,6 +66,25 @@ class KitsReleaseSchemaTests(unittest.TestCase):
                 code, _, _ = self.invoke(data)
                 self.assertNotEqual(code, 0)
 
+    def test_deploy_workflow_guards_old_target_shas(self):
+        workflow = (
+            Path(__file__).resolve().parents[2]
+            / ".github"
+            / "workflows"
+            / "deploy_cloudflare.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "if [[ -f tool/check_kits_release_schema.py ]]; then", workflow
+        )
+        self.assertIn(
+            "elif [[ -f supabase/migrations/"
+            "20261120000000_kits_illimites_par_club.sql ]]; then",
+            workflow,
+        )
+        self.assertIn(
+            "Client maillots illimités sans garde de schéma", workflow
+        )
+
     def test_read_error_fails_closed(self):
         with patch("check_kits_release_schema.query", side_effect=OSError("offline")):
             self.assertEqual(run(COMMERCIAL_REF, "fake", self.migration), 2)
