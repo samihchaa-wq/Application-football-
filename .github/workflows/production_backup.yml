@@ -46,7 +46,7 @@ jobs:
           from commercial_backup_bundle import PROJECT_REF, normalize_database_url
           url=normalize_database_url(os.environ.get('PRODUCTION_DB_URL',''),PROJECT_REF)
           print('::add-mask::' + url)
-          password=os.environ.get('SUPABASE_DB_PASSWORD') or unquote(urlsplit(url).password or '')
+          password=unquote(urlsplit(url).password or '')
           if not password or chr(10) in password or chr(13) in password:
               raise ValueError('Mot de passe DB absent ou invalide')
           print('::add-mask::' + password)
@@ -96,10 +96,10 @@ jobs:
           )"
           psql "$DB_URL" -X -qAt -v ON_ERROR_STOP=1             -c "$inventory_sql" > "$payload/inventory-before.json"
 
-          # Export SQL non destructif, selon les commandes documentées Supabase.
-          supabase db dump --db-url "$DB_URL"             -f "$payload/database/roles.sql" --role-only
-          supabase db dump --db-url "$DB_URL"             -f "$payload/database/schema.sql"
-          supabase db dump --db-url "$DB_URL"             -f "$payload/database/data.sql" --data-only --use-copy             -x storage.buckets_vectors -x storage.vector_indexes
+          # Même connexion vérifiée que psql, avec les filtres officiels Supabase.
+          # Les clients natifs évitent une seconde interprétation des identifiants
+          # par le lanceur Docker de la CLI. Aucun SQL d'écriture distant.
+          python3 tool/qa/native_commercial_dump.py "$payload/database"
           test -s "$payload/database/schema.sql"
           test -s "$payload/database/data.sql"
 
