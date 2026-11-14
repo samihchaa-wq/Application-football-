@@ -23,6 +23,63 @@ Ces décisions ont été données explicitement pour l'orientation du plan et so
 
 **Statut de ces trois décisions : APPROUVÉES au niveau du cadrage ; leur exécution reste soumise aux gates et autorisations particulières ci-dessous.**
 
+## Décisions complémentaires du propriétaire — Q01 à Q12, validées le 14 novembre 2026
+
+**Portée :** choix explicites du propriétaire pour la première version commerciale de Petit Filet. Les **12 réponses sont A**. Ils précisent et, lorsqu'ils sont plus exigeants, **prévalent sur la règle antérieure DEC-V1-B** (« fonctionnalités essentielles et options déjà prêtes ») : toutes les fonctionnalités expressément déclarées obligatoires ci-dessous doivent être **développées, testées et livrées**, même si elles ne sont pas encore prêtes.
+
+**Légende :** « impératif V1 » = critère de sortie non reportable ; « V1.1 » = report autorisé seulement pour les fonctions non comprises dans l'engagement Q01–Q12. Le choix de cadrage général V1=B reste valable pour les nouveautés accessoires.
+
+| Décision | Impératif de lancement V1 | Critère de vérification avant GO | Report express en V1.1 / après |
+| --- | --- | --- | --- |
+| Q01 | **A — Matchs amicaux et championnat** | Types et flux amical/championnat créés, affichés et finalisés correctement ; l'option « coupe » n'est pas proposée comme disponible en V1. | Matchs de coupe, formats de tournoi et gestion avancée associée. |
+| Q02 | **A — Module Live complet** | Score, buts, buteurs/passeurs selon réglages, remplacements, compositions, événements, corrections et habilitations ; scénarios réels de concurrence et historique conservé. | Nouveaux outils de Live non préexistants et non demandés pour la V1. |
+| Q03 | **A — Compositions avant/pendant/après** | Composition publiée, Live, après-match et historique, avec portraits et ensembles maillots joueur/gardien conformes au match, y compris partage et transitions. | Nouvelles variantes de terrain ou animations supplémentaires non nécessaires aux parcours existants. |
+| Q04 | **A — Historique, statistiques et clôture** | Saisie/import manuel de matchs historiques, calculs joueurs/équipe, clôture saison, distinctions et bilan/« Wrapped » complets ; tests de fin de saison sur copie isolée. | Nouveaux types de rapports ou exports avancés absents du produit. |
+| Q05 | **A — Portraits et maillots réalistes partout** | Rendu réaliste cohérent sur profil, effectif, fiche, compositions, Live et vidéo ; source du visage inchangée ; patron photo/couronne fidèle ; représentation simple dans Info maillots. | Styles supplémentaires de maillots ou animations purement décoratives. |
+| Q06 | **A — Vidéo de composition OBLIGATOIRE** | Vidéo de composition fonctionnelle et visuellement validée sur Web, iOS, Android ; aucun nom AS Grinta dans le public ; contrôle de désactivation par club possible. Son absence bloque la V1, même si la date recule. | Nouveaux montages vidéo ou clips individuels non déjà livrés. |
+| Q07 | **A — Pronostics complets** | Cotes bornées, pronostics, points, résultats, verrouillage selon délais, classements et réglages par club testés de bout en bout. | Nouveaux marchés de pronostics ou modes de jeu non existants. |
+| Q08 | **A — Tous les badges existants et récompenses** | Catalogue de badges existants, conditions d'attribution, seuils, Étoile du match, votes, classements et récompenses vérifiés en multi-club et en fin de saison. | Nouvelles familles de badges et nouveaux trophées non présents. |
+| Q09 | **A — Parité Administration AS Grinta** | Reproduction fidèle des écrans, actions, gestes, états et parcours de l'Administration AS Grinta actuelle ; adaptations UNIQUEMENT nécessaires à l'isolation multiclub, à l'intégrité ou aux droits. AS Grinta consulté en lecture seule. | Fonctions administratives entièrement nouvelles, sans équivalent et sans nécessité V1. |
+| Q10 | **A — Tous les réglages des fonctions optionnelles EXISTANTES** | Inventaire exhaustif des fonctions optionnelles déjà présentes ; option par club visible, persistante, applicable dans l'UI ET côté serveur (RPC/Edge), avec dépendances, historique conservé et tests A/B ; contrôles de sécurité non désactivables. | Réglages de nouvelles fonctions non encore présentes ; paramètres sans utilité métier établie. |
+| Q11 | **A — Notifications push natives et e-mails** | Push iOS via APNs et Android via FCM ou solution homologuée, ainsi que les e-mails nécessaires ; test de réception, désactivation, déduplication, liens, permissions et absence de fuite interclub sur vrais appareils. | Canaux additionnels non essentiels (SMS, intégrations messageries, campagnes marketing). |
+| Q12 | **A — Inscription et onboarding autonomes** | Un club inconnu crée son compte, son club, les invitations, les rôles, une saison et ses réglages sans intervention obligatoire de l'éditeur ; tests nouveaux clubs, erreurs et aide en libre-service. | Onboarding assisté premium et automatisations commerciales avancées non indispensables. |
+
+### Contrats métiers transversaux V1 à ne pas perdre
+
+1. **Maillots :** configuration initiale d'**un seul ensemble** par club, avec possibilité d'en créer **autant que nécessaire** ; chaque ensemble associe tenue des joueurs et du gardien, couleurs et motif. L'édition des ensembles doit être intégrée à un **menu déroulant dans Réglages**, cohérent avec les autres menus. L'administrateur choisit la tenue du match ; le choix doit suivre **Info maillots, compositions avant/pendant/après, Live, vidéo, historique et portraits concernés**, sans changer rétroactivement les snapshots figés. Une interface simple est suffisante pour **Info**, contrairement aux portraits réalistes. **État réel à tester** : un document du 13/11 signale encore la limite technique de trois tenues.
+2. **Photos des joueurs :** les joueurs chargent librement leurs propres photos, notamment sur fond transparent ; recadrage avec patron maillot et **vraie couronne** de composition ; le visage et la photo source restent intacts, sans incrustation permanente du maillot. Le rendu choisi par le club s'applique à l'affichage dans les surfaces prévues. Tester transparence, alignement, silhouette et formats réels.
+3. **Vidéo :** le moteur et la vidéo de composition font obligatoirement partie de la V1 (**Q06=A**) ; l'administrateur peut toutefois désactiver **son usage dans son club** (**Q10=A**). Une fonction livrée et paramétrable peut être inactive pour un club sans être exclue du produit. Suppression de toute inscription « AS Grinta » du public du stade ; aucun texte de remplacement.
+4. **Liste d'attente :** **aucun +1 automatique**, seuls les administrateurs gèrent les crédits manuellement. Ce contrat reste en vigueur même avec le Live complet et tous les réglages.
+5. **Administration :** « exactement la même » signifie identité visuelle et fonctionnelle maximale avec l'Administration récente d'AS Grinta, **sans recopier son contexte mono-club, ses secrets ni ses données**, et sans affaiblir les règles Supabase multiclubs.
+6. **Réglages :** « toutes les fonctionnalités optionnelles existantes » ne signifie pas rendre désactivables la sécurité, les autorisations, le RGPD, les sauvegardes, l'intégrité des données ou les obligations des boutiques. Faire l'inventaire des fonctions réellement optionnelles et prouver qu'une option désactivée l'est également **côté serveur**. Préserver l'historique.
+7. **Coupe :** **Q01=A** reporte explicitement le type « coupe » à V1.1. Masquer toute promesse ou sélection inopérante en V1 ; les rencontres existantes ne doivent pas être corrompues par le report.
+8. **Autonomie :** l'abonnement annuel **par club** (DEC-OFFRE-A) et l'onboarding autonome (Q12=A) coexistent. L'inscription et la configuration du club ne doivent pas exiger une intervention manuelle permanente ; la souscription/paiement et les autorisations commerciales restent à concevoir et valider séparément.
+9. **Sécurité et tests :** ces 12 choix sont des engagements de **périmètre**, pas une déclaration de fonctionnalités déjà testées ou publiées. Aucun P0/P1 ouvert, aucun accès interclub non autorisé ni défaut de récupération des données ne peut être justifié par une demande de lancement rapide.
+
+### Registre des contradictions et arbitrages
+
+| Sujet | Contradiction / historique | Arbitrage retenu maintenant | Effet sur la trajectoire |
+| --- | --- | --- | --- |
+| **V1=B versus 12 choix A** | « Essentielles et options déjà prêtes » pouvait autoriser à reporter des fonctions inachevées. Q02–Q12 exigent pourtant de nombreuses fonctions complètes. | **Q01–Q12 sont prioritaires** : seule une nouveauté accessoire non listée peut être reportée en V1.1. | V1 plus large et plus coûteuse en QA ; date mai 2027 **conditionnelle**. |
+| **Vidéo facultative vs obligatoire** | Le gel V1 et le précédent QCM recommandaient de ne conserver la vidéo que si prête. | **Q06=A : vidéo obligatoire**, sans possibilité de la reporter pour tenir la date ; son **activation par club** reste facultative. | Préparer iOS/Android et tests média dès la recette ; retarder la publication si nécessaire. |
+| **Maillots uniquement Info / photos libres vs habillage généralisé** | Anciennes demandes et passages historiques de l'issue #67 limitaient les PNG à Info et écartaient le maillot des portraits. Décision ultérieure sur patron et compositions, PR #111 et Q03/Q05 confirment le rendu réaliste étendu. | **Dernières décisions Q03/Q05 + contrat maillots du 13/11** : habillage visuel sur surfaces prévues, photo d'origine libre et non modifiée, rendu Info schématique. | Ne pas réintroduire l'ancien contrat « Info seulement ». |
+| **Trois tenues fixes vs ensembles illimités** | Le socle historique codait trois tenues, tandis que la décision ultérieure demande une tenue initiale et des ajouts illimités, avec choix via menu déroulant. | **Illimité et un seul ensemble initial en V1**, chacun avec tenue gardien associée, choix par match. | Vérifier modèles, RPC, snapshots, migrations à préparer dans PR séparée ; **ne rien appliquer en base** sans accord. |
+| **« Exactement AS Grinta » vs multiclub** | L'Administration originale est mono-club et ses anciennes opérations ne conviennent pas toutes telles quelles. | **Q09=A** pour la parité d'usage, mais sécurité multiclub et données fictives **priment** sur la copie littérale. | Revue UI de référence + tests d'autorisations nécessaires. |
+| **Réglages partout vs règles incontournables** | « Toutes les fonctionnalités optionnelles » pourrait être compris comme « absolument tout peut être désactivé ». | **Q10=A** sur le catalogue des fonctions facultatives **existantes uniquement** ; les contrôles de sécurité/données et obligations légales sont inamovibles. | Inventaire exhaustif, cas limites et tests UI/serveur par club. |
+| **Types de match** | Issue #101 notait l'absence de « coupe », tandis que l'ambition d'une gestion de saison intégrale pouvait laisser croire aux coupes. | **Q01=A** : amicaux et championnat V1, coupe V1.1. | Clarifier interface, aide, tests et backlog. |
+| **Objectif mai 2027 vs qualité obligatoire** | Le calendrier prévoyait mai 2027 sous réserve ; Q06 accepte un retard pour la vidéo et Q02–Q12 imposent une validation exhaustive. | **La qualité, le périmètre déclaré et les gates GO/NO-GO priment sur mai 2027.** | Ne pas annoncer de date ferme de sortie, réévaluer le chemin critique chaque semaine. |
+
+**Aucune ambiguïté résiduelle ne donne le droit de modifier AS Grinta original, de déployer, de dépenser ou de fusionner.** Les questions techniques non résolues deviennent des tâches de validation, pas des changements arbitraires de décision.
+
+### Définition de « terminé V1 » pour chaque ligne Q01–Q12
+
+- **Spécifié** : interactions, règles métier, comportement lors d'une option désactivée et données historiques définis.
+- **Codé** : Flutter/SQL/Edge concernés avec tests ; si une migration devient nécessaire, elle est proposée séparément et non exécutée implicitement.
+- **Intégré** : comportement vérifié après fusion et environnement conforme, sans modifier l'original AS Grinta.
+- **Testé** : résultat écran **ET serveur**, tests interclubs A/B, appareils iOS/Android/Web adaptés et historique après changement.
+- **Accepté** : M03/M04/M05 selon risque, revue du propriétaire pour le visuel/Administration, et gate GO approuvé.
+- **Publié** : SHA et version réellement en service, distincts de la seule présence dans GitHub.
+
 ## 1. Photographie vérifiée le 14 novembre 2026
 
 - Branche main : commit 7f28d9eb84bcea4e5c811f5c9c182271fbf15e1a, CI Flutter et déploiement Cloudflare verts. Branche non protégée.
@@ -37,20 +94,20 @@ Ces décisions ont été données explicitement pour l'orientation du plan et so
 
 ## 2. Définition du premier lancement (MVP commercial)
 
-**Décision DEC-V1-B :** la première publication comprend les parcours essentiels et les fonctionnalités déjà prêtes et validables ; les évolutions facultatives non indispensables sont reportées en V1.1. Le périmètre métier envisagé comprend la création d'un club, l'invitation et la validation des joueurs, l'effectif, les saisons et matchs, les disponibilités/convocations, les compositions, le Live, les pronostics, les badges/statistiques, les réglages par club, le profil et les photos, les notifications (ou une alternative fiable), l'administration et l'historique. M00/M01/M02 doivent valider les éléments exacts dans la matrice G0, sans présumer qu'ils sont tous déjà fiables. Les fonctions optionnelles doivent pouvoir être désactivées sans casser la navigation ni exposer leurs API.
+**Décisions DEC-V1-B et Q01–Q12 :** la première publication contient **obligatoirement les douze familles explicitement retenues**, y compris vidéo, Live, portraits réalistes, Administration à parité et réglages exhaustifs, indépendamment de leur état actuel. Le choix général V1=B limite seulement les **nouveautés non essentielles et non couvertes** par les QCM : elles vont en V1.1. Le périmètre métier envisagé comprend la création d'un club, l'invitation et la validation des joueurs, l'effectif, les saisons et matchs, les disponibilités/convocations, les compositions, le Live, les pronostics, les badges/statistiques, les réglages par club, le profil et les photos, les notifications (ou une alternative fiable), l'administration et l'historique. M00/M01/M02 doivent valider les éléments exacts dans la matrice G0, sans présumer qu'ils sont tous déjà fiables. Les fonctions optionnelles doivent pouvoir être désactivées sans casser la navigation ni exposer leurs API.
 
 À décider et figer : football à 11 en première version, rôle du coach, nombre de clubs par utilisateur, gratuit/payant, nombre de tenues et modèle visuel, suppression des +1 automatiques, comportement sans réseau, fonctionnalités accessibles aux clubs en essai.
 
-**Backlog V1.1 approuvé par principe (DEC-V1-B) :** les nouvelles fonctionnalités non indispensables et les modules non suffisamment prêts à la date du gel. Exemples possibles à arbitrer : nouveaux sports, nouvelles catégories complexes, nouvelles animations non essentielles, marketplace, réseau social, personnalisation infinie. La liste finale est établie par M01/M02 et validée par M00 ; un défaut P0/P1 sur une fonction essentielle ne doit jamais être reporté par facilité.
+**Backlog V1.1 approuvé par principe (DEC-V1-B, précisé par Q01–Q12) :** **matchs de coupe** et nouvelles fonctionnalités non indispensables **hors des engagements Q01–Q12**. Une fonctionnalité expressément obligatoire ne peut plus être reportée au motif qu'elle n'est pas prête à la date du gel. Exemples possibles à arbitrer : nouveaux sports, nouvelles catégories complexes, nouvelles animations non essentielles, marketplace, réseau social, personnalisation infinie. La liste finale est établie par M01/M02 et validée par M00 ; un défaut P0/P1 sur une fonction essentielle ne doit jamais être reporté par facilité.
 
 ### Portes GO/NO-GO
 
 | Porte | Feu vert exigé | Preuve à joindre |
 | --- | --- | --- |
-| G0 — Cadrage figé | Choix V1=B et abonnement annuel par club=A inscrits ; périmètre exact V1/V1.1 validé, prix et paiements restant à arbitrer avant G5 ; exigences M01-M02 signées | Matrice 164 fonctionnalités, registre de décisions et backlog V1.1 |
+| G0 — Cadrage figé | DEC-V1-B/DEC-OFFRE-A/DEC-PILOTE-B et **Q01–Q12** inscrits ; engagements obligatoires V1 distingués du backlog V1.1 (coupes reportées) ; prix et paiements restent à arbitrer avant G5 | Matrice 164 fonctionnalités annotée « V1 impératif / V1.1 », registre des contradictions et décisions |
 | G1 — Sécurité du socle | Aucun accès interclub non autorisé ; rôles et comptes suspendus testés ; sauvegarde/restauration DB + fichiers démontrée | Campagne A/B, rapports RLS/RPC/Storage/Edge/Realtime, exercice de restauration |
-| G2 — Recette métier | Aucun P0 ni P1 ouvert ; parcours critiques réellement exécutés ; saison complète simulée sur environnement isolé | Journal QA horodaté, captures, assertions et anomalies clôturées |
-| G3 — Version mobile | iOS et Android installables ; identité, photo, push, liens et reprises fonctionnels ; performances acceptables | Builds signés, essais appareils réels, rapport TestFlight / Google interne |
+| G2 — Recette métier | **Q01–Q10 et Q12** validés en conditions réelles et en test serveur ; vidéo et maillots contrôlés sur appareils, saison complète isolée ; aucun P0/P1 ouvert | Matrice d'acceptation QCM + journal QA horodaté, captures, assertions et anomalies clôturées |
+| G3 — Version mobile | iOS et Android installables ; identité, photos, vidéo (Q06), push et e-mails nécessaires (Q11), liens et reprises vérifiés sur vrais appareils | Builds signés, traces de réception, essais appareils réels, rapport TestFlight / Google interne |
 | G4 — Réel pilote | Ouverture séquentielle A puis B puis C : chaque club rejoint après feu vert du précédent et des validations sécurité/juridiques ; deux matchs par club visés ; autonomie et remontées évaluées | Compte rendu A avant B, puis B avant C, consentements, indicateurs et GO utilisateur |
 | G5 — Juridique / commerce | Éditeur identifié, marque et ressources revues, CGU/CGV/RGPD, suppression, paiement conforme et support prêts | Validation M07/M06, liens publics, preuves de test facturation |
 | G6 — Boutiques | Fiches et déclarations complètes, certificats valides, testeurs/Apple Review, zéro défaut bloquant | Liens des builds, résolutions App Review et Play Console |
@@ -63,19 +120,19 @@ Les seuils métier proposés ci-dessous ne sont pas des résultats mesurés ; il
 ### LOT 00 — Chef de projet / gouvernance (M00 ; P0 ; dès maintenant)
 1. Désigner le document comme feuille de route de référence après approbation, articulé avec docs/HANDOFF.md et docs/CHANTIER.md.
 2. Centraliser les demandes dans une seule liste : ticket, priorité, responsable, PR, CI, statut en production, test réel et décision requise. Fermer les tickets résolus avec preuve, sans fermer ceux dont seul le code est fusionné.
-3. Figer le scope MVP et la définition de « terminé ». Pas de nouveau module après G0 sans arbitrage d'impact et de risque.
+3. Figer le scope MVP selon Q01–Q12 et la définition de « terminé ». **Ne jamais déplacer en V1.1 une fonctionnalité QCM obligatoire** pour sauver le calendrier ; toute nouvelle fonction hors des douze relève du backlog V1.1, sauf arbitrage ultérieur explicite.
 4. Chaque semaine : vérification du SHA réellement déployé, écarts GitHub/Supabase, risques, coût, planning, trois décisions maximum demandées au propriétaire.
 5. Chaque GO requiert les rapports croisés M02/M03/M04/M07/M08/M09 ; pas d'approbation automatique par une seule CI verte.
 **Livrables :** tableau consolidé P0/P1/P2, calendrier dépendances, registre risques, PV de chaque gate.
 
 ### LOT 01 — Finir et figer le produit (M01/M02/M05 ; P0/P1 ; novembre–décembre)
-1. Réconcilier les demandes #66 réglages, #67 tenues, #68 crédits d'attente manuels, #70 administration, #71 vidéo neutre, #101 type de match « coupe », PR #115 rendu maillot. Réaliser une revue de parité avec AS Grinta uniquement en lecture.
+1. Réconcilier les demandes #66 réglages, #67 tenues, #68 crédits d'attente manuels, #70 administration, #71 vidéo neutre, #101 type de match « coupe », PR #115 rendu maillot. **Coupes reportées V1.1 (Q01) ; toutes les autres fonctions visées par Q02–Q10 et Q12 sont des obligations V1.** Revue AS Grinta uniquement en lecture.
 2. Inventorier toutes les options : clé, valeur par défaut, dépendances, emplacement Réglages, UI masquée, RPC/Edge/DB bloquées, persistance, historique préservé, comportement après réactivation ; tester A et B avec valeurs différentes.
-3. Approuver les visuels joueurs : visage non déformé, détourage transparent, couronne identique à la composition, maillot réaliste dans patron/profil/effectif/compo/Live/vidéo selon le contrat final, gardien et tenue du match.
+3. Approuver les visuels joueurs : visage non déformé, photo source libre/transparente et non retouchée, couronne identique à la composition, maillot réaliste dans patron/profil/effectif/compo/Live/vidéo ; **un ensemble de tenue initial, ajouts illimités, gardien associé, sélection via menu déroulant** et snapshot par match. Info maillots conserve une représentation simplifiée.
 4. Faire apparaître le résultat choisi partout où il doit l'être, puis figer les composants centraux pour éviter des corrections indépendantes d'un écran à l'autre.
 5. Tester un nouveau club vide et un club riche en données, sans dépendance à un identifiant de l'ancien AS Grinta.
 6. Vérifier l'historique et la cohérence de la décision « +1 de liste d'attente exclusivement manuel » dans la base réellement utilisée.
-7. Soumettre une version V1-RC et reporter tout ajout non essentiel.
+7. Soumettre une version V1-RC uniquement si les obligations Q01–Q12 sont couvertes ; reporter les **coupes et fonctions nouvelles non essentielles**. Les vidéos de composition restent non reportables (Q06=A), même si la date de mai doit changer.
 **Preuve :** maquettes validées, scénarios UI/SQL, liste de comparaison et audit de non-régression.
 
 ### LOT 02 — Assainir dépôt et livraisons (M02/M04/M09 ; P0 ; novembre)
@@ -89,7 +146,7 @@ Les seuils métier proposés ci-dessous ne sont pas des résultats mesurés ; il
 
 ### LOT 03 — Recette intégrale et résistance (M03 ; P0 ; décembre–janvier)
 1. Reprendre les 164 fonctionnalités du registre ; pour chaque ligne tracer rôle, version, scénario, résultat écran, résultat serveur, preuve, date et testeur.
-2. Exécuter la campagne d'une saison : au moins 30 rencontres dont matches amicaux, championnat et annulation ; jouer à travers les étapes de création, disponibilité, attente manuelle, compositions, Live, score, finalisation, pronostics, statistiques et révision.
+2. Exécuter la campagne d'une saison : au moins 30 rencontres dont **amicaux et championnat** (le type **coupe est hors V1**), annulation et corrections ; tester création, disponibilité, attente manuelle, compositions, Live complet, score, finalisation, pronostics, statistiques et révision. **Inclure vidéo obligatoire, badges complets et réglages par club**.
 3. Simuler la clôture exclusivement sur une copie isolée. Vérifier conservation des matchs, récompenses, Wrapped et passage à une nouvelle saison. Ne jamais clôturer un club commercial réel à titre de test.
 4. Cas limites : aucun joueur, 1/11/30 joueurs, un gardien absent, invités, changement de tenue, badge ambigu, ex-aequo homme du match, scores atypiques, dates/fuseaux, double-clic, écrans vides, beaucoup d'historiques, annulation.
 5. Matrice de rôles : admin A, joueur A, coach A, admin B, joueur B, suspendu, supprimé, invité, session expirée ; tester les appels directs et pas seulement les écrans.
@@ -123,7 +180,7 @@ Les seuils métier proposés ci-dessous ne sont pas des résultats mesurés ; il
 
 ### LOT 06 — Transformer Flutter Web en applications mobiles (M02/M03 ; P0 stores ; décembre–février)
 1. Créer répertoires et projets natifs android/ et ios/ UNIQUEMENT sur le dépôt Petit Filet, par PR dédiée, à partir d'une version Flutter et des plugins figée.
-2. Faire l'inventaire des dépendances spécifiques Web (imports conditionnels, service worker, Web Push, authentification navigateur, sélecteur photo, lecture vidéo, partage, téléchargement). Introduire des adaptateurs mobiles plutôt que dupliquer le métier.
+2. Faire l'inventaire des dépendances spécifiques Web (imports conditionnels, service worker, Web Push, authentification navigateur, sélecteur photo, **vidéo de composition obligatoire**, partage, téléchargement). Introduire des adaptateurs mobiles plutôt que dupliquer le métier.
 3. Identité mobile : nom affiché Petit Filet, identifiants d'application stables, icônes, splash, permissions minimales, écran hors ligne et paramètres de confidentialité.
 4. Connexion : Supabase Auth mobile, stockage sécurisé des sessions, retour de navigateur, liens d'invitation et de récupération, deep links Android/iOS (App Links / Universal Links), gestion de plusieurs clubs sans collision.
 5. Photos : galerie, permissions, recadrage, transparence, fichiers volumineux, annulation et stockage ; maillots identiques à la Web mais rendus propres aux tailles d'écran.
@@ -136,7 +193,7 @@ Les seuils métier proposés ci-dessous ne sont pas des résultats mesurés ; il
 
 ### LOT 07 — Notifications, fiabilité du Live et médias (M02/M03/M09 ; P0/P1 ; janvier–février)
 1. Identifier chaque notification existante, l'option par club, la préférence du joueur, l'événement producteur, la date, le canal, le destinataire et le mécanisme de déduplication.
-2. Contrôler ouverture des disponibilités, rappels, pronostics, Live, résultats, classement, badges ; ne jamais compter un envoi serveur comme « reçu ».
+2. Contrôler ouverture des disponibilités, rappels, pronostics, Live, résultats, classement, badges et **e-mails essentiels** ; vérifier **les push iOS et Android sur vrais appareils (Q11=A)** et ne jamais compter un envoi serveur comme « reçu ».
 3. Évaluer l'observabilité des livraisons et le nettoyage des tokens invalides ; tests réel iPhone/Android et en PWA installée.
 4. Prévoir que l'information cruciale reste consultable dans l'app même si les notifications sont refusées, en retard ou perdues.
 5. Vérifier la vidéo de composition et le stade sans inscription AS Grinta, droit d'utilisation de chaque média, performance sur appareils modestes.
@@ -199,19 +256,19 @@ Les seuils métier proposés ci-dessous ne sont pas des résultats mesurés ; il
 
 | Période cible | Travail impératif | Porte / preuve |
 | --- | --- | --- |
-| **14–30 nov. 2026** | Figement MVP, tri P0/P1, protection main, PR #115, audit RLS/secret, inventaire natif, décision juridique éditeur et marque | Préparation G0, journal risques |
+| **14–30 nov. 2026** | Geler les engagements V1 Q01–Q12, reporter coupes V1.1, protection main, PR #115, audit RLS/secrets, inventaire natif et revue des contradictions maillots/réglages | Préparation G0, journal risques ; ne pas réduire Q06 pour tenir mai |
 | **Déc. 2026** | Corrections du code, essais A/B, séparation environnements, lancement recette 164 fonctions, socle Android/iOS et préparation comptes développeurs | G0, progrès G1 et G2 |
 | **Jan. 2027** | Saison complète isolée, corrections, tests mobiles Auth/photos/Live, premiers builds, backup et restore probants, textes légaux | G1 et G2 visés ; G3 bêta |
 | **Fév. 2027** | TestFlight/Play interne, vrai push mobile, finition UX, facturation conforme, onboarding premier club adulte si portes de sécurité et droit validées | G3, ouverture G4 |
 | **Mars 2027** | Pilotes B/C, deux matchs chacun si calendriers compatibles, suivi support, tarification définitive, derniers défauts majeurs | G4 et G5 visés |
-| **Avr. 2027** | Gel release, fiches stores, 12/14 jours Google si applicable, SDK iOS 27, revue et soumissions avec marges | G6 |
-| **Mai 2027** | Décision G7, mise en production progressive, support intensif et observation commerciale | Publication officielle si GO |
+| **Avr. 2027** | Gel release **seulement après** vidéo et autres QCM validés, fiches stores, 12 testeurs/14 jours Google si applicable, SDK iOS 27, revue et soumissions avec marges | G6, sinon reporter les soumissions |
+| **Mai 2027 (objectif conditionnel)** | Décision G7, mise en production progressive, support intensif et observation commerciale ; **décaler la date plutôt que supprimer la vidéo ou un impératif V1** | Publication officielle seulement si GO |
 
 Les préparatifs Apple/Google et juridiques commencent AVANT la fin du code. Ne jamais sacrifier G1/G2 pour respecter artificiellement mai.
 
 ### Chemin critique
 
-Cadrage V1 -> Sécurité A/B + QA saison -> Builds natifs fiables -> Tests vrais utilisateurs -> Paiement et droits validés -> Soumissions -> GO.  
+Cadrage V1 **Q01–Q12** -> Sécurité A/B + QA saison / administration / vidéo / maillots / réglages -> Builds natifs avec vidéo et push réellement fiables -> Pilotes progressifs A→B→C -> Paiement annuel club et droits validés -> Soumissions -> GO. **Mai 2027 est un objectif subordonné à ce chemin critique.**  
 En parallèle : identité, marque, structure juridique, domaine, compte développeur, formation utilisateurs, supports et fiches boutique.
 
 ## 5. Budget de décision (non engagé)
@@ -231,7 +288,7 @@ En parallèle : identité, marque, structure juridique, domaine, compte dévelop
 
 ## 6. Matrice de décisions attendues du propriétaire
 
-- **D01 — CHOISI B (DEC-V1-B)** : fonctionnalités essentielles et déjà prêtes en V1 ; nouvelles fonctions non indispensables en V1.1. Reste l'inventaire précis et la validation de G0.
+- **D01 — CHOISI B (DEC-V1-B), PRÉCISÉ Q01–Q12 = A** : les douze familles explicitement choisies sont obligatoires en V1 **même inachevées**, et les nouvelles fonctions non indispensables sont reportées en V1.1. Les matchs de coupe sont précisément reportés. Reste la traçabilité de chaque critère G0.
 - D02 — type de société / entreprise individuelle et nom du vendeur affiché Apple.
 - D03 — positionnement : clubs de foot loisirs adultes uniquement au départ ?
 - **D04 — CHOISI A (DEC-OFFRE-A)** : abonnement annuel par club, aucun paiement individuel imposé au joueur. Reste à chiffrer prix, conditions, essai, facturation et renouvellement.
@@ -262,8 +319,8 @@ Une tâche n'est « terminée » que si le niveau exigé par son gate est attein
 
 | Ordre | Responsable | Tâche | Critère de sortie |
 | --- | --- | --- | --- |
-| 1 | M00 / propriétaire | Décliner le choix V1=B dans la matrice des fonctions et les reports V1.1 ; arbitrer la marge mai | Backlog P0/P1/V1.1 signé |
-| 2 | M02/M05 | Conclure PR #115 et finir les défauts visibles priorisés | CI verte + contrôle smartphone + aucun conflit |
+| 1 | M00 / propriétaire | Annoter les 164 fonctions selon **Q01–Q12=V1 impératif** et **coupes=V1.1** ; accepter explicitement que la vidéo puisse retarder mai | Backlog P0/P1/V1.1 et risques calendaires documentés |
+| 2 | M02/M05 | Conclure PR #115, cadrer le menu déroulant et les ensembles maillots illimités, vérifier parité Administration et vidéo obligatoire | CI verte + contrôle smartphone + aucun conflit ; pas de migration appliquée |
 | 3 | M04/M00 | Vérifier main protégée et historique Git | Ruleset actif, rapport confidentialité privé |
 | 4 | M03 | Organiser recette avec jeu fictif isolé et accès autorisés | 164 tests attribués, preuves et planning |
 | 5 | M04 | Campagne A/B et audit 164 SECURITY DEFINER | Verdict par fonction, aucune fuite non corrigée |
