@@ -101,24 +101,16 @@ class _ClubKitsPageState extends ConsumerState<ClubKitsPage> {
             'joueurs voient celui retenu sur la fiche du match, les '
             'compositions et la vidéo.',
           ),
-          SwitchListTile(
-            key: const ValueKey('dress-players'),
+          const ListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('Habiller les joueurs avec le maillot du match'),
-            subtitle: const Text(
-              'Appliqué aux portraits avant, pendant et après '
-              'le match, ainsi que dans la vidéo. Les matchs déjà commencés '
-              'conservent leur tenue et leur réglage.',
+            leading: Icon(Icons.check_circle_outline),
+            title: Text('Maillot automatiquement sur les photos'),
+            subtitle: Text(
+              'Le maillot du club accompagne chaque photo de joueur : '
+              'profil, fiche, effectif et listes. Pour un match, la tenue '
+              'choisie remplace la tenue par défaut dans les compositions '
+              'et la vidéo. Les photos originales restent intactes.',
             ),
-            value: _kits.any((kit) => kit.dressPlayers),
-            onChanged: _saving
-                ? null
-                : (value) => setState(() {
-                      _kits = [
-                        for (final kit in _kits)
-                          kit.copyWith(dressPlayers: value),
-                      ];
-                    }),
           ),
           if (ClubKits.usesDefaults) ...[
             const SizedBox(height: 8),

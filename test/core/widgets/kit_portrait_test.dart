@@ -196,7 +196,7 @@ void main() {
     },
   );
 
-  testWidgets('les petits avatars restent neutres même en composition',
+  testWidgets('même les petits portraits affichent le maillot du match',
       (tester) async {
     final kit = ClubKits.of(JerseyOption.france).copyWith(dressPlayers: true);
     await tester.pumpWidget(MaterialApp(
@@ -218,7 +218,104 @@ void main() {
       0,
       false,
     );
-    expect(dressed, isNot(isA<KitPortrait>()));
+    expect(dressed, isA<KitPortrait>());
+    expect((dressed as KitPortrait).kit, kit);
+  });
+
+  testWidgets('profil, effectif et fiche utilisent la tenue par défaut du club',
+      (tester) async {
+    final defaultKit = ClubKits.enabled.first;
+    // Le réglage historique n'est plus un prérequis : tous les portraits
+    // disposant d'une photo utilisent la tenue du club, à toute taille.
+    expect(defaultKit.dressPlayers, isFalse);
+
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        body: Column(
+          children: [
+            PlayerAvatar(
+              photoUrl: 'https://example.test/profil.png',
+              name: 'Profil',
+              size: 82,
+            ),
+            PlayerAvatar(
+              photoUrl: 'https://example.test/effectif.png',
+              name: 'Effectif',
+              size: 30,
+            ),
+            PlayerAvatar(
+              photoUrl: 'https://example.test/fiche.png',
+              name: 'Fiche',
+              size: 96,
+            ),
+            PlayerAvatar(
+              photoUrl: 'https://example.test/gardien.png',
+              name: 'Gardien',
+              size: 36,
+              isGoalkeeper: true,
+            ),
+          ],
+        ),
+      ),
+    ));
+    final avatars = find.byType(PlayerAvatar);
+    expect(avatars, findsNWidgets(4));
+    for (var i = 0; i < 4; i++) {
+      final avatar = avatars.at(i);
+      final image = tester.widget<Image>(
+        find.descendant(of: avatar, matching: find.byType(Image)),
+      );
+      final context = tester.element(avatar);
+      expect(
+        image.frameBuilder!(context, const SizedBox(), null, false),
+        isNot(isA<KitPortrait>()),
+      );
+      final ready = image.frameBuilder!(
+        context,
+        const SizedBox(),
+        0,
+        false,
+      );
+      expect(ready, isA<KitPortrait>());
+      final portrait = ready as KitPortrait;
+      expect(portrait.kit, defaultKit);
+      expect(portrait.isGoalkeeper, i == 3);
+    }
+  });
+
+  testWidgets('le portrait suit les changements de tenue du club',
+      (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        body: PlayerAvatar(
+          photoUrl: 'https://example.test/joueur.png',
+          name: 'Alex',
+          size: 56,
+        ),
+      ),
+    ));
+    KitPortrait dressedPortrait() {
+      final avatar = find.byType(PlayerAvatar);
+      final image = tester.widget<Image>(find.byType(Image));
+      return image.frameBuilder!(
+        tester.element(avatar),
+        const SizedBox(),
+        0,
+        false,
+      ) as KitPortrait;
+    }
+
+    expect(dressedPortrait().kit.body, ClubKits.enabled.first.body);
+    final changed = [
+      for (final kit in ClubKits.all)
+        if (kit.slot == JerseyOption.france)
+          kit.copyWith(body: const Color(0xFFBB22CC), dressPlayers: false)
+        else
+          kit,
+    ];
+    ClubKits.setFromJson([for (final kit in changed) kit.toJson()]);
+    await tester.pump();
+    expect(dressedPortrait().kit.body, const Color(0xFFBB22CC));
   });
 
   testWidgets('la fiche joueur peut fournir sa tenue sans scope de match',

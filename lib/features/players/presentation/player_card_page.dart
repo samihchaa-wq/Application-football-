@@ -1,4 +1,3 @@
-import 'package:as_grinta/core/club/club_kits.dart';
 import 'package:as_grinta/core/theme/app_spacing.dart';
 import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:as_grinta/core/theme/calendar_card_palette.dart';
@@ -17,7 +16,6 @@ import 'package:as_grinta/features/badges/presentation/badge_emblem_body.dart';
 import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/players/data/player_card_repository.dart';
 import 'package:as_grinta/features/players/data/player_stat_ranking.dart';
-import 'package:as_grinta/features/players/presentation/hero_photo_margin.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:as_grinta/features/statistics/data/statistics_repository.dart';
 import 'package:as_grinta/features/statistics/presentation/stats_hub_page.dart';
@@ -255,18 +253,13 @@ class _Hero extends ConsumerWidget {
   final String? profileId;
   final bool isGoalkeeper;
 
-  /// Part vide, à droite, du carré de la photo telle qu'elle s'affiche (voir
-  /// [photoClearRightShare]). Tant que la photo n'est pas là, ou sans photo,
-  /// l'avatar montre ses initiales dans un carré plus petit, centré.
-  double _photoClearRight(WidgetRef ref) {
-    const initials = (1 - _heroInitialsScale) / 2;
+  /// Le maillot remplit la largeur du bas du portrait, contrairement à
+  /// une photo détourée brute : ne pas décaler le prénom en analysant
+  /// l'ancien fond transparent à droite du cou. Seules les initiales
+  /// de repli, affichées en plus petit, demandent un petit ajustement.
+  double _photoClearRight() {
     final url = photoUrl?.trim();
-    if (url == null || url.isEmpty) return initials;
-    return ref.watch(heroPhotoClearRightProvider(url)).when(
-          data: (share) => share ?? 0,
-          loading: () => initials,
-          error: (_, __) => initials,
-        );
+    return url == null || url.isEmpty ? (1 - _heroInitialsScale) / 2 : 0.0;
   }
 
   @override
@@ -317,9 +310,8 @@ class _Hero extends ConsumerWidget {
                   photoUrl: photoUrl,
                   name: name,
                   isGoalkeeper: isGoalkeeper,
-                  // Hors contexte de match, présenter la première tenue
-                  // proposée par le club (si l'option d'habillage est active).
-                  kit: ClubKits.enabled.firstOrNull,
+                  // Le composant commun applique la tenue par défaut du
+                  // club et se met à jour lorsque ses couleurs changent.
                   size: _heroPhotoSize,
                   fallbackScale: _heroInitialsScale,
                 ),
@@ -329,7 +321,7 @@ class _Hero extends ConsumerWidget {
                   // le badge : une photo détourée ne remplit pas son carré.
                   child: Transform.translate(
                     offset: Offset(
-                      -_photoClearRight(ref) * _heroPhotoSize / 2,
+                      -_photoClearRight() * _heroPhotoSize / 2,
                       0,
                     ),
                     child: Column(

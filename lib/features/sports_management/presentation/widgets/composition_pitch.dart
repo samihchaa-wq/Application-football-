@@ -748,8 +748,8 @@ class PlayerAvatar extends StatefulWidget {
   final String? lastName;
   final bool isGoalkeeper;
 
-  /// Pour une fiche joueur hors contexte de match. En composition/vidéo,
-  /// le maillot est fourni automatiquement par CompositionKitScope.
+  /// Tenue prioritaire si l'écran en fournit une. Sinon, la tenue du match
+  /// provient de CompositionKitScope ; ailleurs, celle par défaut du club.
   final ClubKit? kit;
   final double size;
 
@@ -822,25 +822,37 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ValueListenableBuilder<int>(
+        valueListenable: ClubKits.revision,
+        builder: (context, _, __) => _buildAvatar(context),
+      );
+
+  /// Un point d'entrée unique pour toutes les photos : profil, effectif,
+  /// listes, fiches, compositions, Live et vidéo. Changer les réglages du club
+  /// repeint les maillots, sans réimporter ni altérer les photos sauvegardées.
+  Widget _buildAvatar(BuildContext context) {
     final size = widget.size;
     final fallbackScale = widget.fallbackScale.clamp(.5, 1).toDouble();
     final fallbackSize = size * fallbackScale;
-    // La photo source n'est jamais modifiée. Le maillot de composition
-    // (ou de la fiche joueur) est un calque visuel et dépend du club courant.
+    // Ne JAMAIS montrer la photo brute dès qu'elle est disponible.
+    // Le rendu photographique est le même pour tout PlayerAvatar, y compris
+    // les miniatures du profil, de l'effectif et des listes de membres.
+    // En contexte de match, la tenue choisie (ou son snapshot) prime ; dans
+    // les autres écrans, afficher la première tenue activée du club.
     final original = widget.photoUrl?.trim();
     final hasPhoto = original != null && original.isNotEmpty;
     final url = _resolvedPhotoUrl;
     final showPhoto = hasPhoto && url != null;
     final visualSize = showPhoto ? size : fallbackSize;
-    final kit = widget.kit ?? CompositionKitScope.maybeOf(context);
-    // L'habillage est ajouté seulement quand une trame photo a été décodée.
-    // Le réseau peut afficher des initiales pendant le chargement : celles-ci
-    // restent sans maillot ; c'est vrai aussi en cas d'erreur de téléchargement.
-    final portraitKit =
-        showPhoto && size >= 44 && kit?.dressPlayers == true ? kit : null;
-    final avatar =
-        showPhoto ? _photo(url, kit: portraitKit) : _initials(visualSize);
+    final kit = widget.kit ??
+        CompositionKitScope.maybeOf(context) ??
+        ClubKits.enabled.firstOrNull ??
+        ClubKits.all.first;
+    // La tenue suit la photo décodée uniquement. Pendant le chargement ou
+    // lorsque le joueur n'a pas de photo, conserver les initiales habituelles.
+    // L'option historique dressPlayers n'occulte plus le maillot : le portrait
+    // standard doit être identique partout, même dans les petites vignettes.
+    final avatar = showPhoto ? _photo(url, kit: kit) : _initials(visualSize);
 
     return SizedBox(
       width: size,
@@ -879,7 +891,7 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
     );
   }
 
-  Widget _photo(String url, {ClubKit? kit}) {
+  Widget _photo(String url, {required ClubKit kit}) {
     final fallbackSize =
         widget.size * widget.fallbackScale.clamp(.5, 1).toDouble();
     return Image.network(
@@ -891,7 +903,7 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
       gaplessPlayback: true,
       filterQuality: FilterQuality.medium,
       frameBuilder: (context, child, frame, wasSynchronouslyLoaded) =>
-          frame == null || kit == null
+          frame == null
               ? child
               : KitPortrait(
                   kit: kit,
