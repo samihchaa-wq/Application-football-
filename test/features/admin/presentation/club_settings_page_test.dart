@@ -497,16 +497,22 @@ void main() {
     await pumpPage(tester);
     for (final section in [
       'squad',
+      'matches',
       'composition',
       'live',
-      'matches',
       'rewards'
     ]) {
       await openSection(tester, section);
+      for (final feature
+          in ClubFeature.values.where((f) => f.section == section)) {
+        expect(
+            find.byKey(ValueKey('club-rule-${feature.key}')), findsOneWidget);
+      }
+      // Chaque catégorie se vérifie réellement à l’écran, puis se replie.
+      // Le ListView peut détruire ses enfants très éloignés du viewport.
+      await openSection(tester, section);
     }
-    for (final feature in ClubFeature.values) {
-      expect(find.byKey(ValueKey('club-rule-${feature.key}')), findsOneWidget);
-    }
+    await openSection(tester, 'live');
     final scorer = find.byKey(const ValueKey('club-rule-live_scorers'));
     final assist = find.byKey(const ValueKey('club-rule-live_assists'));
     await tester.ensureVisible(scorer);

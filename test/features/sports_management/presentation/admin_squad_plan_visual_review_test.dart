@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/club/club_rules.dart';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -26,6 +27,8 @@ const _minNameSlot = 56.0;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(ClubRules.reset);
+  tearDown(ClubRules.reset);
 
   testWidgets('captures the compact effectif saved on the fly', (
     tester,
@@ -201,6 +204,25 @@ void main() {
     // voyait « 1 + coach ».
     expect(find.text('Sans réponse (2)'), findsOneWidget);
     expect(find.textContaining('+ coach'), findsNothing);
+  });
+
+  testWidgets('simulation coupée : le dispositif reste modifiable manuellement',
+      (tester) async {
+    ClubRules.set({'composition_simulation': 0});
+    await _setPhoneViewport(tester);
+    await _pumpWorkspace(tester,
+        convocations: _convocations(), initialStep: 'composition');
+    final simulate =
+        find.widgetWithText(OutlinedButton, 'Simuler une composition');
+    expect(tester.widget<OutlinedButton>(simulate).onPressed, isNull);
+    expect(
+        tester
+            .widget<DropdownButtonFormField<String>>(
+                find.byType(DropdownButtonFormField<String>))
+            .onChanged,
+        isNotNull);
+    expect(find.widgetWithText(FilledButton, 'Enregistrer'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('captures the compact composition controls', (tester) async {

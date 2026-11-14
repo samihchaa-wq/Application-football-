@@ -220,8 +220,9 @@ select is((select count(*) from public.match_live_events where match_id='4220000
 -- Réactivation : le même échange sans p_substitution réussit avant kickoff.
 select lives_ok((select command from live_commands where key='live_substitutions'),
  'réactiver permet réellement le changement de composition');
-select is((select zone::text from public.match_composition_entries
- where participant_id='42200000-0000-0000-0000-000000000042'),'field','la nouvelle composition est persistée');
+select is((select entry ->> 'zone' from jsonb_array_elements(
+ public.get_match_live_state('42200000-0000-0000-0000-000000000020') -> 'lineup' -> 'entries') entry
+ where entry ->> 'participant_id'='42200000-0000-0000-0000-000000000042'),'field','la nouvelle composition est persistée et relue par la RPC publique');
 reset role;
 update public.match_live_sessions set state='running',started_at=now(),running_since=now()
  where match_id='42200000-0000-0000-0000-000000000020';

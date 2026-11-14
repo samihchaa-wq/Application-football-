@@ -72,7 +72,8 @@ void main() {
       ClubRules.set({'live_takeover': 0});
       await _pump(tester, state: 'running', otherPilot: true);
       expect(find.text('Prendre la main'), findsNothing);
-      expect(find.text('Faits de match'), findsOneWidget);
+      expect(
+          find.text('Quelqu’un d’autre pilote déjà le Live'), findsOneWidget);
     });
     testWidgets(
         'journal déplié : visible directement sous le terrain du pilote',
