@@ -2,8 +2,9 @@
 """Export SQL commercial avec les clients PostgreSQL du même hôte que psql.
 
 Lecture seule. Les filtres viennent de Supabase CLI 2.111.0 (MIT, vendus dans
-vendor/). Les identifiants restent en variables d'environnement, jamais dans
-les scripts, les arguments, les journaux ou les fichiers exportés.
+vendor/). La même URI libpq validée est transmise directement aux clients, comme pour
+l’inventaire psql. Elle reste en mémoire du runner éphémère, sans journalisation
+des arguments ni écriture dans les exports.
 """
 from __future__ import annotations
 
@@ -14,7 +15,6 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from urllib.parse import unquote, urlsplit
 
 from commercial_backup_bundle import UnsafeBackup, normalize_database_url
 
@@ -22,26 +22,23 @@ VENDOR = Path(__file__).resolve().parent / "vendor" / "supabase_cli_2_111"
 
 
 def database_environment(url: str) -> dict[str, str]:
-    parsed = urlsplit(normalize_database_url(url))
-    host = parsed.hostname or ""
-    user = unquote(parsed.username or "")
-    port = parsed.port or 5432
-    password = unquote(parsed.password or "")
-    if not re.fullmatch(r"[a-z0-9.-]+", host) or not re.fullmatch(r"[a-z0-9_.]+", user):
-        raise UnsafeBackup("Paramètres de connexion PostgreSQL invalides.")
-    if not password or any(c in password for c in "\r\n\x00"):
-        raise UnsafeBackup("Mot de passe DB absent ou invalide.")
     return {
         "PATH": os.environ.get("PATH", os.defpath),
         "LC_ALL": "C.UTF-8",
-        "PGHOST": host,
-        "PGPORT": str(port),
-        "PGUSER": user,
-        "PGPASSWORD": password,
-        "PGDATABASE": "postgres",
-        "PGSSLMODE": "require",
+        "BACKUP_DATABASE_URI": normalize_database_url(url),
         "PGCONNECT_TIMEOUT": "30",
     }
+
+
+def failure_reason(stderr: bytes) -> str:
+    diagnostic = stderr.lower()
+    if b"password authentication" in diagnostic or b"no password supplied" in diagnostic:
+        return "authentification refusée"
+    if b"permission denied" in diagnostic:
+        return "permissions insuffisantes"
+    if b"connection" in diagnostic or b"could not connect" in diagnostic:
+        return "connexion indisponible"
+    return "échec du client"
 
 
 def check_clients(environment: dict[str, str]) -> None:
@@ -49,11 +46,15 @@ def check_clients(environment: dict[str, str]) -> None:
         if shutil.which(binary, path=environment["PATH"]) is None:
             raise UnsafeBackup("Client PostgreSQL ou utilitaire local manquant.")
     server = subprocess.run(
-        ["psql", "-X", "-At", "-v", "ON_ERROR_STOP=1", "-c", "show server_version_num"],
+        ["psql", environment["BACKUP_DATABASE_URI"], "-X", "-qAt", "-v",
+         "ON_ERROR_STOP=1", "-c", "show server_version_num"],
         env=environment, capture_output=True, timeout=60,
     )
-    if server.returncode or not server.stdout.strip().isdigit():
-        raise UnsafeBackup("Lecture de la version PostgreSQL impossible.")
+    if server.returncode:
+        reason = failure_reason(server.stderr)
+        raise UnsafeBackup(f"Lecture de la version PostgreSQL refusée : {reason}.")
+    if not server.stdout.strip().isdigit():
+        raise UnsafeBackup("Version PostgreSQL reçue dans un format inattendu.")
     server_major = int(server.stdout.strip()) // 10000
     for binary in ("pg_dump", "pg_dumpall"):
         client = subprocess.run(
@@ -98,15 +99,7 @@ def dump_database(url: str, destination: Path) -> None:
             output.unlink(missing_ok=True)
             # Ne jamais afficher les arguments ni le stderr brut : ils peuvent
             # contenir des informations privées venant de PostgreSQL.
-            reason = "échec du client"
-            diagnostic = result.stderr.lower()
-            if b"password authentication" in diagnostic or b"no password supplied" in diagnostic:
-                reason = "authentification refusée"
-            elif b"permission denied" in diagnostic:
-                reason = "permissions insuffisantes"
-            elif b"connection" in diagnostic or b"could not connect" in diagnostic:
-                reason = "connexion indisponible"
-            raise UnsafeBackup(f"Export SQL {kind} refusé : {reason}.")
+            raise UnsafeBackup(f"Export SQL {kind} refusé : {failure_reason(result.stderr)}.")
 
 
 def main() -> int:

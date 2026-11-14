@@ -3,11 +3,7 @@
 # MIT license: see LICENSE in this directory. Uses the verified host connection.
 set -euo pipefail
 
-export PGHOST="$PGHOST"
-export PGPORT="$PGPORT"
-export PGUSER="$PGUSER"
-export PGPASSWORD="$PGPASSWORD"
-export PGDATABASE="$PGDATABASE"
+# URI libpq identique à celle de l’inventaire ; aucun set -x ni log d’arguments.
 
 # Disable triggers so that data dump can be restored exactly as it is
 echo "SET session_replication_role = replica;
@@ -26,7 +22,7 @@ echo "SET session_replication_role = replica;
 #
 # Never delete SQL comments because multiline records may begin with them.
 pg_dump \
-    --host "$PGHOST" --port "$PGPORT" --username "$PGUSER" --dbname "$PGDATABASE" \
+    --dbname "$BACKUP_DATABASE_URI" \
     --data-only \
     --quote-all-identifier \
     --role "postgres" \
