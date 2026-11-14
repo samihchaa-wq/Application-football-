@@ -35,6 +35,9 @@ jobs:
       - name: Verify commercial full backup safety and integrity without credentials
         run: python3 -m unittest discover -s tool/qa -p 'test_commercial_backup_bundle.py' -v
 
+      - name: Verify archive contents and SHA-256 after decryption (synthetic tests)
+        run: python3 -m unittest discover -s tool/qa -p 'test_verify_commercial_backup_tar.py' -v
+
       - name: Verify prior SQL migrations have not been rewritten
         if: github.event_name == 'pull_request'
         env:
