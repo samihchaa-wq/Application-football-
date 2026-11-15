@@ -13,7 +13,8 @@ import 'package:url_launcher/url_launcher.dart';
 /// Le jeton est créé ou réutilisé pour l'abonné authentifié. Le flux ICS
 /// reste identique : déplacer l'accès ne change pas les abonnements existants.
 /// Extrait dans un provider pour tester le parcours sans contacter Supabase.
-final calendarSubscriptionLinkProvider = Provider<Future<Uri> Function()>((ref) {
+final calendarSubscriptionLinkProvider = Provider<Future<Uri> Function()>(
+  (ref) {
   return () async {
     final client = ref.read(supabaseClientProvider);
     final rawToken = await client.rpc(
@@ -28,7 +29,8 @@ final calendarSubscriptionLinkProvider = Provider<Future<Uri> Function()>((ref) 
       '${AppConfig.supabaseUrl}/functions/v1/calendar-feed',
     ).replace(queryParameters: {'token': token});
   };
-});
+  },
+);
 
 /// Entrée permanente de « Mon compte » pour les joueurs comme les admins.
 class CalendarSubscriptionTile extends ConsumerStatefulWidget {
@@ -293,5 +295,4 @@ class _CalendarSubscriptionTileState
       if (mounted) setState(() => _subscribing = false);
     }
   }
-
 }
