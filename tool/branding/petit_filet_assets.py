@@ -23,7 +23,12 @@ for destination in ["web/petit_filet_logo.webp", "assets/images/petit_filet_logo
 # En petit, le monogramme PF/ballon/filet se lit mieux que le nom complet.
 # Extraction dédiée, sans aucun fragment du mot « Petit Filet ».
 mark = Image.open(ROOT / "docs/branding/petit-filet/monogram_red_transparent.png").convert("RGBA")
-mark = mark.crop(mark.getbbox())
+# Ignorer les pixels alpha quasi invisibles à distance du symbole pour éviter
+# de le décentrer ou de le réduire inutilement dans les icônes.
+visible_bounds = mark.getchannel("A").point(lambda a: 255 if a >= 128 else 0).getbbox()
+if visible_bounds is None:
+    raise ValueError("Le monogramme est vide.")
+mark = mark.crop(visible_bounds)
 
 
 def square(size, margin=.08):

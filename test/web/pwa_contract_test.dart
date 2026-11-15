@@ -77,6 +77,11 @@ void main() {
       expect(logo.getPixel(logo.width - 1, 0).a, 0);
       expect(logo.getPixel(0, logo.height - 1).a, 0);
       expect(logo.getPixel(logo.width - 1, logo.height - 1).a, 0);
+      // Les mailles sont des ouvertures ; les parties blanches du ballon et
+      // les contours argentés restent opaques.
+      expect(logo.getPixel(468, 187).a, 0);
+      expect(logo.getPixel(462, 276).a, 0);
+      expect(logo.getPixel(290, 200).a, greaterThan(240));
       var transparent = 0;
       var visible = 0;
       for (final pixel in logo) {

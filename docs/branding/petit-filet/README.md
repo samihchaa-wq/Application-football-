@@ -1,9 +1,10 @@
 # Identité Petit Filet — rouge, anthracite et argent
 
 Mise à jour du 15 novembre 2026, à la demande de Samih et à partir du nouveau
-logo transmis. La source actuelle est `logo_red_transparent.png` (1536 × 1024).
-Le fond blanc a été retiré ; un fin contour argenté rend le monogramme sombre
-lisible sur l'anthracite sans tuile blanche ni halo. Le fichier
+logo définitif transmis le même jour. La source actuelle est
+`logo_red_transparent.png` (1536 × 1024). Le fond et les ouvertures du filet
+ont été rendus transparents ; les contours blancs et argentés du logo final
+rendent le monogramme sombre lisible sur l'anthracite sans tuile blanche. Le fichier
 `logo_original.png` est conservé comme référence historique de l'ancien logo.
 
 ## Palette de l'application
@@ -50,7 +51,8 @@ zone sûre Android et contraste des textes : vérifications locales réussies. L
 Flutter existants sur le contraste, le contrat PWA, les écrans de connexion et
 le bilan de saison couvrent les chemins concernés ; le test de contraste est
 étendu aux paires du thème par défaut. Les résultats CI sur la PR constituent
-la preuve d'analyse/tests/build. Le SDK Flutter est absent dans cette session :
-formatage Dart, analyse, tests Flutter et build Web ne sont pas exécutés
-localement. Aucun résultat CI n'est disponible tant que la branche n'est pas
-envoyée. Ce document n'affirme aucun déploiement.
+la preuve d'analyse/tests/build sur le dernier SHA. Le formatage Dart a été
+exécuté localement ; le SDK Flutter local est incomplet, donc l'analyse,
+la suite Flutter et le build Web sont validés dans GitHub Actions.
+La PR #139 porte ces changements et les résultats de validation.
+Ce document n'affirme aucun déploiement.
