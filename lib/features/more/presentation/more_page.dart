@@ -9,6 +9,7 @@ import 'package:as_grinta/features/auth/presentation/auth_state.dart';
 import 'package:as_grinta/features/auth/presentation/sign_out_confirmation.dart';
 import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
 import 'package:as_grinta/features/matches/presentation/matches_controller.dart';
+import 'package:as_grinta/features/more/presentation/calendar_subscription_tile.dart';
 import 'package:as_grinta/features/players/data/roster_repository.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:flutter/material.dart';
@@ -36,10 +37,11 @@ class MorePage extends ConsumerWidget {
             onTap: () => context.push('/profile'),
           ),
           // Les notifications s'ouvrent depuis la cloche de l'en-tête.
-          if (sportsEnabled) ...[
-            const _SectionLabel('Mon compte'),
-            _SettingsGroup(
-              children: [
+          const _SectionLabel('Mon compte'),
+          _SettingsGroup(
+            children: [
+              const CalendarSubscriptionTile(),
+              if (sportsEnabled) ...[
                 _SettingsTile(
                   icon: Icons.event_busy_outlined,
                   title: 'Indisponibilité',
@@ -53,8 +55,8 @@ class MorePage extends ConsumerWidget {
                   ),
                 ),
               ],
-            ),
-          ],
+            ],
+          ),
           if (isAdminView) ...[
             const _SectionLabel('Club · admin'),
             _SettingsGroup(

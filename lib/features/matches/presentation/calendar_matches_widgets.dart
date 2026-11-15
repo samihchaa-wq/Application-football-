@@ -3,7 +3,6 @@ part of 'calendar_matches_view.dart';
 class _CalendarToolbar extends StatelessWidget {
   const _CalendarToolbar({
     required this.displayMode,
-    required this.onExport,
     required this.onCreate,
     required this.seasons,
     required this.selectedSeasonName,
@@ -17,7 +16,6 @@ class _CalendarToolbar extends StatelessWidget {
   });
 
   final _CalendarDisplayMode displayMode;
-  final VoidCallback? onExport;
   final VoidCallback? onCreate;
   final List<Map<String, dynamic>> seasons;
   final String? selectedSeasonName;
@@ -41,7 +39,7 @@ class _CalendarToolbar extends StatelessWidget {
 
         // Les deux actions du calendrier forment un seul ensemble lisible,
         // sans deuxième rangée d'icônes flottantes sous l'en-tête.
-        final hasActions = onExport != null || onCreate != null;
+        final hasActions = onCreate != null;
         // Les saisons arrivent triées de la plus récente à la plus ancienne :
         // la flèche gauche recule donc vers l'index suivant.
         final seasonNames = [
@@ -94,7 +92,6 @@ class _CalendarToolbar extends StatelessWidget {
                     ),
                     child: CalendarActionsBar(
                       onCreate: onCreate,
-                      onExport: onExport,
                     ),
                   ),
                 ),
