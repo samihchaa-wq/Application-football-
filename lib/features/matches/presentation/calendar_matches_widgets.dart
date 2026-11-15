@@ -39,29 +39,9 @@ class _CalendarToolbar extends StatelessWidget {
         );
         final compact = constraints.maxWidth < 720;
 
-        // Le calendrier garde uniquement la vue Défilé. Les actions
-        // restent accessibles, alignées à droite sans sélecteur de vue.
-        final exportIconButton = IconButton.outlined(
-          onPressed: onExport,
-          tooltip: 'S’abonner au calendrier',
-          icon: const Icon(Icons.calendar_month_outlined),
-        );
-        final createIconButton = IconButton.outlined(
-          onPressed: onCreate,
-          tooltip: 'Ajouter un événement',
-          icon: const Icon(Icons.add_rounded),
-        );
+        // Les deux actions du calendrier forment un seul ensemble lisible,
+        // sans deuxième rangée d'icônes flottantes sous l'en-tête.
         final hasActions = onExport != null || onCreate != null;
-        final actionsRow = Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (onCreate != null) createIconButton,
-            if (onCreate != null && onExport != null)
-              const SizedBox(width: AppSpacing.microGap),
-            if (onExport != null) exportIconButton,
-          ],
-        );
-
         // Les saisons arrivent triées de la plus récente à la plus ancienne :
         // la flèche gauche recule donc vers l'index suivant.
         final seasonNames = [
@@ -107,7 +87,16 @@ class _CalendarToolbar extends StatelessWidget {
               if (hasActions)
                 Align(
                   alignment: Alignment.centerRight,
-                  child: actionsRow,
+                  child: SizedBox(
+                    width: math.min(
+                      440.0,
+                      constraints.maxWidth - 2 * outerInset,
+                    ),
+                    child: CalendarActionsBar(
+                      onCreate: onCreate,
+                      onExport: onExport,
+                    ),
+                  ),
                 ),
               if (displayMode == _CalendarDisplayMode.month) ...[
                 const SizedBox(height: AppSpacing.contentGap),
