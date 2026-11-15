@@ -8,6 +8,7 @@ import 'package:as_grinta/features/auth/domain/auth_profile.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
 import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
 import 'package:as_grinta/features/more/presentation/more_page.dart';
+import 'package:as_grinta/features/more/presentation/calendar_subscription_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -79,6 +80,11 @@ Future<_FakeAuthRepository> _pumpMorePage(
         ),
         sportsManagementEnabledProvider.overrideWithValue(sportsEnabled),
         adminRepositoryProvider.overrideWithValue(club),
+        calendarSubscriptionLinkProvider.overrideWithValue(
+          () async => Uri.parse(
+            'https://example.supabase.co/functions/v1/calendar-feed?token=00000000-0000-4000-8000-000000000001',
+          ),
+        ),
         adminDashboardProvider.overrideWith(
           (ref) => ref.read(adminRepositoryProvider).fetchDashboard(),
         ),
@@ -112,6 +118,7 @@ void main() {
     // Les notifications s'ouvrent désormais depuis la cloche de l'en-tête.
     expect(find.text('Notifications'), findsNothing);
     for (final title in [
+      'Synchroniser mon calendrier',
       'Indisponibilité',
       'Liste d’attente',
       'Effectif',
@@ -232,9 +239,9 @@ void main() {
 
     expect(find.text('Julien Martin'), findsOneWidget);
     expect(find.text('@julien · Utilisateur'), findsOneWidget);
-    // Sans gestion sportive, le groupe « Mon compte » n'a plus de ligne :
-    // il disparaît plutôt que de laisser une carte vide.
-    expect(find.text('MON COMPTE'), findsNothing);
+    // L'abonnement aux matchs reste disponible même sans gestion sportive.
+    expect(find.text('MON COMPTE'), findsOneWidget);
+    expect(find.text('Synchroniser mon calendrier'), findsOneWidget);
     expect(find.text('Notifications'), findsNothing);
     expect(find.text('Se déconnecter'), findsOneWidget);
 
@@ -245,6 +252,20 @@ void main() {
     expect(find.text('Finir la saison'), findsNothing);
     expect(find.text('Indisponibilité'), findsNothing);
     expect(find.text('Liste d’attente'), findsNothing);
+  });
+
+  testWidgets('un joueur peut ouvrir les choix de calendrier depuis les paramètres', (
+    tester,
+  ) async {
+    await _pumpMorePage(tester, profile: _player, sportsEnabled: false);
+
+    await tester.tap(find.text('Synchroniser mon calendrier'));
+    await tester.pumpAndSettle();
+    expect(find.text('S’abonner au calendrier'), findsOneWidget);
+    expect(find.text('Apple Calendrier'), findsOneWidget);
+    expect(find.text('Google Agenda'), findsOneWidget);
+    expect(find.text('Outlook'), findsOneWidget);
+    expect(find.text('Copier le lien du calendrier'), findsOneWidget);
   });
 
   testWidgets('the account card is announced as a single button', (
