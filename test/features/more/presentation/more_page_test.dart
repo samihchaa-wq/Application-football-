@@ -114,6 +114,7 @@ void main() {
     expect(find.text('Profil'), findsNothing);
 
     expect(find.text('MON COMPTE'), findsOneWidget);
+    expect(find.text('Apple Calendrier, Google Agenda, Outlook'), findsNothing);
     expect(find.text('CLUB · ADMIN'), findsOneWidget);
     // Les notifications s'ouvrent désormais depuis la cloche de l'en-tête.
     expect(find.text('Notifications'), findsNothing);
