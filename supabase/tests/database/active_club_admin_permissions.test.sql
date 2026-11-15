@@ -57,6 +57,7 @@ insert into admin_commands values
   ('convocations', $$select public.admin_save_match_effectif('6a100000-0000-0000-0000-000000000001', 14, '[]'::jsonb, null)$$),
   ('composition', $$select public.admin_save_match_composition('6a100000-0000-0000-0000-000000000001', '4-4-2', '[]'::jsonb, false, null)$$),
   ('attente', $$select public.admin_set_waitlist_manual_count('6a100000-0000-0000-0000-000000000001', 1)$$),
+  ('attente delta', $$select public.admin_adjust_waitlist_manual_count('6a100000-0000-0000-0000-000000000001', 1, 'a00d0000-0000-4000-8000-000000000006')$$),
   ('invités', $$select public.admin_set_guest_archived('6a100000-0000-0000-0000-000000000001', true, null)$$),
   ('notifications', $$select public.admin_set_notifications_paused(true, 'test refus')$$),
   ('texte badges', $$select public.staff_update_badge_text((select min(code) from public.badges), 'Interdit', '')$$),

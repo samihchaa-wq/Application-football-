@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:as_grinta/core/providers/supabase_provider.dart';
 import 'package:as_grinta/features/sports_management/domain/availability_reminder_models.dart';
 import 'package:as_grinta/features/sports_management/domain/sport_waitlist_models.dart';
@@ -17,6 +19,14 @@ abstract interface class SportWaitlistRepository {
   Future<void> setWaitlistManualCount({
     required String seasonPlayerId,
     required int count,
+  });
+
+  /// Applique un seul +1/−1 au compteur serveur et renvoie le classement.
+  /// Réutiliser [requestId] pour confirmer une réponse réseau perdue.
+  Future<SportWaitlist> adjustWaitlistManualCount({
+    required String seasonPlayerId,
+    required int delta,
+    required String requestId,
   });
 
   Future<List<AdminSportMatch>> fetchUpcomingMatches();
@@ -90,6 +100,28 @@ class SupabaseSportWaitlistRepository implements SportWaitlistRepository {
       'admin_set_waitlist_manual_count',
       params: {'p_season_player_id': seasonPlayerId, 'p_count': count},
     );
+  }
+
+  @override
+  Future<SportWaitlist> adjustWaitlistManualCount({
+    required String seasonPlayerId,
+    required int delta,
+    required String requestId,
+  }) async {
+    final response = await _client.rpc(
+      'admin_adjust_waitlist_manual_count',
+      params: {
+        'p_season_player_id': seasonPlayerId,
+        'p_delta': delta,
+        'p_request_id': requestId,
+      },
+    );
+    if (response is! Map ||
+        response['season_id'] == null ||
+        response['entries'] is! List) {
+      throw const FormatException('Classement de liste d’attente invalide.');
+    }
+    return SportWaitlist.fromRpc(response);
   }
 
   @override
@@ -224,3 +256,15 @@ final sportWaitlistRepositoryProvider = Provider<SportWaitlistRepository>((
 ) {
   return SupabaseSportWaitlistRepository(ref.watch(supabaseClientProvider));
 });
+
+/// Identifiant d'un geste, conservé quand son accusé de réception est perdu.
+String newWaitlistCountRequestId() {
+  final random = Random.secure();
+  final bytes = List<int>.generate(16, (_) => random.nextInt(256));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  final hex =
+      bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
+  return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-'
+      '${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}';
+}
