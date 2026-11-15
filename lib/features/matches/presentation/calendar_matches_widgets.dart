@@ -3,7 +3,6 @@ part of 'calendar_matches_view.dart';
 class _CalendarToolbar extends StatelessWidget {
   const _CalendarToolbar({
     required this.displayMode,
-    required this.onDisplayModeChanged,
     required this.onExport,
     required this.onCreate,
     required this.seasons,
@@ -18,7 +17,6 @@ class _CalendarToolbar extends StatelessWidget {
   });
 
   final _CalendarDisplayMode displayMode;
-  final ValueChanged<_CalendarDisplayMode> onDisplayModeChanged;
   final VoidCallback? onExport;
   final VoidCallback? onCreate;
   final List<Map<String, dynamic>> seasons;
@@ -41,27 +39,8 @@ class _CalendarToolbar extends StatelessWidget {
         );
         final compact = constraints.maxWidth < 720;
 
-        final modeSelector = SegmentedButton<_CalendarDisplayMode>(
-          showSelectedIcon: false,
-          segments: const [
-            ButtonSegment(
-              value: _CalendarDisplayMode.scroll,
-              label: Text('Défilé'),
-            ),
-            ButtonSegment(
-              value: _CalendarDisplayMode.month,
-              label: Text('Par mois'),
-            ),
-          ],
-          selected: {displayMode},
-          onSelectionChanged: (selection) {
-            if (selection.isNotEmpty) onDisplayModeChanged(selection.first);
-          },
-        );
-
-        // Boutons d'action compactes (icônes seules avec tooltip) : la barre
-        // du haut est désormais partagée à 2/3 pour le mode d'affichage
-        // Défilé/Par mois et à 1/3 pour ces deux actions.
+        // Le calendrier garde uniquement la vue Défilé. Les actions
+        // restent accessibles, alignées à droite sans sélecteur de vue.
         final exportIconButton = IconButton.outlined(
           onPressed: onExport,
           tooltip: 'S’abonner au calendrier',
@@ -73,17 +52,15 @@ class _CalendarToolbar extends StatelessWidget {
           icon: const Icon(Icons.add_rounded),
         );
         final hasActions = onExport != null || onCreate != null;
-        final actionsRow = hasActions
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  if (onCreate != null) Expanded(child: createIconButton),
-                  if (onCreate != null && onExport != null)
-                    const SizedBox(width: AppSpacing.microGap),
-                  if (onExport != null) Expanded(child: exportIconButton),
-                ],
-              )
-            : const SizedBox.shrink();
+        final actionsRow = Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (onCreate != null) createIconButton,
+            if (onCreate != null && onExport != null)
+              const SizedBox(width: AppSpacing.microGap),
+            if (onExport != null) exportIconButton,
+          ],
+        );
 
         // Les saisons arrivent triées de la plus récente à la plus ancienne :
         // la flèche gauche recule donc vers l'index suivant.
@@ -127,16 +104,11 @@ class _CalendarToolbar extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(flex: 2, child: modeSelector),
-                  if (hasActions) ...[
-                    const SizedBox(width: AppSpacing.contentGap),
-                    Expanded(flex: 1, child: actionsRow),
-                  ],
-                ],
-              ),
+              if (hasActions)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: actionsRow,
+                ),
               if (displayMode == _CalendarDisplayMode.month) ...[
                 const SizedBox(height: AppSpacing.contentGap),
                 if (compact) ...[
