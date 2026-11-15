@@ -38,6 +38,7 @@ select is((
   from pg_proc p
   join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' and p.prosecdef
+    and has_function_privilege('authenticated', p.oid, 'EXECUTE')
     and (p.proconfig is null or array_position(p.proconfig, 'search_path=""') is null)
 ), 0::bigint, 'toutes les RPC SECURITY DEFINER ont un search_path explicitement vide');
 
