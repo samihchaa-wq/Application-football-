@@ -2,9 +2,10 @@
 -- correspondant à un élément d'un AUTRE club.
 -- Ne modifie ni les objets existants ni leurs métadonnées.
 --
--- Le propriétaire SECURITY DEFINER club_scope possède sur les tables métier
--- une politique permissive club_scope_access (USING true). L'existence d'un
--- profil, invité ou joueur ne garantit donc PAS son appartenance au club.
+-- Défense en profondeur : le rôle club_scope est déjà soumis à la politique
+-- restrictive club_isolation, malgré la politique permissive club_scope_access.
+-- Ces vérifications explicites rendent la frontière interclubs indépendante
+-- d'une éventuelle évolution future de ces politiques.
 -- L'ancienne migration 20261113020000 reste immuable.
 
 create or replace function private.storage_path_in_current_club(
