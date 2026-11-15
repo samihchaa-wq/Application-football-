@@ -82,8 +82,9 @@ class _PlayerCardPageState extends ConsumerState<PlayerCardPage> {
   Widget _body(BuildContext context, PlayerCardKey key) {
     final details = ref.watch(playerCardDetailsProvider(key));
     final periodData = ref.watch(statisticsPeriodProvider(_period));
-    final allTime =
-        ref.watch(statisticsPeriodProvider(StatisticsPeriod.allTime));
+    final allTime = ref.watch(
+      statisticsPeriodProvider(StatisticsPeriod.allTime),
+    );
     final seasons =
         _careerOpened ? ref.watch(playerSeasonStatsProvider(key)) : null;
     // Sert au seuil de classement de la saison en cours : il ne s'applique
@@ -277,12 +278,13 @@ class _Hero extends ConsumerWidget {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        border:
-            Border.all(color: AppTheme.primaryBright.withValues(alpha: .35)),
+        border: Border.all(
+          color: AppTheme.primaryBright.withValues(alpha: .35),
+        ),
         gradient: const RadialGradient(
           center: Alignment.topRight,
           radius: 1.4,
-          colors: [Color(0xFF2453B8), AppTheme.surfaceHero, Color(0xFF0D2A52)],
+          colors: [Color(0xFF60313C), AppTheme.surfaceHero, AppTheme.surface],
           stops: [0, .4, 1],
         ),
       ),
@@ -295,10 +297,7 @@ class _Hero extends ConsumerWidget {
             height: 230,
             child: Opacity(
               opacity: .09,
-              child: Image(
-                image: ClubIdentity.crestImage,
-                fit: BoxFit.contain,
-              ),
+              child: Image(image: ClubIdentity.crestImage, fit: BoxFit.contain),
             ),
           ),
           Padding(
@@ -320,10 +319,7 @@ class _Hero extends ConsumerWidget {
                   // Le prénom se centre entre ce qui se voit de la photo et
                   // le badge : une photo détourée ne remplit pas son carré.
                   child: Transform.translate(
-                    offset: Offset(
-                      -_photoClearRight() * _heroPhotoSize / 2,
-                      0,
-                    ),
+                    offset: Offset(-_photoClearRight() * _heroPhotoSize / 2, 0),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -495,8 +491,12 @@ class _BadgeTile extends StatelessWidget {
       label: def.name,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () => showBadgeDetailSheet(context, def,
-            showLadder: false, showHolders: true),
+        onTap: () => showBadgeDetailSheet(
+          context,
+          def,
+          showLadder: false,
+          showHolders: true,
+        ),
         child: Column(
           children: [
             BadgeEmblem(

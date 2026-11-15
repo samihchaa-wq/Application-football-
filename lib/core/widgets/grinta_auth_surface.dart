@@ -51,26 +51,15 @@ class GrintaAuthSurface extends StatelessWidget {
                             Semantics(
                               header: true,
                               label: ClubIdentity.appName,
-                              // Le logo Petit Filet est bleu marine : il est
-                              // posé sur une tuile blanche pour rester lisible.
+                              // Le contour argenté est intégré au logo :
+                              // aucune tuile de fond n'est nécessaire.
                               child: Center(
-                                child: DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(18),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 14,
-                                      vertical: 10,
-                                    ),
-                                    child: Image.asset(
-                                      'assets/images/petit_filet_logo.webp',
-                                      height: 130,
-                                      fit: BoxFit.contain,
-                                      filterQuality: FilterQuality.high,
-                                    ),
-                                  ),
+                                child: Image.asset(
+                                  'assets/images/petit_filet_logo.webp',
+                                  height: 150,
+                                  fit: BoxFit.contain,
+                                  filterQuality: FilterQuality.high,
+                                  excludeFromSemantics: true,
                                 ),
                               ),
                             ),

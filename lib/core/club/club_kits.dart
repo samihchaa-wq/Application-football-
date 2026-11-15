@@ -165,13 +165,15 @@ abstract final class ClubKits {
   static ValueListenable<int> get revision => _revision;
 
   /// Un nouveau club ne commence qu'avec un maillot Domicile.
-  static List<ClubKit> defaultsFor({Color? primary, Color? secondary}) =>
-      [_legacyDefaults(primary: primary, secondary: secondary).first];
+  static List<ClubKit> defaultsFor({Color? primary, Color? secondary}) => [
+        _legacyDefaults(primary: primary, secondary: secondary).first,
+      ];
 
   /// Conserver les trois identifiants d'origine pour lire les anciens matchs.
   /// Les tenues absentes ne sont PAS proposées aux nouveaux matchs.
   static List<ClubKit> _legacyDefaults({Color? primary, Color? secondary}) {
-    final main = primary ?? AppTheme.defaultPrimary;
+    // Une nouvelle identité du produit ne recolore pas les tenues historiques.
+    final main = primary ?? const Color(0xFF1A4AC0);
     final second = secondary ?? const Color(0xFFFFFFFF);
     return [
       ClubKit(
@@ -304,19 +306,21 @@ abstract final class ClubKits {
       final archived = item['archived'] == true;
       final enabled = item['enabled'] != false && !archived;
       if (enabled) activeCount += 1;
-      result.add(ClubKit(
-        slot: slot,
-        label: label,
-        body: body,
-        trim: trim,
-        goalkeeperBody: goalkeeperBody,
-        goalkeeperTrim: goalkeeperTrim,
-        pattern: KitPattern.fromJson(item['pattern']),
-        goalkeeperPattern: KitPattern.fromJson(item['goalkeeper_pattern']),
-        dressPlayers: item['dress_players'] == true,
-        archived: archived,
-        enabled: enabled,
-      ));
+      result.add(
+        ClubKit(
+          slot: slot,
+          label: label,
+          body: body,
+          trim: trim,
+          goalkeeperBody: goalkeeperBody,
+          goalkeeperTrim: goalkeeperTrim,
+          pattern: KitPattern.fromJson(item['pattern']),
+          goalkeeperPattern: KitPattern.fromJson(item['goalkeeper_pattern']),
+          dressPlayers: item['dress_players'] == true,
+          archived: archived,
+          enabled: enabled,
+        ),
+      );
     }
     if (activeCount == 0) return null;
     // Garder l'ordre historique pour les clubs qui avaient trois emplacements.
@@ -327,7 +331,8 @@ abstract final class ClubKits {
     ];
     if (result.every((kit) => legacy.contains(kit.slot))) {
       result.sort(
-          (a, b) => legacy.indexOf(a.slot).compareTo(legacy.indexOf(b.slot)));
+        (a, b) => legacy.indexOf(a.slot).compareTo(legacy.indexOf(b.slot)),
+      );
     }
     return result;
   }

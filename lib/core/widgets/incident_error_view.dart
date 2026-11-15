@@ -1,3 +1,4 @@
+import 'package:as_grinta/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class IncidentErrorView extends StatelessWidget {
@@ -19,7 +20,7 @@ class IncidentErrorView extends StatelessWidget {
     final headlineStyle = Theme.of(context).textTheme.headlineSmall;
 
     return Material(
-      color: const Color(0xFF07142E),
+      color: AppTheme.background,
       child: SafeArea(
         child: Center(
           child: SingleChildScrollView(

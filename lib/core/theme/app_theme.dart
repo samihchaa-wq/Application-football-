@@ -23,22 +23,18 @@ class _GrintaPageTransitionsBuilder extends PageTransitionsBuilder {
 }
 
 abstract final class AppTheme {
-  // Palette du blason AS La Grinta : bleu nuit, bleu royal, jaune club et blanc.
-  static const Color background = Color(0xFF041224);
-  static const Color surface = Color(0xFF091B33);
-  static const Color surfaceHigh = Color(0xFF102A4A);
-  static const Color surfaceHero = Color(0xFF173D6E);
-  static const Color outline = Color(0xFF2A527E);
-  // Bleu royal de l'écusson AS La Grinta (échantillonné sur le blason, ~#05299D)
-  // repris comme fil conducteur : `primary` en porte l'identité pour les boutons
-  // et actions, `primaryBright` en donne une déclinaison claire, lisible sur le
-  // fond bleu nuit, pour les liens, icônes et bordures de champ actif.
-  //
-  // Ces trois couleurs suivent les couleurs choisies par le club (voir
-  // [applyClubColors]) ; les valeurs par défaut sont celles d'origine.
-  static const Color defaultPrimary = Color(0xFF1A4AC0);
-  static const Color defaultPrimaryBright = Color(0xFF6E93F6);
-  static const Color defaultAccent = Color(0xFFFBE80C);
+  // Identité Petit Filet : anthracite, rouge et argent.
+  static const Color background = Color(0xFF101418);
+  static const Color surface = Color(0xFF191F25);
+  static const Color surfaceHigh = Color(0xFF242C34);
+  static const Color surfaceHero = Color(0xFF38232B);
+  static const Color outline = Color(0xFF63717E);
+  // Rouge profond pour les boutons à texte blanc ; rouge clair pour les
+  // liens, sélections et icônes sur fond sombre. Les clubs conservent leurs
+  // couleurs personnalisées via [applyClubColors].
+  static const Color defaultPrimary = Color(0xFFD71932);
+  static const Color defaultPrimaryBright = Color(0xFFFF7585);
+  static const Color defaultAccent = Color(0xFFFF7585);
 
   static Color _primary = defaultPrimary;
   static Color _primaryBright = defaultPrimaryBright;
@@ -65,10 +61,7 @@ abstract final class AppTheme {
         : _withLightness(primary, .66, .76);
     final nextAccent = secondary == null
         ? defaultAccent
-        : _readableOn(
-            _withLightness(secondary, .52, 1),
-            selectedSurface,
-          );
+        : _readableOn(_withLightness(secondary, .52, 1), selectedSurface);
     if (nextPrimary == _primary &&
         nextBright == _primaryBright &&
         nextAccent == _accent) {
@@ -85,7 +78,7 @@ abstract final class AppTheme {
   /// Fond d'un onglet ou d'un choix sélectionné. Le texte sélectionné y est
   /// écrit avec [accent] : il doit rester lisible quelle que soit la couleur
   /// secondaire du club.
-  static const Color selectedSurface = Color(0xFF17457A);
+  static const Color selectedSurface = Color(0xFF39252D);
 
   /// Contraste minimal (WCAG AA, texte normal) visé pour [accent].
   static const double minAccentContrast = 4.5;
@@ -127,15 +120,15 @@ abstract final class AppTheme {
   static const Color reward = Color(0xFFFFD84A);
   static const Color success = Color(0xFF48C98B);
   static const Color warning = Color(0xFFF0A34A);
-  static const Color admin = Color(0xFF5C9CE6);
+  static const Color admin = Color(0xFFB9C5D1);
   static const Color error = Color(0xFFFF6F7D);
-  static const Color textPrimary = Color(0xFFF8FBFF);
-  static const Color textSecondary = Color(0xFFDCE8F7);
-  static const Color textFaint = Color(0xFF9FB4CC);
+  static const Color textPrimary = Color(0xFFF5F7FA);
+  static const Color textSecondary = Color(0xFFD7DDE4);
+  static const Color textFaint = Color(0xFFA9B4C0);
 
   // Statuts de disponibilité : convoqué, liste d'attente, absent, sans réponse.
   // Ces quatre couleurs servent de titre de colonne, de bordure et de teinte de
-  // fond directement sur le bleu nuit de l'application. Les variantes sombres
+  // fond directement sur les surfaces anthracite. Les variantes sombres
   // employées auparavant (#168A52, #B33A3A, #6B7280) n'atteignaient que 3,4:1,
   // 2,6:1 et 3,1:1 sur ce fond, sous le seuil WCAG AA de 4,5:1 : les titres
   // « Convoqués », « Absents » et « Sans réponse » étaient difficilement
@@ -181,23 +174,27 @@ abstract final class AppTheme {
       onPrimaryContainer: textPrimary,
       secondary: accent,
       onSecondary: background,
-      secondaryContainer: Color(0xFF393506),
-      onSecondaryContainer: Color(0xFFFFF6A8),
+      secondaryContainer: Color(0xFF39252D),
+      onSecondaryContainer: Color(0xFFFFDDE2),
       tertiary: reward,
       onTertiary: background,
       surface: surface,
       onSurface: textPrimary,
       onSurfaceVariant: textSecondary,
+      surfaceContainerLowest: background,
+      surfaceContainerLow: surface,
+      surfaceContainer: surface,
+      surfaceContainerHigh: surfaceHigh,
       surfaceContainerHighest: surfaceHigh,
       error: error,
       // `error` sert de FOND aux boutons de confirmation destructifs
       // (« Supprimer », « Tout effacer »). Blanc sur #FF6F7D ne donne que
-      // 2,68:1, sous le seuil WCAG AA même pour du grand texte ; le bleu nuit
-      // du fond général monte à 7,00:1. `error` employé en texte reste
+      // 2,68:1, sous le seuil WCAG AA même pour du grand texte ; le fond
+      // anthracite dépasse 7:1. `error` employé en texte reste
       // inchangé et parfaitement lisible.
       onError: background,
       outline: outline,
-      outlineVariant: Color(0xFF173755),
+      outlineVariant: Color(0xFF343E48),
     );
 
     final base = ThemeData(
@@ -439,7 +436,7 @@ abstract final class AppTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         height: 62,
-        backgroundColor: const Color(0xFF07182D),
+        backgroundColor: const Color(0xFF14191F),
         indicatorColor: accent.withValues(alpha: .13),
         surfaceTintColor: Colors.transparent,
         elevation: 0,

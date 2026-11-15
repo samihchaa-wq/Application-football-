@@ -15,7 +15,7 @@ class _MemberEditButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return FilledButton(
       style: FilledButton.styleFrom(
-        backgroundColor: const Color(0xFF1464EF),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
         disabledBackgroundColor:
             Theme.of(context).colorScheme.surfaceContainerHighest,
@@ -74,11 +74,7 @@ class _MemberValue extends StatelessWidget {
 }
 
 class _ProfileCard extends ConsumerStatefulWidget {
-  const _ProfileCard({
-    required this.profile,
-    this.effectif,
-    this.rosterPlayer,
-  });
+  const _ProfileCard({required this.profile, this.effectif, this.rosterPlayer});
 
   final AdminProfileItem profile;
 
@@ -224,14 +220,14 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-                content: Text('Prénom de la fiche joueur enregistré.')),
+              content: Text('Prénom de la fiche joueur enregistré.'),
+            ),
           );
         }
       } catch (error) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(humanizeError(error))),
-          );
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(humanizeError(error))));
         }
       } finally {
         if (mounted) setState(() => _savingFirstName = false);
@@ -338,7 +334,8 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
                       else
                         TextField(
                           key: ValueKey<String>(
-                              'effectif-first-name-${profile.id}'),
+                            'effectif-first-name-${profile.id}',
+                          ),
                           controller: _firstNameController,
                           enabled: canEditRoster,
                           textCapitalization: TextCapitalization.words,

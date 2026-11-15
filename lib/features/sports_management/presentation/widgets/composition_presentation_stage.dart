@@ -70,8 +70,8 @@ class _StageLayer extends StatelessWidget {
                         gradient: LinearGradient(
                           colors: [
                             AppTheme.background,
-                            Color(0x00041224),
-                            Color(0x00041224),
+                            Color(0x00101418),
+                            Color(0x00101418),
                             AppTheme.background,
                           ],
                           stops: [0, .07, .93, 1],
@@ -174,9 +174,9 @@ class _StageLayer extends StatelessWidget {
                   center: Alignment(0, 0.26),
                   radius: 0.9,
                   colors: [
-                    Color(0xCC020812),
-                    Color(0x6B020812),
-                    Color(0x00020812),
+                    Color(0xCC101418),
+                    Color(0x6B101418),
+                    Color(0x00101418),
                   ],
                   stops: [0, .55, .8],
                 ),
@@ -215,9 +215,9 @@ class _StageLayer extends StatelessWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color(0xC7020812),
-                      Color(0x61020812),
-                      Color(0x00020812),
+                      Color(0xC7101418),
+                      Color(0x61101418),
+                      Color(0x00101418),
                     ],
                     stops: [0, .55, 1],
                   ),
@@ -317,7 +317,7 @@ class _StageLayer extends StatelessWidget {
           height: 1,
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0x00FBE80C), AppTheme.accent, Color(0x00FBE80C)],
+              colors: [Color(0x00FF7585), AppTheme.accent, Color(0x00FF7585)],
             ),
           ),
         ),
@@ -451,9 +451,9 @@ class _StageLayer extends StatelessWidget {
                 gradient: RadialGradient(
                   radius: 0.85,
                   colors: [
-                    Color(0xB8020812),
-                    Color(0x40020812),
-                    Color(0x00020812),
+                    Color(0xB8101418),
+                    Color(0x40101418),
+                    Color(0x00101418),
                   ],
                   stops: [0, .7, 1],
                 ),
@@ -479,9 +479,9 @@ class _StageLayer extends StatelessWidget {
                   gradient: const LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Color(0xE6122E54), Color(0xF2061428)],
+                    colors: [Color(0xE6242C34), Color(0xF2191F25)],
                   ),
-                  border: Border.all(color: const Color(0x666E93F6)),
+                  border: Border.all(color: const Color(0x66B9C5D1)),
                   boxShadow: const [
                     BoxShadow(
                       color: Color(0x8C000000),
@@ -606,9 +606,9 @@ class _StageLayer extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Color(0x00041224),
-                    Color(0xC7041224),
-                    Color(0xEB041224)
+                    Color(0x00101418),
+                    Color(0xC7101418),
+                    Color(0xEB101418),
                   ],
                   stops: [0, .34, 1],
                 ),
@@ -643,8 +643,10 @@ class _StageLayer extends StatelessWidget {
         final panelPoint = layout.center(rowIndex, column, row.length);
         final appear = _easeOut((a - 0.08 - index * 0.07) / 0.32);
         final flight = _inOut((a - fly - index * 0.05) / flyDuration);
-        final land =
-            ((a - fly - index * 0.05 - flyDuration) / 0.28).clamp(0.0, 1.0);
+        final land = ((a - fly - index * 0.05 - flyDuration) / 0.28).clamp(
+          0.0,
+          1.0,
+        );
         final settle = 1 + 0.07 * math.sin(land * math.pi) * (1 - land);
         final panelScale = layout.scale * (0.86 + 0.14 * appear);
 
@@ -693,29 +695,26 @@ class _StageLayer extends StatelessWidget {
         // silhouette de la vidéo s'efface pendant la bascule.
         final silhouette =
             1 - _sstep(plan.moveStart + 0.3, plan.moveStart + 1.1, t);
-        result.add(
-          (
-            z,
-            Positioned(
-              left: 0,
-              top: 0,
-              child: Opacity(
-                opacity: opacity.clamp(0.0, 1.0),
-                child: Transform(
-                  transform: Matrix4.identity()
-                    ..translateByDouble(position.dx, position.dy, 0, 1)
-                    ..scaleByDouble(scale, scale, 1, 1)
-                    ..translateByDouble(
-                        -_tileWidth / 2, -_tileHeight / 2, 0, 1),
-                  child: _PresentationTile(
-                    face: face,
-                    silhouette: line.kind.isOnField ? silhouette : 1,
-                  ),
+        result.add((
+          z,
+          Positioned(
+            left: 0,
+            top: 0,
+            child: Opacity(
+              opacity: opacity.clamp(0.0, 1.0),
+              child: Transform(
+                transform: Matrix4.identity()
+                  ..translateByDouble(position.dx, position.dy, 0, 1)
+                  ..scaleByDouble(scale, scale, 1, 1)
+                  ..translateByDouble(-_tileWidth / 2, -_tileHeight / 2, 0, 1),
+                child: _PresentationTile(
+                  face: face,
+                  silhouette: line.kind.isOnField ? silhouette : 1,
                 ),
               ),
             ),
           ),
-        );
+        ));
       }
     }
     return result;
@@ -731,8 +730,10 @@ class _StageLayer extends StatelessWidget {
     final x = position.dx.clamp(0.08, 0.92);
     final y = position.dy.clamp(0.06, 0.94);
     final left = (x * width - markerWidth / 2).clamp(0.0, width - markerWidth);
-    final top =
-        (y * height - markerHeight / 2).clamp(0.0, height - markerHeight);
+    final top = (y * height - markerHeight / 2).clamp(
+      0.0,
+      height - markerHeight,
+    );
     final ground = PresentationCamera.groundPoint(
       Offset(left + markerWidth / 2, top + markerHeight / 2),
       Size(width, height),

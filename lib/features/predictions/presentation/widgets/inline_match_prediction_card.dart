@@ -115,9 +115,9 @@ class _InlineMatchPredictionCardState
           width: double.infinity,
           padding: const EdgeInsets.all(AppSpacing.cardPadding),
           decoration: BoxDecoration(
-            color: const Color(0xFF102A56),
+            color: AppTheme.surface,
             borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: const Color(0xFF4B8DFF), width: 1.4),
+            border: Border.all(color: AppTheme.primaryBright, width: 1.4),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

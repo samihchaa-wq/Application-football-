@@ -1,33 +1,56 @@
-# Identité Petit Filet
+# Identité Petit Filet — rouge, anthracite et argent
 
-Logo du produit fourni par Samih le 13/11/2026 : monogramme « PF » bleu
-marine avec ballon et filet, traînée jaune, mots « Petit » (bleu marine) et
-« Filet » (jaune), sur fond transparent.
+Mise à jour du 15 novembre 2026, à la demande de Samih et à partir du nouveau
+logo transmis. La source actuelle est `logo_red_transparent.png` (1536 × 1024).
+Le fond blanc a été retiré ; un fin contour argenté rend le monogramme sombre
+lisible sur l'anthracite sans tuile blanche ni halo. Le fichier
+`logo_original.png` est conservé comme référence historique de l'ancien logo.
 
-**Le logo n'est ni redessiné ni retouché** (demande explicite de Samih) :
-toutes les images de l'appli sont tirées de l'image d'origine
-`logo_original.png` (1536 × 1024, transparente) par
-`tool/branding/petit_filet_assets.py`.
+## Palette de l'application
 
-| Fichier de l'appli | Contenu |
+| Usage | Couleur |
 | --- | --- |
-| `web/icons/Icon-192.png`, `Icon-512.png`, `web/favicon.png`, `web/favicon.svg` | logo entier sur un carré blanc |
-| `web/icons/Icon-maskable-512.png` | idem avec plus de marge (découpe ronde d'Android) |
-| `web/petit_filet_logo.webp` (démarrage), `assets/images/petit_filet_logo.webp` (connexion) | image d'origine avec sa transparence, affichée sur une tuile blanche |
-| `web/icons/notification-badge-96.png` | parties blanches du ballon, en silhouette (Android n'utilise que la transparence) |
+| Fond | `#101418` |
+| Cartes | `#191F25` |
+| Surfaces hautes / champs | `#242C34` |
+| Boutons à texte blanc | `#D71932` |
+| Liens et accents lisibles sur sombre | `#FF7585` |
+| Texte principal | `#F5F7FA` |
+| Texte secondaire | `#D7DDE4` |
+| Texte discret | `#A9B4C0` |
 
-Le logo est bleu marine : sur le fond bleu nuit de l'appli il serait
-invisible, d'où la tuile blanche à l'écran de démarrage et de connexion.
+Le rouge du logo conserve ses reflets d'origine. Les variantes de rouge de
+l'interface sont choisies selon le contraste texte/fond, sans recolorer le
+logo. Les couleurs personnalisées des clubs restent fonctionnelles ; les
+maillots et logos des clubs restent indépendants de l'identité du produit.
+Les couleurs sémantiques de disponibilité, succès, avertissement et récompense
+restent différenciées.
 
-Pour régénérer après un changement de logo : remplacer `logo_original.png`
-puis lancer `python3 tool/branding/petit_filet_assets.py`.
+## Déclinaisons
 
-## Limites connues
+| Fichier | Contenu |
+| --- | --- |
+| `assets/images/petit_filet_logo.webp`, `web/petit_filet_logo.webp` | Logo complet, alpha transparent, sans tuile blanche à la connexion et au démarrage |
+| `web/icons/Icon-192.png`, `Icon-512.png` | Monogramme PF/ballon/filet sur carré anthracite, sans texte minuscule |
+| `web/icons/Icon-maskable-512.png` | Monogramme dans la zone sûre centrale de l'icône Android |
+| `web/favicon.png`, `web/favicon.svg` | Monogramme adapté aux petites tailles |
+| `web/icons/notification-badge-96.png` | Silhouette blanche du ballon avec coutures transparentes |
 
-- En icône carrée, le logo entier (texte compris) est petit ; à 32-64 px
-  (onglet du navigateur) le texte n'est plus lisible.
-- Le logo semble généré par une IA : les droits d'usage commercial et la
-  disponibilité de la marque ne sont pas vérifiés ici.
+Régénération : `python3 tool/branding/petit_filet_assets.py`.
+`monogram_red_transparent.png` est l'extraction dédiée du symbole, sans le
+nom ni le soulignement. Le script réalise uniquement les déclinaisons de ces
+deux sources transparentes.
+Le fond opaque des icônes d'installation est volontaire (découpe et lisibilité
+sur iOS/Android) ; le logo utilisé dans les écrans reste transparent.
 
-L'écusson neutre `assets/images/club_crest.webp` reste celui des clubs qui
-n'ont pas envoyé de logo : ce n'est pas le logo du produit.
+## Validation
+
+Alpha, lisibilité sur fond sombre et clair, dimensions des déclinaisons,
+zone sûre Android et contraste des textes : vérifications locales réussies. Les tests
+Flutter existants sur le contraste, le contrat PWA, les écrans de connexion et
+le bilan de saison couvrent les chemins concernés ; le test de contraste est
+étendu aux paires du thème par défaut. Les résultats CI sur la PR constituent
+la preuve d'analyse/tests/build. Le SDK Flutter est absent dans cette session :
+formatage Dart, analyse, tests Flutter et build Web ne sont pas exécutés
+localement. Aucun résultat CI n'est disponible tant que la branche n'est pas
+envoyée. Ce document n'affirme aucun déploiement.

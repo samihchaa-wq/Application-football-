@@ -21,8 +21,8 @@ enum WrappedMotif {
 
 /// L'habillage d'un écran : fond, couleur des chiffres, motif.
 ///
-/// Huit écrans du même bleu se ressembleraient tous. La rotation des
-/// habillages donne au bilan son rythme — et l'inversion jaune sur bleu
+/// Huit écrans du même fond se ressembleraient tous. La rotation des
+/// habillages donne au bilan son rythme — et l'inversion rouge sur anthracite
 /// marque les moments forts.
 class WrappedSkin {
   const WrappedSkin({
@@ -46,42 +46,42 @@ class WrappedSkin {
   final Color motifColor;
 
   static const WrappedSkin night = WrappedSkin(
-    background: [Color(0xFF061A32), AppTheme.background],
+    background: [Color(0xFF20262D), AppTheme.background],
     figure: AppTheme.defaultAccent,
     text: AppTheme.textPrimary,
     muted: AppTheme.textFaint,
     badge: AppTheme.defaultAccent,
     badgeText: AppTheme.background,
     motif: WrappedMotif.halftone,
-    motifColor: Color(0x22FBE80C),
+    motifColor: Color(0x22FF7585),
   );
 
   static const WrappedSkin royal = WrappedSkin(
-    background: [AppTheme.surfaceHero, Color(0xFF0E2A52)],
+    background: [AppTheme.surfaceHero, Color(0xFF24191F)],
     figure: AppTheme.textPrimary,
     text: AppTheme.textPrimary,
-    muted: Color(0xFFB9CBE4),
+    muted: Color(0xFFC6CDD5),
     badge: AppTheme.defaultAccent,
     badgeText: AppTheme.background,
     motif: WrappedMotif.stripes,
     motifColor: Color(0x1AFFFFFF),
   );
 
-  /// L'inversion : fond jaune, encre bleu nuit. Réservée aux écrans qu'on
+  /// L'inversion : fond rouge clair, encre anthracite. Réservée aux écrans qu'on
   /// veut faire claquer.
   static const WrappedSkin flash = WrappedSkin(
-    background: [AppTheme.defaultAccent, Color(0xFFF5C400)],
+    background: [AppTheme.defaultAccent, Color(0xFFFFA3AD)],
     figure: AppTheme.background,
     text: AppTheme.background,
-    muted: Color(0xCC041224),
+    muted: Color(0xCC101418),
     badge: AppTheme.background,
     badgeText: AppTheme.defaultAccent,
     motif: WrappedMotif.rays,
-    motifColor: Color(0x0F041224),
+    motifColor: Color(0x0F101418),
   );
 
   static const WrappedSkin deep = WrappedSkin(
-    background: [Color(0xFF02101F), Color(0xFF071F3B)],
+    background: [Color(0xFF101418), Color(0xFF252D35)],
     figure: AppTheme.reward,
     text: AppTheme.textPrimary,
     muted: AppTheme.textFaint,

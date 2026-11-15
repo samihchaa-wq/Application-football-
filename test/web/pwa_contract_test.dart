@@ -17,9 +17,9 @@ void main() {
         r'^version:\s*(\S+)\s*$',
         multiLine: true,
       ).firstMatch(pubspec)?.group(1);
-      final webVersion = RegExp(
-        r"AS_GRINTA_WEB_VERSION\s*=\s*'([^']+)'",
-      ).firstMatch(versionScript)?.group(1);
+      final webVersion = RegExp(r"AS_GRINTA_WEB_VERSION\s*=\s*'([^']+)'")
+          .firstMatch(versionScript)
+          ?.group(1);
 
       expect(appVersion, isNotNull);
       expect(webVersion, appVersion);
@@ -46,9 +46,7 @@ void main() {
       // silencieusement bloqué par le navigateur.
       expect(
         index,
-        contains(
-          "connect-src 'self' blob: https://a-remplacer.supabase.co",
-        ),
+        contains("connect-src 'self' blob: https://a-remplacer.supabase.co"),
       );
       expect(index, isNot(contains('<script>')));
     });
@@ -67,77 +65,93 @@ void main() {
       expect(worker, contains("request.mode === 'navigate'"));
     });
 
-    test('le badge des notifications est une silhouette sur fond transparent',
+    test('le logo complet garde sa transparence sur le web et dans Flutter',
         () {
-      // Android n'utilise que la transparence du badge : le logo sur fond
-      // plein s'affichait comme un carré blanc ou noir.
-      expect(worker, contains("badge: 'icons/notification-badge-96.png'"));
-      expect(worker, contains("'icons/notification-badge-96.png',"));
-
-      final badge = img.decodePng(
-        File('web/icons/notification-badge-96.png').readAsBytesSync(),
-      )!;
-      expect(badge.numChannels, 4);
-      expect(badge.getPixel(0, 0).a, 0);
-      // Le ballon du logo a des coutures transparentes : on vérifie qu'une
-      // vraie silhouette opaque existe, pas un pixel précis.
-      var opaque = 0;
-      for (final pixel in badge) {
-        if (pixel.a == 255) opaque++;
+      final webBytes = File('web/petit_filet_logo.webp').readAsBytesSync();
+      final flutterBytes =
+          File('assets/images/petit_filet_logo.webp').readAsBytesSync();
+      expect(flutterBytes, orderedEquals(webBytes));
+      final logo = img.decodeWebP(webBytes)!;
+      expect(logo.numChannels, 4);
+      expect(logo.getPixel(0, 0).a, 0);
+      expect(logo.getPixel(logo.width - 1, 0).a, 0);
+      expect(logo.getPixel(0, logo.height - 1).a, 0);
+      expect(logo.getPixel(logo.width - 1, logo.height - 1).a, 0);
+      var transparent = 0;
+      var visible = 0;
+      for (final pixel in logo) {
+        if (pixel.a == 0) transparent++;
+        if (pixel.a > 240) visible++;
       }
-      expect(opaque, greaterThan(badge.width * badge.height * 0.15));
+      // Ni rectangle opaque ni fichier vide : le détourage fait partie du logo.
+      expect(transparent, greaterThan(logo.width * logo.height * .3));
+      expect(visible, greaterThan(logo.width * logo.height * .15));
     });
 
     test(
-      'le bundle Flutter principal reste frais après un déploiement',
+      'le badge des notifications est une silhouette sur fond transparent',
       () {
-        expect(worker, contains("path.endsWith('/main.dart.js')"));
-        expect(worker, contains('return networkFirst(request, cache)'));
+        // Android n'utilise que la transparence du badge : le logo sur fond
+        // plein s'affichait comme un carré blanc ou noir.
+        expect(worker, contains("badge: 'icons/notification-badge-96.png'"));
+        expect(worker, contains("'icons/notification-badge-96.png',"));
+
+        final badge = img.decodePng(
+          File('web/icons/notification-badge-96.png').readAsBytesSync(),
+        )!;
+        expect(badge.numChannels, 4);
+        expect(badge.getPixel(0, 0).a, 0);
+        // Le ballon du logo a des coutures transparentes : on vérifie qu'une
+        // vraie silhouette opaque existe, pas un pixel précis.
+        var opaque = 0;
+        for (final pixel in badge) {
+          if (pixel.a == 255) opaque++;
+        }
+        expect(opaque, greaterThan(badge.width * badge.height * 0.15));
       },
     );
 
-    test(
-      'le programme principal versionné reste sur le téléphone',
-      () {
-        // Son adresse porte la version (tool/stamp_web_release.py) : il est
-        // servi depuis le téléphone sans risque de mélanger deux versions.
-        expect(worker, contains('const VERSIONED_MAIN_JS'));
-        expect(
-          worker,
-          contains(
-            "path.endsWith('/main.dart.js') && url.searchParams.has('v')",
-          ),
-        );
-        expect(worker, contains('const kept = await caches.match(request);'));
-        final versioned = worker.indexOf("url.searchParams.has('v')");
-        expect(versioned, lessThan(worker.indexOf('const mustStayFresh')));
-      },
-    );
+    test('le bundle Flutter principal reste frais après un déploiement', () {
+      expect(worker, contains("path.endsWith('/main.dart.js')"));
+      expect(worker, contains('return networkFirst(request, cache)'));
+    });
 
-    test(
-      'une nouvelle version précharge son programme à l’installation',
-      () {
-        expect(
-          worker,
-          contains('await cache.add(VERSIONED_MAIN_JS).catch(() => {});'),
-        );
-      },
-    );
-
-    test('une nouvelle version repérée appli ouverte précharge son programme',
-        () {
-      final schedule = shell.indexOf('function scheduleDeploymentVersion(');
-      expect(schedule, isNonNegative);
+    test('le programme principal versionné reste sur le téléphone', () {
+      // Son adresse porte la version (tool/stamp_web_release.py) : il est
+      // servi depuis le téléphone sans risque de mélanger deux versions.
+      expect(worker, contains('const VERSIONED_MAIN_JS'));
       expect(
-        shell.indexOf('prefetchDeploymentProgram(freshVersion);', schedule),
-        greaterThan(schedule),
+        worker,
+        contains("path.endsWith('/main.dart.js') && url.searchParams.has('v')"),
       );
-      // Même adresse que celle écrite dans flutter_bootstrap.js.
+      expect(worker, contains('const kept = await caches.match(request);'));
+      final versioned = worker.indexOf("url.searchParams.has('v')");
+      expect(versioned, lessThan(worker.indexOf('const mustStayFresh')));
+    });
+
+    test('une nouvelle version précharge son programme à l’installation', () {
       expect(
-        shell,
-        contains("'main.dart.js?v=' + encodeURIComponent(freshVersion)"),
+        worker,
+        contains('await cache.add(VERSIONED_MAIN_JS).catch(() => {});'),
       );
     });
+
+    test(
+      'une nouvelle version repérée appli ouverte précharge son programme',
+      () {
+        final schedule = shell.indexOf('function scheduleDeploymentVersion(');
+        expect(schedule, isNonNegative);
+        expect(
+          shell.indexOf('prefetchDeploymentProgram(freshVersion);', schedule),
+          greaterThan(schedule),
+        );
+        // Même adresse que celle écrite dans flutter_bootstrap.js.
+        expect(
+          shell,
+          contains("'main.dart.js?v=' + encodeURIComponent(freshVersion)"),
+        );
+      },
+    );
 
     test('les morceaux de programme chargés à la demande restent frais', () {
       expect(worker, contains("path.endsWith('.part.js')"));
@@ -170,47 +184,40 @@ void main() {
     );
 
     test(
-      'les autres ressources statiques ne bloquent plus systématiquement sur le réseau',
-      () {
-        expect(worker, contains('staleWhileRevalidate'));
-        expect(worker, contains('if (cached)'));
-        expect(worker, contains('event.waitUntil(refresh)'));
-        expect(worker, contains('mustStayFresh'));
-      },
-    );
+        'les autres ressources statiques ne bloquent plus systématiquement sur le réseau',
+        () {
+      expect(worker, contains('staleWhileRevalidate'));
+      expect(worker, contains('if (cached)'));
+      expect(worker, contains('event.waitUntil(refresh)'));
+      expect(worker, contains('mustStayFresh'));
+    });
 
-    test(
-      'la mise à jour est automatique sans bandeau bloquant',
-      () {
-        expect(shell, contains("aria-live', 'polite'"));
-        expect(shell, contains("role', 'status'"));
-        expect(shell, contains('Mise à jour de l’application…'));
-        expect(
-          shell,
-          contains('Mise à jour prête — automatique à la prochaine ouverture'),
-        );
-        expect(shell, isNot(contains('Nouvelle version disponible')));
-        expect(shell, isNot(contains("role', 'button'")));
-        expect(shell, isNot(contains('as-grinta-update-bar')));
-        expect(
-          shell,
-          contains("this._worker.postMessage({ type: 'SKIP_WAITING' })"),
-        );
-        expect(shell, contains('function applyPendingDeploymentWhenSafe()'));
-        expect(shell, contains("window.addEventListener('pagehide'"));
-        expect(shell, contains('flutterFirstFrameSeen = true'));
+    test('la mise à jour est automatique sans bandeau bloquant', () {
+      expect(shell, contains("aria-live', 'polite'"));
+      expect(shell, contains("role', 'status'"));
+      expect(shell, contains('Mise à jour de l’application…'));
+      expect(
+        shell,
+        contains('Mise à jour prête — automatique à la prochaine ouverture'),
+      );
+      expect(shell, isNot(contains('Nouvelle version disponible')));
+      expect(shell, isNot(contains("role', 'button'")));
+      expect(shell, isNot(contains('as-grinta-update-bar')));
+      expect(
+        shell,
+        contains("this._worker.postMessage({ type: 'SKIP_WAITING' })"),
+      );
+      expect(shell, contains('function applyPendingDeploymentWhenSafe()'));
+      expect(shell, contains("window.addEventListener('pagehide'"));
+      expect(shell, contains('flutterFirstFrameSeen = true'));
 
-        final considerStart = shell.indexOf('function considerWorker(worker)');
-        final refreshStart = shell.indexOf('function refreshRegistration()');
-        expect(considerStart, greaterThanOrEqualTo(0));
-        expect(refreshStart, greaterThan(considerStart));
+      final considerStart = shell.indexOf('function considerWorker(worker)');
+      final refreshStart = shell.indexOf('function refreshRegistration()');
+      expect(considerStart, greaterThanOrEqualTo(0));
+      expect(refreshStart, greaterThan(considerStart));
 
-        final considerWorker = shell.substring(considerStart, refreshStart);
-        expect(
-          considerWorker,
-          contains('window.asGrintaUpdate.prepare(worker)'),
-        );
-      },
-    );
+      final considerWorker = shell.substring(considerStart, refreshStart);
+      expect(considerWorker, contains('window.asGrintaUpdate.prepare(worker)'));
+    });
   });
 }
