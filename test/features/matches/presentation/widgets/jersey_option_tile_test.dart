@@ -61,7 +61,8 @@ void main() {
     expect(find.byType(JerseyOptionTile), findsNWidgets(2));
     expect(find.byType(KitJersey), findsNWidgets(2));
     expect(
-      tester.widgetList<KitJersey>(find.byType(KitJersey))
+      tester
+          .widgetList<KitJersey>(find.byType(KitJersey))
           .every((jersey) => !jersey.isGoalkeeper),
       isTrue,
     );
