@@ -1,9 +1,16 @@
--- Saisie d'un but dans le Live par le pilote de chaque club, en même temps.
+-- Deux mutations reelles et atomiques sur le meme Live, par un administrateur.
+-- Le +1 suivi du -1 exercera les verrous, evenements et commandes idempotentes
+-- sans accumuler des scores > 99 au cours d'une charge longue.
+-- Les 2 commandes ont des operation_id distincts, comme deux gestes reels.
 \set c random(1, :clubs)
 BEGIN;
 SELECT loadtest.act_as_admin(:c);
 SELECT public.coach_adjust_match_live_score(
   (SELECT live_match_id FROM loadtest.clubs WHERE n = :c),
   'them', 1, NULL, gen_random_uuid()
+);
+SELECT public.coach_adjust_match_live_score(
+  (SELECT live_match_id FROM loadtest.clubs WHERE n = :c),
+  'them', -1, NULL, gen_random_uuid()
 );
 COMMIT;
