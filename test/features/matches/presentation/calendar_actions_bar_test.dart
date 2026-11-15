@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('sur petit écran, les actions sont groupées et activables',
-      (tester) async {
+  testWidgets(
+    'sur petit écran, les actions sont groupées et activables',
+    (tester) async {
     await tester.binding.setSurfaceSize(const Size(320, 640));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -28,8 +29,10 @@ void main() {
 
     expect(find.text('Nouvel événement'), findsOneWidget);
     expect(find.byTooltip('S’abonner au calendrier'), findsOneWidget);
-    expect(find.byKey(const ValueKey('calendar-new-event-action')),
-        findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('calendar-new-event-action')),
+      findsOneWidget,
+    );
     await tester.tap(find.text('Nouvel événement'));
     await tester.pump();
     expect(created, 1);
@@ -39,7 +42,8 @@ void main() {
     await tester.pump();
     expect(subscribed, 1);
     expect(tester.takeException(), isNull);
-  });
+    },
+  );
 
   testWidgets('un membre ne voit que l’abonnement', (tester) async {
     var subscribed = 0;
@@ -64,8 +68,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('aucune action si la création et l’abonnement sont indisponibles',
-      (tester) async {
+  testWidgets(
+    'aucune action si la création et l’abonnement sont indisponibles',
+    (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
@@ -75,5 +80,6 @@ void main() {
     );
     expect(find.byType(FilledButton), findsNothing);
     expect(find.byType(OutlinedButton), findsNothing);
-  });
+    },
+  );
 }
