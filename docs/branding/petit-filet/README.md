@@ -2,7 +2,7 @@
 
 Mise à jour du 15 novembre 2026, à la demande de Samih et à partir du nouveau
 logo définitif transmis le même jour. La source actuelle est
-`logo_red_transparent.png` (1536 × 1024). Le fond et les ouvertures du filet
+`logo_final_clean.webp` (1536 × 1024). Le fond et les ouvertures du filet
 ont été rendus transparents ; les contours blancs et argentés du logo final
 rendent le monogramme sombre lisible sur l'anthracite sans tuile blanche. Le fichier
 `logo_original.png` est conservé comme référence historique de l'ancien logo.
@@ -37,7 +37,7 @@ restent différenciées.
 | `web/favicon.png`, `web/favicon.svg` | Monogramme adapté aux petites tailles |
 | `web/icons/notification-badge-96.png` | Silhouette blanche du ballon avec coutures transparentes |
 
-Régénération : `python3 tool/branding/petit_filet_assets.py`.
+Régénération : `python3 tool/branding/petit_filet_assets.py` depuis `logo_final_clean.webp`. Les versions WebP de l’application proviennent de cette source corrigée.
 `monogram_red_transparent.png` est l'extraction dédiée du symbole, sans le
 nom ni le soulignement. Le script réalise uniquement les déclinaisons de ces
 deux sources transparentes.

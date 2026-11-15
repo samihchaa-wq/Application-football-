@@ -11,14 +11,14 @@ import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT / "docs/branding/petit-filet/logo_red_transparent.png"
+SRC = ROOT / "docs/branding/petit-filet/logo_final_clean.webp"
 img = Image.open(SRC).convert("RGBA")
 W, H = img.size
 
 # Logo complet, sans tuile de fond : le contour argenté assure la lisibilité.
 logo = img.resize((720, 480), Image.Resampling.LANCZOS)
 for destination in ["web/petit_filet_logo.webp", "assets/images/petit_filet_logo.webp"]:
-    logo.save(ROOT / destination, lossless=True, quality=100)
+    logo.save(ROOT / destination, quality=80, method=4)
 
 # En petit, le monogramme PF/ballon/filet se lit mieux que le nom complet.
 # Extraction dédiée, sans aucun fragment du mot « Petit Filet ».
