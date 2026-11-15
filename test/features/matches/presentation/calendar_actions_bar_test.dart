@@ -24,8 +24,14 @@ void main() {
     );
 
     expect(find.text('Nouvel événement'), findsOneWidget);
-    expect(find.byKey(const ValueKey('calendar-new-event-action')), findsOneWidget);
-    expect(find.byKey(const ValueKey('calendar-subscribe-action')), findsNothing);
+    expect(
+      find.byKey(const ValueKey('calendar-new-event-action')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('calendar-subscribe-action')),
+      findsNothing,
+    );
     expect(find.byTooltip('S’abonner au calendrier'), findsNothing);
     await tester.tap(find.text('Nouvel événement'));
     await tester.pump();
@@ -45,7 +51,10 @@ void main() {
     );
 
     expect(find.text('Nouvel événement'), findsNothing);
-    expect(find.byKey(const ValueKey('calendar-subscribe-action')), findsNothing);
+    expect(
+      find.byKey(const ValueKey('calendar-subscribe-action')),
+      findsNothing,
+    );
     expect(find.byType(FilledButton), findsNothing);
   });
 }
