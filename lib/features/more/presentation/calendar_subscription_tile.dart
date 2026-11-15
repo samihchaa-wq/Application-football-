@@ -277,22 +277,26 @@ class _CalendarSubscriptionTileState
   }
 
   Future<void> _subscribeCurrentSeason() async {
-    // Plusieurs appuis pendant le chargement empilaient autant de fenêtres
-    // de choix identiques.
+    // Bloquer les appuis répétés pendant la récupération du jeton, puis
+    // masquer le chargement AVANT d'afficher les choix du calendrier.
+    // Un indicateur animé derrière la fenêtre empêcherait les tests UI
+    // de se stabiliser et n'aurait plus d'utilité.
     if (_subscribing) return;
     setState(() => _subscribing = true);
+    Uri? httpsUri;
     try {
-      final httpsUri = await ref.read(calendarSubscriptionLinkProvider)();
-
-      if (!mounted) return;
-      await _showCalendarSubscriptionChoices(httpsUri);
+      httpsUri = await ref.read(calendarSubscriptionLinkProvider)();
     } catch (error) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(humanizeError(error))));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(humanizeError(error))));
+      }
     } finally {
       if (mounted) setState(() => _subscribing = false);
     }
+
+    if (!mounted || httpsUri == null) return;
+    await _showCalendarSubscriptionChoices(httpsUri);
   }
 }
