@@ -92,6 +92,10 @@ jobs:
               -f supabase/tests/bootstrap/grant_pgtap_test_helpers.sql
           } 2>&1 | tee supabase-test-helpers.log
 
+      - name: Test concurrent manual waitlist changes with separate sessions
+        shell: bash
+        run: python3 supabase/tests/concurrency/test_waitlist_concurrency.py
+
       - name: Run every pgTAP business and RLS test
         shell: bash
         run: |
