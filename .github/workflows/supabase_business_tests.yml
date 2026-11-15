@@ -109,6 +109,10 @@ jobs:
             exit 1
           fi
 
+      - name: Test concurrent manual waitlist changes with separate sessions
+        shell: bash
+        run: python3 supabase/tests/concurrency/test_waitlist_concurrency.py
+
       # Échoue sur toute erreur réelle des fonctions de public et private.
       # Seuls les faux positifs des tables pg_temp créées à l'exécution sont
       # ignorés, un par un, dans supabase/tests/lint/check_db_lint.py.

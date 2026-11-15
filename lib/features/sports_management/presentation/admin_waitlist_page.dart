@@ -8,6 +8,7 @@ import 'package:as_grinta/features/sports_management/data/sport_waitlist_reposit
 import 'package:as_grinta/features/sports_management/domain/sport_waitlist_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AdminWaitlistPage extends ConsumerStatefulWidget {
   const AdminWaitlistPage({super.key, this.editable = true});
@@ -24,7 +25,10 @@ class AdminWaitlistPage extends ConsumerStatefulWidget {
 class _AdminWaitlistPageState extends ConsumerState<AdminWaitlistPage> {
   SportWaitlist? _waitlist;
   List<SportWaitlistEntry> _entries = const [];
-  final Set<String> _adjustingCounts = <String>{};
+  ({String seasonPlayerId, int delta, String requestId})? _pendingAdjustment;
+  bool _adjustingCount = false;
+  String? _countError;
+  int _loadRevision = 0;
   bool _loading = true;
   String? _error;
 
@@ -35,6 +39,12 @@ class _AdminWaitlistPageState extends ConsumerState<AdminWaitlistPage> {
   }
 
   Future<void> _load() async {
+    if (_adjustingCount) return;
+    if (_pendingAdjustment != null) {
+      await _submitCountAdjustment();
+      return;
+    }
+    final revision = ++_loadRevision;
     setState(() {
       _loading = true;
       _error = null;
@@ -44,14 +54,14 @@ class _AdminWaitlistPageState extends ConsumerState<AdminWaitlistPage> {
       final value = widget.editable
           ? await repository.fetchWaitlist()
           : await repository.fetchWaitlistReadOnly();
-      if (!mounted) return;
+      if (!mounted || revision != _loadRevision) return;
       setState(() {
         _waitlist = value;
         _entries = List.of(value.entries);
         _loading = false;
       });
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted || revision != _loadRevision) return;
       setState(() {
         _error = humanizeError(error);
         _loading = false;
@@ -60,45 +70,67 @@ class _AdminWaitlistPageState extends ConsumerState<AdminWaitlistPage> {
   }
 
   Future<void> _adjustWaitlistCount(SportWaitlistEntry entry, int delta) async {
-    final playerId = entry.seasonPlayerId;
-    if (_adjustingCounts.contains(playerId)) return;
-
-    final previousCount = entry.currentSeasonWaitlistCount;
-    final newCount = previousCount + delta;
-    if (newCount < 0) return;
-
+    if (!widget.editable ||
+        _loading ||
+        _adjustingCount ||
+        _pendingAdjustment != null ||
+        (delta < 0 && entry.currentSeasonWaitlistCount == 0)) {
+      return;
+    }
     setState(() {
-      _adjustingCounts.add(playerId);
-      _entries = [
-        for (final current in _entries)
-          if (current.seasonPlayerId == playerId)
-            current.copyWith(currentSeasonWaitlistCount: newCount)
-          else
-            current,
-      ];
+      _pendingAdjustment = (
+        seasonPlayerId: entry.seasonPlayerId,
+        delta: delta,
+        requestId: newWaitlistCountRequestId(),
+      );
     });
+    await _submitCountAdjustment();
+  }
 
+  Future<void> _submitCountAdjustment() async {
+    final adjustment = _pendingAdjustment;
+    if (adjustment == null || _adjustingCount) return;
+    ++_loadRevision;
+    setState(() {
+      _adjustingCount = true;
+      _countError = null;
+    });
     try {
-      await ref
+      final value = await ref
           .read(sportWaitlistRepositoryProvider)
-          .setWaitlistManualCount(seasonPlayerId: playerId, count: newCount);
-    } catch (error) {
+          .adjustWaitlistManualCount(
+            seasonPlayerId: adjustment.seasonPlayerId,
+            delta: adjustment.delta,
+            requestId: adjustment.requestId,
+          )
+          .timeout(const Duration(seconds: 12));
       if (!mounted) return;
       setState(() {
-        _entries = [
-          for (final current in _entries)
-            if (current.seasonPlayerId == playerId)
-              current.copyWith(currentSeasonWaitlistCount: previousCount)
-            else
-              current,
-        ];
+        _waitlist = value;
+        _entries = List.of(value.entries);
+        _pendingAdjustment = null;
       });
+    } on PostgrestException catch (error) {
+      // Refus explicite : aucun compteur local à restaurer.
+      if (!mounted) return;
+      setState(() => _pendingAdjustment = null);
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(humanizeError(error))));
+    } on AuthException catch (error) {
+      if (!mounted) return;
+      setState(() => _pendingAdjustment = null);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(humanizeError(error))));
+    } catch (_) {
+      // Une réponse perdue peut cacher une écriture réussie. Le prochain
+      // essai conserve exactement le même geste, jamais un second +1.
+      if (!mounted) return;
+      setState(() {
+        _countError = 'La modification n’est pas encore confirmée. '
+            'Réessaie pour retrouver le classement à jour.';
+      });
     } finally {
-      if (mounted) {
-        setState(() => _adjustingCounts.remove(playerId));
-      }
+      if (mounted) setState(() => _adjustingCount = false);
     }
   }
 
@@ -113,7 +145,7 @@ class _AdminWaitlistPageState extends ConsumerState<AdminWaitlistPage> {
       scrollable: _WaitlistScrollableRow(
         entry: entry,
         editable: widget.editable,
-        adjustingCount: _adjustingCounts.contains(entry.seasonPlayerId),
+        adjustingCount: _adjustingCount || _pendingAdjustment != null,
         onIncrement: () => _adjustWaitlistCount(entry, 1),
         onDecrement: () => _adjustWaitlistCount(entry, -1),
       ),
@@ -123,9 +155,7 @@ class _AdminWaitlistPageState extends ConsumerState<AdminWaitlistPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: GrintaAppBar(
-        title: const Text('Liste d’attente'),
-      ),
+      appBar: GrintaAppBar(title: const Text('Liste d’attente')),
       body: _body(context),
     );
   }
@@ -161,6 +191,19 @@ class _AdminWaitlistPageState extends ConsumerState<AdminWaitlistPage> {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Column(
         children: [
+          if (_countError != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  Expanded(child: Text(_countError!)),
+                  TextButton(
+                    onPressed: _adjustingCount ? null : _submitCountAdjustment,
+                    child: const Text('Réessayer'),
+                  ),
+                ],
+              ),
+            ),
           if (ClubRules.waitlistMode != WaitlistMode.lastSeasonAttendance)
             Padding(
               key: const ValueKey('waitlist-mode-notice'),
