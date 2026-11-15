@@ -257,15 +257,15 @@ void main() {
   testWidgets(
     'un joueur peut ouvrir les choix de calendrier depuis les paramètres',
     (tester) async {
-    await _pumpMorePage(tester, profile: _player, sportsEnabled: false);
+      await _pumpMorePage(tester, profile: _player, sportsEnabled: false);
 
-    await tester.tap(find.text('Synchroniser mon calendrier'));
-    await tester.pumpAndSettle();
-    expect(find.text('S’abonner au calendrier'), findsOneWidget);
-    expect(find.text('Apple Calendrier'), findsOneWidget);
-    expect(find.text('Google Agenda'), findsOneWidget);
-    expect(find.text('Outlook'), findsOneWidget);
-    expect(find.text('Copier le lien du calendrier'), findsOneWidget);
+      await tester.tap(find.text('Synchroniser mon calendrier'));
+      await tester.pumpAndSettle();
+      expect(find.text('S’abonner au calendrier'), findsOneWidget);
+      expect(find.text('Apple Calendrier'), findsOneWidget);
+      expect(find.text('Google Agenda'), findsOneWidget);
+      expect(find.text('Outlook'), findsOneWidget);
+      expect(find.text('Copier le lien du calendrier'), findsOneWidget);
     },
   );
 
