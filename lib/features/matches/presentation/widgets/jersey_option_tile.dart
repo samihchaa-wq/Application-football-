@@ -91,18 +91,33 @@ class JerseyOptionTile extends StatelessWidget {
           children: [
             Positioned.fill(
               bottom: 20,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Flexible(child: KitJersey(kit: option.kit)),
-                  const SizedBox(width: 2),
-                  Flexible(
-                    child: KitJersey(
-                      kit: option.kit,
-                      isGoalkeeper: true,
-                    ),
+              child: Center(
+                child: SizedBox(
+                  width: 88,
+                  child: Stack(
+                    children: [
+                      // Le choix concerne la tenue du match : celle des
+                      // joueurs. Le gardien porte sa déclinaison automatique.
+                      KitJersey(kit: option.kit),
+                      if (selected)
+                        Positioned(
+                          top: 35,
+                          right: 22,
+                          child: DecoratedBox(
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.check_circle_rounded,
+                              size: 20,
+                              color: accent,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
             Positioned(
@@ -119,16 +134,6 @@ class JerseyOptionTile extends StatelessWidget {
                     ),
               ),
             ),
-            if (selected)
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Icon(
-                  Icons.check_circle_rounded,
-                  size: 18,
-                  color: accent,
-                ),
-              ),
           ],
         ),
       ),
