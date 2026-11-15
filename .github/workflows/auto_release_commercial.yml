@@ -42,7 +42,14 @@ jobs:
         run: |
           set -euo pipefail
           # Les contrôles peuvent démarrer après ce workflow. Attendre au plus 30 min.
-          for workflow in flutter_ci.yml supabase_business_tests.yml; do
+          # Le workflow Supabase ne se déclenche que si ses chemins changent.
+          git fetch --no-tags --deepen=1 origin main
+          changed_files="$(git diff --name-only "$GITHUB_SHA^" "$GITHUB_SHA" | grep -v '^supabase/production_migrations.lock$' || true)"
+          workflows=(flutter_ci.yml)
+          if printf '%s\n' "$changed_files" | grep -Eq '^(supabase/|\.github/workflows/supabase_business_tests\.yml$)'; then
+            workflows+=(supabase_business_tests.yml)
+          fi
+          for workflow in "${workflows[@]}"; do
             found=""
             for attempt in $(seq 1 90); do
               found="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$workflow/runs?head_sha=$GITHUB_SHA&event=push&per_page=30" --jq '.workflow_runs | first | .id // empty' 2>/dev/null || true)"
