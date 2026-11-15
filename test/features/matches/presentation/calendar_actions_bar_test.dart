@@ -6,42 +6,42 @@ void main() {
   testWidgets(
     'sur petit écran, les actions sont groupées et activables',
     (tester) async {
-    await tester.binding.setSurfaceSize(const Size(320, 640));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.binding.setSurfaceSize(const Size(320, 640));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    var created = 0;
-    var subscribed = 0;
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: SizedBox(
-              width: 304,
-              child: CalendarActionsBar(
-                onCreate: () => created++,
-                onExport: () => subscribed++,
+      var created = 0;
+      var subscribed = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 304,
+                child: CalendarActionsBar(
+                  onCreate: () => created++,
+                  onExport: () => subscribed++,
+                ),
               ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(find.text('Nouvel événement'), findsOneWidget);
-    expect(find.byTooltip('S’abonner au calendrier'), findsOneWidget);
-    expect(
-      find.byKey(const ValueKey('calendar-new-event-action')),
-      findsOneWidget,
-    );
-    await tester.tap(find.text('Nouvel événement'));
-    await tester.pump();
-    expect(created, 1);
-    expect(subscribed, 0);
+      expect(find.text('Nouvel événement'), findsOneWidget);
+      expect(find.byTooltip('S’abonner au calendrier'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('calendar-new-event-action')),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Nouvel événement'));
+      await tester.pump();
+      expect(created, 1);
+      expect(subscribed, 0);
 
-    await tester.tap(find.byTooltip('S’abonner au calendrier'));
-    await tester.pump();
-    expect(subscribed, 1);
-    expect(tester.takeException(), isNull);
+      await tester.tap(find.byTooltip('S’abonner au calendrier'));
+      await tester.pump();
+      expect(subscribed, 1);
+      expect(tester.takeException(), isNull);
     },
   );
 
@@ -71,15 +71,15 @@ void main() {
   testWidgets(
     'aucune action si la création et l’abonnement sont indisponibles',
     (tester) async {
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: Scaffold(
-          body: CalendarActionsBar(onCreate: null, onExport: null),
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: CalendarActionsBar(onCreate: null, onExport: null),
+          ),
         ),
-      ),
-    );
-    expect(find.byType(FilledButton), findsNothing);
-    expect(find.byType(OutlinedButton), findsNothing);
+      );
+      expect(find.byType(FilledButton), findsNothing);
+      expect(find.byType(OutlinedButton), findsNothing);
     },
   );
 }
