@@ -15,20 +15,20 @@ import 'package:url_launcher/url_launcher.dart';
 /// Extrait dans un provider pour tester le parcours sans contacter Supabase.
 final calendarSubscriptionLinkProvider = Provider<Future<Uri> Function()>(
   (ref) {
-  return () async {
-    final client = ref.read(supabaseClientProvider);
-    final rawToken = await client.rpc(
-      'get_or_create_calendar_subscription_token',
-    );
-    final token = rawToken?.toString().trim() ?? '';
-    if (token.isEmpty) {
-      throw StateError('Le lien d’abonnement n’a pas pu être créé.');
-    }
+    return () async {
+      final client = ref.read(supabaseClientProvider);
+      final rawToken = await client.rpc(
+        'get_or_create_calendar_subscription_token',
+      );
+      final token = rawToken?.toString().trim() ?? '';
+      if (token.isEmpty) {
+        throw StateError('Le lien d’abonnement n’a pas pu être créé.');
+      }
 
-    return Uri.parse(
-      '${AppConfig.supabaseUrl}/functions/v1/calendar-feed',
-    ).replace(queryParameters: {'token': token});
-  };
+      return Uri.parse(
+        '${AppConfig.supabaseUrl}/functions/v1/calendar-feed',
+      ).replace(queryParameters: {'token': token});
+    };
   },
 );
 
