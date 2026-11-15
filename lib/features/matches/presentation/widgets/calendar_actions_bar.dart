@@ -54,8 +54,7 @@ class CalendarActionsBar extends StatelessWidget {
                   ),
                 ),
               ),
-            if (onCreate != null && onExport != null)
-              const SizedBox(width: 8),
+            if (onCreate != null && onExport != null) const SizedBox(width: 8),
             if (onExport != null)
               if (onCreate != null)
                 IconButton.outlined(
