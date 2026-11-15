@@ -254,9 +254,9 @@ void main() {
     expect(find.text('Liste d’attente'), findsNothing);
   });
 
-  testWidgets('un joueur peut ouvrir les choix de calendrier depuis les paramètres', (
-    tester,
-  ) async {
+  testWidgets(
+    'un joueur peut ouvrir les choix de calendrier depuis les paramètres',
+    (tester) async {
     await _pumpMorePage(tester, profile: _player, sportsEnabled: false);
 
     await tester.tap(find.text('Synchroniser mon calendrier'));
@@ -266,7 +266,8 @@ void main() {
     expect(find.text('Google Agenda'), findsOneWidget);
     expect(find.text('Outlook'), findsOneWidget);
     expect(find.text('Copier le lien du calendrier'), findsOneWidget);
-  });
+    },
+  );
 
   testWidgets('the account card is announced as a single button', (
     tester,
