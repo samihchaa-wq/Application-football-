@@ -21,7 +21,7 @@ class LoadRunnerExitStatusTests(unittest.TestCase):
             psql = fake_bin / "psql"
             psql.write_text(
                 "#!/bin/sh\n"
-                "if [ \"\${POSTCHECK_FAIL:-0}\" = \"1\" ]; then\n"
+                "if [ \"${POSTCHECK_FAIL:-0}\" = \"1\" ]; then\n"
                 "  case \"$*\" in *postcheck.sql*) exit 43 ;; esac\n"
                 "fi\n"
                 "exit 0\n",
