@@ -27,6 +27,7 @@ class _AdminWaitlistPageState extends ConsumerState<AdminWaitlistPage> {
   List<SportWaitlistEntry> _entries = const [];
   ({String seasonPlayerId, int delta, String requestId})? _pendingAdjustment;
   bool _adjustingCount = false;
+  bool _adjustmentUncertain = false;
   String? _countError;
   int _loadRevision = 0;
   bool _loading = true;
@@ -83,6 +84,7 @@ class _AdminWaitlistPageState extends ConsumerState<AdminWaitlistPage> {
         delta: delta,
         requestId: newWaitlistCountRequestId(),
       );
+      _adjustmentUncertain = false;
     });
     await _submitCountAdjustment();
   }
@@ -109,29 +111,40 @@ class _AdminWaitlistPageState extends ConsumerState<AdminWaitlistPage> {
         _waitlist = value;
         _entries = List.of(value.entries);
         _pendingAdjustment = null;
+        _adjustmentUncertain = false;
       });
     } on PostgrestException catch (error) {
-      // Refus explicite : aucun compteur local à restaurer.
-      if (!mounted) return;
-      setState(() => _pendingAdjustment = null);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(humanizeError(error))));
+      _handleCountRejection(error);
     } on AuthException catch (error) {
-      if (!mounted) return;
-      setState(() => _pendingAdjustment = null);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(humanizeError(error))));
+      _handleCountRejection(error);
     } catch (_) {
       // Une réponse perdue peut cacher une écriture réussie. Le prochain
       // essai conserve exactement le même geste, jamais un second +1.
       if (!mounted) return;
       setState(() {
+        _adjustmentUncertain = true;
         _countError = 'La modification n’est pas encore confirmée. '
             'Réessaie pour retrouver le classement à jour.';
       });
     } finally {
       if (mounted) setState(() => _adjustingCount = false);
     }
+  }
+
+  void _handleCountRejection(Object error) {
+    if (!mounted) return;
+    setState(() {
+      if (_adjustmentUncertain) {
+        // Un refus du nouvel essai ne prouve pas que le premier appel,
+        // dont la réponse était perdue, n'a pas abouti entre-temps.
+        _countError = 'La modification précédente reste à confirmer. '
+            'Réessaie pour retrouver le classement à jour.';
+      } else {
+        _pendingAdjustment = null;
+      }
+    });
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(humanizeError(error))));
   }
 
   StickyTableRow _tableRow(int index) {

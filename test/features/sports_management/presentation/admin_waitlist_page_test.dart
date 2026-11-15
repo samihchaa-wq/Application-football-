@@ -235,6 +235,35 @@ void main() {
     );
   });
 
+  testWidgets('a refusal after a lost response keeps the original gesture',
+      (tester) async {
+    final repository = _FakeSportWaitlistRepository()
+      ..loseFirstAcknowledgement = true;
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        sportWaitlistRepositoryProvider.overrideWithValue(repository)
+      ],
+      child: const MaterialApp(home: AdminWaitlistPage()),
+    ));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('waitlist-increment-bruno')));
+    await tester.pumpAndSettle();
+    repository.rejectAdjustment = true;
+    await tester.tap(find.text('Réessayer'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('reste à confirmer'), findsOneWidget);
+    repository.rejectAdjustment = false;
+    await tester.tap(find.text('Réessayer'));
+    await tester.pumpAndSettle();
+    expect(repository.requestIds, hasLength(3));
+    expect(repository.requestIds.toSet(), hasLength(1));
+    expect(
+        tester
+            .widget<Text>(find.byKey(const ValueKey('waitlist-count-bruno')))
+            .data,
+        '2');
+  });
+
   testWidgets('read-only members have no count adjustment controls', (
     tester,
   ) async {

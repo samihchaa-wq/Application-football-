@@ -20,12 +20,20 @@ PLAYER_A = "a2520000-0000-4000-8000-000000000001"
 PLAYER_B = "a2520000-0000-4000-8000-000000000002"
 
 
+class LocalSqlError(subprocess.CalledProcessError):
+    def __str__(self):
+        return f"Disposable local SQL test failed: {self.stderr.strip()}"
+
+
 def query(sql):
     result = subprocess.run(
         ["psql", LOCAL_DB, "-XAtq", "-v", "ON_ERROR_STOP=1"],
         input="set statement_timeout = '10s';\n" + sql,
-        text=True, capture_output=True, timeout=20, check=True,
+        text=True, capture_output=True, timeout=20, check=False,
     )
+    if result.returncode:
+        raise LocalSqlError(result.returncode, ["psql", "disposable-local-db"],
+                            output=result.stdout, stderr=result.stderr)
     return result.stdout.strip()
 
 
@@ -50,7 +58,7 @@ class WaitlistConcurrencyTests(unittest.TestCase):
         cls.addClassCleanup(cls.cleanup)
         users = ",".join(
             f"('{actor}', 'waitlist-{i}@example.invalid', "
-            f"'{{\"first_name\":\"Admin{i}\"}}'::jsonb, "
+            f"'{{\"first_name\":\"Admin{chr(65 + i)}\"}}'::jsonb, "
             f"'{{\"club_id\":\"{club}\"}}'::jsonb)"
             for i, (actor, club) in enumerate([
                 (ADMIN_A, cls.club), (ADMIN_B, cls.club),
