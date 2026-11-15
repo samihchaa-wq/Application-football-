@@ -27,10 +27,7 @@ class _StatGrid extends StatelessWidget {
 
     // Une valeur nulle ne classe personne : sans cela, une saison où personne
     // n'a encore fait de passe décisive sacrerait tout l'effectif « 1er ».
-    int? rankOf(
-      PlayerStat stat, {
-      bool Function(PlayerStatistics)? among,
-    }) {
+    int? rankOf(PlayerStat stat, {bool Function(PlayerStatistics)? among}) {
       final mine = stat.valueOf(player);
       if (mine <= 0) return null;
       return 1 +
@@ -387,8 +384,8 @@ class _StatChoice extends StatelessWidget {
       button: true,
       selected: selected,
       child: Material(
-        // Même bleu que l'onglet de période choisi.
-        color: selected ? const Color(0xFF1E3A66) : Colors.transparent,
+        // Même surface que l'onglet de période choisi.
+        color: selected ? AppTheme.selectedSurface : Colors.transparent,
         shape: shape,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -557,17 +554,15 @@ class _SeasonBar extends StatelessWidget {
                     // La saison en cours, encore incomplète, s'efface un peu.
                     color:
                         season.isCurrent ? color.withValues(alpha: .45) : color,
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(5)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(5),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          Container(
-            height: 1,
-            color: AppTheme.outline.withValues(alpha: .6),
-          ),
+          Container(height: 1, color: AppTheme.outline.withValues(alpha: .6)),
           const SizedBox(height: 6),
           FittedBox(
             fit: BoxFit.scaleDown,

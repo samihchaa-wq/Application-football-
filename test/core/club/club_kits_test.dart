@@ -6,6 +6,11 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   tearDown(ClubKits.reset);
 
+  test('la tenue sans réglage conserve sa couleur historique', () {
+    ClubKits.reset();
+    expect(ClubKits.of(JerseyOption.france).body, const Color(0xFF1A4AC0));
+  });
+
   List<Map<String, Object>> savedJson({bool thirdEnabled = false}) => [
         {
           'slot': 'blue',
@@ -30,20 +35,22 @@ void main() {
         },
       ];
 
-  test('sans réglage, les maillots par défaut suivent les couleurs du club',
-      () {
-    ClubKits.setClubColors(
-      primary: const Color(0xFFAA0000),
-      secondary: const Color(0xFF00AA00),
-    );
-    expect(ClubKits.usesDefaults, isTrue);
-    expect(ClubKits.all, hasLength(1));
-    expect(ClubKits.all.single.slot, JerseyOption.france);
-    expect(ClubKits.of(JerseyOption.france).body, const Color(0xFFAA0000));
-    expect(ClubKits.of(JerseyOption.france).trim, const Color(0xFF00AA00));
-    expect(JerseyOption.france.label, 'Domicile');
-    expect(ClubKits.enabled, hasLength(1));
-  });
+  test(
+    'sans réglage, les maillots par défaut suivent les couleurs du club',
+    () {
+      ClubKits.setClubColors(
+        primary: const Color(0xFFAA0000),
+        secondary: const Color(0xFF00AA00),
+      );
+      expect(ClubKits.usesDefaults, isTrue);
+      expect(ClubKits.all, hasLength(1));
+      expect(ClubKits.all.single.slot, JerseyOption.france);
+      expect(ClubKits.of(JerseyOption.france).body, const Color(0xFFAA0000));
+      expect(ClubKits.of(JerseyOption.france).trim, const Color(0xFF00AA00));
+      expect(JerseyOption.france.label, 'Domicile');
+      expect(ClubKits.enabled, hasLength(1));
+    },
+  );
 
   test('les maillots enregistrés remplacent les maillots par défaut', () {
     ClubKits.setFromJson(savedJson());
@@ -52,8 +59,10 @@ void main() {
     expect(ClubKits.all.map((kit) => kit.slot), JerseyOption.values);
     expect(JerseyOption.france.label, 'Rouge');
     expect(JerseyOption.orange.kit.body, const Color(0xFFFFFFFF));
-    expect(ClubKits.enabled.map((kit) => kit.slot),
-        [JerseyOption.france, JerseyOption.orange]);
+    expect(ClubKits.enabled.map((kit) => kit.slot), [
+      JerseyOption.france,
+      JerseyOption.orange,
+    ]);
   });
 
   test('un match entre nous garde au moins deux maillots au choix', () {
@@ -107,7 +116,7 @@ void main() {
     final restored = ClubKits.parse([
       configured.toJson(),
       ClubKits.parse(savedJson())![1].toJson(),
-      ClubKits.parse(savedJson())![2].toJson()
+      ClubKits.parse(savedJson())![2].toJson(),
     ])!;
     expect(restored.first.goalkeeperBody, const Color(0xFF111111));
     expect(restored.first.goalkeeperTrim, const Color(0xFFFFCC00));

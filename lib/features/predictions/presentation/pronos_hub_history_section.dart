@@ -210,16 +210,16 @@ class _CalendarMatchCard extends ConsumerWidget {
       dateColor = const Color(0xFFB7BBC4);
       statusLabel = 'Terminé';
     } else if (isNextMatch) {
-      background = const Color(0xFF25164F);
-      outline = const Color(0xFF9B6CFF);
-      statusColor = const Color(0xFFCAB5FF);
-      dateColor = const Color(0xFFD7C8FF);
+      background = const Color(0xFF38232B);
+      outline = const Color(0xFFEA596B);
+      statusColor = const Color(0xFFFFA3AD);
+      dateColor = const Color(0xFFFFDDE2);
       statusLabel = 'Prochain';
     } else {
-      background = const Color(0xFF102A56);
-      outline = const Color(0xFF4B8DFF);
-      statusColor = const Color(0xFF7FB0FF);
-      dateColor = const Color(0xFFA9C8FF);
+      background = const Color(0xFF242C34);
+      outline = const Color(0xFF63717E);
+      statusColor = const Color(0xFFB9C5D1);
+      dateColor = const Color(0xFFD7DDE4);
       statusLabel = 'À venir';
     }
 
@@ -296,9 +296,8 @@ class _AdminMatchActions extends ConsumerWidget {
   final MatchModel match;
 
   Future<void> _edit(BuildContext context, WidgetRef ref) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => MatchFormPage(match: match)),
-    );
+    await Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => MatchFormPage(match: match)));
     if (!context.mounted) return;
     ref
       ..invalidate(_calendarPredictionProvider)
