@@ -54,7 +54,6 @@ class _CalendarSubscriptionTileState
         color: AppTheme.primaryBright,
       ),
       title: const Text('Synchroniser mon calendrier'),
-      subtitle: const Text('Apple Calendrier, Google Agenda, Outlook'),
       trailing: _subscribing
           ? const SizedBox(
               width: 20,
