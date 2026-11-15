@@ -49,7 +49,7 @@ class _CalendarSubscriptionTileState
   Widget build(BuildContext context) {
     return ListTile(
       key: const ValueKey('calendar-subscription-settings'),
-      leading: const Icon(
+      leading: Icon(
         Icons.calendar_month_outlined,
         color: AppTheme.primaryBright,
       ),
