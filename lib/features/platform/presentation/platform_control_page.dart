@@ -88,18 +88,26 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
             appBar: AppBar(
               toolbarHeight: 80,
               automaticallyImplyLeading: false,
-              title: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'PETIT FILET',
-                    style: TextStyle(fontSize: 13, letterSpacing: 2),
+              title: Tooltip(
+                message: 'Revenir à la vue générale',
+                child: InkWell(
+                  key: const Key('platform-home-button'),
+                  onTap: () => _navigate(0),
+                  child: const Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'PETIT FILET',
+                        style: TextStyle(fontSize: 13, letterSpacing: 2),
+                      ),
+                      Text('Poste de contrôle',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 20)),
+                    ],
                   ),
-                  Text('Poste de contrôle',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 20)),
-                ],
+                ),
               ),
               actions: [
                 IconButton(
@@ -586,7 +594,7 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                               value.$2,
                               style: TextStyle(
                                 fontSize: value.$2 == 'Non mesuré' ? 22 : 32,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w400,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -621,7 +629,7 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                 child: Text(
                   title,
                   style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w600),
+                      fontSize: 18, fontWeight: FontWeight.w400),
                 ),
               ),
               ...children,
@@ -638,7 +646,7 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
           runSpacing: 4,
           children: [
             Text(label),
-            Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+            Text(value, style: const TextStyle(fontWeight: FontWeight.w400)),
           ],
         ),
       );

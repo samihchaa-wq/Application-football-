@@ -142,6 +142,20 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
+  testWidgets(
+      'operator home returns to overview without requiring a team calendar',
+      (tester) async {
+    await open(tester);
+    await tester.tap(find.byIcon(Icons.groups_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('Répertoire des équipes'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('platform-home-button')));
+    await tester.pumpAndSettle();
+    expect(find.text('À examiner'), findsOneWidget);
+    expect(find.text('Répertoire des équipes'), findsNothing);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   testWidgets('signing out hides a loaded privileged snapshot immediately',
       (tester) async {
     final controller = _Controller();
