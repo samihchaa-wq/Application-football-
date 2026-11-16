@@ -1,6 +1,6 @@
 # Petit Filet — Plan directeur 2027–2028 et prompts de missions
 
-Document de pilotage proposé par le fil 00 le **15 novembre 2026** (Europe/Paris).
+Document de pilotage proposé par le fil 00 le **15 novembre 2026**, actualisé le **16 novembre 2026** (Europe/Paris).
 Il transpose la dernière demande du propriétaire. Il ne vaut ni autorisation de mise en production ni validation des neuf missions.
 Référence technique observée : `main` à `5f404e70f70b4e99d754f7064b567d027d66fe03`.
 La branche courante est une proposition documentaire ; aucun code ni paramètre Supabase n'est changé.
@@ -11,16 +11,17 @@ La branche courante est une proposition documentaire ; aucun code ni paramètre 
 - **Mars/avril 2027 :** montrer une version complète et prête à l'usage à **2–3 clubs**.
 - Ces pilotes disposent de **2–3 mois** d'utilisation et de retours.
 - Corriger et retester les retours, puis consacrer **2–3 mois à l'été 2027** à la présentation à davantage de clubs.
-- **Première année gratuite**, puis **abonnement annuel payé par club**.
+- **100 € par équipe et par an, dès la souscription** ; essai gratuit réservé aux 2–3 équipes/clubs pilotes, dont la portée exacte reste à contractualiser.
 - Priorités : fonctionnement de toute la version promise, sécurité, capacité de plusieurs centaines de clubs, conformité légale démontrable.
 - Le niveau attendu est une version utilisable au quotidien. La période pilote sert à éprouver l'usage et l'autonomie ; elle ne dispense pas des contrôles de sécurité ou de conformité préalables.
 
 **Remplace les hypothèses antérieures :** objectif générique mai 2027, bêta 3–5 clubs pendant 2–4 semaines de l'issue #146, essai 30 jours et ancien prix indicatif 10 €/joueur/an. Les anciennes valeurs ne doivent pas être reprises comme décisions du propriétaire.
 
-**À confirmer avant toute offre externe :** définition précise de la première année, date de départ pour les pilotes, prix et périmètre de l'abonnement, identité juridique, enveloppe de dépenses, inclusion éventuelle de mineurs.
-Proposition de travail : douze mois à compter de l'activation réelle de chaque club, puis engagement payant explicite selon des conditions annoncées. Pas de gratuité comptée depuis la date de développement ni depuis le 1er janvier.
-Exemple indicatif : activation le 15 juillet 2027 → première échéance éventuelle le 15 juillet 2028. La règle n'est pas encore contractuellement arrêtée.
-Le traitement des clubs pilotes (même règle ou avantage distinct) reste à valider.
+**Décisions commerciales actualisées :** la [correction du 16 novembre](https://github.com/samihchaa-wq/Application-football-/pull/147#issuecomment-6903574947) remplace l'année gratuite généralisée et les anciennes mentions à 100 €/club/an. L'unité commerciale est **l'équipe** : cinq équipes représentent 500 €/an, sous réserve de conditions et traitement fiscal précisés avant offre. Le club physique reste une organisation à distinguer de ses équipes.
+**Pilotes :** essai gratuit au printemps 2027 ; durée de travail 2–3 mois issue du calendrier initial, conditions exactes et périmètre équipe/club à valider avant engagement. Aucun prélèvement automatique présumé après l'essai.
+**À préciser avant toute offre externe :** prix HT/TTC et fiscalité, identité juridique, paiement/contrats, fin de l'essai pilote, périmètre multiéquipe et droits associés, inclusion éventuelle de mineurs et budget.
+**Architecture à étudier par M01/M02/M04 :** espace indépendant par équipe ou plusieurs équipes sous un même club ; ne pas assimiler les `clubs` techniques actuels à une structure multiéquipe déjà prouvée. Le football à 5/8 reste à qualifier avant promesse à des catégories de jeunes.
+Le calendrier technique reste mars/avril 2027 puis été 2027. Le **paiement est à préparer avant l'ouverture payante de l'été 2027**, sans attendre 2028.
 
 ## 2. État vérifié, sans pourcentage artificiel
 
@@ -57,8 +58,8 @@ Dates = objectifs de planification. Les preuves et le GO propriétaire condition
 | Mars/avril–mai/juin 2027 | 2–3 clubs, 2–3 mois chacun ; suivi et correctifs continus | Bilan terrain, tâches clés réalisées sans aide permanente, incidents et retours tracés |
 | Mai–juin 2027 | Consolidation des retours, correctifs prioritaires et nouvelle recette | GO diffusion élargie, nouvelle capacité mesurée et support prêt |
 | Juillet–septembre 2027 | 2–3 mois de démonstrations et acquisition ; entrées par vagues | Les admissions restent sous la capacité, le budget et le support validés |
-| Pendant l'année gratuite 2027–2028 | Maintenance, suivi d'usage/coûts, preuves de valeur, préparation et tests du passage payant | Chaque club connaît sa date de fin, les conditions proposées et les moyens de sortie |
-| À partir de mars/avril 2028 pour les premiers pilotes, été 2028 pour la cohorte été — si règle 12 mois retenue | Premiers renouvellements payants annuels | Acceptation/contrat et facturation conformes, états d'abonnement testés, aucune facturation surprise |
+| Avant l'ouverture payante de l'été 2027 | Finaliser offre 100 €/équipe/an, contrats, acceptation, encaissement et facturation ; tester tous les états d'abonnement | Conditions approuvées, parcours payé testé, essai pilote et sortie clairement encadrés |
+| 2027–2028 | Exploitation des équipes abonnées, support, suivi des coûts et renouvellements à douze mois de chaque souscription | Renouvellement, annulation et restitution conformes au contrat ; aucune facturation surprise |
 
 Un pilote commençant en avril pour trois mois se termine fin juin : les correctifs doivent être traités au fil de l'eau pour préserver la prospection d'été.
 Recommandation de pilotage : limiter les nouveautés après janvier ; toute extension de périmètre passe par un arbitrage coût/délai/risque. Ne pas supprimer une fonctionnalité attendue pour améliorer artificiellement le taux de réussite.
@@ -85,12 +86,12 @@ Tous les critères pilote, plus :
 - Seuils de performance/erreur et coût, limites d'admission et alertes convenus ; aucune extrapolation d'un simple nombre de clubs dans les données.
 - Revue de sécurité indépendante à prévoir et rapport avec remédiation, sous réserve d'accord sur son budget ; le besoin est élevé compte tenu du cloisonnement et de l'ambition de diffusion.
 - Dossier de conformité et contrats revus professionnellement, documents et application cohérents ; statut/conditions de gratuité clarifiés.
-- Charge de support et dépenses de l'année offerte finançables ; acquisition par vagues et plan de retour arrière.
+- Support, coût des pilotes gratuits et exploitation des équipes abonnées financés ; acquisition par vagues et plan de retour arrière.
 
 ### GO pour le payant
 
-- Offre annuelle par club approuvée et annoncée, calendrier et modalités d'acceptation établis.
-- Parcours complet testé : fin de gratuité, acceptation/refus, paiement réussi/échoué, doublon de notification du prestataire, renouvellement, annulation, facture/avoir et restitution/export.
+- Offre annuelle **100 €/équipe/an** approuvée et annoncée, traitement HT/TTC et modalités d'acceptation établis.
+- Parcours complet testé : souscription payante initiale, fin de l'essai pilote le cas échéant, acceptation/refus, paiement réussi/échoué, doublon de notification du prestataire, renouvellement, annulation, facture/avoir et restitution/export.
 - Qualification juridique des acheteurs et obligations applicables confirmées ; situation fiscale/facturation vérifiée avec le professionnel adapté.
 - Pas de suppression de données automatique non prévue pour forcer la conversion.
 - Revalidation sécurité/capacité/conformité au moment du passage payant.
@@ -157,7 +158,7 @@ Le dossier doit couvrir obligations applicables avant de vraies données, même 
 - Registre, conservation, export/rectification/effacement, sortie du club et effets des sauvegardes.
 - Mineurs, droit à l'image, vidéos et éventuelles données de santé ; minimiser les données et éviter les collectes inutiles.
 - Licences et provenance des ressources, droits sur le code/contributions, nom/marque et conditions des prestataires.
-- Mentions légales, CGU, contrat pilote, confidentialité et conditions de l'année gratuite puis de l'abonnement.
+- Mentions légales, CGU, contrat pilote gratuit, confidentialité et conditions d'abonnement annuel par équipe dès souscription.
 - Qualification des clubs/acheteurs : ne pas présumer « B2B » pour toute association ; évaluer règles d'abonnement, reconduction, résiliation et protections applicables.
 - Statut de l'éditeur, fiscalité/facturation, prospection, accessibilité et autres obligations à qualifier selon activité et taille effectives.
 - Revue d'un juriste/avocat compétent et validation comptable des sujets concernés avant engagements correspondants, sans commander de prestation sans accord.
@@ -195,7 +196,7 @@ Chaque bloc est autonome. Les fichiers de rapport sont des destinations proposé
 Tu travailles sur Petit Filet, mission 00, sous la coordination du fil 00.
 Dépôt commercial : samihchaa-wq/Application-football-. Supabase commercial : jvxkhgdopslctpcjrhzw.
 Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, cherche la PR « Plan directeur Petit Filet : pilotes 2027 et abonnement 2028 » et lis-le sur sa branche.
-Calendrier demandé par le propriétaire : 2–3 clubs pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection élargie pendant 2–3 mois à l'été 2027 ; première année gratuite, puis abonnement annuel par club. La date exacte de départ des douze mois reste à confirmer ; ne crée aucun engagement financier.
+Calendrier : 2–3 clubs/équipes pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection pendant 2–3 mois à l'été 2027. Décision commerciale actualisée le 16/11 : 100 €/équipe/an dès souscription, essai gratuit réservé aux pilotes avec conditions à préciser. Aucune année gratuite généralisée. Distingue club physique, équipe facturée et espace technique ; aucun engagement financier implicite.
 Réutilise les travaux existants. Vérifie les faits actuels : un document ancien, une PR fusionnée et une CI verte ne prouvent pas tous les parcours ni l'état déployé.
 Ne modifie jamais AS Grinta original ni Carte soirée. Le dépôt commercial est public : aucun secret ni donnée personnelle dans les livrables.
 Avance sur les lectures, tests isolés et branches/PR commerciales utiles. Aucune fusion vers main, écriture distante, migration commerciale, publication, dépense ou contact externe sans autorisation applicable : une fusion déclenche actuellement une chaîne automatique de sauvegarde, migrations et déploiement. Ne suppose pas une autorisation nouvelle à partir du seul intitulé de la mission.
@@ -216,7 +217,7 @@ Premier livrable : état de départ réconcilié et backlog des blocages, par PR
 Tu travailles sur Petit Filet, mission 01, sous la coordination du fil 00.
 Dépôt commercial : samihchaa-wq/Application-football-. Supabase commercial : jvxkhgdopslctpcjrhzw.
 Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, cherche la PR « Plan directeur Petit Filet : pilotes 2027 et abonnement 2028 » et lis-le sur sa branche.
-Calendrier demandé par le propriétaire : 2–3 clubs pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection élargie pendant 2–3 mois à l'été 2027 ; première année gratuite, puis abonnement annuel par club. La date exacte de départ des douze mois reste à confirmer ; ne crée aucun engagement financier.
+Calendrier : 2–3 clubs/équipes pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection pendant 2–3 mois à l'été 2027. Décision commerciale actualisée le 16/11 : 100 €/équipe/an dès souscription, essai gratuit réservé aux pilotes avec conditions à préciser. Aucune année gratuite généralisée. Distingue club physique, équipe facturée et espace technique ; aucun engagement financier implicite.
 Réutilise les travaux existants. Vérifie les faits actuels : un document ancien, une PR fusionnée et une CI verte ne prouvent pas tous les parcours ni l'état déployé.
 Ne modifie jamais AS Grinta original ni Carte soirée. Le dépôt commercial est public : aucun secret ni donnée personnelle dans les livrables.
 Avance sur les lectures, tests isolés et branches/PR commerciales utiles. Aucune fusion vers main, écriture distante, migration commerciale, publication, dépense ou contact externe sans autorisation applicable : une fusion déclenche actuellement une chaîne automatique de sauvegarde, migrations et déploiement. Ne suppose pas une autorisation nouvelle à partir du seul intitulé de la mission.
@@ -237,7 +238,7 @@ Coordination : Donne les critères à M02 et M03 ; signale les données et règl
 Tu travailles sur Petit Filet, mission 02, sous la coordination du fil 00.
 Dépôt commercial : samihchaa-wq/Application-football-. Supabase commercial : jvxkhgdopslctpcjrhzw.
 Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, cherche la PR « Plan directeur Petit Filet : pilotes 2027 et abonnement 2028 » et lis-le sur sa branche.
-Calendrier demandé par le propriétaire : 2–3 clubs pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection élargie pendant 2–3 mois à l'été 2027 ; première année gratuite, puis abonnement annuel par club. La date exacte de départ des douze mois reste à confirmer ; ne crée aucun engagement financier.
+Calendrier : 2–3 clubs/équipes pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection pendant 2–3 mois à l'été 2027. Décision commerciale actualisée le 16/11 : 100 €/équipe/an dès souscription, essai gratuit réservé aux pilotes avec conditions à préciser. Aucune année gratuite généralisée. Distingue club physique, équipe facturée et espace technique ; aucun engagement financier implicite.
 Réutilise les travaux existants. Vérifie les faits actuels : un document ancien, une PR fusionnée et une CI verte ne prouvent pas tous les parcours ni l'état déployé.
 Ne modifie jamais AS Grinta original ni Carte soirée. Le dépôt commercial est public : aucun secret ni donnée personnelle dans les livrables.
 Avance sur les lectures, tests isolés et branches/PR commerciales utiles. Aucune fusion vers main, écriture distante, migration commerciale, publication, dépense ou contact externe sans autorisation applicable : une fusion déclenche actuellement une chaîne automatique de sauvegarde, migrations et déploiement. Ne suppose pas une autorisation nouvelle à partir du seul intitulé de la mission.
@@ -246,7 +247,7 @@ Rapport obligatoire : mission, date, environnement et SHA, travail livré, preuv
 Ta mission : terminer et corriger l'application par petits lots vérifiables, selon M01 et les priorités M00.
 Commence par les parcours bloquants : création/configuration d'un club, invitation et validation des membres, rôles, accès administrateur, changement de club, connexion/déconnexion et récupération autonome du mot de passe par e-mail. Vérifie d'abord les comptes existants et leurs éventuels identifiants/e-mails synthétiques ; ne suppose pas que chaque joueur possède déjà une adresse joignable. Prépare le parcours d'ajout/vérification d'une vraie adresse, les redirections et la délivrabilité avec M09, sans envoyer de messages réels sans autorisation.
 Corrige ensuite toutes les fonctions promises, les modules désactivables réellement contrôlés côté serveur, les saisons, médias et interactions concurrentes. Préserve l'historique des clubs et migrations appliquées.
-Prépare la gratuité annuelle puis l'abonnement selon le contrat M06/M07 ; aucun débit ni basculement payant implicite. Les prestataires, tarifs et configurations restent soumis aux décisions nécessaires.
+Prépare l'abonnement 100 €/équipe/an dès souscription et l'exception pilote selon le contrat M06/M07 ; aucun débit ni basculement payant implicite. Les prestataires, règles HT/TTC et configurations restent soumis aux décisions nécessaires.
 Livrable : docs/missions/M02_IMPLEMENTATION.md, PR ciblées liées aux critères M01, démonstrations et résultats des contrôles exigés par AGENTS.md. Évite une réécriture globale sans besoin prouvé.
 Fin vérifiable : chaque correctif respecte un critère, passe les contrôles concernés et est retesté sur la version candidate ; indique séparément ce qui n'est pas déployé.
 Coordination : Reçoit les exigences M01/M05/M06/M07 et les anomalies M03/M04/M08 ; fait valider ses PR par M03/M04.
@@ -258,7 +259,7 @@ Coordination : Reçoit les exigences M01/M05/M06/M07 et les anomalies M03/M04/M0
 Tu travailles sur Petit Filet, mission 03, sous la coordination du fil 00.
 Dépôt commercial : samihchaa-wq/Application-football-. Supabase commercial : jvxkhgdopslctpcjrhzw.
 Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, cherche la PR « Plan directeur Petit Filet : pilotes 2027 et abonnement 2028 » et lis-le sur sa branche.
-Calendrier demandé par le propriétaire : 2–3 clubs pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection élargie pendant 2–3 mois à l'été 2027 ; première année gratuite, puis abonnement annuel par club. La date exacte de départ des douze mois reste à confirmer ; ne crée aucun engagement financier.
+Calendrier : 2–3 clubs/équipes pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection pendant 2–3 mois à l'été 2027. Décision commerciale actualisée le 16/11 : 100 €/équipe/an dès souscription, essai gratuit réservé aux pilotes avec conditions à préciser. Aucune année gratuite généralisée. Distingue club physique, équipe facturée et espace technique ; aucun engagement financier implicite.
 Réutilise les travaux existants. Vérifie les faits actuels : un document ancien, une PR fusionnée et une CI verte ne prouvent pas tous les parcours ni l'état déployé.
 Ne modifie jamais AS Grinta original ni Carte soirée. Le dépôt commercial est public : aucun secret ni donnée personnelle dans les livrables.
 Avance sur les lectures, tests isolés et branches/PR commerciales utiles. Aucune fusion vers main, écriture distante, migration commerciale, publication, dépense ou contact externe sans autorisation applicable : une fusion déclenche actuellement une chaîne automatique de sauvegarde, migrations et déploiement. Ne suppose pas une autorisation nouvelle à partir du seul intitulé de la mission.
@@ -279,7 +280,7 @@ Coordination : Reçoit M01 et les PR M02 ; transmet les défauts à leur propri�
 Tu travailles sur Petit Filet, mission 04, sous la coordination du fil 00.
 Dépôt commercial : samihchaa-wq/Application-football-. Supabase commercial : jvxkhgdopslctpcjrhzw.
 Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, cherche la PR « Plan directeur Petit Filet : pilotes 2027 et abonnement 2028 » et lis-le sur sa branche.
-Calendrier demandé par le propriétaire : 2–3 clubs pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection élargie pendant 2–3 mois à l'été 2027 ; première année gratuite, puis abonnement annuel par club. La date exacte de départ des douze mois reste à confirmer ; ne crée aucun engagement financier.
+Calendrier : 2–3 clubs/équipes pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection pendant 2–3 mois à l'été 2027. Décision commerciale actualisée le 16/11 : 100 €/équipe/an dès souscription, essai gratuit réservé aux pilotes avec conditions à préciser. Aucune année gratuite généralisée. Distingue club physique, équipe facturée et espace technique ; aucun engagement financier implicite.
 Réutilise les travaux existants. Vérifie les faits actuels : un document ancien, une PR fusionnée et une CI verte ne prouvent pas tous les parcours ni l'état déployé.
 Ne modifie jamais AS Grinta original ni Carte soirée. Le dépôt commercial est public : aucun secret ni donnée personnelle dans les livrables.
 Avance sur les lectures, tests isolés et branches/PR commerciales utiles. Aucune fusion vers main, écriture distante, migration commerciale, publication, dépense ou contact externe sans autorisation applicable : une fusion déclenche actuellement une chaîne automatique de sauvegarde, migrations et déploiement. Ne suppose pas une autorisation nouvelle à partir du seul intitulé de la mission.
@@ -300,7 +301,7 @@ Coordination : Transmet corrections à M02, tests à M03, obligations incident/c
 Tu travailles sur Petit Filet, mission 05, sous la coordination du fil 00.
 Dépôt commercial : samihchaa-wq/Application-football-. Supabase commercial : jvxkhgdopslctpcjrhzw.
 Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, cherche la PR « Plan directeur Petit Filet : pilotes 2027 et abonnement 2028 » et lis-le sur sa branche.
-Calendrier demandé par le propriétaire : 2–3 clubs pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection élargie pendant 2–3 mois à l'été 2027 ; première année gratuite, puis abonnement annuel par club. La date exacte de départ des douze mois reste à confirmer ; ne crée aucun engagement financier.
+Calendrier : 2–3 clubs/équipes pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection pendant 2–3 mois à l'été 2027. Décision commerciale actualisée le 16/11 : 100 €/équipe/an dès souscription, essai gratuit réservé aux pilotes avec conditions à préciser. Aucune année gratuite généralisée. Distingue club physique, équipe facturée et espace technique ; aucun engagement financier implicite.
 Réutilise les travaux existants. Vérifie les faits actuels : un document ancien, une PR fusionnée et une CI verte ne prouvent pas tous les parcours ni l'état déployé.
 Ne modifie jamais AS Grinta original ni Carte soirée. Le dépôt commercial est public : aucun secret ni donnée personnelle dans les livrables.
 Avance sur les lectures, tests isolés et branches/PR commerciales utiles. Aucune fusion vers main, écriture distante, migration commerciale, publication, dépense ou contact externe sans autorisation applicable : une fusion déclenche actuellement une chaîne automatique de sauvegarde, migrations et déploiement. Ne suppose pas une autorisation nouvelle à partir du seul intitulé de la mission.
@@ -321,16 +322,16 @@ Coordination : Donne les spécifications à M02, les critères à M03, les resso
 Tu travailles sur Petit Filet, mission 06, sous la coordination du fil 00.
 Dépôt commercial : samihchaa-wq/Application-football-. Supabase commercial : jvxkhgdopslctpcjrhzw.
 Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, cherche la PR « Plan directeur Petit Filet : pilotes 2027 et abonnement 2028 » et lis-le sur sa branche.
-Calendrier demandé par le propriétaire : 2–3 clubs pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection élargie pendant 2–3 mois à l'été 2027 ; première année gratuite, puis abonnement annuel par club. La date exacte de départ des douze mois reste à confirmer ; ne crée aucun engagement financier.
+Calendrier : 2–3 clubs/équipes pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection pendant 2–3 mois à l'été 2027. Décision commerciale actualisée le 16/11 : 100 €/équipe/an dès souscription, essai gratuit réservé aux pilotes avec conditions à préciser. Aucune année gratuite généralisée. Distingue club physique, équipe facturée et espace technique ; aucun engagement financier implicite.
 Réutilise les travaux existants. Vérifie les faits actuels : un document ancien, une PR fusionnée et une CI verte ne prouvent pas tous les parcours ni l'état déployé.
 Ne modifie jamais AS Grinta original ni Carte soirée. Le dépôt commercial est public : aucun secret ni donnée personnelle dans les livrables.
 Avance sur les lectures, tests isolés et branches/PR commerciales utiles. Aucune fusion vers main, écriture distante, migration commerciale, publication, dépense ou contact externe sans autorisation applicable : une fusion déclenche actuellement une chaîne automatique de sauvegarde, migrations et déploiement. Ne suppose pas une autorisation nouvelle à partir du seul intitulé de la mission.
 Travaille dans ton périmètre ; ne réécris pas les fichiers centraux de M00. Remonte les dépendances au fil 00 par ton rapport GitHub.
 Rapport obligatoire : mission, date, environnement et SHA, travail livré, preuves/liens, tests réellement exécutés, ce qui reste non vérifié, blocages, prochaine action et éventuelle décision A/B/C. Distingue documenté, développé, testé en CI, testé réellement, déployé. Ne déclare jamais « certifié à 100 % ».
-Ta mission : transformer la première année gratuite en offre durable d'abonnement annuel par club.
+Ta mission : préparer une offre durable à 100 €/équipe/an dès souscription, avec essai gratuit réservé aux pilotes.
 Prépare une proposition claire : clients cibles, interlocuteur signataire/payeur, unité club/équipes/joueurs, fonctions incluses, limites et support. Les anciens essais de 30 jours et le prix de 10 €/joueur/an présents dans des documents ne sont pas les nouvelles décisions du propriétaire.
-Compare en QCM : douze mois dès activation réelle de chaque club (proposition recommandée), ou autre définition explicite de la première année. Précise la règle des pilotes, dates de début/fin, prix après gratuité, acceptation du payant, rappels, absence de paiement, export et sortie. Ne confonds pas année gratuite et année civile ; pas de paiement automatique surprise.
-Chiffre, avec sources à jour, les coûts et le financement de douze mois gratuits pour 10, 100, 300 et 500 clubs : infrastructure, médias/egress, e-mails, support, juridique et acquisition. Distingue coût estimé et capacité prouvée ; présente les hypothèses, marge future et budget maximal.
+Précise le début de la souscription annuelle, la facturation par équipe, les échéances et renouvellements, l'essai pilote, l'acceptation du payant, les rappels, l'absence de paiement, l'export et la sortie. Ne remets pas l'année gratuite générale dans l'offre ; pas de paiement automatique surprise. Qualifie HT/TTC avec M07 et les informations réelles de l'éditeur.
+Chiffre, avec sources à jour, coûts, recettes et financement pour 10, 100, 300 et 500 équipes, et indique séparément les clubs physiques correspondants selon les hypothèses : infrastructure, médias/egress, e-mails, support, juridique et acquisition. Isole les coûts des pilotes gratuits ; distingue coût estimé et capacité prouvée, hypothèses, marge et budget maximal.
 Prépare l'offre pilote, fiche de présentation, démonstration, FAQ, liste de canaux et suivi des prospects pour juillet–septembre 2027. Aucun envoi ni engagement de tarif non validé. Évalue paiement/facturation/annulation/échec/remboursement avec M07/M02, en tenant compte de la nature réelle des associations clientes.
 Livrable : docs/missions/M06_OFFRE_LANCEMENT.md, offre proposée, budget et décisions A/B/C.
 Fin vérifiable : calendrier et règle de gratuité sans ambiguïté, modèle financé, prix/conditions approuvés avant d'engager les clubs et plan d'acquisition mesurable.
@@ -343,7 +344,7 @@ Coordination : M07 qualifie les contrats ; M09 chiffre l'exploitation ; M02 impl
 Tu travailles sur Petit Filet, mission 07, sous la coordination du fil 00.
 Dépôt commercial : samihchaa-wq/Application-football-. Supabase commercial : jvxkhgdopslctpcjrhzw.
 Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, cherche la PR « Plan directeur Petit Filet : pilotes 2027 et abonnement 2028 » et lis-le sur sa branche.
-Calendrier demandé par le propriétaire : 2–3 clubs pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection élargie pendant 2–3 mois à l'été 2027 ; première année gratuite, puis abonnement annuel par club. La date exacte de départ des douze mois reste à confirmer ; ne crée aucun engagement financier.
+Calendrier : 2–3 clubs/équipes pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection pendant 2–3 mois à l'été 2027. Décision commerciale actualisée le 16/11 : 100 €/équipe/an dès souscription, essai gratuit réservé aux pilotes avec conditions à préciser. Aucune année gratuite généralisée. Distingue club physique, équipe facturée et espace technique ; aucun engagement financier implicite.
 Réutilise les travaux existants. Vérifie les faits actuels : un document ancien, une PR fusionnée et une CI verte ne prouvent pas tous les parcours ni l'état déployé.
 Ne modifie jamais AS Grinta original ni Carte soirée. Le dépôt commercial est public : aucun secret ni donnée personnelle dans les livrables.
 Avance sur les lectures, tests isolés et branches/PR commerciales utiles. Aucune fusion vers main, écriture distante, migration commerciale, publication, dépense ou contact externe sans autorisation applicable : une fusion déclenche actuellement une chaîne automatique de sauvegarde, migrations et déploiement. Ne suppose pas une autorisation nouvelle à partir du seul intitulé de la mission.
@@ -353,7 +354,7 @@ Ta mission : constituer un dossier de conformité France/UE traçable, dès les 
 Reprends l'audit et les modèles existants, vérifie le code et les parcours réels. Utilise des sources officielles actuelles, cite les dates et distingue obligation applicable, cas conditionnel, recommandation et point à arbitrer. La gratuité ne dispense pas de protéger les données ni de prévoir les conditions d'utilisation.
 Qualifie par finalité les rôles du club et de l'éditeur, bases légales, contrats article 28 si applicables, prestataires et transferts, conservation, information et exercice des droits, suppression/export de compte et fin de club, backups, registre, analyse de nécessité d'une AIPD/DPO et procédure de violation.
 Examine spécifiquement mineurs, portraits/vidéos/droit à l'image, motifs d'absence pouvant révéler la santé, pronostics et récompenses éventuelles, cookies/SDK et prospection. Audite licences/droits des médias, sons, badges, code et contributions IA, nom/marque/domaines et hébergement. Ne suppose pas qu'une association est toujours un client professionnel.
-Prépare mentions légales, CGU, contrat pilote, confidentialité, clauses de sous-traitance et conditions d'abonnement gratuit→payant selon les décisions M06. Liste les informations éditeur à fournir, les questions d'accessibilité, statut, TVA/facturation à valider et les éventuelles obligations de plateforme selon les usages réels.
+Prépare mentions légales, CGU, contrat pilote, confidentialité, clauses de sous-traitance et conditions de souscription payante par équipe et de sortie de l'essai pilote selon les décisions M06. Liste les informations éditeur à fournir, les questions d'accessibilité, statut, TVA/facturation à valider et les éventuelles obligations de plateforme selon les usages réels.
 Livrable : docs/missions/M07_CONFORMITE.md, registre des obligations avec preuves et textes à faire relire par un juriste/avocat compétent ; fiscalité/statut à vérifier avec l'expert adapté. N'annonce ni conformité absolue ni certification juridique.
 Fin vérifiable : aucune obligation bloquante identifiée sans traitement avant collecte réelle ; documents cohérents avec l'application, tests des droits et revue professionnelle préparée puis tracée.
 Coordination : M01 précise les traitements ; M02 implémente ; M03 prouve les droits utilisateurs ; M04/M09 apportent les mesures ; M05 apporte la provenance ; M06 précise offre et clients.
@@ -365,7 +366,7 @@ Coordination : M01 précise les traitements ; M02 implémente ; M03 prouve les d
 Tu travailles sur Petit Filet, mission 08, sous la coordination du fil 00.
 Dépôt commercial : samihchaa-wq/Application-football-. Supabase commercial : jvxkhgdopslctpcjrhzw.
 Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, cherche la PR « Plan directeur Petit Filet : pilotes 2027 et abonnement 2028 » et lis-le sur sa branche.
-Calendrier demandé par le propriétaire : 2–3 clubs pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection élargie pendant 2–3 mois à l'été 2027 ; première année gratuite, puis abonnement annuel par club. La date exacte de départ des douze mois reste à confirmer ; ne crée aucun engagement financier.
+Calendrier : 2–3 clubs/équipes pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection pendant 2–3 mois à l'été 2027. Décision commerciale actualisée le 16/11 : 100 €/équipe/an dès souscription, essai gratuit réservé aux pilotes avec conditions à préciser. Aucune année gratuite généralisée. Distingue club physique, équipe facturée et espace technique ; aucun engagement financier implicite.
 Réutilise les travaux existants. Vérifie les faits actuels : un document ancien, une PR fusionnée et une CI verte ne prouvent pas tous les parcours ni l'état déployé.
 Ne modifie jamais AS Grinta original ni Carte soirée. Le dépôt commercial est public : aucun secret ni donnée personnelle dans les livrables.
 Avance sur les lectures, tests isolés et branches/PR commerciales utiles. Aucune fusion vers main, écriture distante, migration commerciale, publication, dépense ou contact externe sans autorisation applicable : une fusion déclenche actuellement une chaîne automatique de sauvegarde, migrations et déploiement. Ne suppose pas une autorisation nouvelle à partir du seul intitulé de la mission.
@@ -387,7 +388,7 @@ Coordination : Ne lance qu'après GO M00/M03/M04/M07/M09 ; remonte défauts à M
 Tu travailles sur Petit Filet, mission 09, sous la coordination du fil 00.
 Dépôt commercial : samihchaa-wq/Application-football-. Supabase commercial : jvxkhgdopslctpcjrhzw.
 Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, cherche la PR « Plan directeur Petit Filet : pilotes 2027 et abonnement 2028 » et lis-le sur sa branche.
-Calendrier demandé par le propriétaire : 2–3 clubs pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection élargie pendant 2–3 mois à l'été 2027 ; première année gratuite, puis abonnement annuel par club. La date exacte de départ des douze mois reste à confirmer ; ne crée aucun engagement financier.
+Calendrier : 2–3 clubs/équipes pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection pendant 2–3 mois à l'été 2027. Décision commerciale actualisée le 16/11 : 100 €/équipe/an dès souscription, essai gratuit réservé aux pilotes avec conditions à préciser. Aucune année gratuite généralisée. Distingue club physique, équipe facturée et espace technique ; aucun engagement financier implicite.
 Réutilise les travaux existants. Vérifie les faits actuels : un document ancien, une PR fusionnée et une CI verte ne prouvent pas tous les parcours ni l'état déployé.
 Ne modifie jamais AS Grinta original ni Carte soirée. Le dépôt commercial est public : aucun secret ni donnée personnelle dans les livrables.
 Avance sur les lectures, tests isolés et branches/PR commerciales utiles. Aucune fusion vers main, écriture distante, migration commerciale, publication, dépense ou contact externe sans autorisation applicable : une fusion déclenche actuellement une chaîne automatique de sauvegarde, migrations et déploiement. Ne suppose pas une autorisation nouvelle à partir du seul intitulé de la mission.
@@ -407,11 +408,16 @@ Coordination : M03 teste les parcours ; M04 vérifie les droits ; M07 encadre do
 
 | Sujet | Proposition de travail | Quand la décision est indispensable |
 | --- | --- | --- |
-| Gratuité | Douze mois dès activation réelle, règle des pilotes explicite | Avant offre/contrat à un club |
-| Prix annuel par club et unités | M06 chiffre avec M09, ne reprend pas l'ancien 10 €/joueur/an | Avant d'annoncer un engagement futur |
+| Essai pilote uniquement | Définir durée, équipes couvertes et sortie ; pas d'année gratuite générale | Avant contrat pilote |
+| Prix annuel par équipe | 100 €/équipe/an dès souscription ; préciser HT/TTC et modalités avec M06/M07 | Avant offre commerciale |
 | Données sensibles/mineurs | Minimisation ; périmètre pilote qualifié par M07 | Avant collecte de données réelles concernées |
 | Éditeur/statut et contrats | Informations réelles du propriétaire, revue adaptée | Avant exploitation/engagements concernés |
 | Infrastructure et revue indépendante | Devis/estimations reliés à la charge, enveloppe maximale | Avant toute dépense ou création payante |
 | Passage en production et admission | GO fondé sur preuves, puis autorisation explicite | À chaque ouverture/élargissement significatif |
 
 Le plan est un outil de pilotage : aucun abonnement, envoi, dépense, migration, publication ni modification de données n'a été réalisé pour le produire.
+
+## 11. Premier contrôle M00 — 16 novembre 2026
+
+[Tableau de départ et prochaines actions](missions/M00_PILOTAGE_20261116.md).
+Les neuf consignes ont été transmises par le propriétaire ; cela ne prouve ni neuf livraisons ni neuf exécutions continues. Le premier correctif M02 est en PR #148, en attente de correction/validation CI et recette. Aucun GO de fusion n'est donné.
