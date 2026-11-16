@@ -41,6 +41,8 @@ import 'package:as_grinta/features/players/presentation/player_stat_ranking_page
 import 'package:as_grinta/features/players/presentation/players_registry_page.dart';
 import 'package:as_grinta/features/predictions/presentation/pronos_hub_page.dart';
 import 'package:as_grinta/features/profile/presentation/profile_page.dart';
+import 'package:as_grinta/features/platform/presentation/platform_control_page.dart'
+    deferred as platform_control;
 import 'package:as_grinta/features/season_wrapped/presentation/season_wrapped_page.dart'
     deferred as season_wrapped;
 import 'package:as_grinta/features/sports_management/presentation/admin_guests_page.dart'
@@ -295,8 +297,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 builder: (_, state) => NotificationsPage(
                   initialTab:
                       state.uri.queryParameters['onglet'] == 'parametres'
-                          ? NotificationsTab.settings
-                          : NotificationsTab.history,
+                      ? NotificationsTab.settings
+                      : NotificationsTab.history,
                 ),
               ),
               GoRoute(
@@ -371,7 +373,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/auth/sign-in',
-        builder: (_, __) => const AuthSignInPage(),
+        builder: (_, state) => AuthSignInPage(
+          managerAccess: state.uri.queryParameters['redirect'] == '/control',
+        ),
+      ),
+      GoRoute(
+        path: '/control',
+        builder: (_, __) => DeferredRoutePage(
+          load: platform_control.loadLibrary,
+          builder: (_) => platform_control.PlatformControlPage(),
+        ),
       ),
       GoRoute(
         path: '/auth/register',
