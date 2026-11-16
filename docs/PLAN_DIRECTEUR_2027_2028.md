@@ -195,7 +195,7 @@ Chaque bloc est autonome. Les fichiers de rapport sont des destinations proposé
 ```text
 Tu travailles sur Petit Filet, mission 00, sous la coordination du fil 00.
 Dépôt commercial : samihchaa-wq/Application-football-. Supabase commercial : jvxkhgdopslctpcjrhzw.
-Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, cherche la PR « Plan directeur Petit Filet : pilotes 2027 et abonnement 2028 » et lis-le sur sa branche.
+Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, ouvre la PR #147 (https://github.com/samihchaa-wq/Application-football-/pull/147) et lis-le sur sa branche.
 Calendrier : 2–3 clubs/équipes pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection pendant 2–3 mois à l'été 2027. Décision commerciale actualisée le 16/11 : 100 €/équipe/an dès souscription, essai gratuit réservé aux pilotes avec conditions à préciser. Aucune année gratuite généralisée. Distingue club physique, équipe facturée et espace technique ; aucun engagement financier implicite.
 Réutilise les travaux existants. Vérifie les faits actuels : un document ancien, une PR fusionnée et une CI verte ne prouvent pas tous les parcours ni l'état déployé.
 Ne modifie jamais AS Grinta original ni Carte soirée. Le dépôt commercial est public : aucun secret ni donnée personnelle dans les livrables.
@@ -216,7 +216,7 @@ Premier livrable : état de départ réconcilié et backlog des blocages, par PR
 ```text
 Tu travailles sur Petit Filet, mission 01, sous la coordination du fil 00.
 Dépôt commercial : samihchaa-wq/Application-football-. Supabase commercial : jvxkhgdopslctpcjrhzw.
-Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, cherche la PR « Plan directeur Petit Filet : pilotes 2027 et abonnement 2028 » et lis-le sur sa branche.
+Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, ouvre la PR #147 (https://github.com/samihchaa-wq/Application-football-/pull/147) et lis-le sur sa branche.
 Calendrier : 2–3 clubs/équipes pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection pendant 2–3 mois à l'été 2027. Décision commerciale actualisée le 16/11 : 100 €/équipe/an dès souscription, essai gratuit réservé aux pilotes avec conditions à préciser. Aucune année gratuite généralisée. Distingue club physique, équipe facturée et espace technique ; aucun engagement financier implicite.
 Réutilise les travaux existants. Vérifie les faits actuels : un document ancien, une PR fusionnée et une CI verte ne prouvent pas tous les parcours ni l'état déployé.
 Ne modifie jamais AS Grinta original ni Carte soirée. Le dépôt commercial est public : aucun secret ni donnée personnelle dans les livrables.
@@ -237,7 +237,7 @@ Coordination : Donne les critères à M02 et M03 ; signale les données et règl
 ```text
 Tu travailles sur Petit Filet, mission 02, sous la coordination du fil 00.
 Dépôt commercial : samihchaa-wq/Application-football-. Supabase commercial : jvxkhgdopslctpcjrhzw.
-Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, cherche la PR « Plan directeur Petit Filet : pilotes 2027 et abonnement 2028 » et lis-le sur sa branche.
+Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, ouvre la PR #147 (https://github.com/samihchaa-wq/Application-football-/pull/147) et lis-le sur sa branche.
 Calendrier : 2–3 clubs/équipes pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection pendant 2–3 mois à l'été 2027. Décision commerciale actualisée le 16/11 : 100 €/équipe/an dès souscription, essai gratuit réservé aux pilotes avec conditions à préciser. Aucune année gratuite généralisée. Distingue club physique, équipe facturée et espace technique ; aucun engagement financier implicite.
 Réutilise les travaux existants. Vérifie les faits actuels : un document ancien, une PR fusionnée et une CI verte ne prouvent pas tous les parcours ni l'état déployé.
 Ne modifie jamais AS Grinta original ni Carte soirée. Le dépôt commercial est public : aucun secret ni donnée personnelle dans les livrables.
@@ -258,7 +258,7 @@ Coordination : Reçoit les exigences M01/M05/M06/M07 et les anomalies M03/M04/M0
 ```text
 Tu travailles sur Petit Filet, mission 03, sous la coordination du fil 00.
 Dépôt commercial : samihchaa-wq/Application-football-. Supabase commercial : jvxkhgdopslctpcjrhzw.
-Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, cherche la PR « Plan directeur Petit Filet : pilotes 2027 et abonnement 2028 » et lis-le sur sa branche.
+Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, ouvre la PR #147 (https://github.com/samihchaa-wq/Application-football-/pull/147) et lis-le sur sa branche.
 Calendrier : 2–3 clubs/équipes pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection pendant 2–3 mois à l'été 2027. Décision commerciale actualisée le 16/11 : 100 €/équipe/an dès souscription, essai gratuit réservé aux pilotes avec conditions à préciser. Aucune année gratuite généralisée. Distingue club physique, équipe facturée et espace technique ; aucun engagement financier implicite.
 Réutilise les travaux existants. Vérifie les faits actuels : un document ancien, une PR fusionnée et une CI verte ne prouvent pas tous les parcours ni l'état déployé.
 Ne modifie jamais AS Grinta original ni Carte soirée. Le dépôt commercial est public : aucun secret ni donnée personnelle dans les livrables.
@@ -279,7 +279,7 @@ Coordination : Reçoit M01 et les PR M02 ; transmet les défauts à leur propri�
 ```text
 Tu travailles sur Petit Filet, mission 04, sous la coordination du fil 00.
 Dépôt commercial : samihchaa-wq/Application-football-. Supabase commercial : jvxkhgdopslctpcjrhzw.
-Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, cherche la PR « Plan directeur Petit Filet : pilotes 2027 et abonnement 2028 » et lis-le sur sa branche.
+Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, ouvre la PR #147 (https://github.com/samihchaa-wq/Application-football-/pull/147) et lis-le sur sa branche.
 Calendrier : 2–3 clubs/équipes pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection pendant 2–3 mois à l'été 2027. Décision commerciale actualisée le 16/11 : 100 €/équipe/an dès souscription, essai gratuit réservé aux pilotes avec conditions à préciser. Aucune année gratuite généralisée. Distingue club physique, équipe facturée et espace technique ; aucun engagement financier implicite.
 Réutilise les travaux existants. Vérifie les faits actuels : un document ancien, une PR fusionnée et une CI verte ne prouvent pas tous les parcours ni l'état déployé.
 Ne modifie jamais AS Grinta original ni Carte soirée. Le dépôt commercial est public : aucun secret ni donnée personnelle dans les livrables.
@@ -300,7 +300,7 @@ Coordination : Transmet corrections à M02, tests à M03, obligations incident/c
 ```text
 Tu travailles sur Petit Filet, mission 05, sous la coordination du fil 00.
 Dépôt commercial : samihchaa-wq/Application-football-. Supabase commercial : jvxkhgdopslctpcjrhzw.
-Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, cherche la PR « Plan directeur Petit Filet : pilotes 2027 et abonnement 2028 » et lis-le sur sa branche.
+Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, ouvre la PR #147 (https://github.com/samihchaa-wq/Application-football-/pull/147) et lis-le sur sa branche.
 Calendrier : 2–3 clubs/équipes pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection pendant 2–3 mois à l'été 2027. Décision commerciale actualisée le 16/11 : 100 €/équipe/an dès souscription, essai gratuit réservé aux pilotes avec conditions à préciser. Aucune année gratuite généralisée. Distingue club physique, équipe facturée et espace technique ; aucun engagement financier implicite.
 Réutilise les travaux existants. Vérifie les faits actuels : un document ancien, une PR fusionnée et une CI verte ne prouvent pas tous les parcours ni l'état déployé.
 Ne modifie jamais AS Grinta original ni Carte soirée. Le dépôt commercial est public : aucun secret ni donnée personnelle dans les livrables.
@@ -321,7 +321,7 @@ Coordination : Donne les spécifications à M02, les critères à M03, les resso
 ```text
 Tu travailles sur Petit Filet, mission 06, sous la coordination du fil 00.
 Dépôt commercial : samihchaa-wq/Application-football-. Supabase commercial : jvxkhgdopslctpcjrhzw.
-Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, cherche la PR « Plan directeur Petit Filet : pilotes 2027 et abonnement 2028 » et lis-le sur sa branche.
+Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, ouvre la PR #147 (https://github.com/samihchaa-wq/Application-football-/pull/147) et lis-le sur sa branche.
 Calendrier : 2–3 clubs/équipes pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection pendant 2–3 mois à l'été 2027. Décision commerciale actualisée le 16/11 : 100 €/équipe/an dès souscription, essai gratuit réservé aux pilotes avec conditions à préciser. Aucune année gratuite généralisée. Distingue club physique, équipe facturée et espace technique ; aucun engagement financier implicite.
 Réutilise les travaux existants. Vérifie les faits actuels : un document ancien, une PR fusionnée et une CI verte ne prouvent pas tous les parcours ni l'état déployé.
 Ne modifie jamais AS Grinta original ni Carte soirée. Le dépôt commercial est public : aucun secret ni donnée personnelle dans les livrables.
@@ -343,7 +343,7 @@ Coordination : M07 qualifie les contrats ; M09 chiffre l'exploitation ; M02 impl
 ```text
 Tu travailles sur Petit Filet, mission 07, sous la coordination du fil 00.
 Dépôt commercial : samihchaa-wq/Application-football-. Supabase commercial : jvxkhgdopslctpcjrhzw.
-Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, cherche la PR « Plan directeur Petit Filet : pilotes 2027 et abonnement 2028 » et lis-le sur sa branche.
+Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, ouvre la PR #147 (https://github.com/samihchaa-wq/Application-football-/pull/147) et lis-le sur sa branche.
 Calendrier : 2–3 clubs/équipes pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection pendant 2–3 mois à l'été 2027. Décision commerciale actualisée le 16/11 : 100 €/équipe/an dès souscription, essai gratuit réservé aux pilotes avec conditions à préciser. Aucune année gratuite généralisée. Distingue club physique, équipe facturée et espace technique ; aucun engagement financier implicite.
 Réutilise les travaux existants. Vérifie les faits actuels : un document ancien, une PR fusionnée et une CI verte ne prouvent pas tous les parcours ni l'état déployé.
 Ne modifie jamais AS Grinta original ni Carte soirée. Le dépôt commercial est public : aucun secret ni donnée personnelle dans les livrables.
@@ -365,7 +365,7 @@ Coordination : M01 précise les traitements ; M02 implémente ; M03 prouve les d
 ```text
 Tu travailles sur Petit Filet, mission 08, sous la coordination du fil 00.
 Dépôt commercial : samihchaa-wq/Application-football-. Supabase commercial : jvxkhgdopslctpcjrhzw.
-Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, cherche la PR « Plan directeur Petit Filet : pilotes 2027 et abonnement 2028 » et lis-le sur sa branche.
+Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, ouvre la PR #147 (https://github.com/samihchaa-wq/Application-football-/pull/147) et lis-le sur sa branche.
 Calendrier : 2–3 clubs/équipes pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection pendant 2–3 mois à l'été 2027. Décision commerciale actualisée le 16/11 : 100 €/équipe/an dès souscription, essai gratuit réservé aux pilotes avec conditions à préciser. Aucune année gratuite généralisée. Distingue club physique, équipe facturée et espace technique ; aucun engagement financier implicite.
 Réutilise les travaux existants. Vérifie les faits actuels : un document ancien, une PR fusionnée et une CI verte ne prouvent pas tous les parcours ni l'état déployé.
 Ne modifie jamais AS Grinta original ni Carte soirée. Le dépôt commercial est public : aucun secret ni donnée personnelle dans les livrables.
@@ -387,7 +387,7 @@ Coordination : Ne lance qu'après GO M00/M03/M04/M07/M09 ; remonte défauts à M
 ```text
 Tu travailles sur Petit Filet, mission 09, sous la coordination du fil 00.
 Dépôt commercial : samihchaa-wq/Application-football-. Supabase commercial : jvxkhgdopslctpcjrhzw.
-Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, cherche la PR « Plan directeur Petit Filet : pilotes 2027 et abonnement 2028 » et lis-le sur sa branche.
+Lis AGENTS.md, docs/HANDOFF.md, docs/CHANTIER.md et docs/PLAN_DIRECTEUR_2027_2028.md. Si le dernier fichier n'est pas encore sur main, ouvre la PR #147 (https://github.com/samihchaa-wq/Application-football-/pull/147) et lis-le sur sa branche.
 Calendrier : 2–3 clubs/équipes pilotes à partir de mars/avril 2027 pendant 2–3 mois ; corrections ; prospection pendant 2–3 mois à l'été 2027. Décision commerciale actualisée le 16/11 : 100 €/équipe/an dès souscription, essai gratuit réservé aux pilotes avec conditions à préciser. Aucune année gratuite généralisée. Distingue club physique, équipe facturée et espace technique ; aucun engagement financier implicite.
 Réutilise les travaux existants. Vérifie les faits actuels : un document ancien, une PR fusionnée et une CI verte ne prouvent pas tous les parcours ni l'état déployé.
 Ne modifie jamais AS Grinta original ni Carte soirée. Le dépôt commercial est public : aucun secret ni donnée personnelle dans les livrables.
