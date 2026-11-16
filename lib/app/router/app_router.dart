@@ -199,10 +199,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 ),
               ),
               // Ancien lien conservé pour ne pas casser les favoris.
-              GoRoute(
-                path: '/admin/settings',
-                redirect: (_, __) => '/more',
-              ),
+              GoRoute(path: '/admin/settings', redirect: (_, __) => '/more'),
               GoRoute(
                 path: '/admin/stadiums',
                 builder: (_, __) => DeferredRoutePage(
@@ -323,9 +320,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
               GoRoute(
                 path: '/stats/joueur',
-                builder: (context, state) => PlayerCardPage(
-                  playerKey: playerCardKeyFromUri(state.uri),
-                ),
+                builder: (context, state) =>
+                    PlayerCardPage(playerKey: playerCardKeyFromUri(state.uri)),
               ),
               GoRoute(
                 path: '/stats/joueur/classement',
@@ -385,13 +381,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/auth/choose-club',
-        builder: (_, __) => const ChooseClubPage(),
+        builder: (_, state) => ChooseClubPage(
+          initialInviteCode: state.uri.queryParameters['code'],
+        ),
       ),
       GoRoute(
         path: '/auth/confirm-email',
-        builder: (_, state) => ConfirmEmailPage(
-          token: state.uri.queryParameters['token'],
-        ),
+        builder: (_, state) =>
+            ConfirmEmailPage(token: state.uri.queryParameters['token']),
       ),
       GoRoute(
         path: '/legal/:slug',
