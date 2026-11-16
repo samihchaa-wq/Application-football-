@@ -30,8 +30,8 @@ class PlatformRepository {
 
       PlatformHealth? health;
       try {
-        final response = await _rpc('platform_health')
-            .timeout(const Duration(seconds: 15));
+        final response =
+            await _rpc('platform_health').timeout(const Duration(seconds: 15));
         if (response is! Map) throw const FormatException('Invalid health');
         health = PlatformHealth.fromJson(Map<String, dynamic>.from(response));
       } on PostgrestException catch (error) {

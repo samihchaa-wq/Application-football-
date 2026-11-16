@@ -138,10 +138,10 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
             onPressed: authState.isLoading
                 ? null
                 : () => context.go(
-                    widget.managerAccess
-                        ? '/auth/sign-in'
-                        : '/auth/sign-in?redirect=%2Fcontrol',
-                  ),
+                      widget.managerAccess
+                          ? '/auth/sign-in'
+                          : '/auth/sign-in?redirect=%2Fcontrol',
+                    ),
             icon: Icon(
               widget.managerAccess
                   ? Icons.arrow_back

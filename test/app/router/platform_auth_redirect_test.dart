@@ -4,10 +4,10 @@ import 'package:as_grinta/features/auth/presentation/auth_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 String? redirect(AuthState state, String path) => resolveAuthRedirect(
-  authState: state,
-  uri: Uri.parse(path),
-  matchedLocation: Uri.parse(path).path,
-);
+      authState: state,
+      uri: Uri.parse(path),
+      matchedLocation: Uri.parse(path).path,
+    );
 
 void main() {
   test('cold console URL survives loading and sign-in', () {
@@ -31,7 +31,9 @@ void main() {
     );
   });
 
-  test('a teamless session reaches the operator gate without joining an unrelated team', () {
+  test(
+      'a teamless session reaches the operator gate without joining an unrelated team',
+      () {
     const auth = AuthState(isLoading: false, hasSession: true, needsClub: true);
     expect(redirect(auth, '/control'), isNull);
     expect(redirect(auth, '/auth/sign-in?redirect=%2Fcontrol'), '/control');

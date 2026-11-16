@@ -68,9 +68,9 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
   }
 
   void _navigate(int index) => setState(() {
-    _section = index;
-    _selectedTeamId = null;
-  });
+        _section = index;
+        _selectedTeamId = null;
+      });
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +86,7 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
           final wide = constraints.maxWidth >= 1000;
           return Scaffold(
             appBar: AppBar(
+              toolbarHeight: 80,
               automaticallyImplyLeading: false,
               title: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,7 +95,10 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                     'PETIT FILET',
                     style: TextStyle(fontSize: 13, letterSpacing: 2),
                   ),
-                  Text('Poste de contrôle', style: TextStyle(fontSize: 20)),
+                  Text('Poste de contrôle',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 20)),
                 ],
               ),
               actions: [
@@ -119,7 +123,12 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                       _sections.length,
                       (i) => NavigationDestination(
                         icon: Icon(_icons[i]),
-                        label: _sections[i],
+                        label: const [
+                          'Accueil',
+                          'Équipes',
+                          'Santé',
+                          'Suite'
+                        ][i],
                       ),
                     ),
                   ),
@@ -141,17 +150,15 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                 Expanded(
                   child: _obscured || !auth.hasSession || auth.isLoading
                       ? const Center(child: Text('Vérification de l’accès…'))
-                      : ref
-                            .watch(platformSnapshotProvider)
-                            .when(
-                              skipLoadingOnRefresh: false,
-                              skipLoadingOnReload: false,
-                              loading: () => const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                              error: (error, _) => _failure(error),
-                              data: (snapshot) => _content(snapshot),
+                      : ref.watch(platformSnapshotProvider).when(
+                            skipLoadingOnRefresh: false,
+                            skipLoadingOnReload: false,
+                            loading: () => const Center(
+                              child: CircularProgressIndicator(),
                             ),
+                            error: (error, _) => _failure(error),
+                            data: (snapshot) => _content(snapshot),
+                          ),
                 ),
               ],
             ),
@@ -162,46 +169,45 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
   }
 
   Widget _failure(Object error) => Center(
-    child: Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            error is PlatformAccessDenied
-                ? Icons.lock_outline
-                : Icons.cloud_off,
-            size: 40,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                error is PlatformAccessDenied
+                    ? Icons.lock_outline
+                    : Icons.cloud_off,
+                size: 40,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                error is PlatformAccessDenied
+                    ? 'Accès gestionnaire requis'
+                    : 'Données indisponibles',
+                style: const TextStyle(fontSize: 22),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                error is PlatformAccessDenied
+                    ? 'Ce compte n’est pas autorisé à consulter le poste de contrôle.'
+                    : 'La connexion n’a pas permis de vérifier les données. Réessaie dans un instant.',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: () => ref.invalidate(platformSnapshotProvider),
+                icon: const Icon(Icons.refresh),
+                label: const Text('Réessayer'),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            error is PlatformAccessDenied
-                ? 'Accès gestionnaire requis'
-                : 'Données indisponibles',
-            style: const TextStyle(fontSize: 22),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            error is PlatformAccessDenied
-                ? 'Ce compte n’est pas autorisé à consulter le poste de contrôle.'
-                : 'La connexion n’a pas permis de vérifier les données. Réessaie dans un instant.',
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          OutlinedButton.icon(
-            onPressed: () => ref.invalidate(platformSnapshotProvider),
-            icon: const Icon(Icons.refresh),
-            label: const Text('Réessayer'),
-          ),
-        ],
-      ),
-    ),
-  );
+        ),
+      );
 
   Widget _content(PlatformSnapshot snapshot) {
-    final selected = snapshot.teams
-        .where((team) => team.id == _selectedTeamId)
-        .firstOrNull;
+    final selected =
+        snapshot.teams.where((team) => team.id == _selectedTeamId).firstOrNull;
     return SingleChildScrollView(
       key: const Key('platform-content'),
       padding: const EdgeInsets.all(20),
@@ -412,53 +418,51 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
   }
 
   Widget _teamTile(PlatformTeam team) => ListTile(
-    key: ValueKey('platform-team-${team.id}'),
-    leading: CircleAvatar(
-      child: Icon(
-        team.status == 'suspended' ? Icons.pause : Icons.sports_soccer,
-      ),
-    ),
-    title: Text(team.name),
-    subtitle: Text(
-      '${team.statusLabel} · ${team.subscriptionLabel}\n'
-      '${_count(team.members)} membre(s) actif(s)${team.currentPeriodEnd == null ? '' : ' · échéance ${_day(team.currentPeriodEnd)}'}',
-    ),
-    isThreeLine: true,
-    trailing: const Icon(Icons.chevron_right),
-    onTap: () => setState(() => _selectedTeamId = team.id),
-  );
+        key: ValueKey('platform-team-${team.id}'),
+        leading: CircleAvatar(
+          child: Icon(
+            team.status == 'suspended' ? Icons.pause : Icons.sports_soccer,
+          ),
+        ),
+        title: Text(team.name),
+        subtitle: Text(
+          '${team.statusLabel} · ${team.subscriptionLabel}\n'
+          '${_count(team.members)} membre(s) actif(s)${team.currentPeriodEnd == null ? '' : ' · échéance ${_day(team.currentPeriodEnd)}'}',
+        ),
+        isThreeLine: true,
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => setState(() => _selectedTeamId = team.id),
+      );
 
   Widget _teamDetail(PlatformTeam team) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Align(
-        alignment: Alignment.centerLeft,
-        child: TextButton.icon(
-          onPressed: () => setState(() => _selectedTeamId = null),
-          icon: const Icon(Icons.arrow_back),
-          label: const Text('Retour à la liste'),
-        ),
-      ),
-      _panel('Fiche équipe', [
-        _detail('Accès', team.statusLabel),
-        _detail('Création', _date(team.createdAt)),
-        _detail('Membres au statut actif', _count(team.members)),
-        _detail('Abonnement', team.subscriptionLabel),
-        _detail('Fin d’essai enregistrée', _date(team.trialEndsAt)),
-        _detail('Fin de période enregistrée', _date(team.currentPeriodEnd)),
-        _detail(
-          'Dernière modification de profil ou match',
-          _date(team.lastModifiedAt),
-        ),
-      ]),
-      const SizedBox(height: 16),
-      const Text(
-        'Cette fiche ne permet pas de consulter les échanges, de changer d’identité '
-        'ou d’ouvrir la session d’un membre. Le stockage complet, les connexions et les '
-        'encaissements de cette équipe ne sont pas encore mesurés.',
-      ),
-    ],
-  );
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => setState(() => _selectedTeamId = null),
+              icon: const Icon(Icons.arrow_back),
+              label: const Text('Retour à la liste'),
+            ),
+          ),
+          _panel('Fiche équipe', [
+            _detail('Accès', team.statusLabel),
+            _detail('Création', _date(team.createdAt)),
+            _detail('Membres au statut actif', _count(team.members)),
+            _detail('Abonnement', team.subscriptionLabel),
+            _detail('Fin d’essai enregistrée', _date(team.trialEndsAt)),
+            _detail('Fin de période enregistrée', _date(team.currentPeriodEnd)),
+            _detail(
+              'Dernière modification de profil ou match',
+              _date(team.lastModifiedAt),
+            ),
+          ]),
+          const SizedBox(height: 16),
+          const Text(
+            'Stockage complet, connexions et encaissements : mesures à raccorder pour cette équipe.',
+          ),
+        ],
+      );
 
   Widget _health(PlatformSnapshot snapshot) {
     final health = snapshot.health;
@@ -551,89 +555,93 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
       ]);
 
   Widget _metrics(List<(String, String, String)> values) => LayoutBuilder(
-    builder: (context, constraints) {
-      final columns = constraints.maxWidth >= 850
-          ? 4
-          : constraints.maxWidth >= 500
-          ? 2
-          : 1;
-      return Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        children: values
-            .map(
-              (value) => SizedBox(
-                width: (constraints.maxWidth - 12 * (columns - 1)) / columns,
-                child: Card(
-                  margin: EdgeInsets.zero,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          value.$1,
-                          style: const TextStyle(color: AppTheme.textSecondary),
+        builder: (context, constraints) {
+          final columns = constraints.maxWidth >= 850
+              ? 4
+              : constraints.maxWidth >= 500
+                  ? 2
+                  : 1;
+          return Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: values
+                .map(
+                  (value) => SizedBox(
+                    width:
+                        (constraints.maxWidth - 12 * (columns - 1)) / columns,
+                    child: Card(
+                      margin: EdgeInsets.zero,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              value.$1,
+                              style: const TextStyle(
+                                  color: AppTheme.textSecondary),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              value.$2,
+                              style: TextStyle(
+                                fontSize: value.$2 == 'Non mesuré' ? 22 : 32,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              value.$3,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppTheme.textFaint,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          value.$2,
-                          style: TextStyle(
-                            fontSize: value.$2 == 'Non mesuré' ? 22 : 32,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          value.$3,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppTheme.textFaint,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-              ),
-            )
-            .toList(),
+                )
+                .toList(),
+          );
+        },
       );
-    },
-  );
 
   Widget _panel(String title, List<Widget> children) => Card(
-    margin: EdgeInsets.zero,
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-            ),
+        margin: EdgeInsets.zero,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+              ),
+              ...children,
+            ],
           ),
-          ...children,
-        ],
-      ),
-    ),
-  );
+        ),
+      );
 
   Widget _detail(String label, String value) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-    child: Wrap(
-      alignment: WrapAlignment.spaceBetween,
-      spacing: 20,
-      runSpacing: 4,
-      children: [
-        Text(label),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
-      ],
-    ),
-  );
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          spacing: 20,
+          runSpacing: 4,
+          children: [
+            Text(label),
+            Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+          ],
+        ),
+      );
 }
 
 class _Empty extends StatelessWidget {
@@ -641,9 +649,9 @@ class _Empty extends StatelessWidget {
   final String text;
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.all(32),
-    child: Text(text, textAlign: TextAlign.center),
-  );
+        padding: const EdgeInsets.all(32),
+        child: Text(text, textAlign: TextAlign.center),
+      );
 }
 
 String _count(int? value) => value == null ? 'Non mesuré' : '$value';

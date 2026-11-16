@@ -44,18 +44,18 @@ class PlatformTeam {
   final DateTime? lastModifiedAt;
 
   String get statusLabel => switch (status) {
-    'active' => 'Active',
-    'suspended' => 'Suspendue',
-    _ => 'État inconnu',
-  };
+        'active' => 'Active',
+        'suspended' => 'Suspendue',
+        _ => 'État inconnu',
+      };
 
   String get subscriptionLabel => switch (subscriptionStatus) {
-    'trial' => 'Essai',
-    'active' => 'Abonnement actif',
-    'past_due' => 'Paiement à régulariser',
-    'canceled' => 'Abonnement arrêté',
-    _ => 'Abonnement non renseigné',
-  };
+        'trial' => 'Essai',
+        'active' => 'Abonnement actif',
+        'past_due' => 'Paiement à régulariser',
+        'canceled' => 'Abonnement arrêté',
+        _ => 'Abonnement non renseigné',
+      };
 }
 
 class PlatformHealth {
@@ -106,17 +106,16 @@ class PlatformSnapshot {
     return teams.fold<int>(0, (sum, team) => sum + team.members!);
   }
 
-  List<PlatformTeam> renewalsBefore(DateTime now, Duration window) =>
-      teams
-          .where(
-            (team) =>
-                team.subscriptionStatus == 'active' &&
-                team.currentPeriodEnd != null &&
-                !team.currentPeriodEnd!.isBefore(now) &&
-                !team.currentPeriodEnd!.isAfter(now.add(window)),
-          )
-          .toList()
-        ..sort((a, b) => a.currentPeriodEnd!.compareTo(b.currentPeriodEnd!));
+  List<PlatformTeam> renewalsBefore(DateTime now, Duration window) => teams
+      .where(
+        (team) =>
+            team.subscriptionStatus == 'active' &&
+            team.currentPeriodEnd != null &&
+            !team.currentPeriodEnd!.isBefore(now) &&
+            !team.currentPeriodEnd!.isAfter(now.add(window)),
+      )
+      .toList()
+    ..sort((a, b) => a.currentPeriodEnd!.compareTo(b.currentPeriodEnd!));
 }
 
 int? measuredCount(Object? value) => value is int && value >= 0 ? value : null;

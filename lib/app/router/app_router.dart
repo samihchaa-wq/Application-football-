@@ -297,8 +297,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 builder: (_, state) => NotificationsPage(
                   initialTab:
                       state.uri.queryParameters['onglet'] == 'parametres'
-                      ? NotificationsTab.settings
-                      : NotificationsTab.history,
+                          ? NotificationsTab.settings
+                          : NotificationsTab.history,
                 ),
               ),
               GoRoute(
