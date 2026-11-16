@@ -26,9 +26,10 @@ void main() {
       );
     });
 
-    test('keeps sign-in mounted while an authentication request is loading',
-        () {
-      const state = AuthState(isLoading: true);
+    test(
+      'keeps sign-in mounted while an authentication request is loading',
+      () {
+        const state = AuthState(isLoading: true);
 
         expect(
           resolveAuthRedirect(
