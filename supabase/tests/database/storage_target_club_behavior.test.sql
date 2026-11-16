@@ -48,7 +48,7 @@ begin
     values(v_player, 'M01 joueur ' || upper(r.label));
 
     insert into public.seasons(id, name, status)
-    values(v_season, 'M01 S' || upper(r.label), 'open');
+    values(v_season, '2026-2027', 'open');
 
     insert into public.season_players(
       id, season_id, first_name, last_name, is_active, player_id
