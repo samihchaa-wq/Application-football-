@@ -19,7 +19,7 @@ select 'b', (public.create_club('M01 Stockage Bravo', 'M01B', null, null, null, 
 insert into auth.users (id, email, raw_user_meta_data, raw_app_meta_data)
 select ('a5100000-0000-0000-0000-00000000000' || label)::uuid,
        'm01-storage-' || label || '@example.invalid',
-       jsonb_build_object('first_name','M01','last_name',upper(label)),
+       jsonb_build_object('first_name','Michel','last_name',upper(label)),
        jsonb_build_object('club_id', id)
 from m01_storage_clubs;
 
@@ -54,14 +54,14 @@ begin
       id, season_id, first_name, last_name, is_active, player_id
     ) values(
       ('a5130000-0000-0000-0000-00000000000' || r.label)::uuid,
-      v_season, 'M01', upper(r.label), true, v_player
+      v_season, 'Michel', upper(r.label), true, v_player
     );
 
     insert into public.guest_players(
       id, first_name, created_by, updated_by, player_id
     ) values(
       ('a5140000-0000-0000-0000-00000000000' || r.label)::uuid,
-      'Invite M01 ' || upper(r.label), v_actor, v_actor, v_player
+      'Invite Michel ' || upper(r.label), v_actor, v_actor, v_player
     );
   end loop;
 end;
