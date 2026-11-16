@@ -135,9 +135,6 @@ jobs:
           python3 supabase/tests/lint/check_db_lint.py supabase-db-lint.json \
             2>&1 | tee -a supabase-db-lint.log
 
-      - name: Verify calendar Edge access on isolated Supabase HTTP
-        run: python3 supabase/tests/edge/calendar_feed_http.py
-
       - name: Upload database diagnostics
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -154,4 +151,33 @@ jobs:
       - name: Stop isolated Supabase stack
         if: always()
         shell: bash
+        run: supabase stop --no-backup || true
+
+  calendar-http:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf # v2
+        with:
+          version: 2.111.0
+
+      - name: Verify local calendar tools
+        run: |
+          set -euo pipefail
+          supabase functions serve --help > /dev/null
+          supabase status --help > /dev/null
+          psql --version
+
+      - name: Start disposable Supabase for calendar HTTP
+        run: supabase start > /tmp/calendar-stack-start.log 2>&1
+
+      - name: Verify calendar Edge access on isolated Supabase HTTP
+        run: python3 supabase/tests/edge/calendar_feed_http.py
+
+      - name: Stop disposable calendar stack
+        if: always()
         run: supabase stop --no-backup || true
