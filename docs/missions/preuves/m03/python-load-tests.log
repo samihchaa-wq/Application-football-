@@ -1,0 +1,18 @@
+test_empty_and_progress_only_output_rejected (test_pgbench_report.PgBenchReportTests.test_empty_and_progress_only_output_rejected) ... ok
+test_failed_transactions_rejected_even_with_exit_zero (test_pgbench_report.PgBenchReportTests.test_failed_transactions_rejected_even_with_exit_zero) ... ok
+test_healthy_report (test_pgbench_report.PgBenchReportTests.test_healthy_report) ... ok
+test_only_one_final_report_accepted (test_pgbench_report.PgBenchReportTests.test_only_one_final_report_accepted) ... ok
+test_report_without_failure_field_is_accepted (test_pgbench_report.PgBenchReportTests.test_report_without_failure_field_is_accepted) ... ok
+test_zero_transactions_rejected (test_pgbench_report.PgBenchReportTests.test_zero_transactions_rejected) ... ok
+test_empty_filtered_output_is_failure (test_run_script.LoadRunnerExitStatusTests.test_empty_filtered_output_is_failure) ... ok
+test_failure_in_read_fails_runner_and_stops_before_write (test_run_script.LoadRunnerExitStatusTests.test_failure_in_read_fails_runner_and_stops_before_write) ... ok
+test_failure_in_write_fails_runner (test_run_script.LoadRunnerExitStatusTests.test_failure_in_write_fails_runner) ... ok
+test_postcheck_failure_fails_runner_even_after_successful_pgbench (test_run_script.LoadRunnerExitStatusTests.test_postcheck_failure_fails_runner_even_after_successful_pgbench) ... ok
+test_remote_database_is_rejected_before_any_mutation (test_run_script.LoadRunnerExitStatusTests.test_remote_database_is_rejected_before_any_mutation) ... ok
+test_success_runs_both_phases_and_filters_progress (test_run_script.LoadRunnerExitStatusTests.test_success_runs_both_phases_and_filters_progress) ... ok
+test_zero_exit_with_failed_transactions_is_failure (test_run_script.LoadRunnerExitStatusTests.test_zero_exit_with_failed_transactions_is_failure) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.346s
+
+OK

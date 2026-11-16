@@ -1,0 +1,159 @@
+{
+  "mission": "09",
+  "as_of": "2026-11-16",
+  "timezone": "Europe/Paris",
+  "main_sha": "5f404e70f70b4e99d754f7064b567d027d66fe03",
+  "plan_pr": 147,
+  "plan_sha": "dd26ace17dc42c1af8bd9773f578f20e5a29067d",
+  "project": "jvxkhgdopslctpcjrhzw",
+  "commercial_reads": {
+    "observed_at_utc": "2026-11-16T05:06:14.397279+00:00",
+    "status": "ACTIVE_HEALTHY",
+    "region": "eu-west-3",
+    "plan": "pro",
+    "database_bytes": 54105779,
+    "max_postgres_connections": 60,
+    "client_backends_at_snapshot": 7,
+    "observed_at_inventory_utc": "2026-11-16T05:07:06.141792+00:00",
+    "clubs": 2,
+    "active_clubs": 2,
+    "auth_users": 42,
+    "matches": 34,
+    "buckets": 3,
+    "storage_objects": 5,
+    "storage_metadata_bytes": 377136,
+    "migration_versions": 54,
+    "last_version": "20261121000000",
+    "versions_md5_sorted_newline": "7b045c26a5a68b8e232ab05c1b9c4259",
+    "cron_jobs_active": 11,
+    "cron_last24h_succeeded_first_snapshot": 24817,
+    "cron_last24h_failed_first_snapshot": 0,
+    "push_last24h_entries_success": 0,
+    "push_last24h_entries_failure": 33,
+    "push_failures_http400": 12,
+    "push_failures_subscription_or_format": 21,
+    "client_incidents_main_table_last24h": 9,
+    "performance_advisor_info": {
+      "no_primary_key": 1,
+      "unused_index": 91,
+      "auth_pool_absolute_10_connections": 1
+    },
+    "health_advisor_findings": 0,
+    "development_branches_returned": 0,
+    "compute_size_billing_backup_snapshots_smtp_redirect_settings": "not_exposed_or_not_verified"
+  },
+  "sql_benchmarks": [
+    {
+      "run_id": 43766535593,
+      "commit": "89d32136e19e4cf18ea618bfa9004da4fdeb1a59",
+      "classification": "existing_ci_sql_only_not_hosted_e2e",
+      "seed_clubs": 200,
+      "seed_profiles": 6000,
+      "seed_matches": 4000,
+      "clients": 50,
+      "seconds_per_phase": 60,
+      "phases": [
+        {
+          "name": "read",
+          "transactions": 65109,
+          "failed": 0,
+          "tps": 1085.370529,
+          "latency_mean_ms": 46.022,
+          "latency_stddev_ms": 26.623,
+          "p95_ms": null,
+          "p99_ms": null
+        },
+        {
+          "name": "write",
+          "transactions": 26094,
+          "failed": 0,
+          "tps": 434.614415,
+          "latency_mean_ms": 114.871,
+          "latency_stddev_ms": 59.702,
+          "p95_ms": null,
+          "p99_ms": null
+        }
+      ],
+      "source": "https://github.com/samihchaa-wq/Application-football-/actions/runs/43766535593"
+    },
+    {
+      "run_id": 43769841500,
+      "commit": "40a74f05bba499f43f68c2577526fe357bcae6d9",
+      "classification": "existing_ci_sql_only_not_hosted_e2e",
+      "seed_clubs": 200,
+      "seed_profiles": 6000,
+      "seed_matches": 4000,
+      "clients": 50,
+      "seconds_per_phase": 60,
+      "phases": [
+        {
+          "name": "read",
+          "transactions": 61238,
+          "failed": 0,
+          "tps": 1021.037358,
+          "latency_mean_ms": 48.911,
+          "latency_stddev_ms": 28.914,
+          "p95_ms": null,
+          "p99_ms": null
+        },
+        {
+          "name": "write",
+          "transactions": 24774,
+          "failed": 0,
+          "tps": 412.606692,
+          "latency_mean_ms": 121.037,
+          "latency_stddev_ms": 65.353,
+          "p95_ms": null,
+          "p99_ms": null
+        }
+      ],
+      "source": "https://github.com/samihchaa-wq/Application-football-/actions/runs/43769841500"
+    }
+  ],
+  "sql_benchmark_relevant_tree_hash_matches_main": "552e8501f9d9f9dc4b48d785012d12881112f7c415eb108648903f68089cef22",
+  "backup": {
+    "run": 43792652784,
+    "job": 133054364661,
+    "sql_exports_verified": 3,
+    "storage_objects_verified": 5,
+    "artifact_id": 14192169057,
+    "artifact_zip_bytes": 800817,
+    "artifact_zip_sha256": "06d7493e844cb7021576cce4e4b9b46b1cba3d468d3312cd3a26bfb880327869",
+    "expires_at_utc": "2027-02-14T02:31:06Z",
+    "full_restore_verified": false,
+    "archive_downloaded_in_this_mission": false
+  },
+  "synthetic_restore": {
+    "run": 43769841432,
+    "production_archive": false,
+    "fictional_private_images": 2,
+    "success": true
+  },
+  "watch": {
+    "run": 43804229575,
+    "job": 133091177802,
+    "sql_check": "success",
+    "alert_delivery_tested": false
+  },
+  "deployment": {
+    "run": 43770267267,
+    "url": "https://petit-filet.pages.dev/",
+    "get_root_status": 200,
+    "get_build_version_status": 200,
+    "version": "0.3.3+97-5f404e70f70b",
+    "functional_browser_tested": false
+  },
+  "local_tests": {
+    "load_safety_unit_tests_passed": 13,
+    "qa_unit_tests_passed": 36,
+    "real_load_or_full_restore_executed_in_this_mission": false
+  },
+  "authorization": {
+    "production_writes": 0,
+    "workflows_manually_triggered": 0,
+    "production_load_tests": 0,
+    "spend": 0,
+    "outbound_messages": 0,
+    "original_as_grinta_accessed": false
+  }
+}

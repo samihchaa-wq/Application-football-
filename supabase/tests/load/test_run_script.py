@@ -14,12 +14,19 @@ RUNNER = Path(__file__).with_name("run.sh")
 
 class LoadRunnerExitStatusTests(unittest.TestCase):
     def _run_with_fake_database(
-        self, *, fail_phase: str = "", progress_only: bool = False, zero_exit_failure: bool = False, db_url: str = "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+        self, *, fail_phase: str = "", progress_only: bool = False, zero_exit_failure: bool = False, postcheck_fail: bool = False, db_url: str = "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
     ) -> subprocess.CompletedProcess[str]:
         with tempfile.TemporaryDirectory() as folder:
             fake_bin = Path(folder)
             psql = fake_bin / "psql"
-            psql.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+            psql.write_text(
+                "#!/bin/sh\n"
+                "if [ \"${POSTCHECK_FAIL:-0}\" = \"1\" ]; then\n"
+                "  case \"$*\" in *postcheck.sql*) exit 43 ;; esac\n"
+                "fi\n"
+                "exit 0\n",
+                encoding="utf-8",
+            )
             psql.chmod(0o755)
 
             pgbench = fake_bin / "pgbench"
@@ -43,6 +50,7 @@ class LoadRunnerExitStatusTests(unittest.TestCase):
                 FAIL_PHASE=fail_phase,
                 PROGRESS_ONLY="1" if progress_only else "0",
                 ZERO_EXIT_FAILURE="1" if zero_exit_failure else "0",
+                POSTCHECK_FAIL="1" if postcheck_fail else "0",
                 DB_URL=db_url,
             )
             return subprocess.run(
@@ -80,6 +88,12 @@ class LoadRunnerExitStatusTests(unittest.TestCase):
         self.assertEqual(run.returncode, 2)
         self.assertIn("base PostgreSQL sur localhost", run.stderr)
         self.assertNotIn("result: read", run.stdout)
+
+    def test_postcheck_failure_fails_runner_even_after_successful_pgbench(self) -> None:
+        run = self._run_with_fake_database(postcheck_fail=True)
+        self.assertEqual(run.returncode, 43, run.stdout + run.stderr)
+        self.assertIn("result: read", run.stdout)
+        self.assertIn("result: write", run.stdout)
 
     def test_empty_filtered_output_is_failure(self) -> None:
         run = self._run_with_fake_database(progress_only=True)

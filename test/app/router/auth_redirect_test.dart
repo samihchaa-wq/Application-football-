@@ -26,27 +26,29 @@ void main() {
       );
     });
 
-    test('keeps sign-in mounted while an authentication request is loading',
-        () {
-      const state = AuthState(isLoading: true);
+    test(
+      'keeps sign-in mounted while an authentication request is loading',
+      () {
+        const state = AuthState(isLoading: true);
 
-      expect(
-        resolveAuthRedirect(
-          authState: state,
-          uri: Uri.parse('/auth/sign-in'),
-          matchedLocation: '/auth/sign-in',
-        ),
-        isNull,
-      );
-      expect(
-        resolveAuthRedirect(
-          authState: state,
-          uri: Uri.parse('/auth/sign-in?redirect=%2Fstats'),
-          matchedLocation: '/auth/sign-in',
-        ),
-        isNull,
-      );
-    });
+        expect(
+          resolveAuthRedirect(
+            authState: state,
+            uri: Uri.parse('/auth/sign-in'),
+            matchedLocation: '/auth/sign-in',
+          ),
+          isNull,
+        );
+        expect(
+          resolveAuthRedirect(
+            authState: state,
+            uri: Uri.parse('/auth/sign-in?redirect=%2Fstats'),
+            matchedLocation: '/auth/sign-in',
+          ),
+          isNull,
+        );
+      },
+    );
 
     test('keeps a signed-in account without a club on the club step', () {
       const state = AuthState(
@@ -72,6 +74,88 @@ void main() {
         isNull,
       );
     });
+
+    test('preserves invitations for a connected account without a club', () {
+      const state = AuthState(
+        isLoading: false,
+        hasSession: true,
+        needsClub: true,
+      );
+      for (final path in [
+        '/auth/register?code=ABCDEFGH',
+        '/auth/loading?redirect=%2Fauth%2Fregister%3Fcode%3DABCDEFGH',
+      ]) {
+        final uri = Uri.parse(path);
+        expect(
+          resolveAuthRedirect(
+            authState: state,
+            uri: uri,
+            matchedLocation: uri.path,
+          ),
+          '/auth/choose-club?code=ABCDEFGH',
+        );
+      }
+    });
+
+    test('retains a club invitation through cold startup without a loop', () {
+      final uri = Uri.parse('/auth/choose-club?code=ABCDEFGH');
+      final loading = resolveAuthRedirect(
+        authState: const AuthState(),
+        uri: uri,
+        matchedLocation: uri.path,
+      )!;
+      final ready = resolveAuthRedirect(
+        authState: const AuthState(
+          isLoading: false,
+          hasSession: true,
+          needsClub: true,
+        ),
+        uri: Uri.parse(loading),
+        matchedLocation: '/auth/loading',
+      );
+      expect(ready, '/auth/choose-club?code=ABCDEFGH');
+      expect(
+        resolveAuthRedirect(
+          authState: const AuthState(
+            isLoading: false,
+            hasSession: true,
+            needsClub: true,
+          ),
+          uri: Uri.parse(ready!),
+          matchedLocation: '/auth/choose-club',
+        ),
+        isNull,
+      );
+    });
+
+    test(
+      'ignores invitation codes from unrelated or external destinations',
+      () {
+        const state = AuthState(
+          isLoading: false,
+          hasSession: true,
+          needsClub: true,
+        );
+        for (final target in [
+          '/matches?code=ABCDEFGH',
+          'https://evil.test/auth/register?code=ABCDEFGH',
+          '//evil.test/auth/register?code=ABCDEFGH',
+        ]) {
+          final uri = Uri(
+            path: '/auth/loading',
+            queryParameters: {'redirect': target},
+          );
+          expect(
+            resolveAuthRedirect(
+              authState: state,
+              uri: uri,
+              matchedLocation: uri.path,
+            ),
+            '/auth/choose-club',
+          );
+        }
+      },
+    );
 
     test('lets the e-mail confirmation link open while signed out', () {
       const state = AuthState(isLoading: false);
