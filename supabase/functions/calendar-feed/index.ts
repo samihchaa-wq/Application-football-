@@ -141,9 +141,11 @@ Deno.serve(async (req: Request) => {
 
   const { data: subscription, error: subscriptionError } = await admin
     .from("calendar_subscriptions")
-    .select("profile_id, club_id, profiles!inner(status), clubs!inner(name)")
+    .select("profile_id, club_id, profiles!inner(status), clubs!inner(name,status)")
     .eq("token", token)
     .eq("profiles.status", "active")
+    // La clé service contourne les RLS : vérifier aussi le club ici.
+    .eq("clubs.status", "active")
     .maybeSingle();
 
   if (subscriptionError) {
