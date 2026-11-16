@@ -84,7 +84,7 @@ void main() {
     auth = _FakeAuthController();
   });
 
-  Future<void> pumpPage(WidgetTester tester) async {
+  Future<void> pumpPage(WidgetTester tester, {String? code}) async {
     tester.view.physicalSize = const Size(900, 2200);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -94,7 +94,7 @@ void main() {
           clubRepositoryProvider.overrideWithValue(clubs),
           authControllerProvider.overrideWith((ref) => auth),
         ],
-        child: const MaterialApp(home: ChooseClubPage()),
+        child: MaterialApp(home: ChooseClubPage(initialInviteCode: code)),
       ),
     );
   }
@@ -106,6 +106,28 @@ void main() {
     if (contract.evaluate().isNotEmpty) await tester.tap(contract);
     await tester.pump();
   }
+
+  testWidgets('le lien préremplit le code sans rattachement automatique', (
+    tester,
+  ) async {
+    await pumpPage(tester, code: 'abcd-efgh');
+    expect(find.widgetWithText(TextField, 'ABCDEFGH'), findsOneWidget);
+    expect(clubs.claimed, isNull);
+    await acceptConsent(tester);
+    await tester.tap(find.text('Rejoindre le club'));
+    await tester.pumpAndSettle();
+    expect(clubs.claimed?['code'], 'ABCDEFGH');
+    expect(auth.refreshes, 1);
+  });
+
+  testWidgets('une nouvelle invitation remplace le code de la page ouverte', (
+    tester,
+  ) async {
+    await pumpPage(tester, code: 'ABCDEFGH');
+    await pumpPage(tester, code: 'bcde-fghj');
+    expect(find.widgetWithText(TextField, 'BCDEFGHJ'), findsOneWidget);
+    expect(clubs.claimed, isNull);
+  });
 
   testWidgets('le nom connu du compte est prérempli', (tester) async {
     await pumpPage(tester);
@@ -123,8 +145,9 @@ void main() {
     expect(clubs.claimed, isNull);
   });
 
-  testWidgets('rejoindre envoie le code puis recharge le profil',
-      (tester) async {
+  testWidgets('rejoindre envoie le code puis recharge le profil', (
+    tester,
+  ) async {
     await pumpPage(tester);
     await tester.enterText(
       find.byKey(const Key('choose-club-code')),
@@ -160,8 +183,9 @@ void main() {
     expect(auth.refreshes, 1);
   });
 
-  testWidgets('créer un club exige d’accepter le contrat du club',
-      (tester) async {
+  testWidgets('créer un club exige d’accepter le contrat du club', (
+    tester,
+  ) async {
     await pumpPage(tester);
     await tester.tap(find.text('Créer un club'));
     await tester.pumpAndSettle();
