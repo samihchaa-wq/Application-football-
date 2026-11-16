@@ -1,0 +1,5 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+Download https://jsr.io/@supabase/supabase-js/meta.json
+Download https://registry.npmjs.org/@supabase%2fsupabase-js
+error: JSR package manifest for '@supabase/supabase-js' failed to load. Import 'https://jsr.io/@supabase/supabase-js/meta.json' failed.
+    at file:///workspace/scratch/cf0e88a486c6/petit-filet/supabase/functions/manage-user/handler.ts:11:8
