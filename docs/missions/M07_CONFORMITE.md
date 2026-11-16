@@ -4,12 +4,16 @@ Rapport du **16 novembre 2026 (Europe/Paris)**. Statut : **documenté, non valid
 Référence inspectée : `main` commercial `5f404e70f70b4e99d754f7064b567d027d66fe03` ; plan et Fil 07 de [PR #147](https://github.com/samihchaa-wq/Application-football-/pull/147), SHA `dd26ace17dc42c1af8bd9773f578f20e5a29067d`.
 Environnement : copie locale du dépôt commercial ; recherche officielle France/UE. **Aucun accès à la base commerciale, test applicatif, déploiement, fusion, contact de club ou dépense.** AS Grinta original et Carte soirée exclus.
 
+## Décision commerciale actualisée
+
+La [correction impérative M00](https://github.com/samihchaa-wq/Application-football-/pull/147#issuecomment-6903574947) remplace le plan initial : **100 €/équipe/an dès souscription, sans année gratuite générale ; exception de 2–3 pilotes gratuits, périmètre et dates à contractualiser**. Ce choix est acquis ; ne pas redemander l'unité équipe/club. Les propositions antérieures de douze mois offerts sont retirées du présent dossier. La définition technique d'équipe, le traitement TVA et les conditions pilotes restent à préciser.
+
 ## Conclusion pour M00
 
 **Pas de GO juridique démontré pour des pilotes avec données réelles.** La gratuité n'exonère ni du RGPD ni des droits sur les médias. Préparer les pilotes de mars/avril 2027 maintenant ; lever les points ci-dessous avant collecte réelle. Ce rapport complète les anciens audits sans les traiter comme des preuves actuelles.
 
 Écarts statiques confirmés :
-- `lib/features/legal/domain/legal_documents.dart:323–330` : essai de **30 jours**, puis **[10] €/joueur/an**, incompatible avec l'année offerte du plan. La mémoire projet signale désormais **100 €/équipe/an** : M06/M00 doivent confirmer cette évolution, définir équipe/club et synchroniser le plan ; aucun tarif n'est arrêté par ce rapport.
+- `lib/features/legal/domain/legal_documents.dart:323–330` : essai de **30 jours**, puis **[10] €/joueur/an**, incompatible avec la dernière décision **100 €/équipe/an dès souscription**, avec exception pilote seulement. M06/M00 doivent synchroniser le plan et définir l'équipe facturable ; le traitement fiscal du prix reste à confirmer.
 - Même fichier : coordonnées éditeur en crochets, microentreprise et franchise TVA présumées ; hébergement du site encore GitHub Pages. Faire vérifier les URL et fournisseurs réellement utilisés par M09 avant correction.
 - `consent_fields.dart` : CGU et confidentialité dans une même acceptation ; déclaration « moins de 15 ans et un parent d'accord ». Ni autorisation média distincte ni preuve parentale suffisante démontrée par cet écran.
 - `docs/legal/README.md` décrit cinq projets de textes, versions enregistrées et limites de réacceptation. Leur présence n'est pas une validation du contenu ni de leur acceptation effective.
@@ -84,9 +88,9 @@ Ces clauses complètent `docs/JURIDIQUE_MODELES_A_VALIDER.md` et les cinq modèl
 
 Notice membre proposée : « Le club [identité/contact] utilise vos données pour [finalités et bases détaillées]. Petit Filet [éditeur] les traite sur ses instructions pour [périmètre]. Pour ses finalités propres [liste], l'éditeur est responsable. Les données accessibles à [destinataires] sont conservées [durées/critères] ; transferts [pays/garanties]. Vous pouvez exercer vos droits auprès de [contact], et saisir la CNIL. Les champs [liste] sont nécessaires pour [raison et conséquence d'absence] ; les autres sont facultatifs. » Ajouter sources et catégories si import indirect, et informations supplémentaires requises selon cas.
 
-### Convention pilote gratuite
+### Convention pilote gratuite — exception réservée aux pilotes
 
-« [Éditeur] et [club représenté par personne habilitée] conviennent d'un pilote Petit Filet du [date] au [date], pour [équipes/modules/limites]. Le suivi terrain de deux à trois mois est distinct de la durée de gratuité. La première année est offerte selon [point de départ et durée approuvés]. Aucun paiement ni bascule payante ne résulte du silence du club. Une offre annuelle distincte sera proposée et ne prendra effet qu'après acceptation expresse par une personne habilitée. En cas de refus, [fin d'accès, export et suppression documentés]. Les conditions de sécurité, support [horaires/délais réalistes], signalement, suspension proportionnée et réversibilité figurent dans les annexes. »
+« [Éditeur] et [club représenté par personne habilitée] conviennent d'un pilote Petit Filet du [date] au [date], pour [équipes/modules/limites]. Le suivi terrain de deux à trois mois est distinct de la durée de gratuité. La gratuité est exclusivement limitée à ce pilote, pour [équipes et dates expressément retenues]. Aucun paiement ni bascule payante ne résulte du silence du club. Une offre annuelle distincte sera proposée et ne prendra effet qu'après acceptation expresse par une personne habilitée. En cas de refus, [fin d'accès, export et suppression documentés]. Les conditions de sécurité, support [horaires/délais réalistes], signalement, suspension proportionnée et réversibilité figurent dans les annexes. »
 
 Ne pas inclure une renonciation générale aux droits ni faire du témoignage public une contrepartie obligatoire. Responsable de support et procédure d'incident identifiés ; aucune garantie « 100 % fiable ». Responsabilité et assurance à examiner avec juriste, pas d'exclusion absolue.
 
@@ -100,7 +104,7 @@ Objet/durée/nature/finalités ; personnes et données ; instructions documenté
 
 ### Abonnement futur
 
-Préciser acheteur et représentant, définition d'équipe facturable, rattachement au club, périmètre, prix HT/TTC et taxes, date de départ de gratuité et échéance, paiement, incidents, renouvellement et préavis, résiliation, support, responsabilité et sortie. Recommandation : première conversion payante par acceptation expresse, sans prélèvement automatique à l'issue du pilote. Rétractation/garanties/médiation pour consommateurs et protections des non-professionnels à qualifier séparément : ne pas copier toutes les règles B2C aux associations ni les exclure globalement.
+Préciser acheteur et représentant, définition d'équipe facturable, rattachement au club, périmètre, prix HT/TTC et taxes, date de départ de gratuité et échéance, paiement, incidents, renouvellement et préavis, résiliation, support, responsabilité et sortie. Tarif décidé : 100 €/équipe/an dès souscription hors exception pilote, traitement TVA à préciser. Recommandation : passage du pilote au payant par acceptation expresse, sans prélèvement automatique à l'issue du pilote. Rétractation/garanties/médiation pour consommateurs et protections des non-professionnels à qualifier séparément : ne pas copier toutes les règles B2C aux associations ni les exclure globalement.
 
 ## 5. Registre initial des droits et licences
 
@@ -137,7 +141,7 @@ Gabarit du registre privé : ressource/empreinte, auteur/source, date acquisitio
 ## 7. Décisions et revue professionnelle
 
 À présenter par M00 sans bloquer la préparation documentaire :
-- Gratuité : A = 12 mois dès activation réelle (recommandation du plan) ; B = saison commune ; C = avantage pilote distinct. Fixer dates et traitement des pilotes.
+- Pilotes : A = deux mois gratuits pour une équipe adulte à 11 par club, troisième mois après accord (proposition M08) ; B = trois mois dès le départ (proposition M06) ; C = autre périmètre explicite. M00 doit fournir le détail du choix acquis, s'il existe ; ne pas interpréter un « 1A » isolé sans son questionnaire. Aucune année gratuite générale.
 - Mineurs : A = pilote réservé aux majeurs (réduit le périmètre, décision requise) ; B = mineurs avec parcours parental/image validé ; C = comptes responsables légaux à spécifier. Ne pas présumer A décidé.
 - Motif d'absence : A = supprimer/désactiver saisie libre et traiter copies (recommandé) ; B = maintien après analyse art. 6/9 ; C = reporter ce module après arbitrage produit. Aucun changement exécuté.
 
