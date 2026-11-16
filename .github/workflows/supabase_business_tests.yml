@@ -135,6 +135,9 @@ jobs:
           python3 supabase/tests/lint/check_db_lint.py supabase-db-lint.json \
             2>&1 | tee -a supabase-db-lint.log
 
+      - name: Verify calendar Edge access on isolated Supabase HTTP
+        run: python3 supabase/tests/edge/calendar_feed_http.py
+
       - name: Upload database diagnostics
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

@@ -61,5 +61,29 @@ Ce lot ne traite ni les autres RPC/Edge ni l'ensemble de l'audit sécurité.
 Aucune migration SQL, écriture de données, copie de données réelles,
 dépense, fusion ou publication. AS Grinta original et Carte soirée intacts.
 
+## Complément : essai HTTP réellement isolé à exécuter en CI
+
+La première CI complète de #157 a réussi sur
+`10688700fa23618c2698cf168b52f4cff4efd854`. Ce succès n'incluait pas encore
+l'essai HTTP ci-dessous ; ses nouveaux résultats doivent être vérifiés sur
+le nouveau SHA, sans réutiliser le vert du premier commit.
+
+`calendar_feed_http.py` démarre la vraie fonction avec la CLI sur la stack
+locale jetable de la CI, crée deux clubs et comptes fictifs et utilise les
+vrais endpoints Auth/Edge/PostgREST. Il vérifie GET, HEAD, redirection non
+suivie, suspension/réactivation du même jeton, maintien de l'accès au club B,
+profil inactif et révocation du jeton. Les matchs réels et appareils restent
+hors de cet essai (calendriers fictifs vides, identité de club contrôlée).
+
+Les cibles API/DB sont locales et fixes, validées avant toute écriture ; aucun
+argument cible ou secret n'est accepté. Les données et clés sont éphémères.
+La sortie brute de la CLI et les journaux Edge ne sont pas publiés. Les
+redirections ne sont jamais suivies vers un hébergeur public.
+
+Vérifications locales du complément : compilation Python et diff sans erreur ;
+trois tests existants de sécurité des cibles HTTP locaux réussis. Docker et
+Supabase CLI n'étant pas installés dans cette session, le résultat HTTP réel
+ne doit être déclaré réussi qu'après l'étape dédiée du nouveau run CI.
+
 Documentation vérifiée avant correction :
 [Supabase — RLS et clés de service](https://supabase.com/docs/guides/database/postgres/row-level-security).
