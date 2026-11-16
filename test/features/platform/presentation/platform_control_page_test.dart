@@ -141,6 +141,45 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
   });
+
+  testWidgets('signing out hides a loaded privileged snapshot immediately',
+      (tester) async {
+    final controller = _Controller();
+    await open(tester, controller: controller);
+    await tester.tap(find.byIcon(Icons.groups_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('Équipe Alpha'), findsOneWidget);
+    controller.signedOutForTest();
+    await tester.pump();
+    expect(find.text('Équipe Alpha'), findsNothing);
+    expect(find.text('Vérification de l’accès…'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('background hides private data and resume rechecks access',
+      (tester) async {
+    var revoked = false;
+    await open(tester, fetch: () async {
+      if (revoked) throw const PlatformAccessDenied();
+      return _snapshot;
+    });
+    await tester.tap(find.byIcon(Icons.groups_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('Équipe Alpha'), findsOneWidget);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+    expect(find.text('Équipe Alpha'), findsNothing);
+    revoked = true;
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+    expect(find.text('Accès gestionnaire requis'), findsOneWidget);
+    expect(find.text('Équipe Alpha'), findsNothing);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 }
 
 class _Controller extends AuthController {
@@ -151,6 +190,8 @@ class _Controller extends AuthController {
       needsClub: true,
     );
   }
+
+  void signedOutForTest() => state = const AuthState(isLoading: false);
 }
 
 class _Repository implements AuthRepository {

@@ -21,10 +21,11 @@ void main() {
 
   test('revocation between teams and health discards all data', () async {
     final repository = PlatformRepository((name) async {
-      if (name == 'platform_list_clubs')
+      if (name == 'platform_list_clubs') {
         return [
           {'id': 'a', 'name': 'Private team'},
         ];
+      }
       throw const PostgrestException(message: 'revoked', code: '42501');
     });
     await expectLater(repository.fetch(), throwsA(isA<PlatformAccessDenied>()));
@@ -34,10 +35,11 @@ void main() {
     'unavailable health is missing, never zero or globally healthy',
     () async {
       final repository = PlatformRepository((name) async {
-        if (name == 'platform_list_clubs')
+        if (name == 'platform_list_clubs') {
           return [
             {'id': 'a', 'name': 'Team'},
           ];
+        }
         throw const PostgrestException(message: 'source down', code: '42P01');
       });
       final snapshot = await repository.fetch();
