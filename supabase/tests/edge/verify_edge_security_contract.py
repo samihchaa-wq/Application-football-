@@ -335,6 +335,7 @@ def main() -> int:
         'from("calendar_subscriptions")',
         '.eq("token", token)',
         '.eq("profiles.status", "active")',
+        '.eq("clubs.status", "active")',
         'Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")',
         'from("matches")',
         'STATUS:CONFIRMED',
@@ -371,6 +372,12 @@ def main() -> int:
         '.eq("profiles.status", "active")',
         'from("matches")',
         "calendar-feed doit vérifier le profil actif avant de charger le calendrier",
+    )
+    require_in_order(
+        calendar,
+        '.eq("clubs.status", "active")',
+        'if (isBrowserNavigation(req))',
+        "calendar-feed doit vérifier le club actif avant toute redirection",
     )
 
     for slug in ("claim-account", "send-prediction-reminders"):

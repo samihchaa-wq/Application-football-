@@ -54,6 +54,14 @@ jobs:
         shell: bash
         run: python3 supabase/tests/edge/verify_edge_security_contract.py
 
+      - name: Setup Node for isolated calendar handler tests
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+
+      - name: Test calendar subscription access without network or secrets
+        run: node --test supabase/tests/edge/calendar_feed_security.test.mjs
+
       - name: Setup Deno
         uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2
         with:
