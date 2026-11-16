@@ -8,7 +8,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 class AuthSignInPage extends ConsumerStatefulWidget {
-  const AuthSignInPage({super.key});
+  const AuthSignInPage({super.key, this.managerAccess = false});
+
+  final bool managerAccess;
 
   @override
   ConsumerState<AuthSignInPage> createState() => _AuthSignInPageState();
@@ -55,7 +57,9 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
     final error = authState.error;
 
     return GrintaAuthSurface(
-      subtitle: 'L’application de gestion sportive de ton club.',
+      subtitle: widget.managerAccess
+          ? 'Accès réservé au gestionnaire Petit Filet.'
+          : 'L’application de gestion sportive de ton club.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -99,9 +103,8 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
                       ? Icons.visibility_outlined
                       : Icons.visibility_off_outlined,
                 ),
-                onPressed: () => setState(
-                  () => _obscurePassword = !_obscurePassword,
-                ),
+                onPressed: () =>
+                    setState(() => _obscurePassword = !_obscurePassword),
               ),
             ),
           ),
@@ -123,11 +126,30 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
             label: Text(authState.isLoading ? 'Connexion…' : 'Se connecter'),
           ),
           const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed:
-                authState.isLoading ? null : () => context.go('/auth/register'),
-            icon: const Icon(Icons.person_add_alt_outlined),
-            label: const Text('Créer mon compte'),
+          if (!widget.managerAccess)
+            OutlinedButton.icon(
+              onPressed: authState.isLoading
+                  ? null
+                  : () => context.go('/auth/register'),
+              icon: const Icon(Icons.person_add_alt_outlined),
+              label: const Text('Créer mon compte'),
+            ),
+          TextButton.icon(
+            onPressed: authState.isLoading
+                ? null
+                : () => context.go(
+                      widget.managerAccess
+                          ? '/auth/sign-in'
+                          : '/auth/sign-in?redirect=%2Fcontrol',
+                    ),
+            icon: Icon(
+              widget.managerAccess
+                  ? Icons.arrow_back
+                  : Icons.admin_panel_settings_outlined,
+            ),
+            label: Text(
+              widget.managerAccess ? 'Connexion équipe' : 'Espace gestionnaire',
+            ),
           ),
         ],
       ),

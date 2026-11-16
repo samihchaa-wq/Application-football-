@@ -32,6 +32,27 @@ String? resolveAuthRedirect({
     return _loadingRedirect(uri, location);
   }
 
+  // The console has its own server-side operator gate. A session with no
+  // team may reach that gate, never the team application through this branch.
+  // Neither needsClub nor an admin role grants platform rights.
+  final consoleRequested = location == '/control' ||
+      ((location == '/auth/sign-in' || location == '/auth/loading') &&
+          uri.queryParameters['redirect'] == '/control');
+  if (consoleRequested) {
+    if (!authState.hasSession) {
+      return location == '/auth/sign-in'
+          ? null
+          : '/auth/sign-in?redirect=%2Fcontrol';
+    }
+    if (authState.profile?.mustChangePassword == true) {
+      return '/auth/new-password';
+    }
+    if (authState.profile != null && !authState.profile!.isActive) {
+      return '/auth/loading';
+    }
+    return location == '/control' ? null : '/control';
+  }
+
   // Connecté mais sans club : seule l'étape « rejoindre ou créer
   // un club » est accessible.
   if (authState.needsClub) {
