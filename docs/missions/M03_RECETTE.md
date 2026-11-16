@@ -73,3 +73,11 @@ Priorité : recevoir le contrat M01 et les SHA M02 ; jouer S01 sur une préprodu
 **GO M03 uniquement** si toutes les fonctions promises ont un verdict explicite sur la version candidate, tous les parcours essentiels passent et aucun P0/P1 applicatif n'est ouvert. Les gates sécurité, conformité et exploitation restent sous M04/M07/M09. Pas de pourcentage de fiabilité ni de certification absolue.
 
 Livraison documentaire par branche/PR seulement. Aucun changement du code applicatif, des migrations, de main, des paramètres ou données Supabase ; aucune fusion, publication, dépense ou invitation. AS Grinta original et Carte soirée n'ont pas été consultés ni modifiés pendant cette mission. Aucun arbitrage propriétaire requis pour publier ce rapport.
+
+## Mise à jour de coordination — PR M02 #148 reçue après le premier relevé
+
+Correctif d’invitation relu sur `1de6c19f750ed7c20396129503db104d8b882ff1` : propagation route → formulaire et absence de rattachement automatique cohérentes par lecture. Tests directs/restauration/externe/widget écrits, mais **non validés**. [Revue M03 transmise dans #148](https://github.com/samihchaa-wq/Application-football-/pull/148#issuecomment-6907895211).
+
+**M03-B06 — blocage CI confirmé, responsable M02** : [Flutter CI 43808053225](https://github.com/samihchaa-wq/Application-football-/actions/runs/43808053225), job `133103239947`, échec de `Check formatting of all Dart files`. Analyse, tests avec couverture et build Web sont **skipped**. Ce n’est pas un test métier échoué : il n’a pas été exécuté. Corriger le formatage puis fournir le nouveau SHA avec CI réussie ; retest M03 NON EXÉCUTÉ. Runtime diagnostic et garde PR réussis ne lèvent pas ce blocage. La CI main antérieure ne couvre pas ce correctif.
+
+La nouvelle M02_IMPLEMENTATION annonce aussi une décision tarifaire plus récente : la partie commerciale du présent rapport reste une photographie de #147 initial ; M00/M06 sont responsables de sa version faisant autorité. Aucun prix n’est validé par M03.
