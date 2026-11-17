@@ -46,51 +46,51 @@ List<Widget> buildWrappedSlides({
     _OpeningSlide(skin: skins[0], wrapped: wrapped, playerName: playerName),
     if (WrappedStatOption.matches.enabledIn(statsMask))
       _FigureSlide(
-      skin: skins[1],
-      label: 'Matchs joués',
-      value: wrapped.matchesPlayed,
-      rank: wrapped.matchesPlayedRank,
-      caption: wrapped.matchesPlayed <= 1
-          ? 'Une feuille de match à ton nom.'
-          : 'Autant de fois où tu as répondu présent.',
-    ),
+        skin: skins[1],
+        label: 'Matchs joués',
+        value: wrapped.matchesPlayed,
+        rank: wrapped.matchesPlayedRank,
+        caption: wrapped.matchesPlayed <= 1
+            ? 'Une feuille de match à ton nom.'
+            : 'Autant de fois où tu as répondu présent.',
+      ),
     if (WrappedStatOption.results.enabledIn(statsMask))
       _ResultsSlide(skin: skins[2], wrapped: wrapped),
     if (WrappedStatOption.winRate.enabledIn(statsMask))
       _WinRateSlide(skin: skins[3], wrapped: wrapped),
     if (WrappedStatOption.goals.enabledIn(statsMask))
       _FigureSlide(
-      skin: skins[4],
-      label: 'Buts',
-      value: wrapped.goals,
-      rank: wrapped.goalsRank,
-      caption: switch (wrapped.goals) {
-        0 => 'Aucun cette saison. Le premier est pour la prochaine.',
-        1 => 'Un but, et il compte autant que les autres.',
-        _ => 'Inscrits cette saison, toutes compétitions confondues.',
-      },
-    ),
+        skin: skins[4],
+        label: 'Buts',
+        value: wrapped.goals,
+        rank: wrapped.goalsRank,
+        caption: switch (wrapped.goals) {
+          0 => 'Aucun cette saison. Le premier est pour la prochaine.',
+          1 => 'Un but, et il compte autant que les autres.',
+          _ => 'Inscrits cette saison, toutes compétitions confondues.',
+        },
+      ),
     if (WrappedStatOption.motm.enabledIn(statsMask))
       _FigureSlide(
-      skin: skins[5],
-      label: 'Homme du match',
-      value: wrapped.motm,
-      rank: wrapped.motmRank,
-      caption: wrapped.motm == 0
-          ? 'Le vote reste anonyme, comme toujours.'
-          : 'Élu par tes coéquipiers. Les bulletins restent secrets.',
-    ),
+        skin: skins[5],
+        label: 'Homme du match',
+        value: wrapped.motm,
+        rank: wrapped.motmRank,
+        caption: wrapped.motm == 0
+            ? 'Le vote reste anonyme, comme toujours.'
+            : 'Élu par tes coéquipiers. Les bulletins restent secrets.',
+      ),
     if (WrappedStatOption.cleanSheets.enabledIn(statsMask))
       _FigureSlide(
-      skin: skins[6],
-      label: 'Matchs sans encaisser',
-      value: wrapped.cleanMatches,
-      rank: wrapped.cleanMatchesRank,
-      caption: wrapped.cleanMatches == 0
-          ? 'L’équipe a encaissé à chacune de tes sorties.'
-          : 'Autant de matchs où la cage est restée inviolée, toi sur le '
-              'terrain.',
-    ),
+        skin: skins[6],
+        label: 'Matchs sans encaisser',
+        value: wrapped.cleanMatches,
+        rank: wrapped.cleanMatchesRank,
+        caption: wrapped.cleanMatches == 0
+            ? 'L’équipe a encaissé à chacune de tes sorties.'
+            : 'Autant de matchs où la cage est restée inviolée, toi sur le '
+                'terrain.',
+      ),
     if (WrappedStatOption.position.enabledIn(statsMask))
       _PositionSlide(skin: skins[7], wrapped: wrapped),
     if (WrappedStatOption.responsiveness.enabledIn(statsMask))
