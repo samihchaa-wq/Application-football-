@@ -125,6 +125,38 @@ select is(
   null::text, 'le type de rencontre inconnu est conservé à NULL'
 );
 
+
+select is(
+  (select matches_played from public.v_statistics_team
+   where period_key='all_time'),
+  3, 'les statistiques toutes saisons incluent les archives des saisons suivies'
+);
+
+-- Lot réaliste comparable aux 350 rencontres historiques évoquées.
+select pg_temp.as_profile('ab910000-0000-0000-0000-000000000001');
+set local role authenticated;
+select is(
+  (
+    select (public.admin_import_historical_matches(
+      pg_temp.doc(jsonb_agg(
+        pg_temp.match(
+          current_setting('test.bulk_date')::date - 400 - number,
+          'Volume 350 FC', 2
+        )
+      ))
+    ) ->> 'imported')::integer
+    from generate_series(1, 350) as number
+  ),
+  350, '350 matchs historiques s’importent en une seule opération'
+);
+reset role;
+select is(
+  (select count(*)::integer from public.historical_match_scores h
+   join public.opponents o on o.id = h.opponent_id
+   where o.name = 'Volume 350 FC'),
+  350, 'aucun match du lot de 350 n’a disparu'
+);
+
 -- Un match déjà saisi dans le calendrier normal ne doit jamais être doublé
 -- par une archive et fausser les statistiques.
 insert into public.opponents(name)
