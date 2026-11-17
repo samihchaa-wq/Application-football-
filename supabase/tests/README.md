@@ -31,7 +31,7 @@ La suite couvre notamment :
 - Effectif, Composition, Live et joueurs ajoutés tardivement ;
 - matchs entre nous ;
 - météo ;
-- finalisation et cycle HDM ancré sur la validation pendant 24 h ;
+- finalisation : ouverture du vote HDM après validation, clôture au coup d’envoi + durée du club (`motm_window_hours`, 24 h par défaut), et non validation + 24 h ;
 - ouverture **et résultat** HDM sous le contrat de notifications actuel ;
 - signaux Realtime partagés ;
 - statistiques, saisons et historique.
