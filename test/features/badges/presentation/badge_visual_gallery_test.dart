@@ -95,15 +95,20 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.byType(BadgeEmblemBody), findsNWidgets(14));
 
-    final boundary = tester.renderObject<RenderRepaintBoundary>(
-      find.byKey(boundaryKey),
-    );
-    final image = await boundary.toImage(pixelRatio: 1);
-    final png = await image.toByteData(format: ui.ImageByteFormat.png);
-    expect(png, isNotNull);
+    // La conversion PNG utilise le thread raster : exécution asynchrone
+    // réelle, et non l'horloge factice des tests widget.
+    final imageBytes = await tester.runAsync(() async {
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+        find.byKey(boundaryKey),
+      );
+      final image = await boundary.toImage(pixelRatio: 1);
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      return bytes;
+    });
+    expect(imageBytes, isNotNull);
     final file = File('badge-previews/quatorze_fonds_premium.png');
     await file.parent.create(recursive: true);
-    await file.writeAsBytes(png!.buffer.asUint8List());
-    image.dispose();
+    await file.writeAsBytes(imageBytes!.buffer.asUint8List());
   });
 }
