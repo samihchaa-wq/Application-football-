@@ -7,6 +7,7 @@ on:
       - 'assets/images/badge_backgrounds/**'
       - 'lib/features/badges/**'
       - 'test/features/badges/**'
+      - 'scripts/render_badge_gallery.py'
       - '.github/workflows/badges_visual_qa.yml'
 
 permissions:
@@ -15,23 +16,16 @@ permissions:
 jobs:
   gallery:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 5
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
-        with:
-          channel: stable
-          flutter-version: 3.47.9
-          cache: true
+      - name: Install image preview dependency
+        run: python3 -m pip install --disable-pip-version-check --no-cache-dir pillow==11.3.0
 
-      - name: Install locked dependencies
-        run: flutter pub get --enforce-lockfile
-
-      - name: Capture gallery
-        run: flutter test test/features/badges/presentation/badge_visual_gallery_test.dart --timeout 2m
+      - name: Render gallery from packaged assets
+        run: python3 scripts/render_badge_gallery.py
 
       - name: Upload gallery
         if: always()
