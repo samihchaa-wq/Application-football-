@@ -25,7 +25,7 @@ AS $function$
     ('prediction_reminder_lead_minutes', 'Rappel avant un match tôt',
      'Si le match commence avant l’heure du rappel, le rappel part ce nombre de minutes avant la fermeture des pronostics.',
      'min', 'Pronostics', 60, 15, 600, 45),
-    ('motm_window_hours', 'Durée du vote pour l’Homme du match',
+    ('motm_window_hours', 'Durée du vote de l’Homme du match',
      'Combien d’heures après le coup d’envoi le vote reste ouvert.',
      'h', 'Après le match', 24, 6, 168, 50),
     ('correction_window_hours', 'Délai de correction du résultat',
