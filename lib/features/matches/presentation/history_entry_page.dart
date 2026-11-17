@@ -4,6 +4,7 @@ import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
 import 'package:as_grinta/core/widgets/grinta_loader.dart';
 import 'package:as_grinta/features/matches/data/calendar_history_repository.dart';
 import 'package:as_grinta/features/matches/data/history_entry_repository.dart';
+import 'package:as_grinta/features/matches/presentation/history_import_page.dart';
 import 'package:as_grinta/features/matches/domain/history_match_draft.dart';
 import 'package:as_grinta/features/matches/presentation/widgets/match_wheel_picker.dart';
 import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
@@ -258,6 +259,16 @@ class _HistoryEntryPageState extends ConsumerState<HistoryEntryPage> {
                   style: theme.textTheme.bodySmall,
                 ),
               ],
+              OutlinedButton.icon(
+                key: const Key('history-open-import'),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const HistoryImportPage(),
+                  ),
+                ),
+                icon: const Icon(Icons.upload_file_outlined),
+                label: const Text('Importer plusieurs matchs depuis un fichier'),
+              ),
               const SizedBox(height: 12),
               _section(theme, 'Affiche', _posterFields(entryContext)),
               _section(theme, 'Score', [_scoreRow(theme)]),
