@@ -189,14 +189,14 @@ class _ModernMonthView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isAdmin = ref.watch(isAdminViewProvider);
-    final historical =
-        ref.watch(allHistoricalMatchesProvider).valueOrNull ??
-            const <HistoricalMatchResult>[];
+    final historical = ref.watch(allHistoricalMatchesProvider).valueOrNull ??
+        const <HistoricalMatchResult>[];
     final entries = <_ModernMonthEntry>[
       for (final match in matches)
         if (_sameMonth(match.kickoffAt, month)) _ModernMonthEntry.match(match),
       for (final archived in historical)
-        if (archived.seasonName == seasonName && _sameMonth(archived.date, month))
+        if (archived.seasonName == seasonName &&
+            _sameMonth(archived.date, month))
           _ModernMonthEntry.historical(archived),
       for (final event in events)
         if (_sameMonth(event.startsAt, month)) _ModernMonthEntry.event(event),
