@@ -35,7 +35,7 @@
 }
 ```
 
-`date`, `opponent`, `score_for`, `score_against` sont obligatoires. Scores en nombres entiers 0–99. Date ISO AAAA-MM-JJ. `is_home` est relatif à l'équipe qui importe ; `match_type` vaut `championnat` ou `amical`. Les listes de joueurs, `time`, `address` et `formation` sont facultatives. Une présence ne doit être ajoutée que si elle est justifiée par la source. Les compositions ne doivent pas être reconstruites sans preuve. Les noms doivent rester constants d'un match à l'autre.
+`date`, `opponent`, `score_for`, `score_against`, `is_home` et `match_type` sont obligatoires. Scores en nombres entiers 0–99. Date ISO AAAA-MM-JJ. `is_home` est relatif à l'équipe qui importe ; `match_type` vaut `championnat` ou `amical`. Les listes de joueurs, `time`, `address` et `formation` sont facultatives. Une présence ne doit être ajoutée que si elle est justifiée par la source. Les compositions ne doivent pas être reconstruites sans preuve. Les noms doivent rester constants d'un match à l'autre.
 
 ## Prompt à donner à l'IA du club
 
@@ -43,13 +43,13 @@
 >
 > Mon équipe s'appelle : [NOM DE L'ÉQUIPE].
 >
-> Utilise exclusivement les informations présentes dans mes documents. **N'invente jamais** de match, de date, de score, de joueur, de buteur, d'homme du match, de domicile/extérieur ou de composition. Si un match n'a pas de date, d'adversaire ou de score fiable, exclus-le du fichier et indique-le séparément.
+> Utilise exclusivement les informations présentes dans mes documents. **N'invente jamais** de match, de date, de score, de joueur, de buteur, d'homme du match, de domicile/extérieur ou de composition. Si un match n'a pas de date, d'adversaire, de score fiable, de statut domicile/extérieur ou de type de match connu, exclus-le du fichier et indique-le séparément.
 >
 > Le fichier de sortie doit être du JSON UTF-8 valide, sans commentaire ni balises Markdown, avec exactement un objet racine : `{"format":"petit-filet-historique","version":1,"matches":[...]}`.
 >
-> Pour chaque match, écris obligatoirement `date` au format AAAA-MM-JJ, `opponent` (adversaire seulement), `score_for` et `score_against` (nombres entiers du point de vue de mon équipe). Tu peux ajouter `is_home` (booléen), `match_type` (seulement `"championnat"` ou `"amical"`), `time` (`HH:MM`), `address`, `present` (tableau d'objets `{"name":"Prénom Nom"}`), `scorers` (`{"name":"Prénom Nom","goals":2}`), `motm` (`{"name":"Prénom Nom"}`), `formation`, `starters` et `bench`. Les compositions incluent uniquement les placements documentés ; chaque titulaire peut avoir `position_code`, `x_pct`, `y_pct` si connus.
+> Pour chaque match, écris obligatoirement `date` au format AAAA-MM-JJ, `opponent` (adversaire seulement), `score_for` et `score_against` (nombres entiers du point de vue de mon équipe). Tu dois ajouter `is_home` (booléen) et `match_type` (seulement `"championnat"` ou `"amical"`) ; tu peux ajouter `time` (`HH:MM`), `address`, `present` (tableau d'objets `{"name":"Prénom Nom"}`), `scorers` (`{"name":"Prénom Nom","goals":2}`), `motm` (`{"name":"Prénom Nom"}`), `formation`, `starters` et `bench`. Les compositions incluent uniquement les placements documentés ; chaque titulaire peut avoir `position_code`, `x_pct`, `y_pct` si connus.
 >
-> Si le lieu, l'heure, la liste des joueurs, les buteurs ou le mode domicile/extérieur sont inconnus, **omets les champs** concernés (ne les remplace pas par des approximations). Uniformise uniquement les variantes évidentes d'un même nom, sans fusionner les homonymes.
+> Si le lieu, l'heure, les listes de joueurs ou les buteurs sont inconnus, **omets les champs** concernés. Si le mode domicile/extérieur ou le type de match est inconnu, **exclus le match** et signale-le séparément : ils sont obligatoires. Uniformise uniquement les variantes évidentes d'un même nom, sans fusionner les homonymes.
 >
 > Regroupe les matchs en ordre chronologique, supprime uniquement les doublons strictement identiques, et signale séparément les dates, scores ou identités ambigus. N'insère aucune donnée personnelle non nécessaire (e-mail, téléphone, adresse personnelle, identifiant de compte, commentaire privé). Le résultat doit pouvoir être enregistré tel quel sous `historique_petit_filet.json`.
 
