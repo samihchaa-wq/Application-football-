@@ -154,12 +154,12 @@ set local role authenticated;
 select lives_ok(
   $$select public.admin_set_waitlist_manual_count(
     'f5840000-0000-0000-0000-000000000001', 2
-  )$, 'l admin credite Alice'
+  )$$, 'l admin credite Alice'
 );
 select lives_ok(
   $$select public.admin_set_waitlist_manual_count(
     'f5840000-0000-0000-0000-000000000002', 2
-  )$, 'l admin credite Bruno'
+  )$$, 'l admin credite Bruno'
 );
 reset role;
 select is(
@@ -276,7 +276,7 @@ set local role authenticated;
 select lives_ok(
   $$select public.admin_set_waitlist_manual_count(
     'f5840000-0000-0000-0000-000000000004', 2
-  )$, 'l admin ajoute un +1 a Damien'
+  )$$, 'l admin ajoute un +1 a Damien'
 );
 reset role;
 select is(
