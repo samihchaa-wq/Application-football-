@@ -83,6 +83,16 @@ void main() {
     expect(isMatchLiveTooEarly(kickoff, now: during), isFalse);
   });
 
+  test('les +1 restent comptés indépendamment de leur priorité', () {
+    expect(ClubRules.waitlistPriorityEnabled, isTrue);
+    ClubRules.set({ClubRules.waitlistPriorityEnabledKey: 0});
+    expect(ClubRules.waitlistPriorityEnabled, isFalse);
+    ClubRules.set({ClubRules.waitlistPriorityEnabledKey: 1});
+    expect(ClubRules.waitlistPriorityEnabled, isTrue);
+    ClubRules.reset();
+    expect(ClubRules.waitlistPriorityEnabled, isTrue);
+  });
+
   test('le mode de liste d’attente suit le réglage du club', () {
     expect(ClubRules.waitlistMode, WaitlistMode.lastSeasonAttendance);
     ClubRules.set({ClubRules.waitlistModeKey: 1});

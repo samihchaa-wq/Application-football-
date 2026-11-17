@@ -117,6 +117,37 @@ select is(pg_temp.effectif(current_setting('test.match')::uuid),
   'Alice convoked / Bruno convoked / Chloé not_convoked / Damien not_convoked',
   'ordre d’arrivée : les deux premiers à répondre sont convoqués');
 
+-- Le compteur continue toujours de vivre ; seule sa PRIORITÉ est optionnelle.
+-- Damien répond en dernier mais possède 3 crédits : case ON => il passe.
+update public.sport_waitlist_entries
+set manual_waitlist_count = 3
+where season_player_id = 'f5840000-0000-0000-0000-000000000004';
+select private.recompute_match_convocations_internal(current_setting('test.match')::uuid, false);
+select is(pg_temp.effectif(current_setting('test.match')::uuid),
+  'Alice convoked / Bruno not_convoked / Chloé not_convoked / Damien convoked',
+  'option ON : le +1 permet au joueur arrivé en dernier de passer');
+
+select pg_temp.as_admin();
+set local role authenticated;
+select public.admin_set_club_rule('waitlist_priority_enabled', 0);
+reset role;
+select private.recompute_match_convocations_internal(current_setting('test.match')::uuid, false);
+select is(pg_temp.effectif(current_setting('test.match')::uuid),
+  'Alice convoked / Bruno convoked / Chloé not_convoked / Damien not_convoked',
+  'option OFF : strict ordre de réponse malgré les +1 existants');
+select is((select manual_waitlist_count from public.sport_waitlist_entries
+  where season_player_id='f5840000-0000-0000-0000-000000000004'),
+  3, 'option OFF : les +1 restent intégralement enregistrés');
+
+-- Restaurer le scénario existant, sans perte de crédits historiques par migration.
+select pg_temp.as_admin();
+set local role authenticated;
+select public.admin_set_club_rule('waitlist_priority_enabled', 1);
+reset role;
+update public.sport_waitlist_entries set manual_waitlist_count = 0
+where season_player_id='f5840000-0000-0000-0000-000000000004';
+select private.recompute_match_convocations_internal(current_setting('test.match')::uuid, false);
+
 select pg_temp.as_admin();
 set local role authenticated;
 select is(

@@ -270,7 +270,7 @@ void main() {
     await pumpPage(tester);
     await openSection(tester, 'squad');
 
-    expect(find.text('Par présence l’an dernier'), findsOneWidget);
+    expect(find.text('Historique'), findsOneWidget);
     // Pas de compteur +/- pour ce réglage.
     expect(
       find.byKey(const ValueKey('club-rule-waitlist_mode-plus')),
@@ -289,7 +289,39 @@ void main() {
     expect(ClubRules.waitlistMode, WaitlistMode.arrivalOrder);
   });
 
-  testWidgets('les +1 sont manuels et les anciens créneaux sont masqués', (
+  testWidgets('la priorité des +1 se règle indépendamment des modes', (
+    tester,
+  ) async {
+    repository.ruleValues.addAll({
+      'waitlist_mode': 0,
+      'waitlist_priority_enabled': 1,
+    });
+    repository.templates['waitlist_priority_enabled'] = const ClubRule(
+      key: 'waitlist_priority_enabled',
+      label: 'Priorité des +1',
+      description: 'Prendre en compte les crédits dans les convocations.',
+      unit: 'bool',
+      group: 'Liste d’attente',
+      defaultValue: 1,
+      min: 0,
+      max: 1,
+      value: 1,
+    );
+    await pumpPage(tester);
+    await openSection(tester, 'squad');
+    final toggle = find.byKey(
+      const ValueKey('club-rule-waitlist_priority_enabled'),
+    );
+    expect(toggle, findsOneWidget);
+    await tester.ensureVisible(toggle);
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(repository.ruleValues['waitlist_priority_enabled'], 0);
+    expect(ClubRules.waitlistPriorityEnabled, isFalse);
+    expect(ClubRules.waitlistMode, WaitlistMode.lastSeasonAttendance);
+  });
+
+  testWidgets('les +1 sont automatiques et les anciens créneaux sont masqués', (
     tester,
   ) async {
     repository.ruleValues.addAll({
@@ -300,13 +332,12 @@ void main() {
     await pumpPage(tester);
     await openSection(tester, 'squad');
 
-    expect(find.textContaining('Seuls les administrateurs'), findsNothing);
+    expect(find.textContaining('Au coup d’envoi'), findsNothing);
     await tester.tap(
       find.byKey(const ValueKey('club-info-rule-waitlist_mode')),
     );
     await tester.pumpAndSettle();
-    expect(find.textContaining('Seuls les administrateurs'), findsOneWidget);
-    expect(find.textContaining('Au coup d’envoi'), findsNothing);
+    expect(find.textContaining('Au coup d’envoi'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('club-rule-waitlist_cutoff_days')),
       findsNothing,

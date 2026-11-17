@@ -198,6 +198,17 @@ class MatchLineupPage extends ConsumerWidget {
                         matchId: matchId,
                         showAfterComposition: true,
                       ),
+                    if (showEffectif)
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton.icon(
+                          key: const ValueKey(
+                              'match-effectif-waitlist-readonly'),
+                          onPressed: () => context.push('/waitlist'),
+                          icon: const Icon(Icons.format_list_numbered),
+                          label: const Text('Voir la liste d’attente'),
+                        ),
+                      ),
                     if (showComposition && isInternal)
                       InternalTeamCompositionView(
                         matchId: matchId,
