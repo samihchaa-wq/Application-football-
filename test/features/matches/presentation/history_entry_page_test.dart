@@ -71,7 +71,7 @@ void main() {
       matching: find.byIcon(Icons.add_circle_outline),
     );
     await reveal(tester, scorePlus);
-    await tester.drag(find.byType(ListView), const Offset(0, -120));
+    await tester.drag(find.byType(ListView).first, const Offset(0, -120));
     await tester.pumpAndSettle();
     await tester.tap(scorePlus);
     await tester.pumpAndSettle();
