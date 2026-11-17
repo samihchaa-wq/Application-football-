@@ -128,7 +128,7 @@ class NotificationSettingsView extends ConsumerWidget {
             SizedBox(height: 12),
             _OptionalNotificationsCard(),
             _NotificationActionsRow(),
-            _AdminKillSwitchCard(),
+            _AdminResumeNotificationsCard(),
           ],
         ),
       ),
@@ -575,103 +575,80 @@ class _TestPushButtonState extends ConsumerState<_TestPushButton> {
   }
 }
 
-final notificationsPausedProvider = FutureProvider.autoDispose<bool>((
-  ref,
-) async {
+/// Conserve une porte de sortie pour un club dont les notifications étaient
+/// déjà en pause, sans réintroduire la commande permettant de tout couper.
+final notificationsPausedProvider =
+    FutureProvider.autoDispose<bool>((ref) async {
   final response = await ref
       .read(supabaseClientProvider)
       .rpc('admin_get_notifications_paused');
-  final map = Map<String, dynamic>.from(response as Map);
+  final data = Map<String, dynamic>.from(response as Map);
   final flag = Map<String, dynamic>.from(
-    map['notifications_paused'] as Map? ?? const {},
+    data['notifications_paused'] as Map? ?? const {},
   );
   return flag['enabled'] == true;
 });
 
-/// Coupe (`true`) ou rétablit (`false`) les notifications de tout le club.
-/// Réservé aux administrateurs, vérifié par le serveur.
 final setNotificationsPausedProvider =
-    Provider<Future<void> Function(bool enable)>((ref) {
-  return (enable) async {
-    await ref
-        .read(supabaseClientProvider)
-        .rpc('admin_set_notifications_paused', params: {'p_enabled': enable});
-  };
-});
+    Provider<Future<void> Function(bool)>((ref) => (enabled) async {
+          await ref.read(supabaseClientProvider).rpc(
+            'admin_set_notifications_paused',
+            params: {'p_enabled': enabled},
+          );
+        });
 
-class _AdminKillSwitchCard extends ConsumerStatefulWidget {
-  const _AdminKillSwitchCard();
+class _AdminResumeNotificationsCard extends ConsumerStatefulWidget {
+  const _AdminResumeNotificationsCard();
 
   @override
-  ConsumerState<_AdminKillSwitchCard> createState() =>
-      _AdminKillSwitchCardState();
+  ConsumerState<_AdminResumeNotificationsCard> createState() =>
+      _AdminResumeNotificationsCardState();
 }
 
-class _AdminKillSwitchCardState extends ConsumerState<_AdminKillSwitchCard> {
-  bool _updating = false;
+class _AdminResumeNotificationsCardState
+    extends ConsumerState<_AdminResumeNotificationsCard> {
+  bool _busy = false;
 
-  Future<void> _toggle(bool enable) async {
-    // Couper les notifications agit pour tout le club : un appui accidentel
-    // ne doit pas suffire. La réactivation, elle, reste immédiate.
-    if (enable && !await _confirmPause()) return;
-    if (!mounted) return;
-    setState(() => _updating = true);
-    var message = enable
-        ? 'Toutes les notifications sont désactivées.'
-        : 'Les notifications sont réactivées.';
+  Future<void> _resume() async {
+    setState(() => _busy = true);
     try {
-      await ref.read(setNotificationsPausedProvider)(enable);
+      await ref.read(setNotificationsPausedProvider)(false);
       ref.invalidate(notificationsPausedProvider);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Notifications du club réactivées.')),
+        );
+      }
     } catch (_) {
-      message = 'Impossible de modifier ce réglage.';
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Impossible de réactiver les notifications.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
-    if (!mounted) return;
-    setState(() => _updating = false);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  Future<bool> _confirmPause() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Désactiver toutes les notifications ?'),
-        content: const Text(
-          'Plus aucune notification ne partira, pour aucun membre du club, '
-          'jusqu’à la réactivation.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Annuler'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Tout désactiver'),
-          ),
-        ],
-      ),
-    );
-    return confirmed == true;
   }
 
   @override
   Widget build(BuildContext context) {
     if (!ref.watch(isAdminViewProvider)) return const SizedBox.shrink();
-    final pausedAsync = ref.watch(notificationsPausedProvider);
-    final paused = pausedAsync.valueOrNull ?? false;
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 12),
-      child: Card(
-        color: paused ? const Color(0xFF3A1F22) : null,
-        child: SwitchListTile.adaptive(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-          title: const Text('Désactiver toutes les notifications'),
-          value: paused,
-          onChanged: (_updating || pausedAsync.isLoading)
-              ? null
-              : (value) => _toggle(value),
+    final paused = ref.watch(notificationsPausedProvider).valueOrNull;
+    if (paused != true) return const SizedBox.shrink();
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text('Les notifications du club sont en pause.'),
+            const SizedBox(height: 8),
+            FilledButton(
+              onPressed: _busy ? null : _resume,
+              child: const Text('Réactiver les notifications du club'),
+            ),
+          ],
         ),
       ),
     );
