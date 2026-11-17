@@ -10,11 +10,11 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
   rangés sous elle dans « Réglages du club ». Douze notifications se coupent
   une par une pour tout le club (disponibilités, relances, convocation,
   composition, match annulé ou déplacé, coup d'envoi et fin, buts, rappel de
-  pronostic, vote et résultat de l'Étoile du match, badges, nouvelle
+  pronostic, vote et résultat de l'Homme du match, badges, nouvelle
   inscription) ; le calcul des cotes se règle (sans cotes, poids du nul,
   mémoire de la forme et des confrontations) et les matchs à venir sont
   recalculés aussitôt ; durée d'un match ; pilotage du direct ouvert aux
-  administrateurs ; vote pour soi-même à l'Étoile du match ; musique du bilan
+  administrateurs ; vote pour soi-même à l'Homme du match ; musique du bilan
   de saison. Sans réglage, tout reste comme avant. Un réglage dont la
   fonctionnalité est désactivée reste visible, grisé ;
 - l'heure d'ouverture affichée (pronostics, lancement des convocations) suit

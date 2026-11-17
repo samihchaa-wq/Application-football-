@@ -246,7 +246,7 @@ void main() {
         'VICTOIRES',
         'BUTS',
         'PASSES D.',
-        'ÉTOILE DU MATCH',
+        'HOMME DU MATCH',
         'BUTS / MATCH',
       ];
       final positions = [
@@ -362,7 +362,7 @@ void main() {
 
       // Personne n'a de passe ni de HDM : aucun « 1er du club » à la clé.
       final hdmTile = find.ancestor(
-        of: find.text('ÉTOILE DU MATCH'),
+        of: find.text('HOMME DU MATCH'),
         matching: find.byType(Column),
       );
       expect(

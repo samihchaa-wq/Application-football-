@@ -73,7 +73,7 @@ Extraction de code, aucun essai écran ; chaque ligne porte « Non vérifié ».
 | UI-21-067 | `lib/features/more/presentation/more_page.dart:284` | onTap | à identifier à l'écran | Non vérifié |
 | UI-21-068 | `lib/features/more/presentation/more_page.dart:400` | onTap | à identifier à l'écran | Non vérifié |
 | UI-21-069 | `lib/features/notifications/presentation/notifications_page.dart:207` | onChanged | Rappel pronostic | Non vérifié |
-| UI-21-070 | `lib/features/notifications/presentation/notifications_page.dart:217` | onChanged | Vote de l’Étoile du match | Non vérifié |
+| UI-21-070 | `lib/features/notifications/presentation/notifications_page.dart:217` | onChanged | Vote de l’Homme du match | Non vérifié |
 | UI-21-071 | `lib/features/notifications/presentation/notifications_page.dart:226` | onChanged | Composition en ligne | Non vérifié |
 | UI-21-072 | `lib/features/notifications/presentation/notifications_page.dart:236` | onChanged | Badge débloqué | Non vérifié |
 | UI-21-073 | `lib/features/notifications/presentation/notifications_page.dart:336` | onPressed | à identifier à l'écran | Non vérifié |

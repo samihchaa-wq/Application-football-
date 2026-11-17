@@ -54,7 +54,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M01-T06 | M01 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M01-T07 | M01 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M01-T08 | M01 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M01-T09 | M01 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M01-T09 | M01 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M01-T10 | M01 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M01-T11 | M01 | Notifications on/off | **NON VÉRIFIÉ** |
 | M02-T01 | M02 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -65,7 +65,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M02-T06 | M02 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M02-T07 | M02 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M02-T08 | M02 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M02-T09 | M02 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M02-T09 | M02 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M02-T10 | M02 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M02-T11 | M02 | Notifications on/off | **NON VÉRIFIÉ** |
 | M03-T01 | M03 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -76,7 +76,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M03-T06 | M03 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M03-T07 | M03 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M03-T08 | M03 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M03-T09 | M03 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M03-T09 | M03 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M03-T10 | M03 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M03-T11 | M03 | Notifications on/off | **NON VÉRIFIÉ** |
 | M04-T01 | M04 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -87,7 +87,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M04-T06 | M04 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M04-T07 | M04 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M04-T08 | M04 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M04-T09 | M04 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M04-T09 | M04 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M04-T10 | M04 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M04-T11 | M04 | Notifications on/off | **NON VÉRIFIÉ** |
 | M05-T01 | M05 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -98,7 +98,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M05-T06 | M05 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M05-T07 | M05 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M05-T08 | M05 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M05-T09 | M05 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M05-T09 | M05 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M05-T10 | M05 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M05-T11 | M05 | Notifications on/off | **NON VÉRIFIÉ** |
 | M06-T01 | M06 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -109,7 +109,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M06-T06 | M06 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M06-T07 | M06 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M06-T08 | M06 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M06-T09 | M06 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M06-T09 | M06 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M06-T10 | M06 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M06-T11 | M06 | Notifications on/off | **NON VÉRIFIÉ** |
 | M07-T01 | M07 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -120,7 +120,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M07-T06 | M07 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M07-T07 | M07 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M07-T08 | M07 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M07-T09 | M07 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M07-T09 | M07 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M07-T10 | M07 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M07-T11 | M07 | Notifications on/off | **NON VÉRIFIÉ** |
 | M08-T01 | M08 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -131,7 +131,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M08-T06 | M08 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M08-T07 | M08 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M08-T08 | M08 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M08-T09 | M08 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M08-T09 | M08 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M08-T10 | M08 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M08-T11 | M08 | Notifications on/off | **NON VÉRIFIÉ** |
 | M09-T01 | M09 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -142,7 +142,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M09-T06 | M09 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M09-T07 | M09 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M09-T08 | M09 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M09-T09 | M09 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M09-T09 | M09 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M09-T10 | M09 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M09-T11 | M09 | Notifications on/off | **NON VÉRIFIÉ** |
 | M10-T01 | M10 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -153,7 +153,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M10-T06 | M10 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M10-T07 | M10 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M10-T08 | M10 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M10-T09 | M10 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M10-T09 | M10 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M10-T10 | M10 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M10-T11 | M10 | Notifications on/off | **NON VÉRIFIÉ** |
 | M11-T01 | M11 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -164,7 +164,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M11-T06 | M11 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M11-T07 | M11 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M11-T08 | M11 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M11-T09 | M11 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M11-T09 | M11 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M11-T10 | M11 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M11-T11 | M11 | Notifications on/off | **NON VÉRIFIÉ** |
 | M12-T01 | M12 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -175,7 +175,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M12-T06 | M12 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M12-T07 | M12 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M12-T08 | M12 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M12-T09 | M12 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M12-T09 | M12 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M12-T10 | M12 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M12-T11 | M12 | Notifications on/off | **NON VÉRIFIÉ** |
 | M13-T01 | M13 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -186,7 +186,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M13-T06 | M13 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M13-T07 | M13 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M13-T08 | M13 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M13-T09 | M13 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M13-T09 | M13 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M13-T10 | M13 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M13-T11 | M13 | Notifications on/off | **NON VÉRIFIÉ** |
 | M14-T01 | M14 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -197,7 +197,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M14-T06 | M14 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M14-T07 | M14 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M14-T08 | M14 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M14-T09 | M14 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M14-T09 | M14 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M14-T10 | M14 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M14-T11 | M14 | Notifications on/off | **NON VÉRIFIÉ** |
 | M15-T01 | M15 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -208,7 +208,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M15-T06 | M15 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M15-T07 | M15 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M15-T08 | M15 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M15-T09 | M15 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M15-T09 | M15 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M15-T10 | M15 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M15-T11 | M15 | Notifications on/off | **NON VÉRIFIÉ** |
 | M16-T01 | M16 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -219,7 +219,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M16-T06 | M16 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M16-T07 | M16 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M16-T08 | M16 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M16-T09 | M16 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M16-T09 | M16 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M16-T10 | M16 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M16-T11 | M16 | Notifications on/off | **NON VÉRIFIÉ** |
 | M17-T01 | M17 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -230,7 +230,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M17-T06 | M17 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M17-T07 | M17 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M17-T08 | M17 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M17-T09 | M17 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M17-T09 | M17 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M17-T10 | M17 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M17-T11 | M17 | Notifications on/off | **NON VÉRIFIÉ** |
 | M18-T01 | M18 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -241,7 +241,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M18-T06 | M18 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M18-T07 | M18 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M18-T08 | M18 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M18-T09 | M18 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M18-T09 | M18 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M18-T10 | M18 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M18-T11 | M18 | Notifications on/off | **NON VÉRIFIÉ** |
 | M19-T01 | M19 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -252,7 +252,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M19-T06 | M19 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M19-T07 | M19 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M19-T08 | M19 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M19-T09 | M19 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M19-T09 | M19 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M19-T10 | M19 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M19-T11 | M19 | Notifications on/off | **NON VÉRIFIÉ** |
 | M20-T01 | M20 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -263,7 +263,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M20-T06 | M20 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M20-T07 | M20 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M20-T08 | M20 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M20-T09 | M20 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M20-T09 | M20 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M20-T10 | M20 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M20-T11 | M20 | Notifications on/off | **NON VÉRIFIÉ** |
 | M21-T01 | M21 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -274,7 +274,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M21-T06 | M21 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M21-T07 | M21 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M21-T08 | M21 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M21-T09 | M21 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M21-T09 | M21 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M21-T10 | M21 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M21-T11 | M21 | Notifications on/off | **NON VÉRIFIÉ** |
 | M22-T01 | M22 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -285,7 +285,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M22-T06 | M22 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M22-T07 | M22 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M22-T08 | M22 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M22-T09 | M22 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M22-T09 | M22 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M22-T10 | M22 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M22-T11 | M22 | Notifications on/off | **NON VÉRIFIÉ** |
 | M23-T01 | M23 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -296,7 +296,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M23-T06 | M23 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M23-T07 | M23 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M23-T08 | M23 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M23-T09 | M23 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M23-T09 | M23 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M23-T10 | M23 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M23-T11 | M23 | Notifications on/off | **NON VÉRIFIÉ** |
 | M24-T01 | M24 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -307,7 +307,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M24-T06 | M24 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M24-T07 | M24 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M24-T08 | M24 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M24-T09 | M24 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M24-T09 | M24 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M24-T10 | M24 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M24-T11 | M24 | Notifications on/off | **NON VÉRIFIÉ** |
 | M25-T01 | M25 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -318,7 +318,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M25-T06 | M25 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M25-T07 | M25 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M25-T08 | M25 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M25-T09 | M25 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M25-T09 | M25 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M25-T10 | M25 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M25-T11 | M25 | Notifications on/off | **NON VÉRIFIÉ** |
 | M26-T01 | M26 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -329,7 +329,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M26-T06 | M26 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M26-T07 | M26 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M26-T08 | M26 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M26-T09 | M26 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M26-T09 | M26 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M26-T10 | M26 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M26-T11 | M26 | Notifications on/off | **NON VÉRIFIÉ** |
 | M27-T01 | M27 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -340,7 +340,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M27-T06 | M27 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M27-T07 | M27 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M27-T08 | M27 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M27-T09 | M27 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M27-T09 | M27 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M27-T10 | M27 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M27-T11 | M27 | Notifications on/off | **NON VÉRIFIÉ** |
 | M28-T01 | M28 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -351,7 +351,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M28-T06 | M28 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M28-T07 | M28 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M28-T08 | M28 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M28-T09 | M28 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M28-T09 | M28 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M28-T10 | M28 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M28-T11 | M28 | Notifications on/off | **NON VÉRIFIÉ** |
 | M29-T01 | M29 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -362,7 +362,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M29-T06 | M29 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M29-T07 | M29 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M29-T08 | M29 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M29-T09 | M29 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M29-T09 | M29 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M29-T10 | M29 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M29-T11 | M29 | Notifications on/off | **NON VÉRIFIÉ** |
 | M30-T01 | M30 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -373,7 +373,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M30-T06 | M30 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M30-T07 | M30 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M30-T08 | M30 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M30-T09 | M30 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M30-T09 | M30 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M30-T10 | M30 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M30-T11 | M30 | Notifications on/off | **NON VÉRIFIÉ** |
 | M31-T01 | M31 | Création, modification, report/annulation | **NON VÉRIFIÉ** |
@@ -384,7 +384,7 @@ La colonne résultat indique une absence de test, jamais un succès supposé. Po
 | M31-T06 | M31 | Pronostics et barème/cotes | **NON VÉRIFIÉ** |
 | M31-T07 | M31 | Live coach/admin et corrections | **NON VÉRIFIÉ** |
 | M31-T08 | M31 | Résultat, buteurs, correction horaire | **NON VÉRIFIÉ** |
-| M31-T09 | M31 | Étoile du match, égalité et clôture | **NON VÉRIFIÉ** |
+| M31-T09 | M31 | Homme du match, égalité et clôture | **NON VÉRIFIÉ** |
 | M31-T10 | M31 | Statistiques, badges, calculs indépendants | **NON VÉRIFIÉ** |
 | M31-T11 | M31 | Notifications on/off | **NON VÉRIFIÉ** |
 

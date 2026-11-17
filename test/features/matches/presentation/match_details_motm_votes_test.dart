@@ -162,13 +162,13 @@ void main() {
       }),
     );
 
-    expect(find.text('Votes de l’Étoile du match'), findsOneWidget);
+    expect(find.text('Votes de l’Homme du match'), findsOneWidget);
     // Fermé à l'ouverture de la fiche : le classement s'affiche au toucher.
     expect(find.text('4 voix'), findsNothing);
-    await tester.tap(find.text('Votes de l’Étoile du match'));
+    await tester.tap(find.text('Votes de l’Homme du match'));
     await tester.pumpAndSettle();
     final card = find.ancestor(
-      of: find.text('Votes de l’Étoile du match'),
+      of: find.text('Votes de l’Homme du match'),
       matching: find.byType(Card),
     );
     Finder inCard(Finder finder) => find.descendant(of: card, matching: finder);
@@ -324,7 +324,7 @@ void main() {
   testWidgets('Votes HDM stays hidden while the vote is open', (tester) async {
     await _pump(tester, _vote('open', [_candidate('a', 'Alice', null)]));
 
-    expect(find.text('Votes de l’Étoile du match'), findsNothing);
+    expect(find.text('Votes de l’Homme du match'), findsNothing);
   });
 }
 

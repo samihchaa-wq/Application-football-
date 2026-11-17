@@ -92,7 +92,7 @@ class _SportMotmVotePageState extends ConsumerState<SportMotmVotePage> {
     final voteAsync = ref.watch(sportMotmVoteProvider(widget.matchId));
 
     return Scaffold(
-      appBar: GrintaAppBar(title: const Text('Étoile du match')),
+      appBar: GrintaAppBar(title: const Text('Homme du match')),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(sportMotmVoteProvider(widget.matchId));
@@ -175,7 +175,7 @@ class _SportMotmVotePageState extends ConsumerState<SportMotmVotePage> {
             )
           else ...[
             Text(
-              'Choisis l’Étoile du match',
+              'Choisis l’Homme du match',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 6),
@@ -231,7 +231,7 @@ class _SportMotmVotePageState extends ConsumerState<SportMotmVotePage> {
             icon: Icons.cancel_outlined,
             title: 'Scrutin annulé',
             message:
-                'Aucune Étoile du match collective n’est attribuée pour le moment.',
+                'Aucun Homme du match collectif n’est attribué pour le moment.',
           ),
         ] else ...[
           const _MessageCard(
@@ -272,8 +272,7 @@ class MatchMotmVoteCard extends ConsumerWidget {
         child: const Card(
           child: ListTile(
             leading: Icon(Icons.error_outline),
-            title:
-                Text('Vote de l’Étoile du match momentanément indisponible.'),
+            title: Text('Vote de l’Homme du match momentanément indisponible.'),
           ),
         ),
       ),
@@ -287,21 +286,19 @@ class MatchMotmVoteCard extends ConsumerWidget {
         final (icon, title, subtitle) = switch (vote.state) {
           SportMotmVoteState.open when vote.hasVoted => (
               Icons.lock_outline,
-              'Vote de l’Étoile du match enregistré',
+              'Vote de l’Homme du match enregistré',
               'Résultats révélés après la clôture.',
             ),
           SportMotmVoteState.open => (
               Icons.how_to_vote_outlined,
-              'Vote de l’Étoile du match ouvert',
+              'Vote de l’Homme du match ouvert',
               vote.canVote
                   ? 'Ton vote est attendu avant la clôture.'
                   : 'Consulte le scrutin en cours.',
             ),
           SportMotmVoteState.closed => (
               Icons.emoji_events_outlined,
-              vote.winners.length > 1
-                  ? 'Co-Étoiles du match'
-                  : 'Étoile du match',
+              vote.winners.length > 1 ? 'Co-Hommes du match' : 'Homme du match',
               vote.winners.isEmpty
                   ? 'Aucun vote exprimé.'
                   : vote.winners
@@ -310,12 +307,12 @@ class MatchMotmVoteCard extends ConsumerWidget {
             ),
           SportMotmVoteState.cancelled => (
               Icons.cancel_outlined,
-              'Vote de l’Étoile du match annulé',
+              'Vote de l’Homme du match annulé',
               'Aucun résultat collectif.',
             ),
           _ => (
               Icons.schedule_outlined,
-              'Vote de l’Étoile du match en préparation',
+              'Vote de l’Homme du match en préparation',
               'Le scrutin sera disponible prochainement.',
             ),
         };
@@ -408,7 +405,7 @@ class _Results extends StatelessWidget {
         if (ranked.isEmpty)
           const _MessageCard(
             icon: Icons.how_to_vote_outlined,
-            title: 'Étoile du match',
+            title: 'Homme du match',
             message: 'Aucun vote exprimé.',
           ),
         for (final candidate in ranked)
