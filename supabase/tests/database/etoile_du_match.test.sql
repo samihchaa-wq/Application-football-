@@ -42,7 +42,7 @@ select is(
 
 select is(
   (select count(*) from private.badge_templates
-   where name in ('Homme fort', 'Joueur décisif', 'Roi du match',
+   where (name in ('Homme fort', 'Joueur décisif', 'Roi du match',
                   'Joueur de la saison', 'Monsieur Présent', 'Monsieur Victoire',
                   'Meilleur buteur', 'Meilleur passeur', 'Président')
       or description ~* '[Éé]toiles? du match')
