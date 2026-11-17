@@ -577,8 +577,10 @@ class _TestPushButtonState extends ConsumerState<_TestPushButton> {
 
 /// Conserve une porte de sortie pour un club dont les notifications étaient
 /// déjà en pause, sans réintroduire la commande permettant de tout couper.
-final notificationsPausedProvider = FutureProvider.autoDispose<bool>((ref) async {
-  final response = await ref.read(supabaseClientProvider)
+final notificationsPausedProvider =
+    FutureProvider.autoDispose<bool>((ref) async {
+  final response = await ref
+      .read(supabaseClientProvider)
       .rpc('admin_get_notifications_paused');
   final data = Map<String, dynamic>.from(response as Map);
   final flag = Map<String, dynamic>.from(
@@ -589,11 +591,11 @@ final notificationsPausedProvider = FutureProvider.autoDispose<bool>((ref) async
 
 final setNotificationsPausedProvider =
     Provider<Future<void> Function(bool)>((ref) => (enabled) async {
-      await ref.read(supabaseClientProvider).rpc(
-        'admin_set_notifications_paused',
-        params: {'p_enabled': enabled},
-      );
-    });
+          await ref.read(supabaseClientProvider).rpc(
+            'admin_set_notifications_paused',
+            params: {'p_enabled': enabled},
+          );
+        });
 
 class _AdminResumeNotificationsCard extends ConsumerStatefulWidget {
   const _AdminResumeNotificationsCard();
@@ -620,7 +622,8 @@ class _AdminResumeNotificationsCardState
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Impossible de réactiver les notifications.')),
+          const SnackBar(
+              content: Text('Impossible de réactiver les notifications.')),
         );
       }
     } finally {
