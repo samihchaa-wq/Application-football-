@@ -410,7 +410,6 @@ select is(
 
 -- Option OFF : le +1 déjà obtenu est conservé mais ne modifie plus les
 -- priorités ; une réactivation restaure l'ordre original immédiatement.
-select pg_temp.as_admin();
 set local role authenticated;
 select public.admin_set_club_rule('waitlist_priority_enabled', 0);
 reset role;
@@ -428,7 +427,6 @@ select is(
   (select manual_waitlist_count from public.sport_waitlist_entries
    where season_player_id='b5400000-0000-0000-0000-000000000002'),
   1, 'option OFF : le credit de Bruno n est jamais supprime');
-select pg_temp.as_admin();
 set local role authenticated;
 select public.admin_set_club_rule('waitlist_priority_enabled', null);
 reset role;
