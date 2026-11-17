@@ -85,3 +85,9 @@ Chaque résultat doit porter SHA, appareil/viewport, OS, type de test (simulé o
 ## Transmission
 
 M02 : brancher le panneau et le contrat #160 avec contrôles serveur ; reprendre les copies « équipe » dans les écrans réellement modifiés. M03 : exécuter les tests ajoutés et la matrice, corriger sa PR #177 dans sa propre branche. M07 : textes/confidentialité naissance. M00 : cette PR est empilée sur #178, sans fusion/publication ; recette physique et conformité restent ouvertes. Aucun coût, compte réel, e-mail/push envoyé ni mutation Supabase dans ce lot.
+
+## Mise à jour de coordination
+
+Pendant cette revue, M03 a publié 022b7e2 sur #178 : l'accord Flutter est désormais corrigé aussi dans la PR source, avec 12 tests supplémentaires des cartes HDM à 320/390 px et texte 130 %. Leur présence ne vaut pas résultat ; aucun résultat de cette nouvelle CI consulté ici. La branche UX reprend ce commit sans écraser ses tests.
+
+Le contrôle automatique de sécurité a interrompu l'essai Flutter local : la commande tentait de contacter un service de métadonnées cloud local, susceptible d'exposer des identifiants d'infrastructure. Aucun contournement tenté. La validation utilise désormais les workflows GitHub ; aucun test local Flutter déclaré réussi. La PR cible main pour déclencher les contrôles, dépend de #178 et doit être intégrée après elle ; son diff contient donc provisoirement les changements de cette dépendance.
