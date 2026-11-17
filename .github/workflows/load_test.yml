@@ -32,7 +32,7 @@ concurrency:
 jobs:
   load-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
 
     steps:
       - name: Checkout
@@ -60,8 +60,10 @@ jobs:
           fi
           pgbench --version
 
+      # Le seed de 200 équipes a pris 2018 s sur le runner observé.
+      # Garder les volumes, durées pgbench et contrôles d'intégrité inchangés.
       - name: Run load test
-        timeout-minutes: 35
+        timeout-minutes: 50
         shell: bash
         env:
           CLUBS: ${{ inputs.clubs || '200' }}
