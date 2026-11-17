@@ -1,0 +1,42 @@
+name: Aperçu visuel des 14 badges Petit Filet
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'assets/images/badge_backgrounds/**'
+      - 'lib/features/badges/**'
+      - 'test/features/badges/**'
+      - '.github/workflows/badges_visual_qa.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  gallery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          flutter-version: 3.47.9
+          cache: true
+
+      - name: Install locked dependencies
+        run: flutter pub get --enforce-lockfile
+
+      - name: Capture gallery
+        run: flutter test test/features/badges/presentation/badge_visual_gallery_test.dart --timeout 2m
+
+      - name: Upload gallery
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: badges-14-fonds-gallery
+          path: badge-previews/*.png
+          if-no-files-found: warn
