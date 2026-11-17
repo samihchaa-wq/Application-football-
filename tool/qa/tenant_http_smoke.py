@@ -12,7 +12,6 @@ import uuid
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
-from urllib.parse import urlsplit
 
 API = "http://127.0.0.1:54321"
 DB = "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
@@ -26,8 +25,7 @@ def parse_status(raw: str) -> dict[str, str]:
 
 
 def assert_local(api: str, db: str) -> None:
-    url = urlsplit(db)
-    if api.rstrip("/") != API or url.hostname != "127.0.0.1" or url.port != 54322 or url.path != "/postgres":
+    if api.rstrip("/") != API or db != DB:
         raise RuntimeError("Refus : ce test ne doit jamais toucher une base distante.")
 
 
