@@ -364,4 +364,5 @@ jobs:
             coverage-summary.txt
             build-web.log
             web-performance-summary.txt
+            badge-previews/*.png
           if-no-files-found: warn

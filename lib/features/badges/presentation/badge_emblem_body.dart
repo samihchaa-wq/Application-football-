@@ -1,4 +1,5 @@
 import 'package:as_grinta/features/badges/presentation/badge_descriptor.dart';
+import 'package:as_grinta/features/badges/presentation/badge_premium_skins.dart';
 import 'package:flutter/material.dart';
 
 /// Proportions des zones de l'emblème, rapportées à sa largeur.
@@ -71,6 +72,7 @@ class BadgeEmblemBody extends StatelessWidget {
     required this.base,
     required this.descriptor,
     this.value,
+    this.skin,
   });
 
   final Widget child;
@@ -78,13 +80,14 @@ class BadgeEmblemBody extends StatelessWidget {
   final Color base;
   final BadgeDescriptor descriptor;
   final String? value;
+  final BadgePremiumSkin? skin;
 
   @override
   Widget build(BuildContext context) {
     final hasValue = value?.isNotEmpty == true;
     final period = descriptor.period;
     final illustrationTone = _shiftBadgeTone(base, 0.02);
-    final bandsTone = _socleTone(base);
+    final bandsTone = skin == null ? _socleTone(base) : badgePremiumDark(skin!);
     // Le critère prend tout ce que le nombre et la temporalité laissent du
     // socle : une ligne sur un badge complet, bien plus sur un badge sans
     // nombre.
@@ -100,22 +103,51 @@ class BadgeEmblemBody extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: bandsTone,
+        image: skin == null
+            ? null
+            : DecorationImage(
+                image: AssetImage(badgePremiumBackgroundAsset(skin!)),
+                fit: BoxFit.fill,
+              ),
         borderRadius: BorderRadius.circular(size * 0.16),
       ),
+      foregroundDecoration: skin == null
+          ? null
+          : BoxDecoration(
+              borderRadius: BorderRadius.circular(size * .16),
+              border: Border.all(
+                color: badgePremiumAccent(skin!).withValues(alpha: .78),
+                width: size * .017,
+              ),
+            ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             height: size * kBadgeIllustrationRatio,
             width: size,
-            color: illustrationTone,
+            color: skin == null ? illustrationTone : Colors.transparent,
             alignment: Alignment.center,
-            child: child,
+            child: skin == null
+                ? child
+                : Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Center(child: child),
+                      IgnorePointer(
+                        child: CustomPaint(
+                          painter: BadgePremiumFramePainter(skin!),
+                        ),
+                      ),
+                    ],
+                  ),
           ),
           if (hasValue)
             _Band(
               height: size * _valueRatio,
-              color: bandsTone,
+              color:
+                  skin == null ? bandsTone : bandsTone.withValues(alpha: .80),
+              skin: null,
               child: _BandText(
                 value!,
                 fontSize: size * 0.16,
@@ -125,7 +157,8 @@ class BadgeEmblemBody extends StatelessWidget {
             ),
           _Band(
             height: size * labelRatio,
-            color: bandsTone,
+            color: skin == null ? bandsTone : bandsTone.withValues(alpha: .80),
+            skin: null,
             child: hasValue
                 ? _BandText(
                     descriptor.label,
@@ -143,7 +176,9 @@ class BadgeEmblemBody extends StatelessWidget {
           if (period != null)
             _Band(
               height: size * _lineRatio,
-              color: bandsTone,
+              color:
+                  skin == null ? bandsTone : bandsTone.withValues(alpha: .80),
+              skin: null,
               child: _BandText(
                 period,
                 fontSize: size * 0.095,
@@ -158,11 +193,17 @@ class BadgeEmblemBody extends StatelessWidget {
 
 /// Une bande pleine largeur de l'emblème, collée à celle du dessus.
 class _Band extends StatelessWidget {
-  const _Band({required this.height, required this.color, required this.child});
+  const _Band({
+    required this.height,
+    required this.color,
+    required this.child,
+    this.skin,
+  });
 
   final double height;
   final Color color;
   final Widget child;
+  final BadgePremiumSkin? skin;
 
   @override
   Widget build(BuildContext context) {
@@ -171,7 +212,18 @@ class _Band extends StatelessWidget {
       width: double.infinity,
       alignment: Alignment.center,
       color: color,
-      child: child,
+      child: skin == null
+          ? child
+          : Stack(
+              fit: StackFit.expand,
+              children: [
+                CustomPaint(
+                  painter:
+                      BadgePremiumTexturePainter(skin: skin!, footer: true),
+                ),
+                Center(child: child),
+              ],
+            ),
     );
   }
 }
