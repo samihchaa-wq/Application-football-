@@ -2,6 +2,7 @@ import 'package:as_grinta/features/badges/presentation/badge_emblem_body.dart';
 import 'package:as_grinta/features/badges/presentation/badge_descriptor.dart';
 import 'package:as_grinta/features/badges/presentation/badge_premium_skins.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -38,6 +39,16 @@ void main() {
     expect(badgePremiumSkinFor('#E3B23C'), BadgePremiumSkin.gold);
     expect(badgePremiumSkinFor('#5FC9D9'), BadgePremiumSkin.diamond);
     expect(badgePremiumSkinFor('#abcdef'), isNull);
+  });
+
+  testWidgets('les 14 images premium sont embarquées et lisibles',
+      (tester) async {
+    final paths = BadgePremiumSkin.values.map(badgePremiumBackgroundAsset).toSet();
+    expect(paths, hasLength(14));
+    for (final path in paths) {
+      final bytes = await rootBundle.load(path);
+      expect(bytes.lengthInBytes, greaterThan(3000), reason: path);
+    }
   });
 
   testWidgets('le socle reste dynamique avec les textures premium',
