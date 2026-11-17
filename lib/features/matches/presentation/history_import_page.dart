@@ -180,7 +180,8 @@ class _HistoryImportPageState extends ConsumerState<HistoryImportPage> {
                       Text('2. Choisir le document JSON',
                           style: theme.textTheme.titleMedium),
                       const SizedBox(height: 8),
-                      const Text('Maximum 400 matchs jusqu’à aujourd’hui, y compris '
+                      const Text(
+                          'Maximum 400 matchs jusqu’à aujourd’hui, y compris '
                           'dans une saison déjà suivie. Les doublons sont '
                           'contrôlés. N’inclus aucune donnée inutile.'),
                       const SizedBox(height: 12),
