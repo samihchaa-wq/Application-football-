@@ -23,7 +23,7 @@ Cible : [Petit Filet](https://petit-filet.pages.dev/) et projet Supabase commerc
 | REC-160-03 | E-mail non confirmé n'ouvre pas les parcours de gestion, y compris administrateur fondateur | **NON DÉMONTRÉ / garde insuffisante à ce stade** : vérifier SQL/RPC et Edge avant correctif |
 | REC-160-04 | Confirmation, échec SMTP, renvoi/correction, expiration, lien consommé | **NON TESTÉ sur vraie boîte e-mail** |
 | REC-SESSION-01 | Connexion identifiant + mot de passe ; erreur lisible ; entrée clavier | Tests widget existants dans le dépôt ; **pas une connexion live** |
-| REC-RESET-01 | Récupération par e-mail et refus du double envoi clavier | Test widget corrigé via PR #165 ; vraie réception et reset **NON TESTÉS** |
+| REC-RESET-01 | Récupération par e-mail et refus du double envoi clavier | Test widget corrigé via PR #165 ; **nouveau test M03 à largeur 390** dans cette PR ; vraie réception et reset **NON TESTÉS** |
 | REC-PLATFORM-01 | Un admin d'équipe ne devient pas gestionnaire de plateforme | Tests de redirection et d'isolation déjà en CI ; **login réel gestionnaire NON VÉRIFIÉ** |
 | REC-MOB-03 | iPhone Safari / Android Chrome : clavier, zoom, scroll, retour et latence | **NON TESTÉ PHYSIQUEMENT** |
 
