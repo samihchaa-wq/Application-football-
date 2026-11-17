@@ -12,8 +12,8 @@ void main() {
 
   setUp(() => repository = _FakeClubRepository());
 
-  Future<void> pumpPage(WidgetTester tester, {String? code}) async {
-    tester.view.physicalSize = const Size(900, 2200);
+  Future<void> pumpPage(WidgetTester tester, {String? code, Size size = const Size(900, 2200)}) async {
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
@@ -166,6 +166,57 @@ void main() {
     expect(repository.joined, 'ABCDEFGH');
     expect(
         repository.lastConsent, (legalVersion, AgeConfirmation.fifteenOrMore));
+  });
+
+  // Recette M03 : viewport logique iPhone ; aucune inscription réelle.
+  // Le dépôt factice vérifie les gestes et le contrat client actuels. #160
+  // doit remplacer l'ancien ageConfirmation par une naissance validée.
+  testWidgets('M03 mobile : invitation et identifiant restent accessibles',
+      (tester) async {
+    await pumpPage(
+      tester,
+      code: 'abcd-efgh',
+      size: const Size(390, 844),
+    );
+    await fillIdentity(tester);
+    final email = find.widgetWithText(
+      TextField,
+      'Adresse e-mail (facultatif)',
+    );
+    await tester.ensureVisible(email);
+    await tester.enterText(email, 'karim@example.com');
+
+    final submit = find.widgetWithText(FilledButton, 'Créer mon compte');
+    await tester.ensureVisible(submit);
+    await tester.tap(submit);
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(repository.joined, 'ABCDEFGH');
+    expect(repository.lastEmail, 'karim@example.com');
+    expect(find.text('karimb'), findsOneWidget);
+    expect(find.textContaining('en attente'), findsOneWidget);
+  });
+
+  testWidgets('M03 mobile : créer une équipe reste accessible au toucher',
+      (tester) async {
+    await pumpPage(tester, size: const Size(390, 844));
+    await tester.tap(find.text('Créer un club'));
+    await tester.pumpAndSettle();
+    final name = find.byKey(const Key('register-club-name'));
+    await tester.ensureVisible(name);
+    await tester.enterText(name, 'Equipe Fictive');
+    await fillIdentity(tester);
+
+    final submit = find.widgetWithText(FilledButton, 'Créer mon club');
+    await tester.ensureVisible(submit);
+    await tester.tap(submit);
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(repository.created, 'Equipe Fictive');
+    expect(repository.createdContract, clubContractVersion);
+    expect(find.text('Équipe créée : Equipe Fictive'), findsOneWidget);
   });
 
   testWidgets('le refus du serveur est affiché tel quel', (tester) async {
