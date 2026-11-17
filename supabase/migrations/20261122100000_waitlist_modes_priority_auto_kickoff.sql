@@ -25,7 +25,7 @@ AS $function$
     ('prediction_reminder_lead_minutes', 'Rappel avant un match tôt',
      'Si le match commence avant l’heure du rappel, le rappel part ce nombre de minutes avant la fermeture des pronostics.',
      'min', 'Pronostics', 60, 15, 600, 45),
-    ('motm_window_hours', 'Durée du vote de l’Étoile du match',
+    ('motm_window_hours', 'Durée du vote pour l’Homme du match',
      'Combien d’heures après le coup d’envoi le vote reste ouvert.',
      'h', 'Après le match', 24, 6, 168, 50),
     ('correction_window_hours', 'Délai de correction du résultat',
@@ -64,13 +64,13 @@ AS $function$
     ('notify_availability_reminders', 'Notification : relances des disponibilités',
      'Relancer à J-3 et à J-1 ceux qui n’ont pas encore répondu.',
      'bool', 'Notifications', 1, 0, 1, 22),
-    ('motm_self_vote', 'Étoile du match : voter pour soi',
+    ('motm_self_vote', 'Homme du match : voter pour soi',
      'Autoriser un joueur à voter pour lui-même. Interdit par défaut.',
-     'bool', 'Étoile du match', 0, 0, 1, 51),
-    ('notify_motm_open', 'Notification : vote de l’Étoile du match',
+     'bool', 'Homme du match', 0, 0, 1, 51),
+    ('notify_motm_open', 'Notification : vote de l’Homme du match',
      'Prévenir les votants quand le vote s’ouvre.',
      'bool', 'Notifications', 1, 0, 1, 52),
-    ('notify_motm_result', 'Notification : résultat de l’Étoile du match',
+    ('notify_motm_result', 'Notification : résultat de l’Homme du match',
      'Annoncer le résultat du vote à l’équipe et au gagnant.',
      'bool', 'Notifications', 1, 0, 1, 53),
     ('notify_convocation', 'Notification : convocation et liste d’attente',
@@ -147,7 +147,7 @@ AS $function$
     ('notify_match_rescheduled_time', 'Notification : changement d’horaire', 'Notifier les changements d’heure des matchs. Dépend aussi de l’interrupteur match annulé ou déplacé.', 'bool', 'matches', 1, 0, 1, 228),
     ('notify_convocation_promoted', 'Notification : promotion en convoqué', 'Notifier le passage de la liste d’attente aux convoqués. Dépend aussi de l’interrupteur convocation et liste d’attente.', 'bool', 'squad', 1, 0, 1, 229),
     ('notify_convocation_demoted', 'Notification : passage en attente', 'Notifier le passage des convoqués à la liste d’attente. Dépend aussi de l’interrupteur convocation et liste d’attente.', 'bool', 'squad', 1, 0, 1, 230),
-    ('notify_motm_winner', 'Étoile : notification au gagnant', 'Envoyer le message personnel au gagnant. L’annonce générale dépend du réglage résultat de l’Étoile du match.', 'bool', 'rewards', 1, 0, 1, 231)
+    ('notify_motm_winner', 'Homme du match : notification au gagnant', 'Envoyer le message personnel au gagnant. L’annonce générale dépend du réglage résultat de l’Homme du match.', 'bool', 'rewards', 1, 0, 1, 231)
   ) as catalogue(key, label, description, unit, group_label,
                  default_value, min_value, max_value, sort_order);
 $function$;
