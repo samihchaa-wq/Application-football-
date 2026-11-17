@@ -47,3 +47,10 @@ L'environnement disponible ne possède **ni Docker, ni Podman, ni psql, ni Supab
 - **Plan de sauvegarde actuel** : hebdomadaire le lundi à 02:23 UTC (`23 2 * * 1`). La fréquence ne démontre pas l'objectif RPO ≤ 24 heures ; aucun engagement commercial de RPO/RTO avant exercice de récupération et ajustement de rétention/fréquence.
 - **Cible Supabase disponible** : seule la production commerciale est inscrite sur ce compte ; aucune branche de développement isolée existante. Créer un projet ou une branche distante peut générer des frais et n'établit pas à lui seul l'absence d'e-mails ou push.
 - **Attention** : l'audit de SQL/manifestes ne certifie pas les paramètres hébergés hors base (clés de chiffrement racines Vault, configuration Auth, fonctions Edge et réglages Supabase). La procédure de reprise devra documenter la remise en place et tester chacun des composants nécessaires.
+
+## Validation CI de l'isolement de la pile complète (données fictives)
+
+- Échec initial [run 44154120042](https://github.com/samihchaa-wq/Application-football-/actions/runs/44154120042) : Docker isolé ne savait pas déduire l'adresse `host-gateway` à cause de l'absence de pont réseau externe.
+- Correctif : définition explicite `--host-gateway-ip=172.19.0.1` **dans le daemon isolé**, sans réintroduire de routage vers Internet.
+- [Run 44155012153](https://github.com/samihchaa-wq/Application-football-/actions/runs/44155012153) : **SUCCESS** (job entier). Images Supabase factices préchargées, pile locale PostgreSQL/Auth/Storage démarrée **dans le namespace isolé** et vérification TCP loopback 54321/54322. Vérification des sorties vers 1.1.1.1:443 : refus, preuve de no-egress au niveau des interfaces et du test de connexion.
+- **Pas de déchiffrement, pas d'import de la sauvegarde commerciale**. Les données Auth, SQL et fichiers réels ne sont pas encore comparés après restauration. Le succès ne clôt PAS l'issue #91.
