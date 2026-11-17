@@ -480,8 +480,12 @@ CREATE OR REPLACE FUNCTION private.rebalance_waitlists_after_mode_change()
 AS $function$
 declare
   v_row jsonb := case when tg_op = 'DELETE' then to_jsonb(old) else to_jsonb(new) end;
-  v_old integer := case when tg_op = 'INSERT' then 0 else old.value end;
-  v_new integer := case when tg_op = 'DELETE' then 0 else new.value end;
+  v_default integer := coalesce((
+    select c.default_value from private.club_rule_catalogue() c
+    where c.key = v_row ->> 'key'
+  ), 0);
+  v_old integer := case when tg_op = 'INSERT' then v_default else old.value end;
+  v_new integer := case when tg_op = 'DELETE' then v_default else new.value end;
   v_season record;
 begin
   if v_row ->> 'key' not in ('waitlist_mode', 'waitlist_priority_enabled')
