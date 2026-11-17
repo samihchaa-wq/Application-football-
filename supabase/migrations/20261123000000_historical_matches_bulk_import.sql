@@ -12,7 +12,8 @@ declare
   v_date date;
   v_opponent text;
   v_key text;
-  v_seen text[] := array[]::text[];
+  v_seen jsonb := '{}'::jsonb;
+  v_signature text;
   v_current_club uuid;
   v_existing record;
   v_imported integer := 0;
@@ -47,10 +48,10 @@ begin
     if jsonb_typeof(v_row) <> 'object' then
       raise exception 'Une ligne de match est invalide.' using errcode = '22023';
     end if;
-    if jsonb_typeof(v_row -> 'score_for') <> 'number'
-       or jsonb_typeof(v_row -> 'score_against') <> 'number'
-       or jsonb_typeof(v_row -> 'is_home') <> 'boolean'
-       or v_row ->> 'match_type' not in ('amical', 'championnat') then
+    if jsonb_typeof(v_row -> 'score_for') is distinct from 'number'
+       or jsonb_typeof(v_row -> 'score_against') is distinct from 'number'
+       or jsonb_typeof(v_row -> 'is_home') is distinct from 'boolean'
+       or coalesce(v_row ->> 'match_type', '') not in ('amical', 'championnat') then
       raise exception 'Date, score, domicile/extérieur ou type manquant.'
         using errcode = '22023';
     end if;
@@ -67,13 +68,19 @@ begin
       raise exception 'Nom d’adversaire invalide.' using errcode = '22023';
     end if;
     v_key := v_date::text || '|' || lower(v_opponent);
-    if v_key = any(v_seen) then
-      -- Les répétitions strictement identiques sont tolérées ; les conflits
-      -- internes doivent déjà être refusés par le validateur client.
-      raise exception 'Le document contient plusieurs matchs le même jour contre %.',
-        v_opponent using errcode = '22023';
+    v_signature := (v_row ->> 'score_for') || '/' ||
+                   (v_row ->> 'score_against') || '/' ||
+                   (v_row ->> 'is_home') || '/' ||
+                   (v_row ->> 'match_type');
+    if v_seen ? v_key then
+      if v_seen ->> v_key is distinct from v_signature then
+        raise exception 'Deux matchs contradictoires le même jour contre %.',
+          v_opponent using errcode = '22023';
+      end if;
+      v_skipped := v_skipped + 1;
+      continue;
     end if;
-    v_seen := array_append(v_seen, v_key);
+    v_seen := v_seen || jsonb_build_object(v_key, v_signature);
 
     select score.score_as_grinta, score.score_adverse, score.is_home,
            score.match_type
