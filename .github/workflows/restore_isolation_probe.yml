@@ -1,0 +1,111 @@
+name: "M09 - probe isolation for future restore (no commercial data)"
+
+# Verifies whether a GitHub runner can create a private network namespace.
+# THIS JOB NEVER downloads, decrypts or restores the commercial backup.
+# It receives NO secrets and gives NO restoration certificate.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tool/qa/restore_isolation_gate.py'
+      - 'tool/qa/test_restore_isolation_gate.py'
+      - '.github/workflows/restore_isolation_probe.yml'
+      - 'docs/missions/M09_RESTAURATION_COMPLETE_GARDE_20261117.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m09-probe-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  isolated-network-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Checkout only commercial code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Run offline gate contract tests
+        run: python3 -m unittest discover -s tool/qa -p 'test_restore_isolation_gate.py' -v
+
+      - name: Prove isolated network namespace is available
+        shell: bash
+        run: |
+          set -euo pipefail
+          # This is an intentionally isolated, data-free probe.
+          # It proves neither Postgres/Auth/Storage restorability nor SMTP safety.
+          test -x "$(command -v unshare)"
+          test -x "$(command -v ip)"
+          sudo unshare --net -- bash -euc '
+            ip link set lo up
+            export RESTORE_LOCAL_DB_URL="postgresql://postgres:fixture@127.0.0.1:54322/postgres"
+            export RESTORE_LOCAL_API_URL="http://127.0.0.1:54321"
+            python3 tool/qa/restore_isolation_gate.py preflight
+            # La vérification de socket.if_nameindex() et des routes dans
+            # restore_isolation_gate.py suffit ; /sys/class/net peut venir de l’hôte.
+          '
+          echo "PASS: isolated namespace available. No backup or personal data processed."
+
+      - name: Preload a small synthetic container before cutting network access
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker pull alpine:3.20 >/dev/null
+          docker save -o "$RUNNER_TEMP/pf-isolation-fixture.tar" alpine:3.20
+          test -s "$RUNNER_TEMP/pf-isolation-fixture.tar"
+
+      - name: Probe a nested Docker daemon inside the isolated namespace (no data)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # No production secret, artifact or personal data is loaded.
+          test -x "$(command -v dockerd)"
+          sudo --preserve-env=RUNNER_TEMP unshare --net -- bash -euo pipefail <<'PF_PROBE'
+          ip link set lo up
+          root="$(mktemp -d)"
+          daemon_pid=""
+          cleanup() {
+            if [ -n "$daemon_pid" ]; then
+              kill "$daemon_pid" 2>/dev/null || true
+              wait "$daemon_pid" 2>/dev/null || true
+            fi
+            rm -rf "$root"
+          }
+          trap cleanup EXIT
+          dockerd --host="unix://$root/docker.sock" \
+            --data-root="$root/data" \
+            --exec-root="$root/exec" \
+            --pidfile="$root/docker.pid" \
+            --storage-driver=vfs --iptables=false --ip6tables=false \
+            --bridge=none --ip-forward=false --ip-masq=false \
+            >"$root/daemon.log" 2>&1 &
+          daemon_pid=$!
+          usable=false
+          for attempt in $(seq 1 24); do
+            if docker -H "unix://$root/docker.sock" info >/dev/null 2>&1; then
+              usable=true
+              break
+            fi
+            sleep 1
+          done
+          if [ "$usable" != "true" ]; then
+            echo "::error::Nested offline Docker daemon unavailable; real restore blocked."
+            exit 1
+          fi
+          docker -H "unix://$root/docker.sock" network ls --format '{{.Name}}'
+          docker -H "unix://$root/docker.sock" load -i "$RUNNER_TEMP/pf-isolation-fixture.tar" >/dev/null
+          docker -H "unix://$root/docker.sock" network create --driver bridge --internal pf-isolated-only >/dev/null
+          test "$(docker -H "unix://$root/docker.sock" network inspect pf-isolated-only --format '{{.Internal}}')" = true
+          docker -H "unix://$root/docker.sock" run --rm --network pf-isolated-only alpine:3.20 sh -ceu '
+            test -s /etc/os-release
+            if wget -q -T 2 -O /dev/null http://1.1.1.1; then
+              echo "External egress unexpectedly available."
+              exit 1
+            fi
+            echo "PASS: synthetic container runs with no external egress."
+          '
+
+          echo "PASS: isolated Docker engine available without live commercial data."
+          PF_PROBE

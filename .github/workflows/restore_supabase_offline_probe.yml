@@ -1,0 +1,112 @@
+name: "M09 - isolated Supabase stack probe (fictional data only)"
+
+# This workflow deliberately NEVER receives commercial secrets or backup bytes.
+# Before any actual production-data restore, a separate reviewed workflow,
+# network isolation and GDPR validation are required.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/restore_supabase_offline_probe.yml'
+      - 'tool/qa/restore_isolation_gate.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m09-offline-stack-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  local-stack-inside-isolated-namespace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout commercial code only
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup pinned Supabase CLI
+        uses: supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf # v2
+        with:
+          version: 2.118.0
+
+      - name: Pull synthetic Supabase images before severing all network access
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/pf-preload-stack"
+          cd "$RUNNER_TEMP/pf-preload-stack"
+          supabase init
+          supabase start -x studio,imgproxy,edge-runtime,logflare,vector >/dev/null
+          docker ps --format '{{.Image}}' | sort -u > "$RUNNER_TEMP/pf-images-list.txt"
+          test -s "$RUNNER_TEMP/pf-images-list.txt"
+          supabase stop --no-backup >/dev/null
+          xargs -a "$RUNNER_TEMP/pf-images-list.txt" docker save -o "$RUNNER_TEMP/pf-local-images.tar"
+          test -s "$RUNNER_TEMP/pf-local-images.tar"
+          echo "PASS: synthetic service images cached; no commercial data touched."
+
+      - name: Start offline Supabase Auth/Storage/PostgreSQL with nested Docker
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo --preserve-env=RUNNER_TEMP,PATH unshare --net -- bash -euo pipefail <<'PF_ISOLATED'
+          ip link set lo up
+          export RESTORE_LOCAL_DB_URL='postgresql://postgres:local-fixture@127.0.0.1:54322/postgres'
+          export RESTORE_LOCAL_API_URL='http://127.0.0.1:54321'
+          python3 tool/qa/restore_isolation_gate.py preflight
+          root="$(mktemp -d)"
+          daemon_pid=""
+          cleanup() {
+            if [ -d "$root/local/supabase" ]; then
+              (cd "$root/local" && supabase stop --no-backup >/dev/null 2>&1) || true
+            fi
+            if [ -n "$daemon_pid" ]; then
+              kill "$daemon_pid" 2>/dev/null || true
+              wait "$daemon_pid" 2>/dev/null || true
+            fi
+            rm -rf "$root"
+          }
+          trap cleanup EXIT
+          dockerd --host="unix://$root/docker.sock" \
+            --data-root="$root/data" --exec-root="$root/exec" \
+            --pidfile="$root/docker.pid" --storage-driver=overlay2 \
+            --iptables=false --ip6tables=false --bridge=none \
+            --host-gateway-ip=172.19.0.1 \
+            --ip-forward=false --ip-masq=false \
+            >"$root/daemon.log" 2>&1 &
+          daemon_pid=$!
+          export DOCKER_HOST="unix://$root/docker.sock"
+          ready=false
+          for count in $(seq 1 30); do
+            if docker info >/dev/null 2>&1; then ready=true; break; fi
+            sleep 1
+          done
+          if [ "$ready" != true ]; then
+            echo "::error::Isolated Docker daemon unavailable."
+            exit 1
+          fi
+          docker load -i "$RUNNER_TEMP/pf-local-images.tar" >/dev/null
+          mkdir -p "$root/local"
+          cd "$root/local"
+          supabase init
+          # If any image or registry access is required, startup fails closed.
+          if ! supabase start -x studio,imgproxy,edge-runtime,logflare,vector >"$root/stack.log" 2>&1; then
+            echo "::error::Isolated Supabase startup failed; commercial restore remains prohibited."
+            tail -n 12 "$root/stack.log" | sed -E 's#https?://[^ ]+#(redacted URL)#g'
+            exit 1
+          fi
+          # The namespace has no physical egress interface; these listeners must
+          # run inside it, not on a host stack that could contact the Internet.
+          python3 - <<'PY'
+          import socket
+          for port in (54321, 54322):
+              with socket.create_connection(('127.0.0.1',port), timeout=5):
+                  pass
+          try:
+              with socket.create_connection(('1.1.1.1',443),timeout=2):
+                  raise SystemExit('External egress exists. Unsafe for real backup.')
+          except OSError:
+              pass
+          print('PASS: Auth/Storage/Postgres synthetic loopback services with no external egress.')
+          PY
+          PF_ISOLATED

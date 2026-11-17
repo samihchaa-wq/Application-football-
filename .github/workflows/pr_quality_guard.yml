@@ -41,6 +41,9 @@ jobs:
       - name: Verify archive contents and SHA-256 after decryption (synthetic tests)
         run: python3 -m unittest discover -s tool/qa -p 'test_verify_commercial_backup_tar.py' -v
 
+      - name: Check isolated restore target fails closed (synthetic fixtures only)
+        run: python3 -m unittest discover -s tool/qa -p 'test_restore_isolation_gate.py' -v
+
       - name: Verify prior SQL migrations have not been rewritten
         if: github.event_name == 'pull_request'
         env:
