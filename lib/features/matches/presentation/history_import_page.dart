@@ -218,8 +218,10 @@ class _HistoryImportPageState extends ConsumerState<HistoryImportPage> {
                         for (final match in batch.matches.take(20))
                           ListTile(
                             dense: true,
-                            title: Text("${match['date']} — ${match['opponent']}"),
-                            subtitle: Text("${match['score_for']} – ${match['score_against']}"),
+                            title:
+                                Text("${match['date']} — ${match['opponent']}"),
+                            subtitle: Text(
+                                "${match['score_for']} – ${match['score_against']}"),
                           ),
                         if (batch.count > 20)
                           Text('Et ${batch.count - 20} autres.'),
