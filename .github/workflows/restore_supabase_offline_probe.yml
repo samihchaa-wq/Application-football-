@@ -53,7 +53,7 @@ jobs:
           ip link set lo up
           export RESTORE_LOCAL_DB_URL='postgresql://postgres:local-fixture@127.0.0.1:54322/postgres'
           export RESTORE_LOCAL_API_URL='http://127.0.0.1:54321'
-          python3 "$GITHUB_WORKSPACE/tool/qa/restore_isolation_gate.py" preflight
+          python3 tool/qa/restore_isolation_gate.py preflight
           root="$(mktemp -d)"
           daemon_pid=""
           cleanup() {
