@@ -12,6 +12,7 @@ import 'package:as_grinta/features/badges/data/statistics_badge_emblems_provider
 import 'package:as_grinta/features/badges/presentation/badge_emblem.dart';
 import 'package:as_grinta/features/badges/presentation/badge_emblem_body.dart';
 import 'package:as_grinta/features/badges/presentation/badge_image_picker.dart';
+import 'package:as_grinta/features/badges/presentation/badge_premium_skins.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -158,6 +159,11 @@ class _BadgeCropDialogState extends State<_BadgeCropDialog> {
   static const int _exportWidth = 400;
   static const double _exportScale = _exportWidth / _size;
 
+  // La couleur historique de l'objet n'est plus celle de son habillage.
+  BadgePremiumSkin get _skin => badgePremiumSkinFor(
+        '#${widget.badgeColor.toARGB32().toRadixString(16).padLeft(8, '0').substring(2)}',
+      ) ?? BadgePremiumSkin.violet;
+
   final TransformationController _controller = TransformationController();
   Uint8List? _bytes;
   bool _saving = false;
@@ -234,12 +240,11 @@ class _BadgeCropDialogState extends State<_BadgeCropDialog> {
       ui.Rect.fromLTWH(0, 0, visibleRect.width, visibleRect.height),
     );
 
-    // Le JPEG n'a pas d'alpha. Les zones transparentes ou laissées découvertes
-    // reprennent donc la couleur réelle du badge, ce qui conserve le rendu que
-    // donnait auparavant le PNG transparent posé sur l'emblème.
-    canvas.drawRect(
-      ui.Rect.fromLTWH(0, 0, visibleRect.width, visibleRect.height),
-      ui.Paint()..color = widget.badgeColor,
+    // Le JPEG n'a pas d'alpha : les zones libres reçoivent le nouveau
+    // traitement premium, jamais l'ancien orange (#F97316).
+    BadgePremiumTexturePainter(skin: _skin).paint(
+      canvas,
+      ui.Size(visibleRect.width, visibleRect.height),
     );
 
     canvas.translate(-visibleRect.left, -visibleRect.top);
@@ -300,8 +305,7 @@ class _BadgeCropDialogState extends State<_BadgeCropDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final border =
-        Color.lerp(widget.badgeColor, Colors.white, .38) ?? widget.badgeColor;
+    final border = badgePremiumAccent(_skin);
     final bytes = _bytes;
 
     return AlertDialog(
@@ -313,7 +317,11 @@ class _BadgeCropDialogState extends State<_BadgeCropDialog> {
           Container(
             padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
-              color: widget.badgeColor,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [badgePremiumDark(_skin), badgePremiumAccent(_skin)],
+              ),
               borderRadius: BorderRadius.circular(28),
               border: Border.all(color: border, width: 2),
             ),
