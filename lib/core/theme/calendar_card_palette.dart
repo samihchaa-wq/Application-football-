@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Couleurs des cartes du calendrier (« Défilé » et « Par mois ») :
-/// rouge = championnat, bleu-vert (sarcelle) = amical, violet = match entre
+/// bleu foncé = championnat, bleu clair = amical, violet foncé = match entre
 /// nous, or = événement.
 ///
 /// Les fonds restent sombres pour préserver le thème de l'app, mais les
@@ -12,23 +12,25 @@ abstract final class CalendarCardPalette {
   static const Color finishedSurface = Color(0xFF20242C);
   static const Color finishedBorder = Color(0xFF626A78);
 
-  /// Championnat : rouge Petit Filet sur anthracite.
-  static const Color championshipSurface = Color(0xFF302329);
-  static const Color championshipBorder = Color(0xFFEA596B);
+  /// Championnat : bleu foncé.
+  static const Color championshipSurface = Color(0xFF0C234D);
+  static const Color championshipBorder = Color(0xFF2459C6);
 
-  /// Amical : bleu-vert (sarcelle), nettement distinct du rouge championnat,
-  /// assez sombre pour que les scores vert / orange / rouge restent lisibles.
-  static const Color friendlySurface = Color(0xFF202F32);
-  static const Color friendlyBorder = Color(0xFF2EC4B6);
+  /// Amical : bleu clair, distinct du championnat.
+  static const Color friendlySurface = Color(0xFF173B59);
+  static const Color friendlyBorder = Color(0xFF6CCBFF);
 
-  static const Color internalSurface = Color(0xFF2B2535);
-  static const Color internalBorder = Color(0xFF8B5CF6);
+  /// Match entre nous : violet foncé.
+  static const Color internalSurface = Color(0xFF281739);
+  static const Color internalBorder = Color(0xFF7435B5);
 
-  static const Color eventSurface = Color(0xFF332C20);
-  static const Color eventBorder = Color(0xFFD9A91A);
+  /// Événement : or.
+  static const Color eventSurface = Color(0xFF3F3213);
+  static const Color eventBorder = Color(0xFFE8BF4A);
 
-  static const Color cancelledSurface = Color(0xFF45171D);
-  static const Color cancelledBorder = Color(0xFFD94B55);
+  /// Événement annulé : rouge.
+  static const Color cancelledSurface = Color(0xFF481C22);
+  static const Color cancelledBorder = Color(0xFFEB4056);
 
   /// Couleur d'un match d'après son identité sportive, indépendamment du fait
   /// qu'il soit à venir ou terminé. Les archives sans type confirmé restent
