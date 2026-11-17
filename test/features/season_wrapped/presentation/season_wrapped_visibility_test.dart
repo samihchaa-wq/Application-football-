@@ -8,7 +8,8 @@ import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show SupabaseClient;
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show SupabaseClient, AuthClientOptions;
 
 void main() {
   testWidgets(
@@ -153,7 +154,11 @@ const _adminProfile = AuthProfile(
 
 class _WrappedRepository extends SeasonWrappedRepository {
   _WrappedRepository()
-      : super(SupabaseClient('https://example.invalid', 'test-key'));
+      : super(SupabaseClient(
+          'https://example.invalid',
+          'test-key',
+          authOptions: const AuthClientOptions(autoRefreshToken: false),
+        ));
 
   bool available = false;
   int mineReads = 0;
