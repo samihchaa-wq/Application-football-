@@ -58,6 +58,25 @@ void main() {
     expect(find.text('Compris'), findsOneWidget);
   });
 
+  testWidgets('M03 mobile : le reset reste utilisable sur ecran etroit',
+      (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await pumpDialog(tester);
+    await tester.enterText(find.byType(TextField), 'karim@example.com');
+    final submit = find.text('Envoyer le lien');
+    await tester.ensureVisible(submit);
+    await tester.tap(submit);
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(repository.requested, ['karim@example.com']);
+    expect(
+        find.textContaining('Si cette adresse est confirmée'), findsOneWidget);
+  });
+
   testWidgets('une erreur permet une nouvelle tentative', (tester) async {
     repository.failure = StateError('Envoi indisponible.');
     await pumpDialog(tester);
