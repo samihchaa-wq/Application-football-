@@ -27,6 +27,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   final _nameController = TextEditingController();
   final _shortNameController = TextEditingController();
   final _homeAddressController = TextEditingController();
+  final _settingsSearchController = TextEditingController();
+  String _settingsSearch = '';
 
   Club? _club;
   ClubModules _modules = const ClubModules.allEnabled();
@@ -73,6 +75,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     _nameController.dispose();
     _shortNameController.dispose();
     _homeAddressController.dispose();
+    _settingsSearchController.dispose();
     super.dispose();
   }
 
@@ -444,30 +447,93 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
         ],
       );
 
+  // Recherche aussi sans accents et dans les descriptions des options.
+  static String _normalizedSearch(String text) => text
+      .trim()
+      .toLowerCase()
+      .replaceAll(RegExp('[àâäáã]'), 'a')
+      .replaceAll(RegExp('[éèêë]'), 'e')
+      .replaceAll(RegExp('[îïí]'), 'i')
+      .replaceAll(RegExp('[ôöó]'), 'o')
+      .replaceAll(RegExp('[ùûüú]'), 'u')
+      .replaceAll('ç', 'c');
+
+  bool _searchMatches(String text) {
+    final query = _normalizedSearch(_settingsSearch);
+    return query.isEmpty || _normalizedSearch(text).contains(query);
+  }
+
+  static const Map<String, String> _sectionTitles = {
+    'identity': 'Identité et maillots',
+    'squad': 'Effectif et convocations',
+    'matches': 'Matchs et direct',
+    'composition': 'Composition et vidéo',
+    'live': 'Direct : outils du coach',
+    'predictions': 'Pronostics',
+    'rewards': 'Statistiques et récompenses',
+    'other': 'Autres réglages',
+    'members': 'Membres et invitations',
+    'subscription': 'Abonnement',
+  };
+
+  static const Map<String, String> _searchHints = {
+    'identity': 'nom du club nom court écusson logo couleurs maillots',
+    'squad': 'convoqués nombre de joueurs liste attente',
+    'matches': 'terrain adresse domicile',
+    'rewards': 'catalogue seuils badges bilan de fin de saison stats affichées',
+    'members': 'code invitation inscrire membres',
+    'subscription': 'essai gratuit joueurs tarif abonnement paiement',
+  };
+
+  bool _sectionMatches(String category, String title) {
+    if (_settingsSearch.trim().isEmpty) return true;
+    if (_searchMatches(title) || _searchMatches(_searchHints[category] ?? '')) {
+      return true;
+    }
+    for (final module in ClubModule.values) {
+      if (_moduleCategory(module) == category &&
+          _searchMatches('${module.label} ${module.description} ${module.key}')) {
+        return true;
+      }
+    }
+    for (final rule in _rules) {
+      if (_isRelevantRule(rule) &&
+          _ruleCategory(rule) == category &&
+          _searchMatches('${rule.label} ${rule.description} ${rule.key}')) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   Widget _section(
     String key,
     String title,
     IconData icon,
     List<Widget> children, {
     bool expanded = false,
-  }) =>
-      Card(
-        clipBehavior: Clip.antiAlias,
-        margin: const EdgeInsets.only(bottom: 10),
-        child: ExpansionTile(
-          key: ValueKey('club-section-$key'),
-          initiallyExpanded: expanded,
-          leading: Icon(icon),
-          title: Text(title),
-          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: children,
-            ),
-          ],
-        ),
-      );
+  }) {
+    if (!_sectionMatches(key, title)) return const SizedBox.shrink();
+    final query = _normalizedSearch(_settingsSearch);
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      margin: const EdgeInsets.only(bottom: 10),
+      child: ExpansionTile(
+        // Le changement de recherche réouvre les sections filtrées.
+        key: ValueKey(query.isEmpty ? 'club-section-$key' : 'club-section-$key-$query'),
+        initiallyExpanded: expanded || query.isNotEmpty,
+        leading: Icon(icon),
+        title: Text(title),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: children,
+          ),
+        ],
+      ),
+    );
+  }
 
   String _moduleCategory(ClubModule module) {
     if (module == ClubModule.weather || module == ClubModule.liveMode) {
@@ -595,7 +661,9 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
 
   List<Widget> _modulesFor(String category) => [
         for (final module in ClubModule.values)
-          if (_moduleCategory(module) == category)
+          if (_moduleCategory(module) == category &&
+              (_searchMatches(_sectionTitles[category] ?? '') ||
+                  _searchMatches('${module.label} ${module.description} ${module.key}')))
             SwitchListTile.adaptive(
               key: ValueKey('club-module-${module.key}'),
               contentPadding: EdgeInsets.zero,
@@ -613,7 +681,10 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
 
   List<Widget> _rulesFor(String category) => [
         for (final rule in _rules)
-          if (_isRelevantRule(rule) && _ruleCategory(rule) == category)
+          if (_isRelevantRule(rule) &&
+              _ruleCategory(rule) == category &&
+              (_searchMatches(_sectionTitles[category] ?? '') ||
+                  _searchMatches('${rule.label} ${rule.description} ${rule.key}')))
             if (rule.key == ClubRules.waitlistModeKey)
               _waitlistModeTile(rule)
             else if (rule.unit == ClubRules.boolUnit)
@@ -785,6 +856,35 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       key: const Key('club-settings-list'),
       padding: const EdgeInsets.all(12),
       children: [
+        TextField(
+          key: const Key('club-settings-search'),
+          controller: _settingsSearchController,
+          onChanged: (value) => setState(() => _settingsSearch = value),
+          decoration: InputDecoration(
+            labelText: 'Rechercher un réglage',
+            hintText: 'Ex. bilan, notifications, maillots…',
+            prefixIcon: const Icon(Icons.search_rounded),
+            suffixIcon: _settingsSearch.isEmpty
+                ? null
+                : IconButton(
+                    tooltip: 'Effacer la recherche',
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => setState(() {
+                      _settingsSearchController.clear();
+                      _settingsSearch = '';
+                    }),
+                  ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (_settingsSearch.trim().isNotEmpty &&
+            !_sectionTitles.entries.any(
+              (e) => _sectionMatches(e.key, e.value),
+            ))
+          const Padding(
+            padding: EdgeInsets.all(20),
+            child: Text('Aucun réglage trouvé.'),
+          ),
         _section(
             'identity',
             'Identité et maillots',
