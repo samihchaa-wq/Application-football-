@@ -3,7 +3,9 @@
 -- Aucun identifiant motm/hdm/man_of_the_match ni résultat sportif ne change.
 create function pg_temp.hdm_label(p_text text) returns text
 language sql immutable strict as $label$
-  select replace(replace(replace(replace(replace(replace(replace(replace(p_text,
+  select replace(replace(replace(replace(replace(replace(replace(replace(replace(p_text,
+    'Aucune Étoile du match collective n’est attribuée',
+    'Aucun Homme du match collectif n’est attribué'),
     'Aucune Étoile du match collective', 'Aucun Homme du match collectif'),
     'ÉTOILES DU MATCH', 'HOMMES DU MATCH'),
     'ÉTOILE DU MATCH', 'HOMME DU MATCH'),
@@ -53,5 +55,5 @@ where name ~* '[Éé]toiles? du match' or description ~* '[Éé]toiles? du match
 -- les messages libres des administrateurs. Aucun nouvel envoi n'est déclenché.
 update private.notification_history set title = pg_temp.hdm_label(title),
   body = pg_temp.hdm_label(body)
-where kind in ('motm_open', 'motm_result_general', 'motm_result_winner')
+where kind in ('motm_open', 'motm_result_general', 'motm_result_winner', 'badge_unlocked')
   and (title ~* '[Éé]toiles? du match' or body ~* '[Éé]toiles? du match');

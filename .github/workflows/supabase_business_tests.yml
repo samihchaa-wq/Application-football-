@@ -112,7 +112,25 @@ jobs:
           test_count=0
           while IFS= read -r test_file; do
             echo "::group::$test_file"
-            supabase test db "$test_file" 2>&1 | tee -a supabase-tests.log
+            # Ce test rejoue une migration réelle avec psql \\ir. L'exécuteur
+            # isolé de "supabase test db" ne monte pas les fichiers de migrations.
+            if [[ "$test_file" == "supabase/tests/database/hdm_label_migration_history.test.sql" ]]; then
+              host_test_log="$(mktemp)"
+              DB_URL='postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+              psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f "$test_file" 2>&1 \
+                | tee -a supabase-tests.log | tee "$host_test_log"
+              grep -Eq '1[.][.][0-9]+' "$host_test_log" || {
+                echo '::error::Plan TAP manquant dans la recette migration HDM'
+                exit 1
+              }
+              if grep -Eq 'not ok [0-9]+' "$host_test_log"; then
+                echo '::error::Assertion TAP en échec dans la recette migration HDM'
+                exit 1
+              fi
+              rm -f "$host_test_log"
+            else
+              supabase test db "$test_file" 2>&1 | tee -a supabase-tests.log
+            fi
             echo "::endgroup::"
             test_count=$((test_count + 1))
           done < <(find supabase/tests/database -maxdepth 1 -type f -name '*.test.sql' | sort)
