@@ -43,7 +43,8 @@ void main() {
 
   testWidgets('les 14 images premium sont embarquées et lisibles',
       (tester) async {
-    final paths = BadgePremiumSkin.values.map(badgePremiumBackgroundAsset).toSet();
+    final paths =
+        BadgePremiumSkin.values.map(badgePremiumBackgroundAsset).toSet();
     expect(paths, hasLength(14));
     for (final path in paths) {
       final bytes = await rootBundle.load(path);
