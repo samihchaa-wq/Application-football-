@@ -671,7 +671,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
         for (final module in ClubModule.values)
           if (_moduleCategory(module) == category &&
               (_searchMatches(_sectionTitles[category] ?? '') ||
-                  _searchMatches('${module.label} ${module.description} ${module.key}')))
+                  _searchMatches(
+                      '${module.label} ${module.description} ${module.key}')))
             SwitchListTile.adaptive(
               key: ValueKey('club-module-${module.key}'),
               contentPadding: EdgeInsets.zero,
@@ -692,7 +693,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           if (_isRelevantRule(rule) &&
               _ruleCategory(rule) == category &&
               (_searchMatches(_sectionTitles[category] ?? '') ||
-                  _searchMatches('${rule.label} ${rule.description} ${rule.key}')))
+                  _searchMatches(
+                      '${rule.label} ${rule.description} ${rule.key}')))
             if (rule.key == ClubRules.waitlistModeKey)
               _waitlistModeTile(rule)
             else if (rule.key == ClubRules.wrappedStatsMaskKey)
