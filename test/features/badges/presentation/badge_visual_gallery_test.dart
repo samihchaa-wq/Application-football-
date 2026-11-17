@@ -67,12 +67,11 @@ void main() {
                               const SizedBox(height: 7),
                               BadgeEmblemBody(
                                 size: 124,
-                                base: Color(int.parse(
-                                    'FF${hex.substring(1)}',
+                                base: Color(int.parse('FF${hex.substring(1)}',
                                     radix: 16)),
                                 skin: badgePremiumSkinFor(hex),
-                                descriptor: const BadgeDescriptor(
-                                    'MATCHS', 'SAISON'),
+                                descriptor:
+                                    const BadgeDescriptor('MATCHS', 'SAISON'),
                                 value: '25',
                                 child: const Icon(
                                   Icons.emoji_events_rounded,
