@@ -119,7 +119,7 @@ jobs:
               DB_URL='postgresql://postgres:postgres@127.0.0.1:54322/postgres'
               psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f "$test_file" 2>&1 \
                 | tee -a supabase-tests.log | tee "$host_test_log"
-              grep -Eq '1\\.\\.[0-9]+' "$host_test_log" || {
+              grep -Eq '1[.][.][0-9]+' "$host_test_log" || {
                 echo '::error::Plan TAP manquant dans la recette migration HDM'
                 exit 1
               }
