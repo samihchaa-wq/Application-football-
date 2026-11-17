@@ -179,7 +179,7 @@ enum WaitlistMode {
   lastSeasonAttendance(
     0,
     'Historique',
-    'Le classement historique d’AS Grinta départage les joueurs. '
+    'Le classement historique de l’équipe départage les joueurs. '
         'Le réglage séparé détermine si les +1 modifient ce classement.',
   ),
 
