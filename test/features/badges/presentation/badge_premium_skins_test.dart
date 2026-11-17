@@ -71,8 +71,20 @@ void main() {
     expect(find.text('25'), findsNWidgets(2));
     expect(find.text('MATCHS'), findsNWidgets(2));
     expect(find.text('SAISON'), findsNWidgets(2));
-    final painted = tester.widgetList<CustomPaint>(find.byType(CustomPaint));
-    expect(painted.any((w) => w.painter is BadgePremiumTexturePainter), isTrue);
+    final imageDecorations = tester
+        .widgetList<Container>(find.descendant(
+          of: find.byType(BadgeEmblemBody),
+          matching: find.byType(Container),
+        ))
+        .map((widget) => widget.decoration)
+        .whereType<BoxDecoration>()
+        .where((decoration) => decoration.image?.image is AssetImage)
+        .toList();
+    expect(imageDecorations, isNotEmpty);
+    expect(
+      (imageDecorations.first.image!.image as AssetImage).assetName,
+      badgePremiumBackgroundAsset(BadgePremiumSkin.navy),
+    );
     expect(tester.getSize(find.byType(BadgeEmblemBody)).height,
         closeTo(100 * badgeEmblemHeightRatio(), .01));
   });
