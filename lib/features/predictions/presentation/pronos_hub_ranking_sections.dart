@@ -2,16 +2,20 @@ part of 'pronos_hub_page.dart';
 
 /// Classement des pronostics de match : la seule compétition de pronostic.
 class _GeneralRankingsSection extends ConsumerWidget {
-  const _GeneralRankingsSection({this.badgeSize});
+  const _GeneralRankingsSection({this.badgeSize, this.period});
 
   final double? badgeSize;
+  final StatisticsPeriod? period;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final leaderboard = ref.watch(leaderboardProvider);
+    final provider = period == null
+        ? leaderboardProvider
+        : periodLeaderboardProvider(period!);
+    final leaderboard = ref.watch(provider);
     Future<void> refresh() async {
-      ref.invalidate(leaderboardProvider);
-      await ref.read(leaderboardProvider.future);
+      ref.invalidate(provider);
+      await ref.read(provider.future);
     }
 
     return leaderboard.when(

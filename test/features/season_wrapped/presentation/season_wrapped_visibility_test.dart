@@ -1,4 +1,5 @@
 import 'package:as_grinta/app/router/auth_redirect.dart';
+import 'package:as_grinta/core/sync/shared_data_sync.dart';
 import 'package:as_grinta/features/auth/domain/auth_profile.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
 import 'package:as_grinta/features/season_wrapped/data/season_wrapped_repository.dart';
@@ -7,6 +8,8 @@ import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show SupabaseClient, AuthClientOptions;
 
 void main() {
   testWidgets(
@@ -66,6 +69,49 @@ void main() {
     );
   });
 
+  testWidgets('la synchronisation fait apparaître la vidéo après la clôture', (
+    tester,
+  ) async {
+    final repository = _WrappedRepository();
+    final container = ProviderContainer(
+      overrides: [
+        clubModulesProvider.overrideWith(
+          (ref) async => const ClubModules.allEnabled(),
+        ),
+        seasonWrappedRepositoryProvider.overrideWithValue(repository),
+        isAdminViewProvider.overrideWithValue(false),
+      ],
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          home: Scaffold(body: SeasonWrappedEntryButton()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await container.read(mySeasonWrappedProvider.future);
+    expect(find.byKey(const ValueKey('season-wrapped-button')), findsNothing);
+
+    repository.available = true;
+    container
+        .read(sharedDataRefreshCoordinatorProvider)
+        .invalidateForSessionChange();
+    await tester.pumpAndSettle();
+    await container.read(mySeasonWrappedProvider.future);
+    expect(find.byKey(const ValueKey('season-wrapped-button')), findsOneWidget);
+    expect(repository.mineReads, 2);
+
+    repository.available = false; // Ouverture de la saison suivante.
+    container
+        .read(sharedDataRefreshCoordinatorProvider)
+        .invalidateForSessionChange();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('season-wrapped-button')), findsNothing);
+  });
+
   test('le lien d’aperçu Wrapped est bloqué même pour un admin', () {
     const state = AuthState(
       isLoading: false,
@@ -105,3 +151,27 @@ const _adminProfile = AuthProfile(
   isActive: true,
   mustChangePassword: false,
 );
+
+class _WrappedRepository extends SeasonWrappedRepository {
+  _WrappedRepository()
+      : super(SupabaseClient(
+          'https://example.invalid',
+          'test-key',
+          authOptions: const AuthClientOptions(autoRefreshToken: false),
+        ));
+
+  bool available = false;
+  int mineReads = 0;
+
+  @override
+  Future<SeasonWrappedState> fetchState() async => SeasonWrappedState(
+        available: available,
+        seasonName: available ? '2026-2027' : null,
+      );
+
+  @override
+  Future<SeasonWrapped?> fetchMine() async {
+    mineReads++;
+    return available ? demoSeasonWrapped('2026-2027') : null;
+  }
+}
