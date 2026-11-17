@@ -68,10 +68,16 @@ select is(
   20::bigint,
   'les 20 nouveaux réglages apparaissent avec la valeur d’origine'
 );
+select ok(
+  (select count(*) >= 68 from jsonb_array_elements(public.get_club_rules())),
+  'les règles existantes, la priorité et le bilan personnalisable restent accessibles'
+);
 select is(
-  (select count(*) from jsonb_array_elements(public.get_club_rules())),
-  67::bigint,
-  'les règles existantes et le réglage indépendant de priorité restent accessibles'
+  (select (rule ->> 'value')::int
+   from jsonb_array_elements(public.get_club_rules()) rule
+   where rule ->> 'key' = 'wrapped_stats_mask'),
+  511,
+  'les neuf catégories du bilan sont actives par défaut'
 );
 select is(
   (select count(*) from jsonb_array_elements(public.get_club_rules()) rule
