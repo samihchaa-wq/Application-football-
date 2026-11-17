@@ -73,7 +73,8 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(repository.requested, ['karim@example.com']);
-    expect(find.textContaining('Si cette adresse est confirmée'), findsOneWidget);
+    expect(
+        find.textContaining('Si cette adresse est confirmée'), findsOneWidget);
   });
 
   testWidgets('une erreur permet une nouvelle tentative', (tester) async {
