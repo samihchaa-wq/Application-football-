@@ -50,10 +50,10 @@ class HistoryImportBatch {
           conceded is! int ||
           conceded < 0 ||
           conceded > 99 ||
-          home is! bool ||
-          (kind != 'amical' && kind != 'championnat')) {
+          (home != null && home is! bool) ||
+          (kind != null && kind != 'amical' && kind != 'championnat')) {
         throw FormatException(
-            'Match $number : date, adversaire, score, domicile ou type invalide.');
+            'Match $number : date, adversaire, score ou information renseignée invalide.');
       }
       final day = DateTime.tryParse(date);
       if (day == null ||
@@ -72,8 +72,8 @@ class HistoryImportBatch {
         'opponent': opponent.trim(),
         'score_for': scored,
         'score_against': conceded,
-        'is_home': home,
-        'match_type': kind,
+        if (home != null) 'is_home': home,
+        if (kind != null) 'match_type': kind,
       };
       for (final field in ['time', 'address', 'formation']) {
         final value = row[field];
