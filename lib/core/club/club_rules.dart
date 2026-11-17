@@ -25,6 +25,7 @@ abstract final class ClubRules {
   static const String livePilotModeKey = 'live_pilot_mode';
   static const String motmSelfVoteKey = 'motm_self_vote';
   static const String wrappedMusicKey = 'wrapped_music';
+  static const String wrappedStatsMaskKey = 'wrapped_stats_mask';
 
   /// Unité des règles enregistrées en dixièmes de multiplicateur (20 = × 2).
   static const String multiplierUnit = '×';
@@ -68,6 +69,7 @@ abstract final class ClubRules {
     livePilotModeKey: 0,
     motmSelfVoteKey: 0,
     wrappedMusicKey: 1,
+    wrappedStatsMaskKey: 511,
   };
 
   static bool _liveEnabled = true;
@@ -146,6 +148,9 @@ abstract final class ClubRules {
 
   /// Faux quand le club a coupé la musique du bilan de saison.
   static bool get wrappedMusicEnabled => _get(wrappedMusicKey) == 1;
+
+  /// Les 9 catégories du bilan sont visibles par défaut.
+  static int get wrappedStatsMask => _get(wrappedStatsMaskKey);
 
   /// « × 1,5 » pour une règle enregistrée en dixièmes (15).
   static String formatMultiplier(int tenths) {
