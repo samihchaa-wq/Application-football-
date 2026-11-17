@@ -69,7 +69,7 @@ jobs:
           trap cleanup EXIT
           dockerd --host="unix://$root/docker.sock" \
             --data-root="$root/data" --exec-root="$root/exec" \
-            --pidfile="$root/docker.pid" --storage-driver=vfs \
+            --pidfile="$root/docker.pid" --storage-driver=overlay2 \
             --iptables=false --ip6tables=false --bridge=none \
             --ip-forward=false --ip-masq=false \
             >"$root/daemon.log" 2>&1 &
