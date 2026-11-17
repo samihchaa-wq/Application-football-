@@ -494,12 +494,17 @@ begin
     return null;
   end if;
   -- Le helper garde le gel avant match et ne réinitialise aucun choix admin.
+  -- Recalculer le classement des saisons ouvertes même en l'absence de
+  -- match futur (p. ex. saison ouverte avec dernier match annulé).
+  -- Les anciennes saisons closes ne sont pas réordonnées rétroactivement.
   for v_season in
-    select distinct s.id from public.seasons s
-    join public.matches m on m.season_id = s.id
+    select s.id from public.seasons s
     where s.club_id = (v_row ->> 'club_id')::uuid
-      and m.status = 'a_venir'
-      and now() < private.match_prediction_closes_at(m.kickoff_at)
+      and s.status = 'open'
+      and exists (
+        select 1 from public.sport_waitlist_entries e
+        where e.season_id = s.id
+      )
     order by s.id
   loop
     perform 1 from public.seasons where id = v_season.id for update;
