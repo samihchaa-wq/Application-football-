@@ -434,8 +434,7 @@ void main() {
 
     await tester.enterText(search, '');
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('club-section-identity')),
-        findsOneWidget);
+    expect(find.byKey(const ValueKey('club-section-identity')), findsOneWidget);
   });
 
   testWidgets('l’admin choisit les statistiques affichées au bilan',
