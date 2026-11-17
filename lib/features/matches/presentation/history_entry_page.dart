@@ -267,7 +267,8 @@ class _HistoryEntryPageState extends ConsumerState<HistoryEntryPage> {
                   ),
                 ),
                 icon: const Icon(Icons.upload_file_outlined),
-                label: const Text('Importer plusieurs matchs depuis un fichier'),
+                label:
+                    const Text('Importer plusieurs matchs depuis un fichier'),
               ),
               const SizedBox(height: 12),
               _section(theme, 'Affiche', _posterFields(entryContext)),
