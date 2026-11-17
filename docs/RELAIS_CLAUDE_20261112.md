@@ -12,7 +12,7 @@ Merci de reprendre la suite du chantier **Lucarne**, version commerciale et mult
 - **Supabase commercial :** `jvxkhgdopslctpcjrhzw` (organisation commerciale Pro, Paris). Lecture seule pour l'audit courant. **Aucune** migration, modification de données, création de compte, déploiement de fonction ou manipulation de secret sans consentement exprès.
 - Aucun coût nouveau, achat de domaine, engagement commercial, mise en production, publicité ou publication sans accord préalable. Ne jamais écrire de secrets dans GitHub/ChatGPT.
 - Les migrations déjà appliquées sont immuables ; les nouvelles doivent être datées de manière unique et ordonnées après l'état effectivement appliqué. Ne pas exécuter de SQL destructif `DROP ... CASCADE` depuis l'ancien `HANDOFF.md`.
-- Garder la DA et l'ergonomie AS Grinta autant que possible. Produit **foot à 11** seulement, maillots et stade réglables par club, badges avec emojis conservés, terme **« Étoile du match »** validé, marque **Lucarne** choisie.
+- Garder la DA et l'ergonomie AS Grinta autant que possible. Produit **foot à 11** seulement, maillots et stade réglables par club, badges avec emojis conservés, terme **« Homme du match »** validé, marque **Lucarne** choisie.
 - Objectif de lancement : **mai 2027**. D'abord deux clubs fictifs, puis un club pilote, abonnement payant, 10 clubs et ensuite ~100. Prix et formule **non décidés** : ne pas prendre comme tarif officiel le 10 €/joueur/an codé ni le 50 €/club/mois évoqué.
 - Fusions seulement après relecture des risques et **CI réussie sur le HEAD exact**. Les fusions de code et les migrations/publi­cations réelles sont des opérations différentes.
 
@@ -37,7 +37,7 @@ Merci de reprendre la suite du chantier **Lucarne**, version commerciale et mult
 
 ## 4. PR ouvertes — travail immédiat
 
-### [#50 — maillots, « Étoile du match », identifiants](https://github.com/samihchaa-wq/Application-football-/pull/50)
+### [#50 — maillots, « Homme du match », identifiants](https://github.com/samihchaa-wq/Application-football-/pull/50)
 - **Statut contrôlé : ouverte, non fusionnable (`mergeable=false`) après #47**. Les cinq contrôles verts de l'ancien HEAD ne valident plus la combinaison. Après les modifications du 12/11 vers 16 h, il faut relancer la CI sur le HEAD neuf.
 - **Deux corrections complémentaires M00 déjà commitées dans sa branche `claude/project-thread-ruh5sn` :**
   1. `supabase/functions/calendar-feed/index.ts` : restauration de l'UID d'événement historique `<id>@sporteasy-grinta` au lieu de `<id>@calendrier-club`. Le préfixe est purement technique et stable : le modifier créerait des doublons pour les abonnés existants.

@@ -49,7 +49,7 @@ La présente extension ajoute **32 réglages**, soit **66 clés de règles** au 
 | `notify_match_rescheduled_time` | Notification : changement d’horaire | Activé | Notifier les changements d’heure des matchs. Dépend aussi de l’interrupteur match annulé ou déplacé. |
 | `notify_convocation_promoted` | Notification : promotion en convoqué | Activé | Notifier le passage de la liste d’attente aux convoqués. Dépend aussi de l’interrupteur convocation et liste d’attente. |
 | `notify_convocation_demoted` | Notification : passage en attente | Activé | Notifier le passage des convoqués à la liste d’attente. Dépend aussi de l’interrupteur convocation et liste d’attente. |
-| `notify_motm_winner` | Étoile : notification au gagnant | Activé | Envoyer le message personnel au gagnant. L’annonce générale dépend du réglage résultat de l’Étoile du match. |
+| `notify_motm_winner` | Homme du match : notification au gagnant | Activé | Envoyer le message personnel au gagnant. L’annonce générale dépend du réglage résultat de l’Homme du match. |
 
 ## Contrats d’application
 

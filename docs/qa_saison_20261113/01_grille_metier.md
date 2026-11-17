@@ -188,6 +188,6 @@
 | T06 | Pronostics avant, pendant, après fenêtre; cotes et barème | Écran authentifié et relecture DB / preuve capture | **NON VÉRIFIÉ (30/30 à faire)** |
 | T07 | Live coach/admin, événements, remplacements, erreurs | Écran authentifié et relecture DB / preuve capture | **NON VÉRIFIÉ (30/30 à faire)** |
 | T08 | Compte rendu, buteurs et corrections hors délai | Écran authentifié et relecture DB / preuve capture | **NON VÉRIFIÉ (30/30 à faire)** |
-| T09 | Étoile du match, vote sur soi, égalité, clôture | Écran authentifié et relecture DB / preuve capture | **NON VÉRIFIÉ (30/30 à faire)** |
+| T09 | Homme du match, vote sur soi, égalité, clôture | Écran authentifié et relecture DB / preuve capture | **NON VÉRIFIÉ (30/30 à faire)** |
 | T10 | Badges, statistiques et calculs indépendants | Écran authentifié et relecture DB / preuve capture | **NON VÉRIFIÉ (30/30 à faire)** |
 | T11 | Notifications actives puis désactivées | Écran authentifié et relecture DB / preuve capture | **NON VÉRIFIÉ (30/30 à faire)** |

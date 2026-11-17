@@ -279,7 +279,7 @@ select ok(
 select set_config('request.jwt.claims', '', true);
 
 -- ---------------------------------------------------------------------------
--- 6. Étoile du match : voter pour soi
+-- 6. Homme du match : voter pour soi
 -- ---------------------------------------------------------------------------
 -- Le parcours complet du vote est couvert par sports_management_motm_vote ;
 -- ici on vérifie que le refus du vote pour soi dépend bien de la règle.

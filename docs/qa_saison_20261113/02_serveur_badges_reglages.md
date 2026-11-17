@@ -359,7 +359,7 @@ Chaque badge demande : déclenchement, non-attribution en dessous du seuil, reca
 |---|---|---|---|
 | MODULE-01 | `predictions` | Pronostics et classement | Allumer, éteindre, ouvrir écran direct, vérifier RPC/notifications/statistiques, rallumer sans effacer les données | **NON VÉRIFIÉ** |
 | MODULE-02 | `statistics` | Statistiques | Allumer, éteindre, ouvrir écran direct, vérifier RPC/notifications/statistiques, rallumer sans effacer les données | **NON VÉRIFIÉ** |
-| MODULE-03 | `man_of_the_match` | Étoile du match | Allumer, éteindre, ouvrir écran direct, vérifier RPC/notifications/statistiques, rallumer sans effacer les données | **NON VÉRIFIÉ** |
+| MODULE-03 | `man_of_the_match` | Homme du match | Allumer, éteindre, ouvrir écran direct, vérifier RPC/notifications/statistiques, rallumer sans effacer les données | **NON VÉRIFIÉ** |
 | MODULE-04 | `live_mode` | Mode live | Allumer, éteindre, ouvrir écran direct, vérifier RPC/notifications/statistiques, rallumer sans effacer les données | **NON VÉRIFIÉ** |
 | MODULE-05 | `badges` | Badges | Allumer, éteindre, ouvrir écran direct, vérifier RPC/notifications/statistiques, rallumer sans effacer les données | **NON VÉRIFIÉ** |
 | MODULE-06 | `season_wrapped` | Bilan de fin de saison | Allumer, éteindre, ouvrir écran direct, vérifier RPC/notifications/statistiques, rallumer sans effacer les données | **NON VÉRIFIÉ** |

@@ -21,7 +21,7 @@ String calendarMatchTypeLabel(String? matchType, int? championshipRound) {
 /// une fois le match terminé, « VS » avant), puis adresse cliquable. La
 /// couleur suit le type de match, comme dans le calendrier.
 ///
-/// Étoile du match, buteurs et passeurs se lisent sur le terrain juste en
+/// Homme du match, buteurs et passeurs se lisent sur le terrain juste en
 /// dessous : l'en-tête ne les répète pas. Seul le lien vers le vote HDM en
 /// cours y reste. Les informations absentes de la source sont omises.
 class MatchDetailHeaderCard extends StatelessWidget {
@@ -141,7 +141,8 @@ class MatchDetailHeaderCard extends StatelessWidget {
               InkWell(
                 onTap: onMotmTap,
                 borderRadius: BorderRadius.circular(10),
-                child: Padding(
+                child: Container(
+                  constraints: const BoxConstraints(minHeight: 48),
                   padding: EdgeInsets.symmetric(vertical: compact ? 2 : 4),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,

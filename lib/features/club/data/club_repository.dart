@@ -82,8 +82,8 @@ enum ClubModule {
   ),
   manOfTheMatch(
     'man_of_the_match',
-    'Étoile du match',
-    'Le vote de l’Étoile du match après chaque rencontre.',
+    'Homme du match',
+    'Le vote de l’Homme du match après chaque rencontre.',
   ),
   liveMode(
     'live_mode',
