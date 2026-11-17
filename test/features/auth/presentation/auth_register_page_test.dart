@@ -114,7 +114,7 @@ void main() {
 
     expect(repository.created, 'FC Villeneuve');
     expect(repository.createdContract, clubContractVersion);
-    expect(find.text('Club créé : FC Villeneuve'), findsOneWidget);
+    expect(find.text('Équipe créée : FC Villeneuve'), findsOneWidget);
     expect(find.textContaining('Connecte-toi, puis'), findsOneWidget);
   });
 
