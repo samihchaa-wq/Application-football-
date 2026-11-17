@@ -21,7 +21,7 @@ where code = 'mvp__10';
 insert into private.notification_history(profile_id, club_id, kind, title, body, tag)
 select 'dd170000-0000-4000-8000-000000000001'::uuid, id,
  k, 'Étoile du match', 'Étoiles du match', 'qa-hdm-migration'
-from hdm_team cross join unnest(array['motm_open','motm_result_general','motm_result_winner','custom']) k;
+from hdm_team cross join unnest(array['motm_open','motm_result_general','motm_result_winner','badge_unlocked','custom']) k;
 
 create function private.m03_hdm_migration_fixture() returns text
 language sql security definer set search_path to ''
@@ -60,7 +60,7 @@ select is((select count(*) from hdm_badges_before b full join
 select is((select count(*) from private.notification_history
  where tag='qa-hdm-migration' and kind <> 'custom'
  and title='Homme du match' and body='Hommes du match'),
- 3::bigint, 'les trois historiques système ciblés sont traduits');
+ 4::bigint, 'les historiques système HDM et badges sont traduits');
 select is((select title from private.notification_history
  where tag='qa-hdm-migration' and kind='custom'), 'Étoile du match',
  'le texte libre administrateur est préservé');
@@ -69,5 +69,7 @@ select is((select count(*) from hdm_notifications_before b full join
  where tag='qa-hdm-migration') a using(id)
  where a.unchanged is distinct from b.unchanged),
  0::bigint, 'aucune notification ajoutée ou supprimée ; destinataire, équipe, dates et lecture conservés');
+select is(pg_temp.hdm_label('Aucune Étoile du match collective n’est attribuée'),
+ 'Aucun Homme du match collectif n’est attribué', 'Accord masculin de l’annulation conservé');
 select * from finish();
 rollback;
