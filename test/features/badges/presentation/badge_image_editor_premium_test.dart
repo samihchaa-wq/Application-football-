@@ -25,7 +25,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Choisir une image'), findsOneWidget);
-    final colors = tester.widgetList<Container>(find.byType(Container))
+    final colors = tester
+        .widgetList<Container>(find.byType(Container))
         .map((container) => container.decoration)
         .whereType<BoxDecoration>()
         .map((decoration) => decoration.gradient)
