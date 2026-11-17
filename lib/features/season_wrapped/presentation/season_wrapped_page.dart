@@ -350,7 +350,8 @@ class _WrappedStoryState extends ConsumerState<_WrappedStory>
                 ),
               ),
             ),
-            for (final sheet in widget.wrapped.sheetsForMask(ClubRules.wrappedStatsMask))
+            for (final sheet
+                in widget.wrapped.sheetsForMask(ClubRules.wrappedStatsMask))
               ListTile(
                 title: Text(
                   sheet.title.toUpperCase(),
