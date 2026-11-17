@@ -309,7 +309,7 @@ class SeasonWrapped {
         for (final sheet in sheets) ...sheet.stats,
         SeasonWrappedStat(
           label: 'Badges décrochés',
-            option: WrappedStatOption.badges,
+          option: WrappedStatOption.badges,
           shortLabel: 'Badges',
           value: '$badgeCount',
         ),
