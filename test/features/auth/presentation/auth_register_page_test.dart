@@ -12,7 +12,11 @@ void main() {
 
   setUp(() => repository = _FakeClubRepository());
 
-  Future<void> pumpPage(WidgetTester tester, {String? code, Size size = const Size(900, 2200)}) async {
+  Future<void> pumpPage(
+    WidgetTester tester, {
+    String? code,
+    Size size = const Size(900, 2200),
+  }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
