@@ -32,7 +32,7 @@ AS $function$
      'Combien d’heures après sa validation le résultat peut encore être corrigé.',
      'h', 'Après le match', 24, 1, 168, 60),
     ('waitlist_mode', 'Liste d’attente : qui passe en premier',
-     'Quand il y a plus de présents que de places : historique AS Grinta, ordre d’arrivée, ou choix de l’administrateur. La priorité des +1 est un réglage indépendant.',
+     'Quand il y a plus de présents que de places : classement historique de l’équipe, ordre d’arrivée ou choix de l’administrateur. La priorité des +1 est un réglage indépendant.',
      'mode', 'Liste d’attente', 0, 0, 2, 65),
     ('waitlist_priority_enabled', 'Priorité des +1',
      'Si activé, les +1 gagnés cette saison donnent priorité dans les convocations automatiques. Désactivé : sélection selon le mode choisi. Les +1 continuent toujours à être attribués au coup d’envoi.',
