@@ -157,5 +157,6 @@ class _FakeHistoryRepository implements HistoryEntryRepository {
   Future<({int imported, int skipped})> importMatches(
     HistoryImportBatch batch,
     HistoryEntryContext context,
-  ) async => (imported: batch.count, skipped: 0);
+  ) async =>
+      (imported: batch.count, skipped: 0);
 }
