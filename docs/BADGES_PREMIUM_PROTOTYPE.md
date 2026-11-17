@@ -1,6 +1,6 @@
 # Prototype — 14 fonds premium des badges Petit Filet
 
-Statut : **prototype isolé**, à valider visuellement et techniquement. **Ne pas fusionner / déployer avant recette.**
+Statut : **14 visuels de référence intégrés dans la branche commerciale** ; contrôle technique et publication sécurisée en cours.
 
 ## Périmètre
 
@@ -33,9 +33,9 @@ Statut : **prototype isolé**, à valider visuellement et techniquement. **Ne pa
 
 ## Limite majeure : photos déjà composites
 
-Certaines images de badges dans `badge-images` sont des JPEG **opaques** avec l'ancien fond directement imprimé. Dans ces cas, le nouveau motif peint **derrière** la photo n'est pas visible : le prototype ajoute tout de même un cadre et un socle premium, sans modifier le visage ni écraser l'illustration. Les images réellement transparentes laissent apparaître la texture intégrale.
+Certaines images de badges dans `badge-images` sont des JPEG **opaques** avec l'ancien fond directement imprimé. Dans ces cas, le nouveau fond JPEG placé **derrière** la photo ne sera pas visible au travers du portrait : l'app fournit toujours le cadre et le socle premium sans modifier le visage. Les images détourées transparentes laissent apparaître le nouveau fond.
 
-**Les maquettes d'images générées précédemment ne sont pas encore intégrées pixel à pixel** : ce prototype redessine leurs effets en Flutter, afin de valider l'architecture et le traitement des textes sans remplacer les photos originales.
+**Les 14 visuels sont désormais intégrés** sous forme de JPEG légers recadrés dans la planche de référence choisie par le propriétaire. Les fonds de remplacement proviennent des visuels approuvés, et non plus seulement des effets dessinés en Flutter. Les recadrages ne sont pas des masters natifs haute résolution.
 
 Après validation visuelle, il faudra soit :
 1. récupérer des originaux détourés fiables, puis placer les illustrations transparentes sur les fonds ;
@@ -64,11 +64,11 @@ Ne pas faire de conversion destructive automatique de la production.
 
 ## Garantie de périmètre
 
-Aucune migration SQL, aucune modification des données métier, aucun téléversement Storage ni déploiement. Le dépôt original AS Grinta et ses données ne sont jamais modifiés.
+Aucune migration SQL, aucune modification des données métier ni aucun téléversement Storage depuis cette PR. La publication éventuelle est effectuée uniquement par le workflow commercial sécurisé après fusion. Le dépôt original AS Grinta et ses données ne sont jamais modifiés.
 
 ## Intégration des fonds issus de la planche de référence
 
 - La planche finale de 14 cartes vides du propriétaire a été découpée en images individuelles, nettoyées des titres et encadrés d'infographie, puis encodées en JPEG 180 × 240 légers. Cela reproduit la **texture de la planche**, mais ne constitue pas des masters natifs haute résolution.
 - Les 14 fichiers se trouvent dans `assets/images/badge_backgrounds/`. Une correspondance explicite dans `badgePremiumBackgroundAsset` relie chaque famille au bon fichier, sans réécriture SQL ni changement de palmarès.
 - Le socle texte conserve le calcul dynamique et un voile sombre semi-transparent pour rester lisible. Les illustrations de joueurs restent au-dessus. Les anciens JPEG opaques contenant déjà leur arrière-plan masqueront encore la texture sous la photo : il faudra les détourer un jour avec l'accord de leur propriétaire.
-- Le test visuel `badge_visual_gallery_test.dart` fournit une comparaison des 14 variantes avec illustrations fictives. Tant que cette preuve graphique et une recette représentative avec images réelles ne sont pas disponibles, la PR demeure **en brouillon**.
+- Le workflow `badges_visual_qa.yml` exécute `scripts/render_badge_gallery.py` et fournit l'artefact `badges-14-fonds-gallery` : il vérifie les **14 fichiers JPEG réels**, leur décodage et leurs proportions, et affiche leurs textures sans joueur. La suite Flutter vérifie la correspondance des 14 assets, la mise en page des valeurs dynamiques, les intitulés et les badges mystères. Cette galerie **n'est pas une capture de l'application avec photos réelles** : la limite des anciens portraits opaques reste documentée.
