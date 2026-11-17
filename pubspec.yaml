@@ -24,6 +24,7 @@ dependencies:
   # (lib/core/l10n/french_localizations.dart). Déjà présent via
   # flutter_localizations, qui en impose la version.
   intl: ^0.20.2
+  file_picker: ^8.3.7
   image_picker: ^1.1.2
   audioplayers: ^6.1.0
   share_plus: ^10.1.4
