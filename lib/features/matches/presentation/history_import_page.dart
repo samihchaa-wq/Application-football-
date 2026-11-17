@@ -1,12 +1,10 @@
-import 'dart:convert';
-
 import 'package:as_grinta/core/utils/app_errors.dart';
 import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
 import 'package:as_grinta/features/matches/data/calendar_history_repository.dart';
 import 'package:as_grinta/features/matches/data/history_entry_repository.dart';
 import 'package:as_grinta/features/matches/domain/history_import_batch.dart';
 import 'package:as_grinta/features/matches/domain/history_match_draft.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:as_grinta/features/matches/data/history_file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -49,20 +47,13 @@ class _HistoryImportPageState extends ConsumerState<HistoryImportPage> {
     final entry = _entry;
     if (entry == null || _importing) return;
     try {
-      final selection = await FilePicker.platform.pickFiles(
-        type: FileType.custom, allowedExtensions: ['json'],
-        allowMultiple: false, withData: true,
-      );
-      if (selection == null || selection.files.isEmpty || !mounted) return;
-      final file = selection.files.single;
-      if (file.size > 3 * 1024 * 1024 || file.bytes == null) {
-        throw const FormatException('Fichier JSON de 3 Mo maximum.');
-      }
+      final selected = await pickHistoryJsonFile();
+      if (selected == null || !mounted) return;
       final parsed = HistoryImportBatch.parse(
-        utf8.decode(file.bytes!, allowMalformed: false), entry.lastAllowedDate,
+        selected.content, entry.lastAllowedDate,
       );
       setState(() {
-        _batch = parsed; _fileName = file.name;
+        _batch = parsed; _fileName = selected.name;
         _error = null; _result = null;
       });
     } catch (error) {
