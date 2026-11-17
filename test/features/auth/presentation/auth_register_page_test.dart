@@ -31,13 +31,16 @@ void main() {
   Future<void> giveConsent(WidgetTester tester) async {
     final age = find.byKey(const Key('register-age-15-or-more'));
     await tester.ensureVisible(age);
+    await tester.pumpAndSettle();
     await tester.tap(age);
     final terms = find.byKey(const Key('register-accept-terms'));
     await tester.ensureVisible(terms);
+    await tester.pumpAndSettle();
     await tester.tap(terms);
     final contract = find.byKey(const Key('register-accept-club-contract'));
     if (contract.evaluate().isNotEmpty) {
       await tester.ensureVisible(contract);
+      await tester.pumpAndSettle();
       await tester.tap(contract);
     }
     await tester.pump();
@@ -66,8 +69,9 @@ void main() {
     expect(field.controller!.text, 'ABCDEFGH');
   });
 
-  testWidgets('rejoindre un club exige un code d’invitation valide',
-      (tester) async {
+  testWidgets('rejoindre un club exige un code d’invitation valide', (
+    tester,
+  ) async {
     await pumpPage(tester);
     await fillIdentity(tester);
 
@@ -78,8 +82,9 @@ void main() {
     expect(repository.joined, isNull);
   });
 
-  testWidgets('rejoindre un club envoie le code et annonce l’attente',
-      (tester) async {
+  testWidgets('rejoindre un club envoie le code et annonce l’attente', (
+    tester,
+  ) async {
     await pumpPage(tester, code: 'ABCDEFGH');
     await fillIdentity(tester);
 
@@ -92,8 +97,9 @@ void main() {
     expect(find.textContaining('FC Tests'), findsOneWidget);
   });
 
-  testWidgets('créer un club demande son nom et annonce le rôle d’admin',
-      (tester) async {
+  testWidgets('créer un club demande son nom et annonce le rôle d’admin', (
+    tester,
+  ) async {
     await pumpPage(tester);
     await tester.tap(find.text('Créer un club'));
     await tester.pumpAndSettle();
@@ -122,8 +128,9 @@ void main() {
     expect(find.textContaining('Connecte-toi, puis'), findsOneWidget);
   });
 
-  testWidgets('l’adresse e-mail facultative est transmise ou refusée',
-      (tester) async {
+  testWidgets('l’adresse e-mail facultative est transmise ou refusée', (
+    tester,
+  ) async {
     await pumpPage(tester, code: 'ABCDEFGH');
     await fillIdentity(tester);
     await tester.enterText(
@@ -133,7 +140,9 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Créer mon compte'));
     await tester.pump();
     expect(
-        find.textContaining('adresse e-mail n’est pas valide'), findsOneWidget);
+      find.textContaining('adresse e-mail n’est pas valide'),
+      findsOneWidget,
+    );
     expect(repository.joined, isNull);
     ScaffoldMessenger.of(tester.element(find.byType(AuthRegisterPage)))
         .clearSnackBars();
@@ -148,13 +157,16 @@ void main() {
     expect(repository.lastEmail, 'karim@example.com');
   });
 
-  testWidgets('l’inscription exige l’âge et l’acceptation des conditions',
-      (tester) async {
+  testWidgets('l’inscription exige l’âge et l’acceptation des conditions', (
+    tester,
+  ) async {
     await pumpPage(tester, code: 'ABCDEFGH');
     await fillIdentity(tester, consent: false);
 
     final submit = find.widgetWithText(FilledButton, 'Créer mon compte');
     await tester.ensureVisible(submit);
+    await tester.pumpAndSettle();
+    expect(submit.hitTestable(), findsOneWidget);
     await tester.tap(submit);
     await tester.pump();
     expect(find.textContaining('15 ans ou plus'), findsWidgets);
@@ -165,33 +177,34 @@ void main() {
 
     await giveConsent(tester);
     await tester.ensureVisible(submit);
+    await tester.pumpAndSettle();
+    expect(submit.hitTestable(), findsOneWidget);
     await tester.tap(submit);
     await tester.pumpAndSettle();
     expect(repository.joined, 'ABCDEFGH');
-    expect(
-        repository.lastConsent, (legalVersion, AgeConfirmation.fifteenOrMore));
+    expect(repository.lastConsent, (
+      legalVersion,
+      AgeConfirmation.fifteenOrMore,
+    ));
   });
 
   // Recette M03 : viewport logique iPhone ; aucune inscription réelle.
   // Le dépôt factice vérifie les gestes et le contrat client actuels. #160
   // doit remplacer l'ancien ageConfirmation par une naissance validée.
-  testWidgets('M03 mobile : invitation et identifiant restent accessibles',
-      (tester) async {
-    await pumpPage(
-      tester,
-      code: 'abcd-efgh',
-      size: const Size(390, 844),
-    );
+  testWidgets('M03 mobile : invitation et identifiant restent accessibles', (
+    tester,
+  ) async {
+    await pumpPage(tester, code: 'abcd-efgh', size: const Size(390, 844));
     await fillIdentity(tester);
-    final email = find.widgetWithText(
-      TextField,
-      'Adresse e-mail (facultatif)',
-    );
+    final email = find.widgetWithText(TextField, 'Adresse e-mail (facultatif)');
     await tester.ensureVisible(email);
+    await tester.pumpAndSettle();
     await tester.enterText(email, 'karim@example.com');
 
     final submit = find.widgetWithText(FilledButton, 'Créer mon compte');
     await tester.ensureVisible(submit);
+    await tester.pumpAndSettle();
+    expect(submit.hitTestable(), findsOneWidget);
     await tester.tap(submit);
     await tester.pumpAndSettle();
 
@@ -202,18 +215,22 @@ void main() {
     expect(find.textContaining('en attente'), findsOneWidget);
   });
 
-  testWidgets('M03 mobile : créer une équipe reste accessible au toucher',
-      (tester) async {
+  testWidgets('M03 mobile : créer une équipe reste accessible au toucher', (
+    tester,
+  ) async {
     await pumpPage(tester, size: const Size(390, 844));
     await tester.tap(find.text('Créer un club'));
     await tester.pumpAndSettle();
     final name = find.byKey(const Key('register-club-name'));
     await tester.ensureVisible(name);
+    await tester.pumpAndSettle();
     await tester.enterText(name, 'Equipe Fictive');
     await fillIdentity(tester);
 
     final submit = find.widgetWithText(FilledButton, 'Créer mon club');
     await tester.ensureVisible(submit);
+    await tester.pumpAndSettle();
+    expect(submit.hitTestable(), findsOneWidget);
     await tester.tap(submit);
     await tester.pumpAndSettle();
 
