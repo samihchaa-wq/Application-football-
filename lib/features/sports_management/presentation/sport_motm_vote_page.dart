@@ -231,7 +231,7 @@ class _SportMotmVotePageState extends ConsumerState<SportMotmVotePage> {
             icon: Icons.cancel_outlined,
             title: 'Scrutin annulé',
             message:
-                'Aucun Homme du match collectif n’est attribuée pour le moment.',
+                'Aucun Homme du match collectif n’est attribué pour le moment.',
           ),
         ] else ...[
           const _MessageCard(
