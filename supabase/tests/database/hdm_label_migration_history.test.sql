@@ -39,7 +39,7 @@ create temporary table hdm_notifications_before on commit drop as
 select id, to_jsonb(n) - 'title' - 'body' as unchanged
 from private.notification_history n where tag = 'qa-hdm-migration';
 
-\ir ../../migrations/20261122000001_homme_du_match_partout.sql
+\ir ../../migrations/20261122090001_homme_du_match_partout.sql
 
 select is(private.m03_hdm_migration_fixture(), 'Homme du match',
  'la vraie migration traduit le corps de la fonction fixture');
