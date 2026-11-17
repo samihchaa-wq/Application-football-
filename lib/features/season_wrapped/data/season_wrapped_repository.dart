@@ -1,5 +1,6 @@
 import 'package:as_grinta/core/providers/supabase_provider.dart';
 import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:as_grinta/features/season_wrapped/domain/wrapped_stat_selection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -39,6 +40,7 @@ class SeasonWrappedStat {
     required this.value,
     this.rank,
     this.note,
+    this.option,
     String? shortLabel,
   }) : _shortLabel = shortLabel;
 
@@ -46,6 +48,7 @@ class SeasonWrappedStat {
   final String value;
   final int? rank;
   final String? note;
+  final WrappedStatOption? option;
   final String? _shortLabel;
 
   /// Intitulé court, pour la récapitulation où les neuf lignes doivent tenir
@@ -217,11 +220,13 @@ class SeasonWrapped {
         stats: [
           SeasonWrappedStat(
             label: 'Matchs joués',
+            option: WrappedStatOption.matches,
             value: '$matchesPlayed',
             rank: matchesPlayedRank,
           ),
           SeasonWrappedStat(
             label: 'Réactivité aux disponibilités',
+            option: WrappedStatOption.responsiveness,
             shortLabel: 'Réactivité',
             value: avgResponseHours == null
                 ? 'Aucune réponse'
@@ -233,6 +238,7 @@ class SeasonWrapped {
           ),
           SeasonWrappedStat(
             label: 'Poste le plus joué',
+            option: WrappedStatOption.position,
             shortLabel: 'Poste',
             value: topPosition ?? 'Jamais aligné au coup d’envoi',
           ),
@@ -243,16 +249,19 @@ class SeasonWrapped {
         stats: [
           SeasonWrappedStat(
             label: 'Buts',
+            option: WrappedStatOption.goals,
             value: '$goals',
             rank: goalsRank,
           ),
           SeasonWrappedStat(
             label: 'Homme du match',
+            option: WrappedStatOption.motm,
             value: '$motm',
             rank: motmRank,
           ),
           SeasonWrappedStat(
             label: 'Polyvalence',
+            option: WrappedStatOption.position,
             value:
                 versatility <= 1 ? '$versatility poste' : '$versatility postes',
             rank: versatilityRank,
@@ -264,11 +273,13 @@ class SeasonWrapped {
         stats: [
           SeasonWrappedStat(
             label: 'Victoires, nuls, défaites',
+            option: WrappedStatOption.results,
             shortLabel: 'Bilan',
             value: '$wins V · $draws N · $losses D',
           ),
           SeasonWrappedStat(
             label: 'Pourcentage de victoire',
+            option: WrappedStatOption.winRate,
             shortLabel: '% de victoire',
             // Un pourcentage de victoire se lit en entier : la décimale
             // n'apprend rien sur une vingtaine de matchs.
@@ -280,6 +291,7 @@ class SeasonWrapped {
           ),
           SeasonWrappedStat(
             label: 'Matchs sans encaisser',
+            option: WrappedStatOption.cleanSheets,
             shortLabel: 'Sans encaisser',
             value: '$cleanMatches',
             rank: cleanMatchesRank,
@@ -297,9 +309,29 @@ class SeasonWrapped {
         for (final sheet in sheets) ...sheet.stats,
         SeasonWrappedStat(
           label: 'Badges décrochés',
+            option: WrappedStatOption.badges,
           shortLabel: 'Badges',
           value: '$badgeCount',
         ),
+      ];
+
+  /// Ne change ni les chiffres calculés, ni le bilan historique : seule la
+  /// présentation est filtrée par les préférences du club.
+  List<SeasonWrappedSheet> sheetsForMask(int mask) => [
+        for (final sheet in sheets)
+          if (sheet.stats.any((s) => s.option?.enabledIn(mask) ?? true))
+            SeasonWrappedSheet(
+              title: sheet.title,
+              stats: [
+                for (final stat in sheet.stats)
+                  if (stat.option?.enabledIn(mask) ?? true) stat,
+              ],
+            ),
+      ];
+
+  List<SeasonWrappedStat> statsForMask(int mask) => [
+        for (final stat in stats)
+          if (stat.option?.enabledIn(mask) ?? true) stat,
       ];
 
   static String _formatDelay(double hours) =>
