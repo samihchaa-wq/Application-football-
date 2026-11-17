@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:as_grinta/features/season_wrapped/data/season_wrapped_repository.dart';
+
 import 'package:as_grinta/core/club/current_club.dart';
 import 'package:as_grinta/core/logging/app_logger.dart';
 import 'package:as_grinta/core/providers/supabase_provider.dart';
@@ -271,6 +273,9 @@ class SharedDataRefreshCoordinator {
       ..invalidate(statisticsPeriodProvider)
       ..invalidate(teamStatisticsPeriodProvider)
       ..invalidate(leaderboardProvider)
+      ..invalidate(periodLeaderboardProvider)
+      ..invalidate(seasonWrappedStateProvider)
+      ..invalidate(mySeasonWrappedProvider)
       ..invalidate(adminDashboardProvider)
       ..invalidate(openSeasonIdProvider)
       ..invalidate(rosterProvider)

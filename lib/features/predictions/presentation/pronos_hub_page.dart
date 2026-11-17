@@ -21,6 +21,7 @@ import 'package:as_grinta/features/players/presentation/player_card_link.dart';
 import 'package:as_grinta/features/predictions/data/leaderboard_repository.dart';
 import 'package:as_grinta/features/predictions/data/predictions_repository.dart';
 import 'package:as_grinta/features/predictions/presentation/widgets/inline_match_prediction_card.dart';
+import 'package:as_grinta/features/statistics/data/statistics_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -117,10 +118,15 @@ class _PronosHubPageState extends ConsumerState<PronosHubPage> {
 
 /// Panneau de classement réutilisable dans l'onglet Stats.
 class RankingsPanel extends StatelessWidget {
-  const RankingsPanel({super.key});
+  const RankingsPanel({super.key, this.period});
+
+  final StatisticsPeriod? period;
 
   @override
   Widget build(BuildContext context) {
-    return const _GeneralRankingsSection(badgeSize: statisticsBadgeSize);
+    return _GeneralRankingsSection(
+      badgeSize: statisticsBadgeSize,
+      period: period,
+    );
   }
 }

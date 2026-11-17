@@ -1,5 +1,6 @@
 import 'package:as_grinta/core/providers/supabase_provider.dart';
 import 'package:as_grinta/core/utils/name_validation.dart';
+import 'package:as_grinta/features/statistics/data/statistics_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -45,7 +46,23 @@ class LeaderboardRepository {
         .order('match_points', ascending: false)
         .order('first_name');
 
-    final rows = (response as List)
+    return _entries(response);
+  }
+
+  Future<List<LeaderboardEntry>> fetchPeriodLeaderboard(
+    StatisticsPeriod period,
+  ) async {
+    final response = await _client
+        .from('v_statistics_predictions')
+        .select()
+        .eq('period_key', period.databaseKey)
+        .order('match_points', ascending: false)
+        .order('first_name');
+    return _entries(response);
+  }
+
+  Future<List<LeaderboardEntry>> _entries(List<dynamic> response) async {
+    final rows = response
         .map((row) => Map<String, dynamic>.from(row as Map))
         .toList(growable: false);
 
@@ -117,4 +134,12 @@ final leaderboardRepositoryProvider = Provider<LeaderboardRepository>((ref) {
 
 final leaderboardProvider = FutureProvider<List<LeaderboardEntry>>((ref) {
   return ref.watch(leaderboardRepositoryProvider).fetchCurrentLeaderboard();
+});
+
+final periodLeaderboardProvider =
+    FutureProvider.family<List<LeaderboardEntry>, StatisticsPeriod>(
+        (ref, period) {
+  return ref
+      .watch(leaderboardRepositoryProvider)
+      .fetchPeriodLeaderboard(period);
 });

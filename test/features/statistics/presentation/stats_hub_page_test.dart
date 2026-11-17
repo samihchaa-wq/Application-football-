@@ -17,10 +17,14 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   late _FakeStatisticsRepository repository;
   var leaderboard = <LeaderboardEntry>[];
+  final requestedPeriods = <StatisticsPeriod>[];
+  final periodLeaderboards = <StatisticsPeriod, List<LeaderboardEntry>>{};
 
   setUp(() {
     repository = _FakeStatisticsRepository();
     leaderboard = <LeaderboardEntry>[];
+    requestedPeriods.clear();
+    periodLeaderboards.clear();
   });
 
   Future<void> pumpStats(
@@ -42,6 +46,10 @@ void main() {
             (ref) async => const <String, List<StatisticsBadgeEmblemData>>{},
           ),
           leaderboardProvider.overrideWith((ref) async => leaderboard),
+          periodLeaderboardProvider.overrideWith((ref, period) async {
+            requestedPeriods.add(period);
+            return periodLeaderboards[period] ?? leaderboard;
+          }),
           clubModulesProvider.overrideWith((ref) async => modules),
         ],
         child: MaterialApp(home: StatsHubPage(initialSection: section)),
@@ -336,6 +344,37 @@ void main() {
     );
     expect(find.text('14'), findsOneWidget);
     expect(find.text('11'), findsOneWidget);
+  });
+
+  testWidgets('Prono garde la période et affiche le classement correspondant', (
+    tester,
+  ) async {
+    periodLeaderboards[StatisticsPeriod.current] = [
+      _predictor('Actuel', pronos: 1, bons: 1, exacts: 1, points: 2.56),
+    ];
+    periodLeaderboards[StatisticsPeriod.previous] = [
+      _predictor('Ancien', pronos: 12, bons: 7, exacts: 2, points: 8.12),
+    ];
+    periodLeaderboards[StatisticsPeriod.allTime] = [
+      _predictor('Cumul', pronos: 13, bons: 8, exacts: 3, points: 10.68),
+    ];
+    await pumpStats(tester, section: 'rankings', size: const Size(360, 780));
+    expect(find.text('Actuel'), findsOneWidget);
+    expect(find.text('256'), findsOneWidget);
+    await tester.tap(find.text('Précédente'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ancien'), findsOneWidget);
+    expect(find.text('Actuel'), findsNothing);
+    await tester.tap(find.text('Joueurs'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Prono'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ancien'), findsOneWidget);
+    await tester.tap(find.text('Toutes'));
+    await tester.pumpAndSettle();
+    expect(find.text('Cumul'), findsOneWidget);
+    expect(requestedPeriods, containsAll(StatisticsPeriod.values));
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('pronostics coupés par le club : plus d’onglet Prono',

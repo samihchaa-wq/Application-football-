@@ -57,7 +57,6 @@ class _StatsHubPageState extends ConsumerState<StatsHubPage> {
     final section = !predictionsEnabled && _section == _StatsSection.rankings
         ? _StatsSection.players
         : _section;
-    final hasPeriod = section != _StatsSection.rankings;
     return Scaffold(
       appBar: GrintaAppBar(
         title: const Text('Statistiques'),
@@ -106,31 +105,30 @@ class _StatsHubPageState extends ConsumerState<StatsHubPage> {
                   ),
                 ),
               ),
-              if (hasPeriod)
-                GrintaSecondaryTabs<StatisticsPeriod>(
-                  segments: const [
-                    ButtonSegment(
-                      value: StatisticsPeriod.current,
-                      label: Text('Actuelle'),
-                    ),
-                    ButtonSegment(
-                      value: StatisticsPeriod.previous,
-                      label: Text('Précédente'),
-                    ),
-                    ButtonSegment(
-                      value: StatisticsPeriod.allTime,
-                      label: Text('Toutes'),
-                    ),
-                  ],
-                  selected: {_period},
-                  onSelectionChanged: (value) {
-                    setState(() => _period = value.first);
-                  },
-                ),
+              GrintaSecondaryTabs<StatisticsPeriod>(
+                segments: const [
+                  ButtonSegment(
+                    value: StatisticsPeriod.current,
+                    label: Text('Actuelle'),
+                  ),
+                  ButtonSegment(
+                    value: StatisticsPeriod.previous,
+                    label: Text('Précédente'),
+                  ),
+                  ButtonSegment(
+                    value: StatisticsPeriod.allTime,
+                    label: Text('Toutes'),
+                  ),
+                ],
+                selected: {_period},
+                onSelectionChanged: (value) {
+                  setState(() => _period = value.first);
+                },
+              ),
               Expanded(
                 key: ValueKey<int>(_resetGeneration),
                 child: switch (section) {
-                  _StatsSection.rankings => const RankingsPanel(),
+                  _StatsSection.rankings => RankingsPanel(period: _period),
                   _StatsSection.players => _PlayersPanel(period: _period),
                   _StatsSection.team => TeamStatisticsPanel(period: _period),
                 },
@@ -243,7 +241,9 @@ class _PlayersPanelState extends ConsumerState<_PlayersPanel> {
         if (data.players.isEmpty) {
           return _Message(
             title: 'Pas encore de statistiques',
-            message: 'Les stats apparaîtront après le premier match validé.',
+            message: widget.period == StatisticsPeriod.previous
+                ? 'Aucune statistique pour la saison précédente.'
+                : 'Les stats apparaîtront après le premier match validé.',
             onRefresh: _refresh,
           );
         }
