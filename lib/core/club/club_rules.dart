@@ -14,6 +14,8 @@ abstract final class ClubRules {
   static const String predictionCloseMinutesKey = 'prediction_close_minutes';
   static const String correctionWindowHoursKey = 'correction_window_hours';
   static const String waitlistModeKey = 'waitlist_mode';
+  static const String waitlistPriorityEnabledKey =
+      'waitlist_priority_enabled';
   static const String predictionPointsExactKey = 'prediction_points_exact';
   static const String predictionPointsGoalDifferenceKey =
       'prediction_points_goal_difference';
@@ -57,6 +59,8 @@ abstract final class ClubRules {
     predictionCloseMinutesKey: 15,
     correctionWindowHoursKey: 24,
     waitlistModeKey: 0,
+    // Rétrocompatibilité : les crédits influencent la sélection par défaut.
+    waitlistPriorityEnabledKey: 1,
     predictionPointsExactKey: 20,
     predictionPointsGoalDifferenceKey: 15,
     predictionPointsOneScoreKey: 15,
@@ -116,6 +120,11 @@ abstract final class ClubRules {
   static WaitlistMode get waitlistMode =>
       WaitlistMode.fromValue(_get(waitlistModeKey));
 
+  /// Le +1 est toujours attribué au coup d'envoi. Cette case détermine
+  /// uniquement s'il départage les convocations automatiques.
+  static bool get waitlistPriorityEnabled =>
+      _get(waitlistPriorityEnabledKey) == 1;
+
   /// Barème des pronostics : multiplicateurs de la cote choisis par le club.
   static double get predictionExactMultiplier =>
       _get(predictionPointsExactKey) / 10;
@@ -171,24 +180,25 @@ enum WaitlistMode {
   lastSeasonAttendance(
     0,
     'Par présence l’an dernier',
-    'Les +1 acquis cette saison sont prioritaires, puis les présences '
-        'de la saison précédente départagent les joueurs.',
+    'Le classement historique d’AS Grinta départage les joueurs. '
+        'Le réglage séparé détermine si les +1 modifient ce classement.',
   ),
 
   /// Premier à se dire disponible, premier convoqué.
   arrivalOrder(
     1,
     'Ordre d’arrivée',
-    'Les +1 acquis cette saison sont prioritaires, puis les joueurs '
-        'qui se sont déclarés présents en premier.',
+    'Les premiers joueurs présents prennent les places disponibles. '
+        'Si la priorité des +1 est activée, ceux qui en ont le plus '
+        'passent en premier.',
   ),
 
   /// Tout le monde est convoqué ; l'admin met lui-même en attente.
   adminChoice(
     2,
     'Par choix',
-    'Tous les disponibles sont convoqués : l’admin décide qui attend, '
-        'avec les crédits +1 visibles pour le guider.',
+    'Tous les présents sont initialement convoqués. L’admin décide '
+        'manuellement qui attend ou n’est pas retenu.',
   );
 
   const WaitlistMode(this.value, this.label, this.description);

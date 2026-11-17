@@ -702,7 +702,9 @@ extension _AdminSquadPlanEffectif on _AdminSquadPlanPageState {
             ),
             if (!_isInternalMatch)
               _EffectifAvatarColumn(
-                title: 'Liste d’attente',
+                title: ClubRules.waitlistPriorityEnabled
+                    ? 'Liste d’attente'
+                    : 'Non retenus',
                 color: _effectifWaitlistColor,
                 icon: Icons.hourglass_top_rounded,
                 players: _waitlistedPlayers,

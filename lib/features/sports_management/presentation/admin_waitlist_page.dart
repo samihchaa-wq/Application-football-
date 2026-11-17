@@ -217,21 +217,20 @@ class _AdminWaitlistPageState extends ConsumerState<AdminWaitlistPage> {
                 ],
               ),
             ),
-          if (ClubRules.waitlistMode != WaitlistMode.lastSeasonAttendance)
-            Padding(
-              key: const ValueKey('waitlist-mode-notice'),
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text(
-                ClubRules.waitlistMode == WaitlistMode.arrivalOrder
-                    ? 'Mode « Ordre d’arrivée » : les +1 acquis cette saison '
-                        'sont prioritaires. À égalité, les premiers inscrits '
-                        'passent avant.'
-                    : 'Mode « Par choix » : les +1 restent acquis cette '
-                        'saison et guident l’admin, qui conserve le choix '
-                        'des convocations.',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
+          Padding(
+            key: const ValueKey('waitlist-mode-notice'),
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(
+              'Mode « ${ClubRules.waitlistMode.label} ». '
+              'Les +1 sont toujours comptabilisés au coup d’envoi. '
+              '${ClubRules.waitlistMode == WaitlistMode.adminChoice ? '
+              "'L’admin choisit les joueurs retenus.' : "
+              "ClubRules.waitlistPriorityEnabled ? "
+              "'Ils influencent les places attribuées automatiquement.' : "
+              "'Ils n’influencent pas les convocations.'}",
+              style: Theme.of(context).textTheme.bodySmall,
             ),
+          ),
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
