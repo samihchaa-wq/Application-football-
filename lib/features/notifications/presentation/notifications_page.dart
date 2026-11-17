@@ -128,7 +128,6 @@ class NotificationSettingsView extends ConsumerWidget {
             SizedBox(height: 12),
             _OptionalNotificationsCard(),
             _NotificationActionsRow(),
-            _AdminKillSwitchCard(),
           ],
         ),
       ),
