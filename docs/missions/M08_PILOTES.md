@@ -1,3 +1,5 @@
+> **Actualisation du 17/11/2026 :** pour les guides et le recrutement, lire [M08_REPETITION_EQUIPES.md](M08_REPETITION_EQUIPES.md). L’unité produit est exclusivement l’équipe. Les exemples ci-dessous de clubs physiques et de plusieurs équipes par club sont historiques et ne doivent pas être repris dans l’accueil. Aucun essai terrain exécuté.
+
 # M08 — Accueil et retours des clubs pilotes, printemps 2027
 
 **16 novembre 2026 — DOCUMENTÉ, non testé sur le terrain, non déployé.**

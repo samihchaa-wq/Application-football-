@@ -1,6 +1,8 @@
 # Mission 06 — Offre, économie et lancement été 2027
 
-Date : **16 novembre 2026, Europe/Paris**. Statut : **proposition documentée, non approuvée et non déployée**.
+Date : **17 novembre 2026, Europe/Paris**. Statut : **dossier actualisé ; décisions tarif/équipe/pilotes acquises, conditions restantes et activation non validées**.
+
+Mise à jour documentaire depuis main `0e5fa39e87f17ba466ef187ae44495a65a67de9c`. Première version intégrée par #151/#147 ; cela ne vaut pas validation fiscale, activation du paiement ou GO pilote. Les observations techniques et tarifs fournisseurs ci-dessous restent datés de leur lecture initiale.
 Référence auditée : main `5f404e70f70b4e99d754f7064b567d027d66fe03`.
 Plan lu sur la branche de [PR #147](https://github.com/samihchaa-wq/Application-football-/pull/147), SHA `dd26ace17dc42c1af8bd9773f578f20e5a29067d`.
 Périmètre : uniquement dépôt commercial. Aucun accès ni changement AS Grinta original ou Carte soirée.
@@ -10,9 +12,9 @@ Périmètre : uniquement dépôt commercial. Aucun accès ni changement AS Grint
 Le prompt initial demandait un an gratuit puis un prix par club. Les décisions suivantes, consignées dans la conversation de pilotage, le remplacent :
 - [Décision paiement immédiat](https://github.com/samihchaa-wq/Application-football-/pull/147#issuecomment-6903374695).
 - [Exception pilotes gratuits](https://github.com/samihchaa-wq/Application-football-/pull/147#issuecomment-6903395441).
-- **[Correction impérative de l'unité commerciale](https://github.com/samihchaa-wq/Application-football-/pull/147#issuecomment-6903574947) : 100 € PAR ÉQUIPE ET PAR AN**, dès la souscription. Un club physique avec 5 équipes souscrites = 500 €/an ; aucune remise volume décidée.
+- **[Correction impérative de l'unité commerciale](https://github.com/samihchaa-wq/Application-football-/pull/147#issuecomment-6903574947) : 100 € PAR ÉQUIPE ET PAR AN**, dès la souscription. Cinq espaces d'équipes autonomes = cinq abonnements de référence, soit 500 €/an avant avantages éventuels. Aucun regroupement commercial ni abonnement par club dans le produit ; aucune remise volume décidée.
 
-Ainsi : pas de première année gratuite généralisée ; 2–3 pilotes gratuits au printemps 2027, périmètre/durée à contractualiser. Aucun prélèvement automatique autorisé. HT/TTC et situation fiscale non déterminés ; ne pas annoncer « 100 € HT » ou « 100 € TTC » comme décision acquise.
+Ainsi : pas de première année gratuite généralisée ; 2–3 équipes pilotes adultes de football à 11, **trois mois gratuits chacune**, au printemps 2027 ; seules les dates individuelles et les conditions de sortie restent à contractualiser. Aucun prélèvement automatique autorisé. HT/TTC et situation fiscale non déterminés ; ne pas annoncer « 100 € HT » ou « 100 € TTC » comme décision acquise.
 M00 doit réconcilier le plan et les documents historiques ; M06 ne modifie pas ses fichiers centraux.
 
 ## 2. Offre proposée, à faire approuver avant diffusion
@@ -23,17 +25,17 @@ Acheteur proposé : association ou structure du club, représentée par une pers
 
 | Élément | Proposition de contrat, conditionnée à la recette |
 | --- | --- |
-| Unité | 1 licence annuelle = 1 équipe identifiée ; facturation groupée possible pour le club après validation technique |
+| Unité | 1 abonnement annuel = 1 équipe autonome identifiée ; aucun compte de regroupement ni facturation produit par club |
 | Périmètre | Disponibilités, effectif, compositions, Live, statistiques, pronostics sans mises/argent, badges et personnalisation ; seulement fonctions M01/M03 validées |
 | Limites de travail | 50 comptes/équipe, 2 Go de médias stockés ; quotas proposés, non implantés ni acceptés |
 | Vidéos | Distinguer animation de composition et hébergement de vidéos longues ; aucun stockage/streaming illimité promis |
 | Support | Référent dirigeant, FAQ et canal privé ; cible de première réponse 2 jours ouvrés à valider M09, aucune astreinte ni délai de résolution garanti |
 | Durée | 12 mois à compter de l'activation effective du service après paiement confirmé ; dates visibles avant commande |
 | Renouvellement | Proposition : nouvel accord explicite annuel ; aucune reconduction automatique au lancement |
-| Gratuité pilote | Proposition : 3 mois à compter de l'activation, dans la fenêtre mars/avril–juin/juillet ; pas une année offerte |
+| Gratuité pilote | Décision acquise : 3 mois à compter de l'activation réelle de chaque équipe pilote ; dates individuelles à consigner ; pas une année offerte |
 | Fin pilote | Offre payante explicite, refus possible ; pas de débit ni dette par silence |
 
-**Architecture à trancher M01/M02/M04 :** un espace indépendant par équipe ou plusieurs équipes rattachées à un club. Ne pas promettre un compte unique pour 10 équipes, une gestion transverse des joueurs ou des calendriers consolidés avant preuve. Le commentaire de pilotage signale une structure `clubs/club_id`, pas une prise en charge multiéquipes démontrée.
+**Architecture commerciale décidée : équipes autonomes uniquement.** L'issue #161 confirme qu'aucun niveau club physique n'existe dans l'application. Les noms SQL historiques `clubs/club_id` restent des détails de compatibilité ; aucun renommage ou migration implicite. Ne pas rouvrir l'arbitrage ni promettre de gestion transverse. La recette de l'isolation des équipes demeure nécessaire.
 
 ### Écart présent dans le code commercial
 
@@ -43,7 +45,7 @@ Lecture directe :
 - Ces observations sont **statiques** : aucune preuve d'une activation/paiement effectif.
 - `.github/workflows/auto_release_commercial.yml` déclenche sur push main sauvegarde, migrations et publication. Cette livraison reste en branche, sans fusion.
 
-Demandes M02 : tarif versionné fixe par équipe, nombre de licences, période, montant/taxes, preuve d'acceptation et confirmation serveur ; suppression de l'ancien calcul par joueur dans le parcours actif après décision ; conservation des données et contrats historiques. Migration nouvelle si nécessaire, jamais réécriture d'une migration appliquée.
+Demandes M02 : tarif versionné fixe par équipe, identifiant d'équipe, période, montant/taxes, preuve d'acceptation et confirmation serveur ; suppression de l'ancien calcul par joueur dans le parcours actif après décision ; conservation des données et contrats historiques. Migration nouvelle si nécessaire, jamais réécriture d'une migration appliquée.
 
 ## 3. Repères de marché vérifiés
 
@@ -169,17 +171,17 @@ M03 doit valider ce scénario sur le SHA montré ; prévoir captures de secours 
 
 | Période | Travail préparé | Objectif expérimental et condition |
 | --- | --- | --- |
-| Mars–juin | 2–3 pilotes, observation 2–3 mois chacun, corrections au fil de l'eau | Bilan M08 et GO M03/M04/M07/M09 ; pas de témoignage publié sans accord |
+| Mars–juin | 2–3 équipes pilotes, observation trois mois chacune, corrections au fil de l'eau | Bilan M08 et GO M03/M04/M07/M09 ; pas de témoignage publié sans accord |
 | Juin | Fiche, vidéo courte fictive, FAQ, tarif/taxes, contrats, suivi privé | Liste qualifiée et méthode de contact validées ; aucune sollicitation avant autorisation |
 | Juillet | Recommandations dirigeant→dirigeant, réseaux loisir/vétérans, présentations locales autorisées | 40 équipes qualifiées → 12 démos → 4 souscriptions visées |
 | Août | Relances autorisées et préparation de saison ; pas de relance après opposition | 40 → 12 → 4, ajuster aux congés |
 | Septembre | Retours premiers matchs et recommandations consenties | 40 → 12 → 4 ; arrêter l'acquisition si support/sécurité dépassés |
 
-Total cible : 120 équipes qualifiées, 36 démos, 12 ventes ; **aucun contact ni résultat effectué**. Distinguer clubs physiques uniques, équipes, licences payantes, revenus encaissés. Une démo de 5 équipes d'un club ne devient pas 5 ventes.
+Total cible : 120 équipes qualifiées, 36 démos, 12 ventes ; **aucun contact ni résultat effectué**. Distinguer équipes qualifiées, démos, abonnements payés et revenus encaissés. Une démo ne vaut aucune vente ; aucun regroupement par club dans le produit.
 Canaux prioritaires : recommandation des pilotes, associations de foot loisir/entreprise, réseaux locaux et districts/ligues seulement avec accord d'accès ; contenus démonstratifs et demandes entrantes. Pas d'achat de fichier, scraping de coordonnées personnelles, publicité payante ni sponsoring budgété sans accord.
 Tester 15–20 entretiens extérieurs après autorisation : outil actuel, problème concret, coût du changement, décisionnaire, budget, intention d'achat à 100 €. L'intérêt verbal ne vaut pas paiement.
 
-**Suivi privé à préparer, aucun CRM nominatif dans GitHub public :** identifiant prospect, club physique, nombre d'équipes éligibles et format, canal/source/date, base de contact validée M07, consentement/opposition le cas échéant, décideur, étape, prochaine action, démo/SHA, souscription/licences, montant encaissé, motif de refus, temps et coût.
+**Suivi privé à préparer, aucun CRM nominatif dans GitHub public :** identifiant prospect par équipe, format éligible, canal/source/date, base de contact validée M07, consentement/opposition le cas échéant, décideur, étape, prochaine action, démo/SHA, souscription/licences, montant encaissé, motif de refus, temps et coût.
 Étapes : qualifié → contact autorisé → échange → démo → décision → payé/activation → actif → renouvelé ou perdu. Export public uniquement agrégé.
 Mesures hebdomadaires : contacts/démos/ventes, CA réellement encaissé, CAC cash et heures séparés, premier match réalisé, joueurs actifs, minutes support, refus et oppositions. Revue à 10 démos sans vente ou CAC cash >30 € ; ne pas élargir un canal sans apprentissage.
 
@@ -190,8 +192,8 @@ Prospection : M07 vérifie le régime selon destinataire et canal, notamment les
 | ID / destinataire | Demande et preuve attendue | Proposition |
 | --- | --- | --- |
 | M06-01 / M00 | Réconcilier plan initial et dernier arbitrage 100 €/équipe, non club | Tarif reçu appliqué au dossier ; pas de nouvelle hausse décidée |
-| M06-02 / M07 + M08 | Durée gratuite pilotes et portée équipe/club ; accord avant activation | A : 3 mois par équipe pilote (recommandé) ; B : 2 mois ; C : autre durée écrite |
-| M06-03 / M02 + M04 | Architecture plusieurs équipes, comptes/rôles/factures ; tests de cloisonnement | A : espaces autonomes (à évaluer) ; B : multiéquipes natif ; C : limiter commercialisation à une équipe par club temporairement |
+| M06-02 / M07 + M08 | Durée gratuite pilotes et portée équipe/club ; accord avant activation | **Résolu : trois mois par équipe pilote**, adultes à 11 ; dates et sortie à finaliser, sans nouveau QCM |
+| M06-03 / M02 + M04 | Architecture plusieurs équipes, comptes/rôles/factures ; tests de cloisonnement | **Résolu : équipes autonomes uniquement**, sans regroupement ; recette technique encore requise |
 | M06-04 / M09 | Coût réel dédié/mutualisé, pics Auth/Realtime/Edge, médias, SMTP, restore, alertes et limites | A : 10 puis 25 puis 100 (recommandé) ; B : 300 après preuve ; C : 500 après preuve et renfort support |
 | M06-05 / M07 | Signataire, catégorie client, HT/TTC, TVA, statut, facturation électronique, remboursement, prospection | Bloquant offre externe ; [issue #39](https://github.com/samihchaa-wq/Application-football-/issues/39) |
 | M06-06 / M09 + M00 | Devis et financement des 5 000 € prépilotes ; cash protégé de service futur | A : enveloppe proposée après devis (recommandé) ; B : différer pour réduire périmètre/coût validé ; C : autre plafond |
@@ -208,6 +210,72 @@ Aucun contact ni dépense autorisé par ces propositions.
 **Vérifié :** lecture du plan, AGENTS, HANDOFF, CHANTIER et anciens rapports M06/M07/M09 ; lecture code abonnement et workflow effectif ; sources publiques fournisseurs et concurrence ; calculs exécutés en JavaScript, arrondis à l'euro, plafond arrondi aux 100 € supérieurs.
 **Non vérifié :** factures et usage cloud réels, capacité des paliers, délivrabilité, parcours paiement/export, statut fiscal, devis professionnels, intérêt et conversion terrain.
 **Tests applicatifs exécutés : aucun. CI de cette livraison : à relever sur son SHA. Déployé : non. Accepté : non.**
-Blocages : architecture équipe/club, régime fiscal/prix final, conditions pilotes, budget et GO sécurité/recette/restauration.
+Blocages restants : régime fiscal/prix final, dates et sortie pilotes, budget réel et GO sécurité/recette/restauration. L'unité équipe autonome et la durée pilote ne sont plus des arbitrages ouverts.
 Prochaine action : relecture M00/M07/M09 puis spécifications M02 et recette M03 ; pas de fusion automatique.
 Fin de mission globale : **non atteinte** tant que coûts mesurés, financement, conditions approuvées et validation terrain ne sont pas établis.
+
+
+## 10. Lot suivant — promotions, parrainage et exigences de mise en œuvre
+
+Actualisation du 17/11/2026. Sources internes relues : [issue #161](https://github.com/samihchaa-wq/Application-football-/issues/161), `docs/changes/161-promotions-parrainage.md` sur main de référence de cette mise à jour, plan directeur §12. Aucune nouvelle recherche tarifaire fournisseur ; frais repris uniquement comme hypothèse du premier modèle.
+
+### Décisions déjà acquises
+
+- Le gestionnaire peut proposer un code à usage unique au total : une année gratuite **ou** 50 % sur une période annuelle. Cette promotion ponctuelle ne rétablit pas une année gratuite pour toutes les équipes.
+- Parrainage : 5 points de pourcentage par nouvelle équipe filleule distincte ayant effectivement payé son annuel ; plafond 50 %, au **prochain renouvellement de l'équipe marraine seulement**.
+- **Meilleure offre unique**, sans cumul promo/parrainage. Pas de réduction de 5 % appliquée successivement sur un prix déjà réduit.
+- Un paiement gratuit, pending, échoué ou annulé n'est pas un nouveau parrainage payé ; confirmation et provenance vérifiées côté serveur.
+- Le code de parrainage ne donne aucun accès à l'équipe marraine. Les interfaces montrent des compteurs agrégés, sans identité des filleuls.
+- Aucun code réel, réduction, paiement ou abonnement créé dans ce lot.
+
+### Impact économique calculé, en euros sur référence de 100 €
+
+La colonne frais reprend l'hypothèse historique carte EEE standard 1,5 % + 0,25 € pour un paiement positif ; pas de frais Payments simulés sur une année offerte sans paiement. Autres frais prestataire non inclus. HT/TTC toujours à qualifier avant commande.
+
+| Situation de l'équipe marraine | Réduction | Montant annuel à encaisser | Frais carte illustratifs | Après ces frais, avant service et fiscalité |
+| --- | ---: | ---: | ---: | ---: |
+| Aucun avantage | 0 % | 100,00 | 1,75 | 98,25 |
+| 1 filleule payante | 5 % | 95,00 | 1,68 | 93,32 |
+| 2 filleules payantes | 10 % | 90,00 | 1,60 | 88,40 |
+| 9 filleules payantes | 45 % | 55,00 | 1,08 | 53,92 |
+| 10 ou 11 filleules payantes | 50 % | 50,00 | 1,00 | 49,00 |
+| Promo −50 % et 2 filleules | 50 %, promo gagnante | 50,00 | 1,00 | 49,00 |
+| Promo année offerte et 10 filleules | 100 %, promo gagnante | 0,00 | 0,00 | 0,00 |
+
+Arrondi illustratif des frais au centime, moitié supérieure ; à rapprocher de la facture réelle prestataire.
+Une année offerte coûte toujours stockage, mails et support : son coût n'est pas nul.
+Pour 100 renouvellements, si 30 équipes ont −50 % et 70 paient plein tarif : encaissements 8 500 € au lieu de 10 000 €, frais carte illustratifs 152,50 €, solde 8 347,50 € avant service/fiscalité. Le prévisionnel ne doit pas conserver artificiellement 10 000 € de recettes.
+Chaque renouvellement récompensé de 5 points représente 5 € de remise faciale ; au plafond, dix acquisitions distinctes conduisent à 50 € une fois. Ce ratio ne prouve pas la rentabilité : support des filleules, remboursement, fraude et coûts d'acquisition s'ajoutent.
+
+### Conditions proposées à M07, pas des décisions nouvelles acquises
+
+| Sujet ouvert | Proposition de travail pour relecture M07/M00 |
+| --- | --- |
+| Promo gagnante et crédits inutilisés | Crédits liés à une échéance, sans report automatique ; annoncer leur sort avant engagement et obtenir arbitrage explicite |
+| Plus de dix filleules | Plafond 50 % ; aucun crédit reporté silencieusement. Sort de l'excédent à arrêter avant activation |
+| Égalité promo 50 % / parrainage 50 % | Le calcul existant privilégie le parrainage et préserve le coupon ; choix technique à afficher et valider dans les conditions |
+| Remboursement filleule avant devis | Invalider le crédit correspondant ; après facture, correction explicite selon conditions, jamais modification silencieuse d'une facture émise |
+| Attribution proche du renouvellement | Transaction serveur sérialisée, prochaine échéance disponible figée ; date visible, pas de crédit perdu par course technique |
+| Validité et date limite d'un coupon | Dates et équipe/période éligibles affichées avant validation ; pas d'expiration inventée ici |
+
+### Contrat de livraison M02/M03/M04
+
+- Devis serveur : équipe, période, tarif en centimes, version de politique, statut fiscal, avantage retenu, montant final et identifiants à consommer. Le client ne fixe ni son tarif ni son statut payé.
+- Confirmation atomique : validation de la commande et consommation du coupon dans une seule opération cohérente ; deux appareils ne consomment pas le même coupon.
+- Paiement : signature, compte, devise et montant contrôlés ; idempotence événement/paiement/souscription. Un retour navigateur ne confirme rien.
+- Année offerte : acceptation explicite, consommation atomique, aucune fausse opération bancaire et aucun parrainage payé déclenché.
+- Renouvellement : date réelle, nouvel accord selon contrat, retour au prix de référence après avantage unique ; absence de débit surprise.
+- Exercice de droits/sortie : export d'équipe et données individuelles selon M07, statut de service distinct de la conservation. Jamais d'effacement pour forcer un paiement.
+- Recette : 0/1/2/9/10/11 filleules, doublon, auto-parrainage, équipe tierce, paiement échoué/rejoué/remboursé, coupon expiré/consommé/révoqué, deux confirmations simultanées, trois offres, renouvellement suivant.
+
+État relu : un calcul serveur pur et 30 tests locaux sont documentés par le chantier #161 ; **pas de preuve que coupons, paiement ou interfaces soient utilisables**. M06 n'a exécuté aucun test de production ou de paiement.
+
+### Rapprochement M09 : éviter le double comptage
+
+M09 §9 utilise historiquement 3 équipes par club dans son scénario central ; M06 utilise N espaces autonomes. Comparer les coûts **à nombre d'équipes, comptes actifs, concurrence, messages et trafic identiques**, jamais ligne « 300 » contre ligne « 300 » sans unité.
+Les enveloppes M09 comprennent déjà préproduction/sauvegarde/mail/logs et réserve ; ne pas leur ajouter une deuxième fois ces postes M06. Ajouter séparément support, juridique, acquisition, paiement, taxes non récupérables selon leur périmètre.
+M06 demande un relevé de rapprochement : N équipes / MAU / pics / Go / facture mensuelle / charges partagées / réserve. Factures non accessibles dans ce lot : aucun coût réel nouveau affirmé. La mention historique « financer l'année gratuite » dans M09 est remplacée commercialement par trois mois pour 2–3 pilotes, plus promotions ponctuelles décidées ; aucune nouvelle dépense autorisée.
+
+### Preuves de ce second lot
+
+Lecture fraîche du fichier M06, plan et chantier #161 sur le SHA indiqué en tête ; calculs des montants et cohorte exécutés en JavaScript. Mise à jour documentaire uniquement. Aucun test applicatif, nouveau contrôle CI applicatif, paiement, contact, activation, fusion ou déploiement. Les décisions résolues sont fermées dans le dossier ; les conditions encore ouvertes restent explicitement proposées.
