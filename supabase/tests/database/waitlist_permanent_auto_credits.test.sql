@@ -3,8 +3,8 @@ begin;
 set local search_path = public, extensions, pg_catalog;
 select no_plan();
 
--- Contrat actuel : trois modes de classement, aucun crédit automatique.
--- Nom historique de test conservé pour éviter de perdre la couverture.
+-- Contrat #183 : crédit automatique au coup d'envoi, quel que soit le réglage
+-- de priorité, idempotence, compteur saisonnier et correction admin.
 --
 -- Classement de saison : Alice n°1, Bruno n°2, Chloé n°3, Damien n°4.
 -- Deux places pour quatre disponibles. Ordre d'arrivée des réponses :
@@ -94,7 +94,7 @@ where player.id = participant.season_player_id
   and participant.match_id = current_setting('test.match')::uuid;
 
 
--- Simuler les conditions qui créditaient autrefois les joueurs.
+-- Simuler les conditions de crédit au coup d'envoi.
 -- Les changements restent dans la transaction locale de test.
 update private.waitlist_auto_activation
 set activated_at = now() - interval '2 days'
@@ -119,13 +119,13 @@ set match_date = ((now() - interval '1 day') at time zone 'Europe/Paris')::date,
 where id = current_setting('test.match')::uuid;
 select is(
   private.finalize_match_waitlist_turns_internal(
-    current_setting('test.match')::uuid, false), 0,
-  'aucun credit au coup d envoi'
+    current_setting('test.match')::uuid, false), 2,
+  'deux joueurs presents non convoques gagnent un +1 au coup d envoi'
 );
 select is(
   private.finalize_match_waitlist_turns_internal(
     current_setting('test.match')::uuid, false), 0,
-  'aucun credit a la deuxieme finalisation'
+  'le traitement du match est idempotent'
 );
 select is(
   (select string_agg(p.first_name || '=' || e.manual_waitlist_count,
@@ -133,33 +133,33 @@ select is(
    from public.sport_waitlist_entries e
    join public.season_players p on p.id = e.season_player_id
    where e.season_id='f5820000-0000-0000-0000-000000000001'),
-  'Alice=0 / Bruno=0 / Chloé=0 / Damien=0',
-  'les compteurs restent tous nuls sans administrateur'
+  'Alice=1 / Bruno=1 / Chloé=0 / Damien=0',
+  'les credits automatiques sont conserves pendant la saison'
 );
 select is(
   (select count(*)::integer from private.waitlist_auto_processed_matches
    where match_id=current_setting('test.match')::uuid),
-  0, 'aucune trace de traitement automatique'
+  1, 'un seul enregistrement de traitement pour le match'
 );
 select is(
   (select count(*)::integer from private.sport_waitlist_passage_ledger
    where match_id=current_setting('test.match')::uuid
      and credited_at is not null),
-  0, 'aucun point ajoute dans le journal de passage'
+  2, 'un evenement credite par joueur en attente'
 );
 
--- Deux +1 sont maintenant donnes volontairement par l'administrateur.
+-- L'admin peut corriger chaque compteur apres les credits automatiques.
 select pg_temp.as_admin();
 set local role authenticated;
 select lives_ok(
   $$select public.admin_set_waitlist_manual_count(
-    'f5840000-0000-0000-0000-000000000001', 1
-  )$$, 'l admin credite Alice'
+    'f5840000-0000-0000-0000-000000000001', 2
+  )$, 'l admin credite Alice'
 );
 select lives_ok(
   $$select public.admin_set_waitlist_manual_count(
-    'f5840000-0000-0000-0000-000000000002', 1
-  )$$, 'l admin credite Bruno'
+    'f5840000-0000-0000-0000-000000000002', 2
+  )$, 'l admin credite Bruno'
 );
 reset role;
 select is(
@@ -168,8 +168,8 @@ select is(
    from public.sport_waitlist_entries e
    join public.season_players p on p.id=e.season_player_id
    where e.season_id='f5820000-0000-0000-0000-000000000001'),
-  'Alice=1 / Bruno=1 / Chloé=0 / Damien=0',
-  'seules les attributions admin mettent les compteurs a 1'
+  'Alice=2 / Bruno=2 / Chloé=0 / Damien=0',
+  'les credits auto et corrections admin coexistent'
 );
 select is(
   (select count(*)::integer from private.sport_admin_audit_log
@@ -178,7 +178,7 @@ select is(
   2, 'les deux changements sont traces dans le journal admin'
 );
 
--- Match suivant : les crédits ADMIN donnent la priorité en mode présence.
+-- Match suivant : les crédits cumulés donnent la priorité en mode présence.
 select pg_temp.as_admin();
 set local role authenticated;
 select set_config('test.match2',
@@ -235,7 +235,7 @@ select is(
   'mode arrivee : les credits admin priment sur l anciennete des reponses'
 );
 
--- Mode admin : tous disponibles, une mise en attente ne crédite personne.
+-- Mode admin : tous disponibles au départ, l'attente décidée gagne +1.
 select pg_temp.as_admin();
 set local role authenticated;
 select public.admin_set_club_rule('waitlist_mode', 2);
@@ -259,22 +259,22 @@ set match_date=((now() - interval '1 minute') at time zone 'Europe/Paris')::date
 where id=current_setting('test.match2')::uuid;
 select is(
   private.finalize_match_waitlist_turns_internal(
-    current_setting('test.match2')::uuid, false), 0,
-  'meme en mode par choix, aucun point automatique'
+    current_setting('test.match2')::uuid, false), 1,
+  'en mode par choix, le joueur mis en attente gagne +1'
 );
 select is(
   (select manual_waitlist_count from public.sport_waitlist_entries
    where season_player_id='f5840000-0000-0000-0000-000000000004'),
-  0, 'Damien en attente ne recoit aucun +1 sans intervention admin'
+  1, 'Damien recoit +1 au coup d envoi sans geste admin'
 );
 
--- En revanche l'admin peut crediter Damien, sans effet de retrait automatique.
+-- Une correction admin reste possible, sans retrait automatique.
 select pg_temp.as_admin();
 set local role authenticated;
 select lives_ok(
   $$select public.admin_set_waitlist_manual_count(
-    'f5840000-0000-0000-0000-000000000004', 1
-  )$$, 'l admin donne +1 a Damien'
+    'f5840000-0000-0000-0000-000000000004', 2
+  )$, 'l admin ajoute un +1 a Damien'
 );
 reset role;
 select is(
@@ -284,7 +284,7 @@ select is(
 select is(
   (select manual_waitlist_count from public.sport_waitlist_entries
    where season_player_id='f5840000-0000-0000-0000-000000000004'),
-  1, 'le compteur manuel de Damien est conserve'
+  2, 'le compteur automatique puis admin de Damien est conserve'
 );
 
 -- Aucune finalisation d'un match ancien ne crédite, même forcée.
@@ -315,11 +315,11 @@ select ok(
 );
 select is(
   private.process_due_waitlist_credits(), 0,
-  'appel direct au cron historique sans effet sur les compteurs'
+  'pas de match eligible restant a crediter'
 );
 select ok(
-  not exists (select 1 from cron.job where jobname='waitlist-credit'),
-  'le cron n est plus planifie'
+  exists (select 1 from cron.job where jobname='waitlist-credit'),
+  'le cron de credit est planifie'
 );
 
 -- Un joueur du même club ne peut ni ajouter ni retirer de +1.
@@ -340,8 +340,8 @@ reset role;
 select is(
   (select manual_waitlist_count from public.sport_waitlist_entries
    where season_player_id='f5840000-0000-0000-0000-000000000001'),
-  1,
-  'le refus de permission n a pas modifie le +1 admin'
+  2,
+  'le refus de permission n a pas modifie les +1 cumules'
 );
 
 select * from finish();
