@@ -36,28 +36,37 @@ class HistoryEntryRepository {
     final idsByName = <String, Set<String>>{};
     for (final player in context.players) {
       if (player.playerId == null) continue;
-      final normalized = player.name.trim().toLowerCase().replaceAll(
-            RegExp(r'\s+'), ' ');
+      final normalized =
+          player.name.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
       idsByName.putIfAbsent(normalized, () => <String>{}).add(player.playerId!);
     }
     final linked = <Map<String, dynamic>>[
       for (final match in batch.matches)
         {
           ...match,
-          for (final field in ['present', 'starters', 'bench', 'scorers', 'motm'])
+          for (final field in [
+            'present',
+            'starters',
+            'bench',
+            'scorers',
+            'motm'
+          ])
             if (match[field] is List)
               field: [
                 for (final raw in match[field] as List)
                   {
                     ...Map<String, dynamic>.from(raw as Map),
                     if ((idsByName[(raw['name'] as String)
-                                    .trim().toLowerCase().replaceAll(
-                                      RegExp(r'\s+'), ' ')] ??
+                                    .trim()
+                                    .toLowerCase()
+                                    .replaceAll(RegExp(r'\s+'), ' ')] ??
                                 const <String>{})
-                            .length == 1)
+                            .length ==
+                        1)
                       'player_id': idsByName[(raw['name'] as String)
-                              .trim().toLowerCase().replaceAll(
-                                RegExp(r'\s+'), ' ')]!
+                              .trim()
+                              .toLowerCase()
+                              .replaceAll(RegExp(r'\s+'), ' ')]!
                           .single,
                   },
               ],
