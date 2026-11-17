@@ -239,6 +239,8 @@ select is(
 select pg_temp.as_admin();
 set local role authenticated;
 select public.admin_set_club_rule('waitlist_mode', 2);
+-- Une option OFF ne neutralise PAS l'attribution des +1 au coup d'envoi.
+select public.admin_set_club_rule('waitlist_priority_enabled', 0);
 reset role;
 select private.recompute_match_convocations_internal(
   current_setting('test.match2')::uuid, false);
