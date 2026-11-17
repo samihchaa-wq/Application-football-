@@ -174,12 +174,14 @@ class _StepNavigator extends StatelessWidget {
 class _ModernMonthView extends ConsumerWidget {
   const _ModernMonthView({
     required this.month,
+    required this.seasonName,
     required this.matches,
     required this.events,
     required this.onRefresh,
   });
 
   final DateTime month;
+  final String seasonName;
   final List<MatchModel> matches;
   final List<ClubEvent> events;
   final Future<void> Function() onRefresh;
@@ -187,9 +189,15 @@ class _ModernMonthView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isAdmin = ref.watch(isAdminViewProvider);
+    final historical =
+        ref.watch(allHistoricalMatchesProvider).valueOrNull ??
+            const <HistoricalMatchResult>[];
     final entries = <_ModernMonthEntry>[
       for (final match in matches)
         if (_sameMonth(match.kickoffAt, month)) _ModernMonthEntry.match(match),
+      for (final archived in historical)
+        if (archived.seasonName == seasonName && _sameMonth(archived.date, month))
+          _ModernMonthEntry.historical(archived),
       for (final event in events)
         if (_sameMonth(event.startsAt, month)) _ModernMonthEntry.event(event),
     ]..sort((a, b) => a.date.compareTo(b.date));
@@ -245,7 +253,9 @@ class _ModernMonthView extends ConsumerWidget {
                         match: match,
                         adminActions: adminActions,
                       )
-                : ClubEventCard(event: entry.event!, isAdmin: isAdmin),
+                : entry.historical != null
+                    ? HistoricalMatchCard(match: entry.historical!)
+                    : ClubEventCard(event: entry.event!, isAdmin: isAdmin),
           );
         },
       ),
@@ -254,14 +264,23 @@ class _ModernMonthView extends ConsumerWidget {
 }
 
 class _ModernMonthEntry {
-  const _ModernMonthEntry._({this.match, this.event, required this.date});
+  const _ModernMonthEntry._({
+    this.match,
+    this.historical,
+    this.event,
+    required this.date,
+  });
 
   final MatchModel? match;
+  final HistoricalMatchResult? historical;
   final ClubEvent? event;
   final DateTime date;
 
   factory _ModernMonthEntry.match(MatchModel match) =>
       _ModernMonthEntry._(match: match, date: match.kickoffAt);
+
+  factory _ModernMonthEntry.historical(HistoricalMatchResult match) =>
+      _ModernMonthEntry._(historical: match, date: match.date);
 
   factory _ModernMonthEntry.event(ClubEvent event) =>
       _ModernMonthEntry._(event: event, date: event.startsAt);
