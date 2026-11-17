@@ -148,7 +148,6 @@ String _fromMessage(String raw) {
     'caractères',
     'fenêtre de correction',
     'homme du match',
-    'étoile du match',
     'ta session',
     'profil ',
   ];
@@ -203,7 +202,7 @@ String _fromMessage(String raw) {
     'assists cannot exceed goals':
         'Le nombre de passes décisives ne peut pas dépasser le nombre de buts.',
     'motm must be a present player':
-        'L’Étoile du match doit être un joueur présent.',
+        'L’Homme du match doit être un joueur présent.',
     'absent players cannot have statistics':
         'Un joueur absent ne peut pas avoir de statistiques.',
     'absent guests cannot have statistics':
