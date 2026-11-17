@@ -169,6 +169,51 @@ def smoke(status_file: Path):
     denied(code, "Dépôt Storage dans le dossier du club A")
     print("PASS Storage upload + téléchargement + refus lecture/écriture entre clubs")
 
+    # Positive control: the replacement bytes and request must work for B.
+    replacement = PNG + b"qa-replacement"
+    code, _ = request(api, anon, tb, "PUT", pb, binary=replacement,
+                      headers={"Content-Type": "image/png"})
+    ok(code, "Remplacement légitime B")
+    code, body = request(api, anon, tb, "GET",
+                         pb.replace("/storage/v1/object/", "/storage/v1/object/authenticated/", 1))
+    ok(code, "Témoin remplacement B")
+    if body != replacement:
+        raise AssertionError("Le témoin de remplacement ne conserve pas les octets")
+    code, _ = request(api, anon, tb, "PUT", pa, binary=replacement,
+                      headers={"Content-Type": "image/png"})
+    denied(code, "Remplacement interéquipe")
+    code, _ = request(api, anon, tb, "DELETE", "/storage/v1/object/profile-photos",
+                      {"prefixes": [ua + "/qa-alpha.png"]})
+    # Storage may return 2xx and delete zero rows. Check victim bytes too.
+    if not (200 <= code < 300 or code in (400, 401, 403, 404)):
+        raise AssertionError("Réponse inattendue de suppression interéquipe")
+    code, body = request(api, anon, ta, "GET", auth_path)
+    ok(code, "Objet témoin après attaques")
+    if body != PNG:
+        raise AssertionError("Une attaque interéquipe a altéré ou supprimé la photo")
+    print("PASS remplacement/suppression interéquipe et octets témoins inchangés")
+
+    # Reuse the signed JWT after server-side status changes; no fresh login.
+    for inactive_status in ("pending", "archived"):
+        sql(f"update public.profiles set status='{inactive_status}' where id='{ua}'")
+        if get(ta, "/rest/v1/rpc/is_admin") is not False:
+            raise AssertionError("Un ancien JWT conserve le rôle admin")
+        if get(ta, "/rest/v1/profiles?select=id") != []:
+            raise AssertionError("Un profil inactif lit encore les profils")
+        code, _ = request(api, anon, ta, "GET", auth_path)
+        denied(code, "Photo avec ancien JWT de profil inactif")
+        code, _ = request(api, anon, ta, "POST", "/rest/v1/rpc/admin_update_club_colors",
+                          {"p_primary": "#CC0000", "p_secondary": "#FFFFFF"})
+        denied(code, "Écriture avec ancien JWT de profil inactif")
+        if sql(f"select primary_color from public.clubs where id='{alpha}'") != "#AA1100":
+            raise AssertionError("Une écriture inactive a modifié les couleurs")
+        if get(tb, "/rest/v1/rpc/is_admin") is not True:
+            raise AssertionError("La révocation A a affecté B")
+        sql(f"update public.profiles set status='active' where id='{ua}'")
+        if get(ta, "/rest/v1/rpc/is_admin") is not True:
+            raise AssertionError("Le témoin de réactivation du profil échoue")
+    print("PASS anciens JWT : profils pending/archived, REST/RPC/Storage et équipe B témoin")
+
     sql(f"update public.clubs set status='suspended' where id='{alpha}'")
     if get(ta, "/rest/v1/rpc/is_admin") is not False:
         raise AssertionError("Un club suspendu garde ses droits admin.")
