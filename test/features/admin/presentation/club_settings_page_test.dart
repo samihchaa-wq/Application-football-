@@ -419,6 +419,49 @@ void main() {
     repository.ruleValues[key] = defaultValue;
   }
 
+  testWidgets('la recherche ouvre uniquement les sections pertinentes',
+      (tester) async {
+    await pumpPage(tester);
+    final search = find.byKey(const Key('club-settings-search'));
+    expect(search, findsOneWidget);
+
+    await tester.enterText(search, 'pronostic');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Fermeture des pronostics'), findsOneWidget);
+    expect(find.byKey(const ValueKey('club-section-identity')), findsNothing);
+    expect(find.text('Pronostics'), findsOneWidget);
+
+    await tester.enterText(search, '');
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('club-section-identity')),
+        findsOneWidget);
+  });
+
+  testWidgets('l’admin choisit les statistiques affichées au bilan',
+      (tester) async {
+    addRule('wrapped_stats_mask', 'Bilan de saison : statistiques affichées',
+        'mask', 511, 1, 511);
+    await pumpPage(tester);
+    await openSection(tester, 'rewards');
+
+    final tile = find.byKey(const ValueKey('club-rule-wrapped_stats_mask'));
+    await tester.ensureVisible(tile);
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+    expect(find.text('Statistiques du bilan de fin de saison'), findsOneWidget);
+
+    final goals = find.byKey(const ValueKey('wrapped-stat-goals'));
+    await tester.ensureVisible(goals);
+    await tester.tap(goals);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Enregistrer').last);
+    await tester.pumpAndSettle();
+    expect(repository.ruleValues['wrapped_stats_mask'], 503);
+    expect(ClubRules.wrappedStatsMask, 503);
+  });
+
   testWidgets('une notification se coupe par un interrupteur, à sa place', (
     tester,
   ) async {
