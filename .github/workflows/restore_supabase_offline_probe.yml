@@ -71,6 +71,7 @@ jobs:
             --data-root="$root/data" --exec-root="$root/exec" \
             --pidfile="$root/docker.pid" --storage-driver=overlay2 \
             --iptables=false --ip6tables=false --bridge=none \
+            --host-gateway-ip=172.19.0.1 \
             --ip-forward=false --ip-masq=false \
             >"$root/daemon.log" 2>&1 &
           daemon_pid=$!
