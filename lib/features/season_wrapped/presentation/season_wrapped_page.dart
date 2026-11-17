@@ -191,7 +191,7 @@ class _WrappedStoryState extends ConsumerState<_WrappedStory>
   Widget? _sheetBeingCaptured;
   String? _capturedName;
 
-  int get _slideCount => 11;
+  int get _slideCount => wrappedSlideSkins(ClubRules.wrappedStatsMask).length;
   bool get _isLastSlide => _index == _slideCount - 1;
 
   @override
@@ -350,7 +350,7 @@ class _WrappedStoryState extends ConsumerState<_WrappedStory>
                 ),
               ),
             ),
-            for (final sheet in widget.wrapped.sheets)
+            for (final sheet in widget.wrapped.sheetsForMask(ClubRules.wrappedStatsMask))
               ListTile(
                 title: Text(
                   sheet.title.toUpperCase(),
@@ -390,7 +390,8 @@ class _WrappedStoryState extends ConsumerState<_WrappedStory>
   @override
   Widget build(BuildContext context) {
     final playerName = ref.watch(wrappedPlayerNameProvider);
-    final skin = WrappedSkin.sequence[_index];
+    final statsMask = ClubRules.wrappedStatsMask;
+    final skin = wrappedSlideSkins(statsMask)[_index];
     final slides = buildWrappedSlides(
       wrapped: widget.wrapped,
       playerName: playerName,
@@ -398,10 +399,12 @@ class _WrappedStoryState extends ConsumerState<_WrappedStory>
         SeasonWrappedFullShareSheet(
           wrapped: widget.wrapped,
           playerName: playerName,
+          statsMask: statsMask,
         ),
       ),
       onShareByTheme: _openThemeSharing,
       preview: widget.preview,
+      statsMask: statsMask,
     );
 
     return Stack(
