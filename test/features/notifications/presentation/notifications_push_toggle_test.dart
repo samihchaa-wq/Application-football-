@@ -372,7 +372,6 @@ void main() {
     expect(find.text('Désactiver toutes les notifications'), findsNothing);
     expect(find.text('Notifications essentielles'), findsOneWidget);
   });
-
 }
 
 /// Historique vide : l'onglet Historique reste monté derrière les réglages.
