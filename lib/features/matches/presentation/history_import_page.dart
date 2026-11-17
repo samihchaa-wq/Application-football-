@@ -34,12 +34,20 @@ class _HistoryImportPageState extends ConsumerState<HistoryImportPage> {
 
   Future<void> _load() async {
     try {
-      final entry = await ref.read(historyEntryRepositoryProvider).fetchContext();
+      final entry =
+          await ref.read(historyEntryRepositoryProvider).fetchContext();
       if (!mounted) return;
-      setState(() { _entry = entry; _error = null; _loading = false; });
+      setState(() {
+        _entry = entry;
+        _error = null;
+        _loading = false;
+      });
     } catch (error) {
       if (!mounted) return;
-      setState(() { _error = humanizeError(error); _loading = false; });
+      setState(() {
+        _error = humanizeError(error);
+        _loading = false;
+      });
     }
   }
 
@@ -50,17 +58,22 @@ class _HistoryImportPageState extends ConsumerState<HistoryImportPage> {
       final selected = await pickHistoryJsonFile();
       if (selected == null || !mounted) return;
       final parsed = HistoryImportBatch.parse(
-        selected.content, entry.lastAllowedDate,
+        selected.content,
+        entry.lastAllowedDate,
       );
       setState(() {
-        _batch = parsed; _fileName = selected.name;
-        _error = null; _result = null;
+        _batch = parsed;
+        _fileName = selected.name;
+        _error = null;
+        _result = null;
       });
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _batch = null; _fileName = null;
-        _error = error is FormatException ? error.message : humanizeError(error);
+        _batch = null;
+        _fileName = null;
+        _error =
+            error is FormatException ? error.message : humanizeError(error);
       });
     }
   }
@@ -74,29 +87,37 @@ class _HistoryImportPageState extends ConsumerState<HistoryImportPage> {
       builder: (dialog) => AlertDialog(
         title: const Text('Importer les matchs ?'),
         content: Text(
-          'Importer ' + batch.count.toString() +
-          ' rencontres dans cette équipe ? Les doublons existants seront '
-          'ignorés. Un conflit bloque intégralement le fichier.',
+          'Importer ' +
+              batch.count.toString() +
+              ' rencontres dans cette équipe ? Les doublons existants seront '
+                  'ignorés. Un conflit bloque intégralement le fichier.',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialog, false),
-            child: const Text('Annuler')),
-          FilledButton(onPressed: () => Navigator.pop(dialog, true),
-            child: const Text('Importer')),
+          TextButton(
+              onPressed: () => Navigator.pop(dialog, false),
+              child: const Text('Annuler')),
+          FilledButton(
+              onPressed: () => Navigator.pop(dialog, true),
+              child: const Text('Importer')),
         ],
       ),
     );
     if (yes != true || !mounted) return;
     setState(() => _importing = true);
     try {
-      final result = await ref.read(historyEntryRepositoryProvider)
+      final result = await ref
+          .read(historyEntryRepositoryProvider)
           .importMatches(batch, entry);
       if (!mounted) return;
       refreshHistoricalArchives(ref);
       setState(() {
-        _result = result.imported.toString() + ' matchs importés, ' +
-            result.skipped.toString() + ' déjà présents.';
-        _batch = null; _fileName = null; _error = null;
+        _result = result.imported.toString() +
+            ' matchs importés, ' +
+            result.skipped.toString() +
+            ' déjà présents.';
+        _batch = null;
+        _fileName = null;
+        _error = null;
       });
     } catch (error) {
       if (!mounted) return;
@@ -120,95 +141,113 @@ class _HistoryImportPageState extends ConsumerState<HistoryImportPage> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: GrintaAppBar(title: const Text('Importer l’historique')),
-      body: _loading ? const Center(child: CircularProgressIndicator()) :
-      ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const Text(
-            'Transfère les anciens matchs de ton équipe. '
-            'Aucune donnée ne quitte ton appareil avant confirmation.',
-          ),
-          const SizedBox(height: 16),
-          Card(child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text('1. Préparer le fichier', style: theme.textTheme.titleMedium),
-                const SizedBox(height: 8),
-                const Text('Fournis tes anciens matchs et ce prompt à ton IA, '
-                  'puis demande historique_petit_filet.json. '
-                  'Contrôle les informations générées.'),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  key: const Key('history-import-copy-prompt'),
-                  onPressed: _copyPrompt,
-                  icon: const Icon(Icons.copy_outlined),
-                  label: const Text('Copier le prompt pour mon IA'),
-                ),
-              ],
-            ),
-          )),
-          Card(child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text('2. Choisir le document JSON',
-                  style: theme.textTheme.titleMedium),
-                const SizedBox(height: 8),
-                const Text('Maximum 400 matchs, antérieurs à la première '
-                    'saison déjà suivie dans Petit Filet. '
-                    'N’inclus pas de données personnelles inutiles.'),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  key: const Key('history-import-select'),
-                  onPressed: _entry == null || _importing ? null : _chooseFile,
-                  icon: const Icon(Icons.upload_file_outlined),
-                  label: const Text('Choisir le fichier'),
-                ),
-                if (_fileName != null) Text(_fileName!),
-              ],
-            ),
-          )),
-          if (_error != null)
-            Text(_error!, style: TextStyle(color: theme.colorScheme.error)),
-          if (_entry == null)
-            FilledButton(onPressed: () {
-              setState(() => _loading = true);
-              _load();
-            }, child: const Text('Réessayer')),
-          if (batch != null)
-            Card(child: Padding(
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
               padding: const EdgeInsets.all(16),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text('3. Vérifier avant import',
-                      style: theme.textTheme.titleMedium),
-                  Text(batch.count.toString() + ' matchs à importer.'),
-                  for (final match in batch.matches.take(20))
-                    ListTile(
-                      dense: true,
-                      title: Text(match['date'].toString() +
-                          ' — ' + match['opponent'].toString()),
-                      subtitle: Text(match['score_for'].toString() +
-                          ' – ' + match['score_against'].toString()),
-                    ),
-                  if (batch.count > 20)
-                    Text('Et ' + (batch.count - 20).toString() + ' autres.'),
-                  const SizedBox(height: 8),
-                  FilledButton.icon(
-                    key: const Key('history-import-confirm'),
-                    onPressed: _importing ? null : _import,
-                    icon: const Icon(Icons.check_circle_outline),
-                    label: Text(_importing
-                        ? 'Import en cours…' : 'Confirmer l’import'),
+              children: [
+                const Text(
+                  'Transfère les anciens matchs de ton équipe. '
+                  'Aucune donnée ne quitte ton appareil avant confirmation.',
+                ),
+                const SizedBox(height: 16),
+                Card(
+                    child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text('1. Préparer le fichier',
+                          style: theme.textTheme.titleMedium),
+                      const SizedBox(height: 8),
+                      const Text(
+                          'Fournis tes anciens matchs et ce prompt à ton IA, '
+                          'puis demande historique_petit_filet.json. '
+                          'Contrôle les informations générées.'),
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        key: const Key('history-import-copy-prompt'),
+                        onPressed: _copyPrompt,
+                        icon: const Icon(Icons.copy_outlined),
+                        label: const Text('Copier le prompt pour mon IA'),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            )),
-          if (_result != null) Text(_result!,
-              key: const Key('history-import-result')),
-        ],
-      ),
+                )),
+                Card(
+                    child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text('2. Choisir le document JSON',
+                          style: theme.textTheme.titleMedium),
+                      const SizedBox(height: 8),
+                      const Text('Maximum 400 matchs, antérieurs à la première '
+                          'saison déjà suivie dans Petit Filet. '
+                          'N’inclus pas de données personnelles inutiles.'),
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        key: const Key('history-import-select'),
+                        onPressed:
+                            _entry == null || _importing ? null : _chooseFile,
+                        icon: const Icon(Icons.upload_file_outlined),
+                        label: const Text('Choisir le fichier'),
+                      ),
+                      if (_fileName != null) Text(_fileName!),
+                    ],
+                  ),
+                )),
+                if (_error != null)
+                  Text(_error!,
+                      style: TextStyle(color: theme.colorScheme.error)),
+                if (_entry == null)
+                  FilledButton(
+                      onPressed: () {
+                        setState(() => _loading = true);
+                        _load();
+                      },
+                      child: const Text('Réessayer')),
+                if (batch != null)
+                  Card(
+                      child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text('3. Vérifier avant import',
+                            style: theme.textTheme.titleMedium),
+                        Text(batch.count.toString() + ' matchs à importer.'),
+                        for (final match in batch.matches.take(20))
+                          ListTile(
+                            dense: true,
+                            title: Text(match['date'].toString() +
+                                ' — ' +
+                                match['opponent'].toString()),
+                            subtitle: Text(match['score_for'].toString() +
+                                ' – ' +
+                                match['score_against'].toString()),
+                          ),
+                        if (batch.count > 20)
+                          Text('Et ' +
+                              (batch.count - 20).toString() +
+                              ' autres.'),
+                        const SizedBox(height: 8),
+                        FilledButton.icon(
+                          key: const Key('history-import-confirm'),
+                          onPressed: _importing ? null : _import,
+                          icon: const Icon(Icons.check_circle_outline),
+                          label: Text(_importing
+                              ? 'Import en cours…'
+                              : 'Confirmer l’import'),
+                        ),
+                      ],
+                    ),
+                  )),
+                if (_result != null)
+                  Text(_result!, key: const Key('history-import-result')),
+              ],
+            ),
     );
   }
 }
