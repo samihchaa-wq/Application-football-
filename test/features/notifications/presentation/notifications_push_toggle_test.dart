@@ -354,6 +354,7 @@ void main() {
             (ref) async => const AppPreferences(),
           ),
           isAdminViewProvider.overrideWithValue(true),
+          notificationsPausedProvider.overrideWith((ref) async => false),
           adminAvailabilityChangeNotificationProvider.overrideWith(
             (ref) async => true,
           ),
@@ -372,6 +373,54 @@ void main() {
     expect(find.text('Désactiver toutes les notifications'), findsNothing);
     expect(find.text('Notifications essentielles'), findsOneWidget);
   });
+  testWidgets('un club déjà en pause peut seulement réactiver ses notifications',
+      (tester) async {
+    bool? lastEnabled;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          notificationsPausedProvider.overrideWith((ref) async => true),
+          setNotificationsPausedProvider.overrideWithValue((enabled) async {
+            lastEnabled = enabled;
+          }),
+          pushSubscriptionsRepositoryProvider.overrideWithValue(
+            _FakePushSubscriptions(subscribed: true),
+          ),
+          pushStatusProvider.overrideWith(
+            (ref) async => (supported: true, subscribed: true),
+          ),
+          appPreferencesProvider.overrideWith(
+            (ref) async => const AppPreferences(),
+          ),
+          isAdminViewProvider.overrideWithValue(true),
+          adminAvailabilityChangeNotificationProvider.overrideWith(
+            (ref) async => true,
+          ),
+          hasUnseenBadgeProvider.overrideWith((ref) async => false),
+          seasonWrappedStateProvider.overrideWith(
+            (ref) async => const SeasonWrappedState.unavailable(),
+          ),
+          notificationInboxRepositoryProvider.overrideWithValue(_EmptyInbox()),
+        ],
+        child: const MaterialApp(
+          home: NotificationsPage(initialTab: NotificationsTab.settings),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final resume = find.text('Réactiver les notifications du club');
+    await tester.scrollUntilVisible(
+      resume,
+      160,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(resume);
+    await tester.pumpAndSettle();
+    expect(lastEnabled, isFalse);
+    expect(find.text('Désactiver toutes les notifications'), findsNothing);
+  });
+
 }
 
 /// Historique vide : l'onglet Historique reste monté derrière les réglages.
