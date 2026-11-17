@@ -8,6 +8,7 @@ import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/club/presentation/club_identity_sync.dart';
 import 'package:as_grinta/features/club/presentation/club_rules_sync.dart';
 import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
+import 'package:as_grinta/features/season_wrapped/domain/wrapped_stat_selection.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
@@ -572,6 +573,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     'notify_motm_result': 'rewards',
     'notify_badges': 'rewards',
     ClubRules.wrappedMusicKey: 'rewards',
+    ClubRules.wrappedStatsMaskKey: 'rewards',
     'notify_admin_signups': 'members',
   };
 
@@ -594,7 +596,10 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       return ClubModule.manOfTheMatch;
     }
     if (key == 'notify_badges') return ClubModule.badges;
-    if (key == ClubRules.wrappedMusicKey) return ClubModule.seasonWrapped;
+    if (key == ClubRules.wrappedMusicKey ||
+        key == ClubRules.wrappedStatsMaskKey) {
+      return ClubModule.seasonWrapped;
+    }
     return null;
   }
 
@@ -687,6 +692,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
                   _searchMatches('${rule.label} ${rule.description} ${rule.key}')))
             if (rule.key == ClubRules.waitlistModeKey)
               _waitlistModeTile(rule)
+            else if (rule.key == ClubRules.wrappedStatsMaskKey)
+              _wrappedStatsRuleTile(rule)
             else if (rule.unit == ClubRules.boolUnit)
               _boolRuleTile(rule)
             else if (rule.unit == ClubRules.modeUnit)
@@ -694,6 +701,81 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
             else
               _numberRuleTile(rule),
       ];
+
+  Widget _wrappedStatsRuleTile(ClubRule rule) {
+    final current = rule.value;
+    final count = WrappedStatOption.values
+        .where((stat) => stat.enabledIn(current))
+        .length;
+    return ListTile(
+      key: const ValueKey('club-rule-wrapped_stats_mask'),
+      contentPadding: EdgeInsets.zero,
+      title: _labelWithInfo(
+        'rule-${rule.key}',
+        'Quelles stats apparaissent au bilan de fin de saison ?',
+        _ruleInfo(rule),
+      ),
+      subtitle: Text('$count statistiques sur 9 sélectionnées'),
+      trailing: const Icon(Icons.tune_rounded),
+      onTap: _ruleLocked(rule) ? null : () => _chooseWrappedStats(rule),
+    );
+  }
+
+  Future<void> _chooseWrappedStats(ClubRule rule) async {
+    var mask = rule.value;
+    final selected = await showDialog<int>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, updateDialog) => AlertDialog(
+          title: const Text('Statistiques du bilan de fin de saison'),
+          content: SizedBox(
+            width: 420,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final stat in WrappedStatOption.values)
+                    CheckboxListTile(
+                      key: ValueKey('wrapped-stat-${stat.name}'),
+                      title: Text(stat.label),
+                      subtitle: Text(stat.description),
+                      controlAffinity: ListTileControlAffinity.leading,
+                      value: stat.enabledIn(mask),
+                      onChanged: (checked) => updateDialog(() {
+                        if (checked == true) {
+                          mask |= stat.bit;
+                        } else {
+                          mask &= ~stat.bit;
+                        }
+                      }),
+                    ),
+                  if (mask == 0)
+                    const Padding(
+                      padding: EdgeInsets.all(8),
+                      child: Text('Choisis au moins une statistique.'),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Annuler'),
+            ),
+            FilledButton(
+              onPressed: mask == 0
+                  ? null
+                  : () => Navigator.of(dialogContext).pop(mask),
+              child: const Text('Enregistrer'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || selected == null || selected == rule.value) return;
+    await _setRule(rule, selected);
+  }
 
   Widget _boolRuleTile(ClubRule rule) => SwitchListTile.adaptive(
         key: ValueKey('club-rule-${rule.key}'),
