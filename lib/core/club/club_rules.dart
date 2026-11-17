@@ -179,7 +179,7 @@ enum WaitlistMode {
   /// puis chacun son tour (règle d'origine).
   lastSeasonAttendance(
     0,
-    'Par présence l’an dernier',
+    'Historique',
     'Le classement historique d’AS Grinta départage les joueurs. '
         'Le réglage séparé détermine si les +1 modifient ce classement.',
   ),
