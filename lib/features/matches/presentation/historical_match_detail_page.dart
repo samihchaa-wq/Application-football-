@@ -127,7 +127,9 @@ class _HistoricalMatchHeaderSection extends ConsumerWidget {
   }
 
   Widget _historicalHeader(HistoricalMatchResult match) {
-    return MatchDetailHeaderCard(
+    return Column(
+      children: [
+        MatchDetailHeaderCard(
       homeName: match.isHome ? ClubIdentity.name : match.opponentName,
       awayName: match.isHome ? match.opponentName : ClubIdentity.name,
       grintaIsHome: match.isHome,
@@ -141,6 +143,13 @@ class _HistoricalMatchHeaderSection extends ConsumerWidget {
       typeLabel: match.calendarTypeLabel,
       address: match.address,
       compact: true,
+        ),
+        if (!match.hasKnownVenue)
+          const Padding(
+            padding: EdgeInsets.only(top: 4),
+            child: Text('Domicile / extérieur non renseigné'),
+          ),
+      ],
     );
   }
 }
