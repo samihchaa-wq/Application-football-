@@ -19,6 +19,20 @@ class TenantSmokeSafetyTests(unittest.TestCase):
             with self.subTest(api=api), self.assertRaises(RuntimeError):
                 assert_local(api, db)
 
+    def test_local_db_dsn_must_match_exactly(self):
+        api = 'http://127.0.0.1:54321'
+        rejected = (
+            'postgres://postgres:postgres@127.0.0.1:54322/postgres',
+            'postgresql://postgres:other@127.0.0.1:54322/postgres',
+            'postgresql://postgres:postgres@127.0.0.1:54322/other',
+            'postgresql://postgres:postgres@127.0.0.1:54322/postgres?sslmode=require',
+            'postgresql://postgres:postgres@127.0.0.1:54322/postgres#fragment',
+            'postgresql://postgres:postgres@127.0.0.1:54322/postgres?host=remote.invalid',
+        )
+        for db in rejected:
+            with self.subTest(db=db), self.assertRaises(RuntimeError):
+                assert_local(api, db)
+
     def test_remote_db_is_forbidden(self):
         with self.assertRaises(RuntimeError):
             assert_local("http://127.0.0.1:54321",
