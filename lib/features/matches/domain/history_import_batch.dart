@@ -29,8 +29,9 @@ class HistoryImportBatch {
     final seen = <String, String>{};
     for (var i = 0; i < rows.length; i++) {
       final number = i + 1;
-      if (rows[i] is! Map)
+      if (rows[i] is! Map) {
         throw FormatException('Match $number : objet invalide.');
+      }
       final row = Map<String, dynamic>.from(rows[i] as Map);
       final date = row['date'];
       final opponent = row['opponent'];
@@ -77,8 +78,9 @@ class HistoryImportBatch {
       for (final field in ['time', 'address', 'formation']) {
         final value = row[field];
         if (value == null) continue;
-        if (value is! String)
+        if (value is! String) {
           throw FormatException('Match $number : $field invalide.');
+        }
         if (value.trim().isNotEmpty) clean[field] = value.trim();
       }
       if (clean['address'] is String &&
@@ -109,9 +111,8 @@ class HistoryImportBatch {
       if (goalsTotal > scored) {
         throw FormatException('Match $number : plus de buteurs que de buts.');
       }
-      final identity = date + '|' + opponent.trim().toLowerCase();
-      final signature =
-          '$scored|$conceded|' + home.toString() + '|' + kind.toString();
+      final identity = '$date|${opponent.trim().toLowerCase()}';
+      final signature = '$scored|$conceded|$home|$kind';
       if (seen.containsKey(identity) && seen[identity] != signature) {
         throw FormatException('Match $number : doublon contradictoire.');
       }
@@ -139,8 +140,9 @@ class HistoryImportBatch {
       out['goals'] = raw['goals'];
     }
     if (field == 'starters') {
-      if (raw['position_code'] is String)
+      if (raw['position_code'] is String) {
         out['position_code'] = raw['position_code'];
+      }
       if (raw['is_gk'] is bool) out['is_gk'] = raw['is_gk'];
       for (final axis in ['x_pct', 'y_pct']) {
         final value = raw[axis];
