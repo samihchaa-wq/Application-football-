@@ -28,7 +28,7 @@ class EncryptedBackupTests(unittest.TestCase):
                     ['gpg', '--no-options', '--homedir', str(home), '--batch',
                      '--no-tty', '--pinentry-mode', 'loopback', '--passphrase-fd',
                      '0', '--symmetric', '--output', str(encrypted), str(sample)],
-                    input=b'local-probe-secret\\n', capture_output=True, timeout=20,
+                    input=b'local-probe-secret\n', capture_output=True, timeout=20,
                 )
             except (OSError, subprocess.TimeoutExpired) as exc:
                 raise unittest.SkipTest('GPG local indisponible ou trop lent') from exc
