@@ -51,6 +51,9 @@ select is(
   ))) ->> 'imported')::integer,
   2, 'l’admin importe deux matchs depuis un seul fichier'
 );
+-- La lecture directe des archives est refusée aux clients : vérification
+-- de l'état en contexte propriétaire, sans élargir les privilèges RLS.
+reset role;
 select is(
   (select count(*)::integer
    from public.historical_match_scores score
@@ -58,6 +61,7 @@ select is(
    where opponent.name like 'Import FC %'),
   2, 'les deux matchs sont enregistrés'
 );
+set local role authenticated;
 
 select is(
   (public.admin_import_historical_matches(pg_temp.doc(jsonb_build_array(
