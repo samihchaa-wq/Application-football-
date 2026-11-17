@@ -78,6 +78,7 @@ void main() {
           (ref) async => const ClubModules.allEnabled(),
         ),
         seasonWrappedRepositoryProvider.overrideWithValue(repository),
+      isAdminViewProvider.overrideWithValue(false),
       ],
     );
     addTearDown(container.dispose);
