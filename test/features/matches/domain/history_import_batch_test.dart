@@ -42,28 +42,22 @@ void main() {
     expect(batch.matches.last['score_for'], 3);
   });
 
-  test('refuse les données inventées par défaut (domicile/type)', () {
+  test('accepte les champs domicile/type absents sans les inventer', () {
     final row = match()..remove('is_home');
-    expect(
-      () => HistoryImportBatch.parse(document([row]), cutoff),
-      throwsFormatException,
-    );
+    final withoutHome = HistoryImportBatch.parse(document([row]), cutoff);
+    expect(withoutHome.matches.single.containsKey('is_home'), false);
     row['is_home'] = true;
     row.remove('match_type');
-    expect(
-      () => HistoryImportBatch.parse(document([row]), cutoff),
-      throwsFormatException,
-    );
+    final withoutType = HistoryImportBatch.parse(document([row]), cutoff);
+    expect(withoutType.matches.single.containsKey('match_type'), false);
   });
 
-  test('refuse un match dans une saison déjà suivie', () {
-    expect(
-      () => HistoryImportBatch.parse(
-        document([match(date: '2025-07-01')]),
-        cutoff,
-      ),
-      throwsFormatException,
+  test('accepte un match dans une saison déjà suivie', () {
+    final batch = HistoryImportBatch.parse(
+      document([match(date: '2025-07-01')]),
+      DateTime(2026, 11, 17),
     );
+    expect(batch.count, 1);
   });
 
   test('refuse les dates normalisées incorrectes', () {
