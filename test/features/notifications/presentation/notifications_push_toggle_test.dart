@@ -373,7 +373,8 @@ void main() {
     expect(find.text('Désactiver toutes les notifications'), findsNothing);
     expect(find.text('Notifications essentielles'), findsOneWidget);
   });
-  testWidgets('un club déjà en pause peut seulement réactiver ses notifications',
+  testWidgets(
+      'un club déjà en pause peut seulement réactiver ses notifications',
       (tester) async {
     bool? lastEnabled;
     await tester.pumpWidget(
@@ -420,7 +421,6 @@ void main() {
     expect(lastEnabled, isFalse);
     expect(find.text('Désactiver toutes les notifications'), findsNothing);
   });
-
 }
 
 /// Historique vide : l'onglet Historique reste monté derrière les réglages.
