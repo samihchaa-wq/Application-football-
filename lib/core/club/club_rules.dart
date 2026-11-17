@@ -14,8 +14,7 @@ abstract final class ClubRules {
   static const String predictionCloseMinutesKey = 'prediction_close_minutes';
   static const String correctionWindowHoursKey = 'correction_window_hours';
   static const String waitlistModeKey = 'waitlist_mode';
-  static const String waitlistPriorityEnabledKey =
-      'waitlist_priority_enabled';
+  static const String waitlistPriorityEnabledKey = 'waitlist_priority_enabled';
   static const String predictionPointsExactKey = 'prediction_points_exact';
   static const String predictionPointsGoalDifferenceKey =
       'prediction_points_goal_difference';
