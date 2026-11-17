@@ -59,7 +59,7 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
     return GrintaAuthSurface(
       subtitle: widget.managerAccess
           ? 'Accès réservé au gestionnaire Petit Filet.'
-          : 'L’application de gestion sportive de ton club.',
+          : 'L’application de gestion sportive de ton équipe.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -240,8 +240,8 @@ class _ForgotPasswordDialogState extends ConsumerState<ForgotPasswordDialog> {
                 const Text(
                   'Saisis l’adresse e-mail confirmée sur ton compte : tu '
                   'recevras un lien pour choisir un nouveau mot de passe. '
-                  'Sans adresse confirmée, demande à un administrateur du '
-                  'club de réinitialiser ton mot de passe.',
+                  'Sans adresse confirmée, demande à un administrateur de ton '
+                  'équipe de réinitialiser ton mot de passe.',
                 ),
                 const SizedBox(height: 12),
                 TextField(

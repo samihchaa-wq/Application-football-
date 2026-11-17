@@ -298,7 +298,9 @@ class MatchMotmVoteCard extends ConsumerWidget {
             ),
           SportMotmVoteState.closed => (
               Icons.emoji_events_outlined,
-              vote.winners.length > 1 ? 'Co-Hommes du match' : 'Homme du match',
+              vote.winners.length > 1
+                  ? 'Hommes du match ex æquo'
+                  : 'Homme du match',
               vote.winners.isEmpty
                   ? 'Aucun vote exprimé.'
                   : vote.winners
@@ -453,9 +455,10 @@ class _MessageCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w400,
-                        ),
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w400),
                   ),
                   const SizedBox(height: 4),
                   Text(message),

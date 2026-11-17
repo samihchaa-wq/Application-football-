@@ -141,7 +141,8 @@ class MatchDetailHeaderCard extends StatelessWidget {
               InkWell(
                 onTap: onMotmTap,
                 borderRadius: BorderRadius.circular(10),
-                child: Padding(
+                child: Container(
+                  constraints: const BoxConstraints(minHeight: 48),
                   padding: EdgeInsets.symmetric(vertical: compact ? 2 : 4),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
