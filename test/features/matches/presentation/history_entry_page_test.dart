@@ -1,4 +1,5 @@
 import 'package:as_grinta/features/matches/data/history_entry_repository.dart';
+import 'package:as_grinta/features/matches/domain/history_import_batch.dart';
 import 'package:as_grinta/features/matches/domain/history_match_draft.dart';
 import 'package:as_grinta/features/matches/presentation/history_entry_page.dart';
 import 'package:flutter/material.dart';
@@ -63,13 +64,16 @@ void main() {
     await tester.tap(find.text('Valider'));
     await tester.pumpAndSettle();
 
-    // Score 1-0
-    await tester.tap(
-      find.descendant(
-        of: find.byKey(const Key('history-score-for')),
-        matching: find.byIcon(Icons.add_circle_outline),
-      ),
+    // Score 1-0 : le bouton doit être dégagé de la barre d'action
+    // fixe en bas de l'écran sur un téléphone.
+    final scorePlus = find.descendant(
+      of: find.byKey(const Key('history-score-for')),
+      matching: find.byIcon(Icons.add_circle_outline),
     );
+    await reveal(tester, scorePlus);
+    await tester.drag(find.byType(ListView).first, const Offset(0, -120));
+    await tester.pumpAndSettle();
+    await tester.tap(scorePlus);
     await tester.pumpAndSettle();
 
     await reveal(tester, find.byKey(const ValueKey('history-present-p-bruno')));
@@ -151,4 +155,11 @@ class _FakeHistoryRepository implements HistoryEntryRepository {
 
   @override
   Future<bool> deleteMatch(String matchId) async => true;
+
+  @override
+  Future<({int imported, int skipped})> importMatches(
+    HistoryImportBatch batch,
+    HistoryEntryContext context,
+  ) async =>
+      (imported: batch.count, skipped: 0);
 }

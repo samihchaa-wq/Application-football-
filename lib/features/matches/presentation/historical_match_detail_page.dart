@@ -127,20 +127,29 @@ class _HistoricalMatchHeaderSection extends ConsumerWidget {
   }
 
   Widget _historicalHeader(HistoricalMatchResult match) {
-    return MatchDetailHeaderCard(
-      homeName: match.isHome ? ClubIdentity.name : match.opponentName,
-      awayName: match.isHome ? match.opponentName : ClubIdentity.name,
-      grintaIsHome: match.isHome,
-      homeScore: match.isHome ? match.grintaScore : match.opponentScore,
-      awayScore: match.isHome ? match.opponentScore : match.grintaScore,
-      finished: true,
-      kickoffAt: match.date,
-      showTime: match.hasTime,
-      matchType: match.matchType,
-      unknownTypeAsFinished: true,
-      typeLabel: match.calendarTypeLabel,
-      address: match.address,
-      compact: true,
+    return Column(
+      children: [
+        MatchDetailHeaderCard(
+          homeName: match.isHome ? ClubIdentity.name : match.opponentName,
+          awayName: match.isHome ? match.opponentName : ClubIdentity.name,
+          grintaIsHome: match.isHome,
+          homeScore: match.isHome ? match.grintaScore : match.opponentScore,
+          awayScore: match.isHome ? match.opponentScore : match.grintaScore,
+          finished: true,
+          kickoffAt: match.date,
+          showTime: match.hasTime,
+          matchType: match.matchType,
+          unknownTypeAsFinished: true,
+          typeLabel: match.calendarTypeLabel,
+          address: match.address,
+          compact: true,
+        ),
+        if (!match.hasKnownVenue)
+          const Padding(
+            padding: EdgeInsets.only(top: 4),
+            child: Text('Domicile / extérieur non renseigné'),
+          ),
+      ],
     );
   }
 }

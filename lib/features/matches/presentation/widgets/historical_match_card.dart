@@ -54,12 +54,17 @@ class HistoricalMatchCard extends StatelessWidget {
             awayScore: awayScore,
             finished: true,
           ),
-          footer: cleanAddress != null && cleanAddress.isNotEmpty
-              ? CalendarAddressLine(
-                  cleanAddress,
-                  onTap: () => showMatchAddressSheet(context, cleanAddress),
+          footer: !match.hasKnownVenue
+              ? const Text(
+                  'Domicile / extérieur non renseigné',
+                  textAlign: TextAlign.center,
                 )
-              : null,
+              : cleanAddress != null && cleanAddress.isNotEmpty
+                  ? CalendarAddressLine(
+                      cleanAddress,
+                      onTap: () => showMatchAddressSheet(context, cleanAddress),
+                    )
+                  : null,
         ),
       ),
     );

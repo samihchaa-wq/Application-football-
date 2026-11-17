@@ -13,6 +13,7 @@ class HistoricalMatchResult {
     required this.grintaScore,
     required this.opponentScore,
     required this.isHome,
+    this.hasKnownVenue = true,
     this.hasTime = false,
     this.address,
     this.matchType,
@@ -28,6 +29,9 @@ class HistoricalMatchResult {
   final int grintaScore;
   final int opponentScore;
   final bool isHome;
+
+  /// Faux quand l'export n'a pas indiqué domicile ou extérieur.
+  final bool hasKnownVenue;
   final String? address;
 
   /// Nul tant que l'archive n'a pas permis de déterminer le type sans doute.
@@ -92,6 +96,7 @@ class CalendarHistoryRepository {
         grintaScore: (row['score_as_grinta'] as num?)?.toInt() ?? 0,
         opponentScore: (row['score_adverse'] as num?)?.toInt() ?? 0,
         isHome: row['is_home'] as bool? ?? true,
+        hasKnownVenue: row['is_home'] != null,
         address: _clean(row['address']),
         matchType: _clean(row['match_type']),
         championshipRound: (row['championship_round'] as num?)?.toInt(),
@@ -161,6 +166,7 @@ class CalendarHistoryRepository {
           a.grintaScore != b.grintaScore ||
           a.opponentScore != b.opponentScore ||
           a.isHome != b.isHome ||
+          a.hasKnownVenue != b.hasKnownVenue ||
           a.address != b.address ||
           a.matchType != b.matchType ||
           a.championshipRound != b.championshipRound) {
@@ -198,6 +204,7 @@ class CalendarHistoryRepository {
               grintaScore: (row['grinta_score'] as num?)?.toInt() ?? 0,
               opponentScore: (row['opponent_score'] as num?)?.toInt() ?? 0,
               isHome: row['is_home'] as bool? ?? true,
+              hasKnownVenue: row['has_known_venue'] != false,
               address: _clean(row['address']),
               matchType: _clean(row['match_type']),
               championshipRound: (row['championship_round'] as num?)?.toInt(),
@@ -225,6 +232,7 @@ class CalendarHistoryRepository {
                   'grinta_score': match.grintaScore,
                   'opponent_score': match.opponentScore,
                   'is_home': match.isHome,
+                  'has_known_venue': match.hasKnownVenue,
                   'address': match.address,
                   'match_type': match.matchType,
                   'championship_round': match.championshipRound,
