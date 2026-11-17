@@ -16,10 +16,10 @@ Pour chaque clé : identifiant stable = REG-<clé>. Responsable réalisation M02
 | REG-notify_prediction_reminder | Notification : rappel de pronostic — Rappeler le jour du match à ceux qui n’ont pas encore pronostiqué. | bool | 1 | 0–1 | DB lu ; effet réel non vérifié |
 | REG-prediction_reminder_hour | Heure du rappel de pronostic — Heure (en France) du rappel envoyé le jour du match à ceux qui n’ont pas pronostiqué. | h | 16 | 0–23 | DB lu ; effet réel non vérifié |
 | REG-prediction_reminder_lead_minutes | Rappel avant un match tôt — Si le match commence avant l’heure du rappel, le rappel part ce nombre de minutes avant la fermeture des pronostics. | min | 60 | 15–600 | DB lu ; effet réel non vérifié |
-| REG-motm_window_hours | Durée du vote de l’Étoile du match — Combien d’heures après le coup d’envoi le vote reste ouvert. | h | 24 | 6–168 | DB lu ; effet réel non vérifié |
-| REG-motm_self_vote | Étoile du match : voter pour soi — Autoriser un joueur à voter pour lui-même. Interdit par défaut. | bool | 0 | 0–1 | DB lu ; effet réel non vérifié |
-| REG-notify_motm_open | Notification : vote de l’Étoile du match — Prévenir les votants quand le vote s’ouvre. | bool | 1 | 0–1 | DB lu ; effet réel non vérifié |
-| REG-notify_motm_result | Notification : résultat de l’Étoile du match — Annoncer le résultat du vote à l’équipe et au gagnant. | bool | 1 | 0–1 | DB lu ; effet réel non vérifié |
+| REG-motm_window_hours | Durée du vote de l’Homme du match — Combien d’heures après le coup d’envoi le vote reste ouvert. | h | 24 | 6–168 | DB lu ; effet réel non vérifié |
+| REG-motm_self_vote | Homme du match : voter pour soi — Autoriser un joueur à voter pour lui-même. Interdit par défaut. | bool | 0 | 0–1 | DB lu ; effet réel non vérifié |
+| REG-notify_motm_open | Notification : vote de l’Homme du match — Prévenir les votants quand le vote s’ouvre. | bool | 1 | 0–1 | DB lu ; effet réel non vérifié |
+| REG-notify_motm_result | Notification : résultat de l’Homme du match — Annoncer le résultat du vote à l’équipe et au gagnant. | bool | 1 | 0–1 | DB lu ; effet réel non vérifié |
 | REG-correction_window_hours | Délai de correction du résultat — Combien d’heures après sa validation le résultat peut encore être corrigé. | h | 24 | 1–168 | DB lu ; effet réel non vérifié |
 | REG-waitlist_mode | Liste d’attente : qui passe en premier — Quand il y a plus de disponibles que de places : par présence l’an dernier, par ordre d’arrivée, ou par choix de l’administrateur. | mode | 0 | 0–2 | DB lu ; effet réel non vérifié |
 | REG-notify_convocation | Notification : convocation et liste d’attente — Prévenir un joueur quand il passe de la liste d’attente aux convoqués, ou l’inverse. | bool | 1 | 0–1 | DB lu ; effet réel non vérifié |
@@ -73,6 +73,6 @@ Pour chaque clé : identifiant stable = REG-<clé>. Responsable réalisation M02
 | REG-notify_match_rescheduled_time | Notification : changement d’horaire — Notifier les changements d’heure des matchs. Dépend aussi de l’interrupteur match annulé ou déplacé. | bool | 1 | 0–1 | DB lu ; effet réel non vérifié |
 | REG-notify_convocation_promoted | Notification : promotion en convoqué — Notifier le passage de la liste d’attente aux convoqués. Dépend aussi de l’interrupteur convocation et liste d’attente. | bool | 1 | 0–1 | DB lu ; effet réel non vérifié |
 | REG-notify_convocation_demoted | Notification : passage en attente — Notifier le passage des convoqués à la liste d’attente. Dépend aussi de l’interrupteur convocation et liste d’attente. | bool | 1 | 0–1 | DB lu ; effet réel non vérifié |
-| REG-notify_motm_winner | Étoile : notification au gagnant — Envoyer le message personnel au gagnant. L’annonce générale dépend du réglage résultat de l’Étoile du match. | bool | 1 | 0–1 | DB lu ; effet réel non vérifié |
+| REG-notify_motm_winner | Homme du match : notification au gagnant — Envoyer le message personnel au gagnant. L’annonce générale dépend du réglage résultat de l’Homme du match. | bool | 1 | 0–1 | DB lu ; effet réel non vérifié |
 
 Dépendances relues dans ClubRules.enabled : live_assists et live_own_goals dépendent de live_scorers ; composition_video_autoplay dépend de composition_video ; composition_video_notification_replay dépend de autoplay. Les règles enfants de notification dépendent aussi du parent, des préférences individuelles et de l'état de réception appareil. Comptes, permissions et cloisonnement restent obligatoires.

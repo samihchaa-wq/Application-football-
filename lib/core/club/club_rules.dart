@@ -141,7 +141,7 @@ abstract final class ClubRules {
   /// Vrai quand les administrateurs peuvent aussi piloter le direct.
   static bool get adminsCanPilotLive => _get(livePilotModeKey) == 1;
 
-  /// Vrai quand un joueur peut voter pour lui-même à l'Étoile du match.
+  /// Vrai quand un joueur peut voter pour lui-même à l'Homme du match.
   static bool get motmSelfVoteAllowed => _get(motmSelfVoteKey) == 1;
 
   /// Faux quand le club a coupé la musique du bilan de saison.

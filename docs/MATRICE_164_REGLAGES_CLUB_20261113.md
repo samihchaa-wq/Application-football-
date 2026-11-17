@@ -148,7 +148,7 @@ Les modules obligatoires (authentification, sécurité, cloisonnement, intégrit
 | J04 | Badges manuels par administrateur | Garder | Non démontré individuellement | Vérifier parcours réel et conserver comportement actuel. | P0 |
 | J05 | Armoire à badges et récompenses affichées | Garder | Non démontré individuellement | Vérifier parcours réel et conserver comportement actuel. | P1 |
 | J06 | Images, couleurs et badges stars | Paramétrer | Administration badge / couleurs / images | Valider plage, défaut AS Grinta, persistance club A/B et droits admin. | P1 |
-| J07 | Noms genrés, protégés, personnalisés | Paramétrer | Nom neutre Étoile du match ; badges à auditer | Valider plage, défaut AS Grinta, persistance club A/B et droits admin. | P1 |
+| J07 | Noms genrés, protégés, personnalisés | Paramétrer | Nom neutre Homme du match ; badges à auditer | Valider plage, défaut AS Grinta, persistance club A/B et droits admin. | P1 |
 | J08 | Seuils en fonction du nombre de matchs | Paramétrer | Seuils badges par club — PR #57 ; tests serveur à revoir | Vérifier que seuils modifiés sont appliqués serveur au club A sans changer B. | P2 |
 | J09 | Notification d'attribution et boîte de réception | Option | Module badges + notifications | Vérifier coupure UI + RPC/cron/Edge et restauration sans perte. | P1 |
 | K01 | Bilan personnel de fin de saison | Option | Module season_wrapped | Vérifier coupure UI + RPC/cron/Edge et restauration sans perte. | P1 |

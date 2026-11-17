@@ -6,7 +6,7 @@ select no_plan();
 -- Simulation d'une saison complète pour deux clubs de 20 joueurs chacun,
 -- dans la même base. Chaque club joue 10 matchs, de bout en bout :
 -- disponibilités, pronostics, convocations, composition, résultat, buteurs,
--- vote de l'Étoile du match, puis clôture de la saison (titres et bilan).
+-- vote de l'Homme du match, puis clôture de la saison (titres et bilan).
 --
 -- Chaque étape passe par les fonctions de l'application avec le compte qui
 -- la fait dans la vraie vie (admin ou joueur). Une étape qui échoue est notée
@@ -372,7 +372,7 @@ begin
         continue;
       end;
 
-      -- Vote de l'Étoile du match : chaque présent vote pour le premier
+      -- Vote de l'Homme du match : chaque présent vote pour le premier
       -- buteur (ou le gardien), ou pour un autre présent s'il s'agit de lui.
       select participant.id into v_scorer
       from public.match_sport_participants participant
@@ -472,7 +472,7 @@ select is(
   (select count(distinct match_id) from public.match_sport_motm_results
    where match_id in (select match_id from sim_matches) and is_winner),
   20::bigint,
-  'chaque match a son Étoile du match'
+  'chaque match a son Homme du match'
 );
 
 select is(

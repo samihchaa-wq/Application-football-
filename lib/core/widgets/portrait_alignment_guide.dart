@@ -1,7 +1,7 @@
 import 'package:as_grinta/core/widgets/match_contribution_icons.dart';
 import 'package:flutter/material.dart';
 
-/// Patron de l'Étoile du match : utilise EXACTEMENT la couronne du terrain.
+/// Patron de l'Homme du match : utilise EXACTEMENT la couronne du terrain.
 ///
 /// Sa largeur et sa hauteur de police sont définies par [PhotoCrown], le
 /// composant posé sur les vrais hommes du match en composition. L'éditeur

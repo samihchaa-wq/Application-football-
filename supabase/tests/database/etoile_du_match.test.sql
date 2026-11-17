@@ -5,9 +5,6 @@ select no_plan();
 
 -- Le nom demandé est « Homme du match » partout où la base produit du
 -- texte (notifications, erreurs, règles, badges).
--- PR #187 peut être testée avant la fusion de #178. Les contrôles globaux
--- du renommage deviennent obligatoires dès que la migration HDM existe.
--- Le nouveau libellé du catalogue est vérifié dans les deux cas.
 
 select is(
   (select count(*)
@@ -19,9 +16,7 @@ select is(
      'public.internal_push_dispatch(text, uuid)',
      'public.send_test_push_kind(text)'
    ]) as f(signature)
-   where pg_get_functiondef(to_regprocedure(f.signature)) ~* '[Éé]toiles? du match'
-     and exists (select 1 from supabase_migrations.schema_migrations
-                 where version = '20261122090001')),
+   where pg_get_functiondef(to_regprocedure(f.signature)) ~* '[Éé]toiles? du match'),
   0::bigint,
   'les fonctions qui écrivent des textes visibles ne disent plus l’ancien nom'
 );
@@ -42,12 +37,10 @@ select is(
 
 select is(
   (select count(*) from private.badge_templates
-   where (name in ('Homme fort', 'Joueur décisif', 'Roi du match',
+   where name in ('Homme fort', 'Joueur décisif', 'Roi du match',
                   'Joueur de la saison', 'Monsieur Présent', 'Monsieur Victoire',
                   'Meilleur buteur', 'Meilleur passeur', 'Président')
-      or description ~* '[Éé]toiles? du match')
-     and exists (select 1 from supabase_migrations.schema_migrations
-                 where version = '20261122090001')),
+      or description ~* '[Éé]toiles? du match'),
   0::bigint,
   'les modèles de badges gardent leurs noms personnalisés et utilisent Homme du match dans leurs descriptions'
 );
@@ -71,9 +64,7 @@ select is(
 select is(
   (select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace
    where n.nspname in ('public','private') and p.prokind='f'
-     and p.prosrc ~* '[Éé]toiles? du match'
-     and exists (select 1 from supabase_migrations.schema_migrations
-                 where version = '20261122090001')),
+     and p.prosrc ~* '[Éé]toiles? du match'),
   0::bigint, 'aucune fonction courante ne produit encore l’ancien nom'
 );
 

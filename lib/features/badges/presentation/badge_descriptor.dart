@@ -57,7 +57,7 @@ String _rawDescriptorFor({
     case 'clean_sheets':
       return 'CLEAN SHEETS · CARRIÈRE';
     case 'mvp':
-      return 'ÉTOILES · CARRIÈRE';
+      return 'HDM · CARRIÈRE';
     case 'max_match_goals':
       if (code == 'max_match_goals__3') return 'TRIPLÉ';
       if (code == 'max_match_goals__4') return 'QUADRUPLÉ';
@@ -77,7 +77,7 @@ String _rawDescriptorFor({
     case 'title_best_winrate':
       return 'PORTE-BONHEUR · SAISON';
     case 'title_mvp_king':
-      return 'ÉTOILE · SAISON';
+      return 'HDM · SAISON';
     case 'title_best_pred_match':
       return 'LE VISIONNAIRE · SAISON';
   }
