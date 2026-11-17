@@ -21,8 +21,7 @@ class RegistrationSuccessDialog extends StatefulWidget {
       _RegistrationSuccessDialogState();
 }
 
-class _RegistrationSuccessDialogState
-    extends State<RegistrationSuccessDialog> {
+class _RegistrationSuccessDialogState extends State<RegistrationSuccessDialog> {
   String? _copyStatus;
   bool _copying = false;
 
