@@ -47,3 +47,45 @@ jobs:
             # restore_isolation_gate.py suffit ; /sys/class/net peut venir de l’hôte.
           '
           echo "PASS: isolated namespace available. No backup or personal data processed."
+
+      - name: Probe a nested Docker daemon inside the isolated namespace (no data)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # No production secret, artifact or personal data is loaded.
+          test -x "$(command -v dockerd)"
+          sudo unshare --net -- bash -euo pipefail <<'PF_PROBE'
+          ip link set lo up
+          root="$(mktemp -d)"
+          daemon_pid=""
+          cleanup() {
+            if [ -n "$daemon_pid" ]; then
+              kill "$daemon_pid" 2>/dev/null || true
+              wait "$daemon_pid" 2>/dev/null || true
+            fi
+            rm -rf "$root"
+          }
+          trap cleanup EXIT
+          dockerd --host="unix://$root/docker.sock" \
+            --data-root="$root/data" \
+            --exec-root="$root/exec" \
+            --pidfile="$root/docker.pid" \
+            --storage-driver=vfs --iptables=false --ip6tables=false \
+            --bridge=none --ip-forward=false --ip-masq=false \
+            >"$root/daemon.log" 2>&1 &
+          daemon_pid=$!
+          usable=false
+          for attempt in $(seq 1 24); do
+            if docker -H "unix://$root/docker.sock" info >/dev/null 2>&1; then
+              usable=true
+              break
+            fi
+            sleep 1
+          done
+          if [ "$usable" != "true" ]; then
+            echo "::error::Nested offline Docker daemon unavailable; real restore blocked."
+            exit 1
+          fi
+          docker -H "unix://$root/docker.sock" network ls --format '{{.Name}}'
+          echo "PASS: isolated Docker engine available without live commercial data."
+          PF_PROBE
