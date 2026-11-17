@@ -272,8 +272,7 @@ class MatchMotmVoteCard extends ConsumerWidget {
         child: const Card(
           child: ListTile(
             leading: Icon(Icons.error_outline),
-            title:
-                Text('Vote de l’Homme du match momentanément indisponible.'),
+            title: Text('Vote de l’Homme du match momentanément indisponible.'),
           ),
         ),
       ),
@@ -299,9 +298,7 @@ class MatchMotmVoteCard extends ConsumerWidget {
             ),
           SportMotmVoteState.closed => (
               Icons.emoji_events_outlined,
-              vote.winners.length > 1
-                  ? 'Co-Hommes du match'
-                  : 'Homme du match',
+              vote.winners.length > 1 ? 'Co-Hommes du match' : 'Homme du match',
               vote.winners.isEmpty
                   ? 'Aucun vote exprimé.'
                   : vote.winners
