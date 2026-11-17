@@ -223,11 +223,11 @@ class _AdminWaitlistPageState extends ConsumerState<AdminWaitlistPage> {
             child: Text(
               'Mode « ${ClubRules.waitlistMode.label} ». '
               'Les +1 sont toujours comptabilisés au coup d’envoi. '
-              '${ClubRules.waitlistMode == WaitlistMode.adminChoice ? '
-              "'L’admin choisit les joueurs retenus.' : "
-              "ClubRules.waitlistPriorityEnabled ? "
-              "'Ils influencent les places attribuées automatiquement.' : "
-              "'Ils n’influencent pas les convocations.'}",
+              '${ClubRules.waitlistMode == WaitlistMode.adminChoice
+                  ? 'L’admin choisit les joueurs retenus.'
+                  : ClubRules.waitlistPriorityEnabled
+                      ? 'Ils influencent les convocations automatiques.'
+                      : 'Ils n’influencent pas les convocations.'}',
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
