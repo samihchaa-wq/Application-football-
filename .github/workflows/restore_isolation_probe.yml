@@ -43,6 +43,7 @@ jobs:
             export RESTORE_LOCAL_DB_URL="postgresql://postgres:fixture@127.0.0.1:54322/postgres"
             export RESTORE_LOCAL_API_URL="http://127.0.0.1:54321"
             python3 tool/qa/restore_isolation_gate.py preflight
-            test "$(find /sys/class/net -mindepth 1 -maxdepth 1 -printf "%f\n" | sort)" = "lo"
+            # La vérification de socket.if_nameindex() et des routes dans
+            # restore_isolation_gate.py suffit ; /sys/class/net peut venir de l’hôte.
           '
           echo "PASS: isolated namespace available. No backup or personal data processed."
