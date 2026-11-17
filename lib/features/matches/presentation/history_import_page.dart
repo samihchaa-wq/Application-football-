@@ -87,10 +87,9 @@ class _HistoryImportPageState extends ConsumerState<HistoryImportPage> {
       builder: (dialog) => AlertDialog(
         title: const Text('Importer les matchs ?'),
         content: Text(
-          'Importer ' +
-              batch.count.toString() +
-              ' rencontres dans cette équipe ? Les doublons existants seront '
-                  'ignorés. Un conflit bloque intégralement le fichier.',
+          'Importer ${batch.count} rencontres dans cette équipe ? '
+          'Les doublons existants seront ignorés. '
+          'Un conflit bloque intégralement le fichier.',
         ),
         actions: [
           TextButton(
@@ -111,10 +110,8 @@ class _HistoryImportPageState extends ConsumerState<HistoryImportPage> {
       if (!mounted) return;
       refreshHistoricalArchives(ref);
       setState(() {
-        _result = result.imported.toString() +
-            ' matchs importés, ' +
-            result.skipped.toString() +
-            ' déjà présents.';
+        _result = '${result.imported} matchs importés, '
+            '${result.skipped} déjà présents.';
         _batch = null;
         _fileName = null;
         _error = null;
@@ -217,21 +214,15 @@ class _HistoryImportPageState extends ConsumerState<HistoryImportPage> {
                       children: [
                         Text('3. Vérifier avant import',
                             style: theme.textTheme.titleMedium),
-                        Text(batch.count.toString() + ' matchs à importer.'),
+                        Text('${batch.count} matchs à importer.'),
                         for (final match in batch.matches.take(20))
                           ListTile(
                             dense: true,
-                            title: Text(match['date'].toString() +
-                                ' — ' +
-                                match['opponent'].toString()),
-                            subtitle: Text(match['score_for'].toString() +
-                                ' – ' +
-                                match['score_against'].toString()),
+                            title: Text("${match['date']} — ${match['opponent']}"),
+                            subtitle: Text("${match['score_for']} – ${match['score_against']}"),
                           ),
                         if (batch.count > 20)
-                          Text('Et ' +
-                              (batch.count - 20).toString() +
-                              ' autres.'),
+                          Text('Et ${batch.count - 20} autres.'),
                         const SizedBox(height: 8),
                         FilledButton.icon(
                           key: const Key('history-import-confirm'),
