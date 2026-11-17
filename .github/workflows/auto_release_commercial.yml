@@ -5,6 +5,13 @@ name: Publication automatique Petit Filet
 on:
   push:
     branches: [main]
+    # Les commits documentaires et la simple synchronisation du verrou SQL
+    # ne changent ni le client ni le schéma ; inutile de relancer la publication.
+    # Flutter CI utilise la même exclusion pour ces changements.
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - 'supabase/production_migrations.lock'
   workflow_dispatch:
 
 permissions:
