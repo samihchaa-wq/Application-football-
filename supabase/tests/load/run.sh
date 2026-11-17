@@ -65,6 +65,9 @@ pgbench "$DB_URL" -n -c "$CLIENTS" -j 4 -T "$SECONDS_PER_RUN" -P 15 \
   | sed '/^progress/d' | tee "$WRITE_REPORT"
 python3 "$HERE/check_pgbench_report.py" "$WRITE_REPORT" "écriture"
 echo
+echo "### Intégrité post-charge : les deux gestes atomiques ne laissent aucun score ni but parasite"
+psql "$DB_URL" -v ON_ERROR_STOP=1 -q -f "$HERE/postcheck.sql"
+echo
 
 echo "### Taille de la base"
 psql "$DB_URL" -q -c "select pg_size_pretty(pg_database_size(current_database())) as taille_base"

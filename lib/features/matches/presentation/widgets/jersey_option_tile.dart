@@ -24,7 +24,6 @@ class JerseyOptionPicker extends StatelessWidget {
   final ValueChanged<JerseyOption?>? onChanged;
 
   static const double _spacing = 12;
-  static const double _maxTileWidth = 130;
 
   @override
   Widget build(BuildContext context) {
@@ -41,29 +40,29 @@ class JerseyOptionPicker extends StatelessWidget {
       for (final option in JerseyOption.values)
         if (option.kit.enabled || option == selected) option,
     ];
-    return Row(
-      children: [
-        for (var i = 0; i < options.length; i++) ...[
-          if (i > 0) const SizedBox(width: _spacing),
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: _maxTileWidth),
-                child: JerseyOptionTile(
-                  option: options[i],
-                  selected: selected == options[i],
-                  onTap: onChanged == null
-                      ? null
-                      : () => onChanged!(
-                            selected == options[i] ? null : options[i],
-                          ),
-                ),
+    // Le nombre de maillots n'est plus plafonné : défilement horizontal
+    // plutôt qu'une rangée qui devient illisible ou déborde.
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (var i = 0; i < options.length; i++) ...[
+            if (i > 0) const SizedBox(width: _spacing),
+            SizedBox(
+              width: 108,
+              child: JerseyOptionTile(
+                option: options[i],
+                selected: selected == options[i],
+                onTap: onChanged == null
+                    ? null
+                    : () => onChanged!(
+                          selected == options[i] ? null : options[i],
+                        ),
               ),
             ),
-          ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
@@ -92,18 +91,33 @@ class JerseyOptionTile extends StatelessWidget {
           children: [
             Positioned.fill(
               bottom: 20,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Flexible(child: KitJersey(kit: option.kit)),
-                  const SizedBox(width: 2),
-                  Flexible(
-                    child: KitJersey(
-                      kit: option.kit,
-                      isGoalkeeper: true,
-                    ),
+              child: Center(
+                child: SizedBox(
+                  width: 88,
+                  child: Stack(
+                    children: [
+                      // Le choix concerne la tenue du match : celle des
+                      // joueurs. Le gardien porte sa déclinaison automatique.
+                      KitJersey(kit: option.kit),
+                      if (selected)
+                        Positioned(
+                          top: 35,
+                          right: 22,
+                          child: DecoratedBox(
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.check_circle_rounded,
+                              size: 20,
+                              color: accent,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
             Positioned(
@@ -120,16 +134,6 @@ class JerseyOptionTile extends StatelessWidget {
                     ),
               ),
             ),
-            if (selected)
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Icon(
-                  Icons.check_circle_rounded,
-                  size: 18,
-                  color: accent,
-                ),
-              ),
           ],
         ),
       ),

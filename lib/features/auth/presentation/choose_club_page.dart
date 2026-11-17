@@ -12,7 +12,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// Compte connecté sans club : le compte n'a pas encore de
 /// club. La personne en rejoint un avec un code d'invitation, ou en crée un.
 class ChooseClubPage extends ConsumerStatefulWidget {
-  const ChooseClubPage({super.key});
+  const ChooseClubPage({super.key, this.initialInviteCode});
+
+  /// Code reçu dans un lien d'invitation, conservé après la connexion.
+  final String? initialInviteCode;
 
   @override
   ConsumerState<ChooseClubPage> createState() => _ChooseClubPageState();
@@ -37,6 +40,23 @@ class _ChooseClubPageState extends ConsumerState<ChooseClubPage> {
     final names = ref.read(authControllerProvider.notifier).suggestedNames;
     _firstNameController.text = names.firstName;
     _lastNameController.text = names.lastName;
+    _applyInviteCode();
+  }
+
+  @override
+  void didUpdateWidget(covariant ChooseClubPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialInviteCode != oldWidget.initialInviteCode) {
+      _applyInviteCode();
+    }
+  }
+
+  void _applyInviteCode() {
+    final code = widget.initialInviteCode;
+    if (code == null || code.trim().isEmpty) return;
+    _inviteCodeController.text = normalizeInviteCode(code);
+    _mode = RegisterMode.join;
+    _error = null;
   }
 
   @override

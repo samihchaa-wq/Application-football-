@@ -45,6 +45,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   /// Choix proposés : des teintes franches, lisibles une fois ajustées au
   /// fond sombre de l'application.
   static const _palette = <String>[
+    '#D71932',
+    '#FF7585',
     '#1A4AC0',
     '#1F6FEB',
     '#0E9F9A',
@@ -206,8 +208,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     setState(() => _savingColors = true);
     try {
       final updated = await ref.read(clubRepositoryProvider).updateColors(
-            primary: primary ?? club.primaryColor ?? '#1A4AC0',
-            secondary: secondary ?? club.secondaryColor ?? '#FBE80C',
+            primary: primary ?? club.primaryColor ?? '#D71932',
+            secondary: secondary ?? club.secondaryColor ?? '#FF7585',
           );
       if (!mounted) return;
       setState(() => _club = updated);
@@ -891,7 +893,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
                 onTap: () => context.push('/admin/club/maillots'),
               ),
             ],
-            expanded: true),
+            expanded: false),
         _section('squad', 'Effectif et convocations', Icons.groups_outlined, [
           const SizedBox(height: 8),
           ListTile(

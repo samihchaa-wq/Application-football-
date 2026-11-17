@@ -49,7 +49,7 @@ class _PillButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: const Color(0x8C041224),
+      color: const Color(0x8C101418),
       shape: const StadiumBorder(side: BorderSide(color: Color(0x47EEF3FB))),
       child: InkWell(
         customBorder: const StadiumBorder(),
@@ -456,10 +456,10 @@ class _GoldRule extends StatelessWidget {
         borderRadius: BorderRadius.circular(height / 2),
         gradient: LinearGradient(
           colors: height > 1
-              ? [Color(0x00FBE80C), AppTheme.accent, Color(0x00FBE80C)]
+              ? [Color(0x00FF7585), AppTheme.accent, Color(0x00FF7585)]
               : flipped
-                  ? [AppTheme.accent, Color(0x00FBE80C)]
-                  : [Color(0x00FBE80C), AppTheme.accent],
+                  ? [AppTheme.accent, Color(0x00FF7585)]
+                  : [Color(0x00FF7585), AppTheme.accent],
         ),
       ),
     );

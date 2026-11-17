@@ -50,14 +50,20 @@ class MatchKitSnapshot {
       if (value is! Map) return null;
       final id = JerseyOption.fromId(value['slot']?.toString());
       if (id == null) return null;
-      return kits.firstWhere((kit) => kit.slot == id);
+      for (final kit in kits) {
+        if (kit.slot == id) return kit;
+      }
+      return null;
     }
+
+    final selected = kits.where((kit) => kit.slot == slot);
+    if (selected.isEmpty) return null;
 
     return MatchKitSnapshot(
       matchId: matchId,
       clubId: clubId,
       jerseyId: slot,
-      kit: kits.firstWhere((kit) => kit.slot == slot),
+      kit: selected.first,
       allKits: List<ClubKit>.unmodifiable(kits),
       team1Kit: fromSnapshot(json['team1_kit']),
       team2Kit: fromSnapshot(json['team2_kit']),

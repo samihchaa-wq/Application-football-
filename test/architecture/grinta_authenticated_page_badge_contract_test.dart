@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('every authenticated presentation scaffold exposes the club home badge',
+  test('every team-facing presentation scaffold exposes the club home badge',
       () {
     final featureRoot = Directory('lib/features');
     expect(featureRoot.existsSync(), isTrue);
@@ -24,6 +24,14 @@ void main() {
       // Authentication screens deliberately stay outside this contract:
       // /matches is not a usable home destination before authentication.
       if (path.contains('/features/auth/')) continue;
+
+      // The operator console is deliberately outside the team application.
+      // Operators may have no team, so /matches is not a valid home for them.
+      // Its own home navigation is exercised in platform_control_page_test.
+      if (path ==
+          'lib/features/platform/presentation/platform_control_page.dart') {
+        continue;
+      }
 
       // Only presentation-layer widgets that own a Scaffold are full-screen
       // surfaces. Embedded tabs/panels inherit the parent page header.

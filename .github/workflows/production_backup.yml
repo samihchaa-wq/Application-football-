@@ -1,83 +1,150 @@
 name: Production backup
 
-# Copie hebdomadaire de la base en ligne, chiffrée, gardée 90 jours dans
-# GitHub. Complète la sauvegarde quotidienne de Supabase (7 jours) : en cas
-# de suppression du projet Supabase ou d'erreur découverte tard, une copie
-# existe ailleurs.
-#
-# Le dépôt étant public, la copie est chiffrée avec BACKUP_PASSPHRASE avant
-# d'être déposée : sans cette phrase secrète, le fichier est illisible.
-# Sans PRODUCTION_DB_URL ou BACKUP_PASSPHRASE, le workflow échoue :
-# une sauvegarde non effectuée ne doit jamais apparaître comme un succès.
-# Cette archive SQL n'inclut pas les objets Storage ; voir docs/exploitation.md.
+# Sauvegarde COMMERCIALE seulement : SQL + octets des objets Storage.
+# Archive chiffrée AVANT toute copie dans un artefact GitHub public.
+# Attention : cette automatisation ne prouve pas une restauration complète.
+# Prévoir un stockage externe privé durable et une restauration isolée réelle
+# avant de considérer la reprise après sinistre comme maîtrisée.
 on:
+  workflow_dispatch:
   schedule:
     - cron: '23 2 * * 1'
-  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: commercial-production-full-backup
+  cancel-in-progress: false
+
 jobs:
   backup:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     env:
+      SUPABASE_PROJECT_REF: jvxkhgdopslctpcjrhzw
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
       DB_URL: ${{ secrets.PRODUCTION_DB_URL }}
+      PRODUCTION_DB_URL: ${{ secrets.PRODUCTION_DB_URL }}
       BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
     steps:
-      - name: Require configured database and backup passphrase
-        if: env.DB_URL == '' || env.BACKUP_PASSPHRASE == ''
+      - name: Checkout commercial repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      # Le mot de passe est déjà dans PRODUCTION_DB_URL (secret GitHub).
+      # Le réutiliser pour supabase link s'il n'existe pas de secret dédié,
+      # après vérification stricte du projet cible. Ne jamais l'afficher.
+      - name: Resolve commercial DB password from verified secret URL
         shell: bash
         run: |
-          echo "::error::PRODUCTION_DB_URL ou BACKUP_PASSPHRASE manquant : sauvegarde non effectuée."
-          exit 1
+          set -euo pipefail
+          python3 - <<'PY'
+          import os,sys
+          from urllib.parse import urlsplit,unquote
+          sys.path.insert(0,'tool/qa')
+          from commercial_backup_bundle import PROJECT_REF, normalize_database_url
+          url=normalize_database_url(os.environ.get('PRODUCTION_DB_URL',''),PROJECT_REF)
+          print('::add-mask::' + url)
+          password=unquote(urlsplit(url).password or '')
+          if not password or chr(10) in password or chr(13) in password:
+              raise ValueError('Mot de passe DB absent ou invalide')
+          print('::add-mask::' + password)
+          with open(os.environ['GITHUB_ENV'],'a',encoding='utf-8') as out:
+              print('SUPABASE_DB_PASSWORD='+password,file=out)
+              print('PRODUCTION_DB_URL='+url,file=out)
+              print('DB_URL='+url,file=out)
+          print('Connexion commerciale nettoyée et vérifiée ; mot de passe DB disponible.')
+          PY
 
-      # Les artefacts d'un dépôt public sont téléchargeables par tout compte
-      # GitHub : seule la phrase secrète protège la copie. Une phrase courte
-      # se casse par essais successifs, donc on refuse de sauvegarder avec.
-      - name: Refuse a short passphrase
-        if: env.DB_URL != '' && env.BACKUP_PASSPHRASE != ''
+      - name: Fail closed if secrets, encryption or project identity are unsafe
         shell: bash
-        run: |
-          # Même règle que l'étape de chiffrement : blancs de début et de fin
-          # retirés (retour à la ligne collé depuis un téléphone).
-          BACKUP_PASSPHRASE="$(printf '%s' "$BACKUP_PASSPHRASE" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | tr -d '\r\n')"
-          if [ "${#BACKUP_PASSPHRASE}" -lt 32 ]; then
-            echo "::error::BACKUP_PASSPHRASE doit faire au moins 32 caractères."
-            exit 1
-          fi
+        run: python3 tool/qa/commercial_backup_bundle.py preflight
 
-      - name: Setup Supabase CLI
-        if: env.DB_URL != '' && env.BACKUP_PASSPHRASE != ''
+      - name: Setup pinned Supabase CLI and PostgreSQL client
         uses: supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf # v2
         with:
           version: 2.111.0
 
-      - name: Dump and encrypt
-        if: env.DB_URL != '' && env.BACKUP_PASSPHRASE != ''
+      - name: Export commercial PostgreSQL and all Storage bytes and encrypt
         shell: bash
         run: |
           set -euo pipefail
-          # Retire un éventuel retour à la ligne invisible collé avec le secret.
-          DB_URL="$(printf '%s' "$DB_URL" | tr -d '[:space:]')"
-          # Blancs de début et de fin retirés de la phrase secrète : pour
-          # déchiffrer, taper la phrase telle qu'écrite, sans retour à la ligne.
-          BACKUP_PASSPHRASE="$(printf '%s' "$BACKUP_PASSPHRASE" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | tr -d '\r\n')"
-          stamp=$(date -u +%Y-%m-%d)
-          supabase db dump --db-url "$DB_URL" -f "roles.sql" --role-only
-          supabase db dump --db-url "$DB_URL" -f "schema.sql"
-          supabase db dump --db-url "$DB_URL" -f "data.sql" --use-copy --data-only
-          tar czf "backup-$stamp.tar.gz" roles.sql schema.sql data.sql
-          gpg --batch --yes --pinentry-mode loopback --passphrase "$BACKUP_PASSPHRASE" \
-            --symmetric --cipher-algo AES256 -o "backup-$stamp.tar.gz.gpg" "backup-$stamp.tar.gz"
-          rm -f roles.sql schema.sql data.sql "backup-$stamp.tar.gz"
-          ls -lh "backup-$stamp.tar.gz.gpg"
+          umask 077
+          work="$(mktemp -d "$RUNNER_TEMP/petit-filet-backup.XXXXXXXX")"
+          trap 'rm -rf "$work"' EXIT
+          payload="$work/payload"
+          mkdir -p "$payload/database" "$payload/storage"
 
-      - name: Keep the encrypted backup
-        if: env.DB_URL != '' && env.BACKUP_PASSPHRASE != ''
+          # Aucune écriture distante. Le lien CLI est limité au projet commercial.
+          supabase link --project-ref "$SUPABASE_PROJECT_REF"
+
+          inventory_sql="$(cat <<'SQL'
+          select jsonb_build_object(
+            'buckets', coalesce(
+              (select jsonb_agg(id order by id) from storage.buckets), '[]'::jsonb
+            ),
+            'objects', coalesce(
+              (select jsonb_agg(jsonb_build_object(
+                 'id', id::text, 'bucket_id', bucket_id,
+                 'name', name, 'updated_at', updated_at::text
+               ) order by bucket_id, name, id) from storage.objects),
+              '[]'::jsonb
+            )
+          )::text;
+          SQL
+          )"
+          psql "$DB_URL" -X -qAt -v ON_ERROR_STOP=1             -c "$inventory_sql" > "$payload/inventory-before.json"
+
+          # Même connexion vérifiée que psql, avec les filtres officiels Supabase.
+          # Les clients natifs évitent une seconde interprétation des identifiants
+          # par le lanceur Docker de la CLI. Aucun SQL d'écriture distant.
+          python3 tool/qa/native_commercial_dump.py "$payload/database"
+          test -s "$payload/database/schema.sql"
+          test -s "$payload/database/data.sql"
+
+          python3 tool/qa/commercial_backup_bundle.py buckets             "$payload/inventory-before.json" "$work/buckets.txt"
+
+          # Liste exacte tirée de storage.objects, pas une liste fixe de buckets.
+          # Le moindre oubli échoue lors de la comparaison avec PostgreSQL.
+          while IFS= read -r bucket; do
+            # La CLI ajoute le nom du bucket si la destination existe déjà.
+            # La laisser absente évite un dossier bucket/bucket et garde le
+            # chemin exact vérifié ensuite contre storage.objects.
+            if ! supabase storage cp "ss:///$bucket" "$payload/storage/$bucket" \
+                --recursive --experimental --linked > "$work/storage-copy.log" 2>&1; then
+              echo '::error::Copie Storage incomplète : aucune archive ne sera publiée.'
+              exit 1
+            fi
+          done < "$work/buckets.txt"
+
+          psql "$DB_URL" -X -qAt -v ON_ERROR_STOP=1             -c "$inventory_sql" > "$payload/inventory-after.json"
+          python3 tool/qa/commercial_backup_bundle.py verify             "$payload/inventory-before.json" "$payload/inventory-after.json"             "$payload/storage" "$payload/manifest.json"
+
+          (cd "$payload/database" && sha256sum roles.sql schema.sql data.sql)             > "$payload/database/sha256sums.txt"
+          printf '%s\n' "jvxkhgdopslctpcjrhzw" > "$payload/PROJECT_REF"
+          tar -C "$work" -czf "$work/backup.tar.gz" payload
+
+          encrypted="$RUNNER_TEMP/petit-filet-commercial-${GITHUB_RUN_ID}.tar.gz.gpg"
+          gpg --batch --yes --pinentry-mode loopback             --passphrase "$BACKUP_PASSPHRASE" --symmetric             --cipher-algo AES256 -o "$encrypted" "$work/backup.tar.gz"
+          test -s "$encrypted"
+
+          # Vérifie que le déchiffrement et l'extraction fonctionnent ; les
+          # fichiers clairs restent uniquement dans le runner éphémère.
+          gpg --batch --yes --pinentry-mode loopback             --passphrase "$BACKUP_PASSPHRASE"             --decrypt -o "$work/probe.tar.gz" "$encrypted"
+          # Contrôler tous les exports SQL et octets Storage après déchiffrement,
+          # sans extraire de fichiers ni afficher de chemins privés.
+          python3 tool/qa/verify_commercial_backup_tar.py "$work/probe.tar.gz"
+
+          (cd "$RUNNER_TEMP" && sha256sum "$(basename "$encrypted")")             > "$encrypted.sha256"
+          echo "Sauvegarde commerciale chiffrée et relue. Aucun fichier clair déposé."
+
+      - name: Retain encrypted archive only
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: production-backup
-          path: backup-*.tar.gz.gpg
+          name: commercial-complete-backup-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/petit-filet-commercial-${{ github.run_id }}.tar.gz.gpg
+            ${{ runner.temp }}/petit-filet-commercial-${{ github.run_id }}.tar.gz.gpg.sha256
+          if-no-files-found: error
           retention-days: 90

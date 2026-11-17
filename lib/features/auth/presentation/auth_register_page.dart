@@ -5,6 +5,7 @@ import 'package:as_grinta/core/widgets/grinta_adaptive_form.dart';
 import 'package:as_grinta/core/widgets/grinta_auth_surface.dart';
 import 'package:as_grinta/core/widgets/grinta_loader.dart';
 import 'package:as_grinta/features/auth/presentation/consent_fields.dart';
+import 'package:as_grinta/features/auth/presentation/registration_success_dialog.dart';
 import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/legal/domain/legal_documents.dart';
 import 'package:flutter/material.dart';
@@ -169,52 +170,11 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
       await showDialog<void>(
         context: context,
         barrierDismissible: false,
-        builder: (dialogContext) => AlertDialog(
-          title: Text(
-            registration.isActive
-                ? 'Club créé : ${registration.clubName}'
-                : 'Compte créé',
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Retiens bien ton identifiant, tu en auras besoin pour te '
-                'connecter :',
-              ),
-              const SizedBox(height: 12),
-              SelectableText(
-                username,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w400,
-                  fontSize: 20,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                registration.isActive
-                    ? 'Tu es l’administrateur du club. Connecte-toi, puis '
-                        'partage le lien d’inscription depuis le menu '
-                        'Administration pour inviter tes joueurs.'
-                    : 'Ton compte chez ${registration.clubName} restera en '
-                        'attente jusqu’à sa validation par un admin.',
-              ),
-              if (registration.emailConfirmationSent) ...[
-                const SizedBox(height: 12),
-                const Text(
-                  'Un e-mail de confirmation vient d’être envoyé : ouvre le '
-                  'lien qu’il contient pour valider ton adresse.',
-                ),
-              ],
-            ],
-          ),
-          actions: [
-            FilledButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Compris'),
-            ),
-          ],
+        builder: (_) => RegistrationSuccessDialog(
+          username: username,
+          teamName: registration.clubName,
+          isActive: registration.isActive,
+          emailConfirmationSent: registration.emailConfirmationSent,
         ),
       );
       if (mounted) context.go('/auth/sign-in');

@@ -3,8 +3,6 @@ part of 'calendar_matches_view.dart';
 class _CalendarToolbar extends StatelessWidget {
   const _CalendarToolbar({
     required this.displayMode,
-    required this.onDisplayModeChanged,
-    required this.onExport,
     required this.onCreate,
     required this.seasons,
     required this.selectedSeasonName,
@@ -18,8 +16,6 @@ class _CalendarToolbar extends StatelessWidget {
   });
 
   final _CalendarDisplayMode displayMode;
-  final ValueChanged<_CalendarDisplayMode> onDisplayModeChanged;
-  final VoidCallback? onExport;
   final VoidCallback? onCreate;
   final List<Map<String, dynamic>> seasons;
   final String? selectedSeasonName;
@@ -41,50 +37,9 @@ class _CalendarToolbar extends StatelessWidget {
         );
         final compact = constraints.maxWidth < 720;
 
-        final modeSelector = SegmentedButton<_CalendarDisplayMode>(
-          showSelectedIcon: false,
-          segments: const [
-            ButtonSegment(
-              value: _CalendarDisplayMode.scroll,
-              label: Text('Défilé'),
-            ),
-            ButtonSegment(
-              value: _CalendarDisplayMode.month,
-              label: Text('Par mois'),
-            ),
-          ],
-          selected: {displayMode},
-          onSelectionChanged: (selection) {
-            if (selection.isNotEmpty) onDisplayModeChanged(selection.first);
-          },
-        );
-
-        // Boutons d'action compactes (icônes seules avec tooltip) : la barre
-        // du haut est désormais partagée à 2/3 pour le mode d'affichage
-        // Défilé/Par mois et à 1/3 pour ces deux actions.
-        final exportIconButton = IconButton.outlined(
-          onPressed: onExport,
-          tooltip: 'S’abonner au calendrier',
-          icon: const Icon(Icons.calendar_month_outlined),
-        );
-        final createIconButton = IconButton.outlined(
-          onPressed: onCreate,
-          tooltip: 'Ajouter un événement',
-          icon: const Icon(Icons.add_rounded),
-        );
-        final hasActions = onExport != null || onCreate != null;
-        final actionsRow = hasActions
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  if (onCreate != null) Expanded(child: createIconButton),
-                  if (onCreate != null && onExport != null)
-                    const SizedBox(width: AppSpacing.microGap),
-                  if (onExport != null) Expanded(child: exportIconButton),
-                ],
-              )
-            : const SizedBox.shrink();
-
+        // Les deux actions du calendrier forment un seul ensemble lisible,
+        // sans deuxième rangée d'icônes flottantes sous l'en-tête.
+        final hasActions = onCreate != null;
         // Les saisons arrivent triées de la plus récente à la plus ancienne :
         // la flèche gauche recule donc vers l'index suivant.
         final seasonNames = [
@@ -127,16 +82,19 @@ class _CalendarToolbar extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(flex: 2, child: modeSelector),
-                  if (hasActions) ...[
-                    const SizedBox(width: AppSpacing.contentGap),
-                    Expanded(flex: 1, child: actionsRow),
-                  ],
-                ],
-              ),
+              if (hasActions)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: SizedBox(
+                    width: math.min(
+                      440.0,
+                      constraints.maxWidth - 2 * outerInset,
+                    ),
+                    child: CalendarActionsBar(
+                      onCreate: onCreate,
+                    ),
+                  ),
+                ),
               if (displayMode == _CalendarDisplayMode.month) ...[
                 const SizedBox(height: AppSpacing.contentGap),
                 if (compact) ...[

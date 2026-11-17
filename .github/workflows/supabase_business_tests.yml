@@ -54,6 +54,14 @@ jobs:
         shell: bash
         run: python3 supabase/tests/edge/verify_edge_security_contract.py
 
+      - name: Setup Node for isolated calendar handler tests
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+
+      - name: Test calendar subscription access without network or secrets
+        run: node --test supabase/tests/edge/calendar_feed_security.test.mjs
+
       - name: Setup Deno
         uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2
         with:
@@ -91,6 +99,10 @@ jobs:
             psql "$DB_URL" -v ON_ERROR_STOP=1 \
               -f supabase/tests/bootstrap/grant_pgtap_test_helpers.sql
           } 2>&1 | tee supabase-test-helpers.log
+
+      - name: Test concurrent manual waitlist changes with separate sessions
+        shell: bash
+        run: python3 supabase/tests/concurrency/test_waitlist_concurrency.py
 
       - name: Run every pgTAP business and RLS test
         shell: bash
@@ -139,4 +151,33 @@ jobs:
       - name: Stop isolated Supabase stack
         if: always()
         shell: bash
+        run: supabase stop --no-backup || true
+
+  calendar-http:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf # v2
+        with:
+          version: 2.111.0
+
+      - name: Verify local calendar tools
+        run: |
+          set -euo pipefail
+          supabase functions serve --help > /dev/null
+          supabase status --help > /dev/null
+          psql --version
+
+      - name: Start disposable Supabase for calendar HTTP
+        run: supabase start > /tmp/calendar-stack-start.log 2>&1
+
+      - name: Verify calendar Edge access on isolated Supabase HTTP
+        run: python3 supabase/tests/edge/calendar_feed_http.py
+
+      - name: Stop disposable calendar stack
+        if: always()
         run: supabase stop --no-backup || true

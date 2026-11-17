@@ -1,13 +1,7 @@
-"""Génère les images de l'appli à partir du logo Petit Filet fourni par Samih.
-
-Le logo n'est pas redessiné ni retouché : c'est l'image d'origine
-(docs/branding/petit-filet/logo_original.png, fond transparent), utilisée
-- telle quelle (avec sa transparence) pour l'écran de démarrage et l'écran
-  de connexion, où elle est posée sur une tuile blanche ;
-- posée sur un carré blanc pour les icônes et le favicon ;
-- réduite au ballon blanc pour le badge des notifications Android.
+"""Décline le logo rouge/anthracite transparent fourni pour Petit Filet.
 
 Usage : python3 tool/branding/petit_filet_assets.py
+La source détourage reste intacte. Seuls recadrages et réductions sont faits.
 """
 import base64
 import io
@@ -17,31 +11,42 @@ import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT / "docs/branding/petit-filet/logo_original.png"
+SRC = ROOT / "docs/branding/petit-filet/logo_final_clean.webp"
 img = Image.open(SRC).convert("RGBA")
 W, H = img.size
 
-# Écran de démarrage et connexion : l'image d'origine, transparence comprise.
-logo = img.resize((720, 480), Image.LANCZOS)
-logo.save(ROOT / "web/petit_filet_logo.webp", lossless=True, quality=100)
-logo.save(ROOT / "assets/images/petit_filet_logo.webp", lossless=True, quality=100)
+# Logo complet, sans tuile de fond : le contour argenté assure la lisibilité.
+logo = img.resize((720, 480), Image.Resampling.LANCZOS)
+for destination in ["web/petit_filet_logo.webp", "assets/images/petit_filet_logo.webp"]:
+    logo.save(ROOT / destination, quality=80, method=4)
+
+# En petit, le monogramme PF/ballon/filet se lit mieux que le nom complet.
+# Extraction dédiée, sans aucun fragment du mot « Petit Filet ».
+mark = Image.open(ROOT / "docs/branding/petit-filet/monogram_red_transparent.png").convert("RGBA")
+# Ignorer les pixels alpha quasi invisibles à distance du symbole pour éviter
+# de le décentrer ou de le réduire inutilement dans les icônes.
+visible_bounds = mark.getchannel("A").point(lambda a: 255 if a >= 128 else 0).getbbox()
+if visible_bounds is None:
+    raise ValueError("Le monogramme est vide.")
+mark = mark.crop(visible_bounds)
 
 
-def square(size, margin=0.04):
-    """Le logo entier, centré sur un carré blanc."""
-    canvas = Image.new("RGBA", (W, W), (255, 255, 255, 255))
-    inner = int(W * (1 - 2 * margin))
-    scaled = img.resize((inner, int(H * inner / W)), Image.LANCZOS)
-    canvas.alpha_composite(scaled, ((W - inner) // 2, (W - scaled.height) // 2))
-    return canvas.convert("RGB").resize((size, size), Image.LANCZOS)
+def square(size, margin=.08):
+    """Icône opaque anthracite ; le logo lui-même conserve son alpha."""
+    canvas = Image.new("RGBA", (size, size), "#101418")
+    scaled = mark.copy()
+    inner = round(size * (1 - 2 * margin))
+    scaled.thumbnail((inner, inner), Image.Resampling.LANCZOS)
+    canvas.alpha_composite(scaled, ((size - scaled.width) // 2, (size - scaled.height) // 2))
+    return canvas.convert("RGB")
 
 
 square(512).save(ROOT / "web/icons/Icon-512.png", optimize=True)
 square(192).save(ROOT / "web/icons/Icon-192.png", optimize=True)
-square(512, margin=0.12).save(ROOT / "web/icons/Icon-maskable-512.png", optimize=True)
-square(64).save(ROOT / "web/favicon.png", optimize=True)
+# Le monogramme entier tient dans le cercle sûr central (diamètre 80 %).
+square(512, margin=.20).save(ROOT / "web/icons/Icon-maskable-512.png", optimize=True)
+square(64, margin=.04).save(ROOT / "web/favicon.png", optimize=True)
 
-# favicon.svg (exigé par les contrôles de publication) : même image, intégrée.
 buf = io.BytesIO()
 square(256).save(buf, "PNG", optimize=True)
 (ROOT / "web/favicon.svg").write_text(
@@ -50,15 +55,15 @@ square(256).save(buf, "PNG", optimize=True)
     + base64.b64encode(buf.getvalue()).decode() + '"/></svg>\n'
 )
 
-# Badge : les parties blanches du ballon (cercle et faces), en silhouette.
-ball = np.asarray(img.crop((500, 325, 805, 630))).astype(np.float64)
-whiteness = np.clip((ball[..., :3].min(axis=2) - 150) * 255.0 / 80, 0, 255)
-alpha = whiteness * np.clip(ball[..., 3] / 250.0, 0, 1)  # l'original plafonne à 254
+# Android ne lit que l'alpha : les faces claires du ballon deviennent blanches.
+ball = np.asarray(img.crop((int(W * .315), int(H * .323), int(W * .513), int(H * .625))))
+whiteness = np.clip((ball[..., :3].min(axis=2).astype(float) - 150) * 255 / 80, 0, 255)
+alpha = whiteness * np.clip(ball[..., 3] / 250, 0, 1)
 badge = np.zeros((*alpha.shape, 4), np.uint8)
 badge[..., :3] = 255
 badge[..., 3] = alpha.round().astype(np.uint8)
-b = Image.fromarray(badge, "RGBA").resize((88, 88), Image.LANCZOS)
-out = Image.new("RGBA", (96, 96), (0, 0, 0, 0))
-out.paste(b, (4, 4))
+b = Image.fromarray(badge).resize((88, 88), Image.Resampling.LANCZOS)
+out = Image.new("RGBA", (96, 96))
+out.alpha_composite(b, (4, 4))
 out.save(ROOT / "web/icons/notification-badge-96.png", optimize=True)
-print("ok")
+print("Logo, icônes, favicon et badge régénérés.")

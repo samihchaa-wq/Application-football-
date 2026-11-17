@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'dart:typed_data';
 
+import 'package:as_grinta/core/storage/player_photo_mode.dart';
 import 'package:as_grinta/app/router/app_router.dart';
 import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/app/router/auth_redirect.dart';
@@ -309,6 +310,7 @@ class _FakeAuthRepository implements AuthRepository {
   Future<AuthProfile> uploadProfilePhoto({
     required Uint8List bytes,
     required String fileExt,
+    PlayerPhotoMode mode = PlayerPhotoMode.player,
   }) {
     throw UnimplementedError();
   }

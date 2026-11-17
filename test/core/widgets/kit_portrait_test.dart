@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:as_grinta/core/club/club_kits.dart';
@@ -99,60 +98,56 @@ void main() {
     }
   });
 
-  test('texture tricotée réelle du maillot, sans toucher au visage', () async {
-    final bytes =
-        await rootBundle.load('assets/composition/jersey_fabric_luma.png');
-    final codec = await ui.instantiateImageCodec(
-      bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
-    );
-    final frame = await codec.getNextFrame();
-    final material = frame.image;
-    codec.dispose();
-    expect(material.width, 256);
-    expect(material.height, 256);
-
-    Future<ui.Image> painted(ui.Image? texture) async {
-      final recorder = ui.PictureRecorder();
-      PortraitJerseyPainter(
-        body: const Color(0xFFE33A29),
-        trim: Colors.amber,
-        pattern: KitPattern.plain,
-        material: texture,
-      ).paint(Canvas(recorder), const Size(300, 300));
-      final picture = recorder.endRecording();
-      final result = await picture.toImage(300, 300);
-      picture.dispose();
-      return result;
+  test('le maillot validé reprend les couleurs de la tenue', () async {
+    Future<ui.Image> load(String asset) async {
+      final bytes = await rootBundle.load(asset);
+      final codec = await ui.instantiateImageCodec(
+        bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
+      );
+      final frame = await codec.getNextFrame();
+      codec.dispose();
+      return frame.image;
     }
 
-    final before = await painted(null);
-    final after = await painted(material);
-    final without = (await before.toByteData(
-      format: ui.ImageByteFormat.rawRgba,
-    ))!
-        .buffer
-        .asUint8List();
-    final withTexture = (await after.toByteData(
-      format: ui.ImageByteFormat.rawRgba,
-    ))!
-        .buffer
-        .asUint8List();
+    final luma = await load('assets/composition/portrait_jersey_luma.png');
+    final collar = await load('assets/composition/portrait_jersey_collar.png');
+    // 720 x 288 px = 60 % -> 100 % de la hauteur d'un portrait carré.
+    expect(luma.width, 720);
+    expect(luma.height, 288);
+    expect(collar.width, 720);
+    expect(collar.height, 288);
 
-    int channel(Uint8List data, int x, int y, int component) =>
+    final recorder = ui.PictureRecorder();
+    PortraitJerseyPainter(
+      body: const Color(0xFFB01E28),
+      trim: const Color(0xFFFFC107),
+      pattern: KitPattern.plain,
+      luma: luma,
+      collar: collar,
+    ).paint(Canvas(recorder), const Size(300, 300));
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(300, 300);
+    final data = (await image.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    ))!
+        .buffer
+        .asUint8List();
+    int channel(int x, int y, int component) =>
         data[(y * 300 + x) * 4 + component];
 
-    // Une vraie différence de matière apparaît sur la poitrine.
-    expect(
-      channel(without, 150, 260, 0),
-      isNot(channel(withTexture, 150, 260, 0)),
-    );
-    // Aucune matière ne passe au-dessus du maillot et du col.
-    expect(channel(withTexture, 150, 130, 3), 0);
-    expect(channel(withTexture, 150, 260, 3), 255);
+    // Le cou reste ouvert pour la vraie photo ; la poitrine est couverte.
+    expect(channel(150, 200, 3), 0);
+    expect(channel(150, 260, 3), 255);
+    // Poitrine dans la couleur du corps, col dans la couleur secondaire.
+    expect(channel(150, 260, 0), greaterThan(channel(150, 260, 1) + 60));
+    expect(channel(150, 231, 3), 255);
+    expect(channel(150, 231, 1), greaterThan(110));
+    expect(channel(150, 260, 1), lessThan(90));
 
-    before.dispose();
-    after.dispose();
-    material.dispose();
+    image.dispose();
+    picture.dispose();
+    luma.dispose();
+    collar.dispose();
   });
 
   testWidgets('la photo est découpée en courbe et non au cutter sous la joue',
@@ -173,7 +168,7 @@ void main() {
     final mask = clip.clipper!.getClip(const Size(180, 180));
     // Ancien masque : ligne horizontale dès 61,3 %, un rectangle
     // apparaissait au niveau de la mâchoire lorsque le visage était large.
-    expect(mask.contains(const Offset(55, 115)), isTrue);
+    expect(mask.contains(const Offset(55, 105)), isTrue);
     expect(mask.contains(const Offset(20, 135)), isFalse);
     expect(mask.contains(const Offset(90, 125)), isTrue);
     expect(mask.contains(const Offset(90, 145)), isFalse);

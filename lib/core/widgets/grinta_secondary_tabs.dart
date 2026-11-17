@@ -54,7 +54,7 @@ class GrintaSecondaryTabs<T> extends StatelessWidget {
               ),
               backgroundColor: WidgetStateProperty.resolveWith((states) {
                 return states.contains(WidgetState.selected)
-                    ? const Color(0xFF1E3A66)
+                    ? AppTheme.selectedSurface
                     : Colors.transparent;
               }),
               foregroundColor: WidgetStateProperty.resolveWith((states) {

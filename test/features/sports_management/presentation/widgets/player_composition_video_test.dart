@@ -2,7 +2,6 @@ import 'package:as_grinta/core/club/club_rules.dart';
 import 'package:as_grinta/features/matches/presentation/widgets/upcoming_match_fixture_header.dart';
 import 'package:as_grinta/features/sports_management/data/match_availability_board_repository.dart';
 import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
-import 'package:as_grinta/features/sports_management/data/match_kit_photo_overrides.dart';
 import 'package:as_grinta/features/sports_management/domain/match_availability_board.dart';
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
@@ -28,8 +27,9 @@ void main() {
   tearDown(ClubRules.reset);
   tearDown(() => debugPresentationBackground = null);
 
-  testWidgets('vidéo coupée : terrain présent, aucun aperçu ni lancement',
-      (tester) async {
+  testWidgets('vidéo coupée : terrain présent, aucun aperçu ni lancement', (
+    tester,
+  ) async {
     ClubRules.set({'composition_video': 0});
     await _pump(tester, store: _MemoryStore(), fromNotification: true);
     expect(find.byType(CompositionPresentationPage), findsNothing);
@@ -37,8 +37,9 @@ void main() {
     expect(find.text('Compo publiée'), findsOneWidget);
   });
 
-  testWidgets('automatique coupé : aperçu manuel encore utilisable',
-      (tester) async {
+  testWidgets('automatique coupé : aperçu manuel encore utilisable', (
+    tester,
+  ) async {
     ClubRules.set({'composition_video_autoplay': 0});
     await _pump(tester, store: _MemoryStore(), fromNotification: true);
     expect(find.byType(CompositionPresentationPage), findsNothing);
@@ -47,16 +48,21 @@ void main() {
     expect(find.byType(CompositionPresentationPage), findsOneWidget);
   });
 
-  testWidgets('notification : rejouer coupé respecte une vidéo déjà vue',
-      (tester) async {
+  testWidgets('notification : rejouer coupé respecte une vidéo déjà vue', (
+    tester,
+  ) async {
     ClubRules.set({'composition_video_notification_replay': 0});
-    await _pump(tester,
-        store: _MemoryStore()..seen.add('match-1'), fromNotification: true);
+    await _pump(
+      tester,
+      store: _MemoryStore()..seen.add('match-1'),
+      fromNotification: true,
+    );
     expect(find.byType(CompositionPresentationPage), findsNothing);
     expect(find.text('Aperçu de la vidéo'), findsOneWidget);
   });
-  testWidgets('onglet Compo : vidéo à la première visite, pas à la suivante',
-      (tester) async {
+  testWidgets('onglet Compo : vidéo à la première visite, pas à la suivante', (
+    tester,
+  ) async {
     final store = _MemoryStore();
     await _pump(tester, store: store);
     expect(find.byType(CompositionPresentationPage), findsOneWidget);
@@ -72,8 +78,9 @@ void main() {
     expect(find.byType(CompositionPresentationPage), findsOneWidget);
   });
 
-  testWidgets('compo modifiée après la visite : pas de nouvelle vidéo',
-      (tester) async {
+  testWidgets('compo modifiée après la visite : pas de nouvelle vidéo', (
+    tester,
+  ) async {
     final store = _MemoryStore()..seen.add('match-1');
     await _pump(tester, store: store, version: 2);
     expect(find.byType(CompositionPresentationPage), findsNothing);
@@ -91,8 +98,9 @@ void main() {
     );
   });
 
-  testWidgets('publiée depuis ce téléphone : jamais d’elle-même',
-      (tester) async {
+  testWidgets('publiée depuis ce téléphone : jamais d’elle-même', (
+    tester,
+  ) async {
     final store = _MemoryStore()..published.add('match-1');
     await _pump(tester, store: store, fromNotification: true);
     expect(find.byType(CompositionPresentationPage), findsNothing);
@@ -118,32 +126,28 @@ void main() {
     expect(page.data.coach?.photoUrl, 'https://photos.test/coach.jpg');
   });
 
-  testWidgets('le coach porte la tenue Brésil choisie dans Infos',
-      (tester) async {
+  testWidgets('le coach garde son unique portrait dans la vidéo', (
+    tester,
+  ) async {
     await _pump(
       tester,
       store: _MemoryStore(),
       board: _boardWithCoach(),
       photoLookup: (_) async => 'https://photos.test/coach-france.jpg',
-      kitPhotos: const {'sp-coach': 'https://photos.test/coach-brazil.jpg'},
     );
     final page = tester.widget<CompositionPresentationPage>(
       find.byType(CompositionPresentationPage),
     );
-    expect(page.data.coach?.photoUrl, 'https://photos.test/coach-brazil.jpg');
+    expect(page.data.coach?.photoUrl, 'https://photos.test/coach-france.jpg');
     expect(page.data.coach?.name, 'Philippe');
   });
 
-  testWidgets('le coach garde France si sa photo Pays-Bas est absente',
-      (tester) async {
+  testWidgets('le coach utilise sa photo du compte', (tester) async {
     await _pump(
       tester,
       store: _MemoryStore(),
       board: _boardWithCoach(),
       photoLookup: (_) async => 'https://photos.test/coach-france.jpg',
-      kitPhotos: const {
-        'un-autre-coach': 'https://photos.test/other-coach.jpg'
-      },
     );
     final page = tester.widget<CompositionPresentationPage>(
       find.byType(CompositionPresentationPage),
@@ -151,8 +155,9 @@ void main() {
     expect(page.data.coach?.photoUrl, 'https://photos.test/coach-france.jpg');
   });
 
-  testWidgets('photo du coach introuvable : silhouette, la vidéo part',
-      (tester) async {
+  testWidgets('photo du coach introuvable : silhouette, la vidéo part', (
+    tester,
+  ) async {
     await _pump(
       tester,
       store: _MemoryStore(),
@@ -167,27 +172,29 @@ void main() {
   });
 
   testWidgets(
-      'posée sur le vrai terrain, la vidéo se referme d’elle-même sur la page',
-      (tester) async {
-    await _pump(tester, store: _MemoryStore(), withPitch: true);
-    final page = tester.widget<CompositionPresentationPage>(
-      find.byType(CompositionPresentationPage),
-    );
-    expect(page.landing, isNotNull, reason: 'la vidéo vise la vraie page');
-    await tester.tap(find.text('Passer'));
-    for (var i = 0; i < 10; i++) {
-      await tester.pump(const Duration(milliseconds: 100));
-    }
-    expect(find.byType(CompositionPresentationPage), findsNothing);
-    expect(find.text('Revoir'), findsNothing);
-    // La page est utilisable : le bouton relance la vidéo.
-    await tester.tap(find.text('Aperçu de la vidéo'));
-    await _settle(tester);
-    expect(find.byType(CompositionPresentationPage), findsOneWidget);
-  });
+    'posée sur le vrai terrain, la vidéo se referme d’elle-même sur la page',
+    (tester) async {
+      await _pump(tester, store: _MemoryStore(), withPitch: true);
+      final page = tester.widget<CompositionPresentationPage>(
+        find.byType(CompositionPresentationPage),
+      );
+      expect(page.landing, isNotNull, reason: 'la vidéo vise la vraie page');
+      await tester.tap(find.text('Passer'));
+      for (var i = 0; i < 10; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(find.byType(CompositionPresentationPage), findsNothing);
+      expect(find.text('Revoir'), findsNothing);
+      // La page est utilisable : le bouton relance la vidéo.
+      await tester.tap(find.text('Aperçu de la vidéo'));
+      await _settle(tester);
+      expect(find.byType(CompositionPresentationPage), findsOneWidget);
+    },
+  );
 
-  testWidgets('les joueurs se posent exactement sur ceux de la page',
-      (tester) async {
+  testWidgets('les joueurs se posent exactement sur ceux de la page', (
+    tester,
+  ) async {
     await _pump(tester, store: _MemoryStore(), withPitch: true);
     await expectLandsOnPage(tester);
   });
@@ -210,11 +217,14 @@ void main() {
     );
     expect(
       markCompositionRouteFromNotification(
-          '/matches/m1/lineup?section=effectif'),
+        '/matches/m1/lineup?section=effectif',
+      ),
       '/matches/m1/lineup?section=effectif',
     );
-    expect(markCompositionRouteFromNotification('/matches/m1/vote'),
-        '/matches/m1/vote');
+    expect(
+      markCompositionRouteFromNotification('/matches/m1/vote'),
+      '/matches/m1/vote',
+    );
   });
 }
 
@@ -264,7 +274,6 @@ Future<GoRouter> _pump(
   bool fromNotification = false,
   MatchAvailabilityBoard? board,
   SeasonPlayerPhotoLookup? photoLookup,
-  Map<String, String>? kitPhotos,
   bool withPitch = false,
 }) async {
   tester.view
@@ -303,10 +312,12 @@ Future<GoRouter> _pump(
                       CompositionPitchWithBench(
                         key: landing.area,
                         pitchKey: landing.pitch,
-                        field:
-                            composition.entriesFor(MatchCompositionZone.field),
-                        bench:
-                            composition.entriesFor(MatchCompositionZone.bench),
+                        field: composition.entriesFor(
+                          MatchCompositionZone.field,
+                        ),
+                        bench: composition.entriesFor(
+                          MatchCompositionZone.bench,
+                        ),
                         maxWidth: 360,
                       ),
                     ],
@@ -322,21 +333,14 @@ Future<GoRouter> _pump(
       key: UniqueKey(),
       overrides: [
         compositionVideoSeenStoreProvider.overrideWithValue(store),
-        publishedMatchCompositionProvider('match-1').overrideWith(
-          (ref) async => composition,
-        ),
-        upcomingMatchFixtureProvider('match-1').overrideWith(
-          (ref) async => null,
-        ),
-        matchAvailabilityBoardProvider('match-1').overrideWith(
-          (ref) async => board,
-        ),
+        publishedMatchCompositionProvider('match-1')
+            .overrideWith((ref) async => composition),
+        upcomingMatchFixtureProvider('match-1')
+            .overrideWith((ref) async => null),
+        matchAvailabilityBoardProvider('match-1')
+            .overrideWith((ref) async => board),
         if (photoLookup != null)
           seasonPlayerPhotoLookupProvider.overrideWithValue(photoLookup),
-        if (kitPhotos != null)
-          matchKitPhotoOverridesProvider('match-1').overrideWith(
-            (ref) async => kitPhotos,
-          ),
       ],
       child: MaterialApp.router(routerConfig: router),
     ),
