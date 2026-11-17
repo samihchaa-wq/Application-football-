@@ -64,13 +64,16 @@ void main() {
     await tester.tap(find.text('Valider'));
     await tester.pumpAndSettle();
 
-    // Score 1-0
-    await tester.tap(
-      find.descendant(
-        of: find.byKey(const Key('history-score-for')),
-        matching: find.byIcon(Icons.add_circle_outline),
-      ),
+    // Score 1-0 : le bouton doit être dégagé de la barre d'action
+    // fixe en bas de l'écran sur un téléphone.
+    final scorePlus = find.descendant(
+      of: find.byKey(const Key('history-score-for')),
+      matching: find.byIcon(Icons.add_circle_outline),
     );
+    await reveal(tester, scorePlus);
+    await tester.drag(find.byType(ListView), const Offset(0, -120));
+    await tester.pumpAndSettle();
+    await tester.tap(scorePlus);
     await tester.pumpAndSettle();
 
     await reveal(tester, find.byKey(const ValueKey('history-present-p-bruno')));
