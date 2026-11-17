@@ -1,6 +1,6 @@
 # Relais entre assistants — Petit Filet (application commerciale)
 
-**Actualisé le 13 novembre 2026.** Source de vérité opérationnelle : branche `main`, PR ouvertes et contrôles GitHub sur le dernier SHA ; les états ci-dessous peuvent évoluer.
+**Actualisé le 17 novembre 2026 (correctif de gouvernance publication).** Source de vérité opérationnelle : branche `main`, PR ouvertes et contrôles GitHub sur le dernier SHA ; les états ci-dessous peuvent évoluer.
 
 ## Règles impératives
 
@@ -8,7 +8,7 @@
 2. **Dépôt commercial PUBLIC maintenu** (choix explicite B). Ne pas modifier sa visibilité ni republier de données personnelles / secrets dans les PR et issues.
 3. **Supabase commercial `jvxkhgdopslctpcjrhzw` : lecture seule par défaut.** Aucune migration, écriture, déploiement de fonctions, création de comptes tests distants, changement de secret, publication ou paiement sans accord distinct du propriétaire. Ne jamais lancer de commandes de suppression de schéma à l'aveugle, en particulier **`DROP SCHEMA install_tmp CASCADE`**, instruction obsolète et dangereuse.
 4. Migrations déjà appliquées **immuables** ; chaque correction SQL doit être une nouvelle migration à identifiant unique, compatible avec le registre des migrations de la base commerciale.
-5. Fusion de PR uniquement après revue des risques, absence de conflit et contrôles GitHub **verts sur le SHA exact**. Toute CI incomplète, échouée ou en cours bloque la fusion. Une fusion de code **ne déploie pas** automatiquement l'application : les workflows de publication Cloudflare et de configuration Supabase sont manuels.
+5. Fusion de PR uniquement après revue des risques, absence de conflit et contrôles GitHub **verts sur le SHA exact**. Toute CI incomplète, échouée ou en cours bloque la fusion. **Attention : chaque push sur `main` (dont une fusion) déclenche `.github/workflows/auto_release_commercial.yml`, qui, après gardes et CI, peut lancer sauvegarde commerciale, migrations Supabase et publication Cloudflare.** Cela vaut aussi pour une PR de documentation ; l'autorisation d'intégrer ne doit pas être confondue avec l'autorisation d'intervenir sur la production. Sans validation explicite du lot et de ses conséquences, conserver les PR ouvertes.
 6. Aucune dépense ou souscription sans annonce du prix et accord préalable. Réponses françaises, directes ; distinguer : documenté, développé, CI validée, testé réellement, déployé.
 
 ## Produit — décisions validées
@@ -34,7 +34,7 @@ Restent à vérifier sur GitHub avant intégration : PR #69 (+1 manuel), #72 (é
 - **P0** : séparation réelle des clubs A/B avec permissions admin/RPC/RLS/Storage/Edge, contrôle d'un admin suspendu, sécurité des sauvegardes, restauration DB + objets Storage, RGPD/consentement.
 - **P1** : tests smartphone/PWA, fiabilité des notifications et des e-mails, cohérence maillots, compositions et gestion des saisons ; vérifier la désactivation serveur des modules.
 - **P2** : pilote volontaires, documents juridiques relus (SIRET, identité de l'éditeur), disponibilité de la marque et du domaine, paiement, hébergement adapté sans dépenses non autorisées.
-- Site de test GitHub Pages existant ; publication commerciale sur Cloudflare uniquement par workflow **manuel**. Vérifier tout changement de configuration avant usage.
+- Site de test GitHub Pages existant ; la publication Cloudflare peut être déclenchée manuellement ou **automatiquement par le workflow de sortie sur chaque push `main`**, après contrôles. Vérifier les conséquences avant toute fusion, même documentaire.
 - Les cinq automatisations de coordination couvrent les neuf missions M01–M09 ; utiliser `docs/CHANTIER.md` et les PR/issues pour communiquer. Ne pas déclarer « fait » sans résultat vérifiable.
 
 **Ce document ne vaut ni autorisation de déploiement ni certification du lancement.**
