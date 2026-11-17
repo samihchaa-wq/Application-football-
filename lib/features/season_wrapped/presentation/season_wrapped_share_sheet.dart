@@ -1,5 +1,6 @@
 import 'package:as_grinta/core/club/club_identity.dart';
 import 'package:as_grinta/features/season_wrapped/data/season_wrapped_repository.dart';
+import 'package:as_grinta/features/season_wrapped/domain/wrapped_stat_selection.dart';
 import 'package:as_grinta/features/season_wrapped/presentation/wrapped_slides.dart';
 import 'package:as_grinta/features/season_wrapped/presentation/wrapped_theme.dart';
 import 'package:flutter/material.dart';
@@ -179,9 +180,11 @@ class SeasonWrappedFullShareSheet extends StatelessWidget {
     super.key,
     required this.wrapped,
     required this.playerName,
+    this.statsMask = WrappedStatOption.allMask,
   });
 
   final SeasonWrapped wrapped;
+  final int statsMask;
   final String? playerName;
 
   @override
@@ -208,7 +211,7 @@ class SeasonWrappedFullShareSheet extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    for (final stat in wrapped.stats)
+                    for (final stat in wrapped.statsForMask(statsMask))
                       WrappedRecapLine(stat: stat, skin: skin, dense: true),
                   ],
                 ),
