@@ -11,7 +11,8 @@ void main() {
     String opponent = 'Exemple FC',
     int scored = 3,
     int conceded = 1,
-  }) => {
+  }) =>
+      {
         'date': date,
         'opponent': opponent,
         'score_for': scored,
@@ -30,8 +31,10 @@ void main() {
     final rows = List.generate(
       350,
       (i) => match(
-        date: DateTime(2023, 1, 1).add(Duration(days: i))
-            .toIso8601String().substring(0, 10),
+        date: DateTime(2023, 1, 1)
+            .add(Duration(days: i))
+            .toIso8601String()
+            .substring(0, 10),
       ),
     );
     final batch = HistoryImportBatch.parse(document(rows), cutoff);
@@ -56,7 +59,8 @@ void main() {
   test('refuse un match dans une saison déjà suivie', () {
     expect(
       () => HistoryImportBatch.parse(
-        document([match(date: '2025-07-01')]), cutoff,
+        document([match(date: '2025-07-01')]),
+        cutoff,
       ),
       throwsFormatException,
     );
@@ -65,7 +69,8 @@ void main() {
   test('refuse les dates normalisées incorrectes', () {
     expect(
       () => HistoryImportBatch.parse(
-        document([match(date: '2024-02-30')]), cutoff,
+        document([match(date: '2024-02-30')]),
+        cutoff,
       ),
       throwsFormatException,
     );
@@ -74,12 +79,15 @@ void main() {
   test('refuse un fichier contradictoire et les buts excédentaires', () {
     expect(
       () => HistoryImportBatch.parse(
-        document([match(scored: 1), match(scored: 2)]), cutoff,
+        document([match(scored: 1), match(scored: 2)]),
+        cutoff,
       ),
       throwsFormatException,
     );
     final row = match(scored: 1);
-    row['scorers'] = [{'name': 'Alex Martin', 'goals': 2}];
+    row['scorers'] = [
+      {'name': 'Alex Martin', 'goals': 2}
+    ];
     expect(
       () => HistoryImportBatch.parse(document([row]), cutoff),
       throwsFormatException,
