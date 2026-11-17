@@ -59,7 +59,7 @@ class _HistoryImportPageState extends ConsumerState<HistoryImportPage> {
       if (selected == null || !mounted) return;
       final parsed = HistoryImportBatch.parse(
         selected.content,
-        entry.lastAllowedDate,
+        DateTime.now(),
       );
       setState(() {
         _batch = parsed;
@@ -180,9 +180,9 @@ class _HistoryImportPageState extends ConsumerState<HistoryImportPage> {
                       Text('2. Choisir le document JSON',
                           style: theme.textTheme.titleMedium),
                       const SizedBox(height: 8),
-                      const Text('Maximum 400 matchs, antérieurs à la première '
-                          'saison déjà suivie dans Petit Filet. '
-                          'N’inclus pas de données personnelles inutiles.'),
+                      const Text('Maximum 400 matchs jusqu’à aujourd’hui, y compris '
+                          'dans une saison déjà suivie. Les doublons sont '
+                          'contrôlés. N’inclus aucune donnée inutile.'),
                       const SizedBox(height: 12),
                       OutlinedButton.icon(
                         key: const Key('history-import-select'),
@@ -248,13 +248,15 @@ class _HistoryImportPageState extends ConsumerState<HistoryImportPage> {
 const _prompt = '''
 Convertis les anciens matchs de mon équipe [NOM] en fichier JSON UTF-8
 compatible avec Petit Filet. N'invente aucune information.
-Exclus tout match sans date, adversaire, score exact,
-domicile/extérieur ou type (championnat/amical) connus.
+Exclus uniquement les matchs sans date, adversaire ou score exact.
+Pour toute autre information inconnue, OMETS la propriété.
 Réponds uniquement avec un JSON valide :
 {"format":"petit-filet-historique","version":1,"matches":[...]}.
 Chaque match possède obligatoirement :
 {"date":"AAAA-MM-JJ","opponent":"Adversaire","score_for":0,
-"score_against":0,"is_home":true,"match_type":"championnat"}.
+"score_against":0}.
+Ajoute "is_home":true/false et "match_type":"championnat"/"amical"
+uniquement s’ils sont connus avec certitude.
 Le score est toujours présenté du point de vue de MON ÉQUIPE.
 Si connus, ajoute "time":"HH:MM", "address", "present":[{"name":"Prénom Nom"}],
 "scorers":[{"name":"Prénom Nom","goals":1}], "motm":[{"name":"Prénom Nom"}],
