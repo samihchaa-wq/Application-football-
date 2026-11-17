@@ -38,3 +38,12 @@ Tests CI sans donnée réelle : **tool/qa/test_restore_isolation_gate.py**.
 L'environnement disponible ne possède **ni Docker, ni Podman, ni psql, ni Supabase CLI**, ni exécuteur privé attesté. La phrase de déchiffrement de l'archive commerciale n'est pas utilisable depuis cette session sans risque. **Aucune donnée réelle n'a été déchiffrée ou importée, aucune dépense ni instance payante créée.** La mise en place d'une cible privée et la validation juridique/sécurité des opérations réelles restent nécessaires. L'application AS Grinta originale et ses données n'ont jamais été modifiées.
 
 **Ne pas fermer #91 ni déclarer une restauration validée avant la preuve complète DB + Auth + Storage + RLS/RPC + absence d'émission + RPO/RTO.**
+
+## Constat supplémentaire — prévol réel du 17 novembre 2026
+
+- **ZIP commercial téléchargé à nouveau** : 800 546 octets, 2 entrées, CRC ZIP OK, SHA-256 conforme au digest GitHub ; GPG 799 805 octets, SHA-256 conforme au sidecar. Pas de déchiffrement commercial.
+- **Essai réel du garde** avec URLs locales de test : `REFUS : Interface réseau non isolée`. La machine possède `lo` et `eth0` ; `unshare -n` renvoie `Operation not permitted`. Aucun Docker/Podman/psql/Supabase CLI disponible. **Aucune restauration tentée sur cet hôte non isolé.**
+- **Inventaire de risque, SQL SELECT uniquement sur la production commerciale** : 11 tâches `cron.job` actives ; 2 triggers de notification via réseau (`notify_admin_player_availability_change`, `on_profile_pending_signup`). 2 buckets publics (2 objets) et 1 privé (3 objets). Les sorties réseau/cron doivent être **physiquement interdites avant tout import**, et non seulement vérifiées une fois l'import terminé.
+- **Plan de sauvegarde actuel** : hebdomadaire le lundi à 02:23 UTC (`23 2 * * 1`). La fréquence ne démontre pas l'objectif RPO ≤ 24 heures ; aucun engagement commercial de RPO/RTO avant exercice de récupération et ajustement de rétention/fréquence.
+- **Cible Supabase disponible** : seule la production commerciale est inscrite sur ce compte ; aucune branche de développement isolée existante. Créer un projet ou une branche distante peut générer des frais et n'établit pas à lui seul l'absence d'e-mails ou push.
+- **Attention** : l'audit de SQL/manifestes ne certifie pas les paramètres hébergés hors base (clés de chiffrement racines Vault, configuration Auth, fonctions Edge et réglages Supabase). La procédure de reprise devra documenter la remise en place et tester chacun des composants nécessaires.
