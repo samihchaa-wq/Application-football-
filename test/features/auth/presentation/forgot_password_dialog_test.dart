@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:as_grinta/features/auth/data/account_email_repository.dart';
 import 'package:as_grinta/features/auth/presentation/auth_sign_in_page.dart';
 import 'package:flutter/material.dart';
@@ -7,11 +9,13 @@ import 'package:flutter_test/flutter_test.dart';
 class _FakeAccountEmailRepository implements AccountEmailRepository {
   final requested = <String>[];
   Object? failure;
+  Future<void>? pending;
 
   @override
   Future<void> requestPasswordReset(String email) async {
-    if (failure != null) throw failure!;
     requested.add(email);
+    if (pending != null) await pending;
+    if (failure != null) throw failure!;
   }
 
   @override
@@ -33,6 +37,41 @@ void main() {
       ),
     );
   }
+
+  testWidgets('Entrée répétée ne double pas la demande', (tester) async {
+    final response = Completer<void>();
+    repository.pending = response.future;
+    await pumpDialog(tester);
+    await tester.enterText(find.byType(TextField), 'karim@example.com');
+    final field = tester.widget<TextField>(find.byType(TextField));
+    await tester.tap(find.text('Envoyer le lien'));
+    field.onSubmitted!('');
+    field.onSubmitted!('');
+    await tester.pump();
+    expect(repository.requested, ['karim@example.com']);
+
+    response.complete();
+    await tester.pumpAndSettle();
+    field.onSubmitted!('');
+    await tester.pump();
+    expect(repository.requested, ['karim@example.com']);
+    expect(find.text('Compris'), findsOneWidget);
+  });
+
+  testWidgets('une erreur permet une nouvelle tentative', (tester) async {
+    repository.failure = StateError('Envoi indisponible.');
+    await pumpDialog(tester);
+    await tester.enterText(find.byType(TextField), 'karim@example.com');
+    await tester.tap(find.text('Envoyer le lien'));
+    await tester.pumpAndSettle();
+    expect(find.text('Envoi indisponible.'), findsOneWidget);
+
+    repository.failure = null;
+    await tester.tap(find.text('Envoyer le lien'));
+    await tester.pumpAndSettle();
+    expect(repository.requested, ['karim@example.com', 'karim@example.com']);
+    expect(find.text('Compris'), findsOneWidget);
+  });
 
   testWidgets('une adresse invalide n’envoie rien', (tester) async {
     await pumpDialog(tester);

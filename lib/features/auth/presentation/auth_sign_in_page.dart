@@ -199,6 +199,8 @@ class _ForgotPasswordDialogState extends ConsumerState<ForgotPasswordDialog> {
   }
 
   Future<void> _send() async {
+    // Le clavier reste actif même quand le bouton est désactivé.
+    if (!mounted || _sending || _sent) return;
     final email = _controller.text.trim();
     if (!looksLikeEmail(email)) {
       setState(() => _error = 'Saisis une adresse e-mail valide.');
