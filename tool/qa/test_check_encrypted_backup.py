@@ -14,14 +14,26 @@ from commercial_backup_bundle import UnsafeBackup
 class EncryptedBackupTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        # Ne jamais lancer un démon persistant avec capture_output=True :
+        # ses descripteurs hérités peuvent bloquer le runner indéfiniment.
         import tempfile
         with tempfile.TemporaryDirectory() as folder:
-            probe = subprocess.run(['gpg-agent', '--homedir', folder, '--daemon'],
-                                   capture_output=True)
-            if probe.returncode:
-                raise unittest.SkipTest('Agent GPG indisponible : sockets locales interdites ou agent absent')
-            subprocess.run(['gpgconf', '--homedir', folder, '--kill', 'gpg-agent'],
-                           capture_output=True)
+            home = Path(folder) / 'gnupg'
+            home.mkdir(mode=0o700)
+            sample = Path(folder) / 'probe.txt'
+            encrypted = Path(folder) / 'probe.gpg'
+            sample.write_bytes(b'local-only-probe')
+            try:
+                probe = subprocess.run(
+                    ['gpg', '--no-options', '--homedir', str(home), '--batch',
+                     '--no-tty', '--pinentry-mode', 'loopback', '--passphrase-fd',
+                     '0', '--symmetric', '--output', str(encrypted), str(sample)],
+                    input=b'local-probe-secret\\n', capture_output=True, timeout=20,
+                )
+            except (OSError, subprocess.TimeoutExpired) as exc:
+                raise unittest.SkipTest('GPG local indisponible ou trop lent') from exc
+            if probe.returncode or not encrypted.is_file():
+                raise unittest.SkipTest('Chiffrement GPG local indisponible')
 
     def setUp(self):
         self.fixture = fixtures.VerifyCommercialBackupTarTests()
@@ -36,7 +48,7 @@ class EncryptedBackupTests(unittest.TestCase):
                         '--pinentry-mode', 'loopback', '--passphrase-fd', '0',
                         '--symmetric', '--output', str(self.encrypted),
                         str(self.fixture.path)], input=self.phrase+b'\n',
-                       capture_output=True, check=True)
+                       capture_output=True, check=True, timeout=30)
         self.digest = hashlib.sha256(self.encrypted.read_bytes()).hexdigest()
 
     def test_real_decryption_and_integrity(self):
