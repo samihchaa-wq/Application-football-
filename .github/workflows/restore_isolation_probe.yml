@@ -48,6 +48,14 @@ jobs:
           '
           echo "PASS: isolated namespace available. No backup or personal data processed."
 
+      - name: Preload a small synthetic container before cutting network access
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker pull alpine:3.20 >/dev/null
+          docker save -o "$RUNNER_TEMP/pf-isolation-fixture.tar" alpine:3.20
+          test -s "$RUNNER_TEMP/pf-isolation-fixture.tar"
+
       - name: Probe a nested Docker daemon inside the isolated namespace (no data)
         shell: bash
         run: |
@@ -87,5 +95,17 @@ jobs:
             exit 1
           fi
           docker -H "unix://$root/docker.sock" network ls --format '{{.Name}}'
+          docker -H "unix://$root/docker.sock" load -i "$RUNNER_TEMP/pf-isolation-fixture.tar" >/dev/null
+          docker -H "unix://$root/docker.sock" network create --driver bridge --internal pf-isolated-only >/dev/null
+          test "$(docker -H "unix://$root/docker.sock" network inspect pf-isolated-only --format '{{.Internal}}')" = true
+          docker -H "unix://$root/docker.sock" run --rm --network pf-isolated-only alpine:3.20 sh -ceu '
+            test -s /etc/os-release
+            if wget -q -T 2 -O /dev/null http://1.1.1.1; then
+              echo "External egress unexpectedly available."
+              exit 1
+            fi
+            echo "PASS: synthetic container runs with no external egress."
+          '
+
           echo "PASS: isolated Docker engine available without live commercial data."
           PF_PROBE
