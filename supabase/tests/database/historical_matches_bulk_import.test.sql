@@ -178,10 +178,10 @@ insert into public.matches(
 select pg_temp.as_profile('ab910000-0000-0000-0000-000000000001');
 set local role authenticated;
 select throws_ok(
-  $select public.admin_import_historical_matches(
+  $statement$select public.admin_import_historical_matches(
     pg_temp.doc(jsonb_build_array(
       pg_temp.match(current_date - 3, 'Calendrier existant FC', 2)
-    )))$,
+    )))$statement$,
   '22023', null,
   'un match existant non validé dans Petit Filet refuse un doublon historique'
 );
