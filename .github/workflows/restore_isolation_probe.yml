@@ -62,7 +62,7 @@ jobs:
           set -euo pipefail
           # No production secret, artifact or personal data is loaded.
           test -x "$(command -v dockerd)"
-          sudo unshare --net -- bash -euo pipefail <<'PF_PROBE'
+          sudo --preserve-env=RUNNER_TEMP unshare --net -- bash -euo pipefail <<'PF_PROBE'
           ip link set lo up
           root="$(mktemp -d)"
           daemon_pid=""
