@@ -145,9 +145,8 @@ class BadgeEmblemBody extends StatelessWidget {
           if (hasValue)
             _Band(
               height: size * _valueRatio,
-              color: skin == null
-                  ? bandsTone
-                  : bandsTone.withValues(alpha: .80),
+              color:
+                  skin == null ? bandsTone : bandsTone.withValues(alpha: .80),
               skin: null,
               child: _BandText(
                 value!,
@@ -158,9 +157,7 @@ class BadgeEmblemBody extends StatelessWidget {
             ),
           _Band(
             height: size * labelRatio,
-            color: skin == null
-                ? bandsTone
-                : bandsTone.withValues(alpha: .80),
+            color: skin == null ? bandsTone : bandsTone.withValues(alpha: .80),
             skin: null,
             child: hasValue
                 ? _BandText(
@@ -179,9 +176,8 @@ class BadgeEmblemBody extends StatelessWidget {
           if (period != null)
             _Band(
               height: size * _lineRatio,
-              color: skin == null
-                  ? bandsTone
-                  : bandsTone.withValues(alpha: .80),
+              color:
+                  skin == null ? bandsTone : bandsTone.withValues(alpha: .80),
               skin: null,
               child: _BandText(
                 period,

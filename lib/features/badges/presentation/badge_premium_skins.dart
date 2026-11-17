@@ -114,7 +114,8 @@ String badgePremiumBackgroundAsset(BadgePremiumSkin skin) => switch (skin) {
       BadgePremiumSkin.ruby => 'assets/images/badge_backgrounds/rubis.jpg',
       BadgePremiumSkin.garnet => 'assets/images/badge_backgrounds/grenat.jpg',
       BadgePremiumSkin.diamond => 'assets/images/badge_backgrounds/diamant.jpg',
-      BadgePremiumSkin.emerald => 'assets/images/badge_backgrounds/emeraude.jpg',
+      BadgePremiumSkin.emerald =>
+        'assets/images/badge_backgrounds/emeraude.jpg',
       BadgePremiumSkin.violet => 'assets/images/badge_backgrounds/violet.jpg',
     };
 
