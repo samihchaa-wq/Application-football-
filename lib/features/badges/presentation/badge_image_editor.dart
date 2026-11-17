@@ -160,9 +160,11 @@ class _BadgeCropDialogState extends State<_BadgeCropDialog> {
   static const double _exportScale = _exportWidth / _size;
 
   // La couleur historique de l'objet n'est plus celle de son habillage.
-  BadgePremiumSkin get _skin => badgePremiumSkinFor(
+  BadgePremiumSkin get _skin =>
+      badgePremiumSkinFor(
         '#${widget.badgeColor.toARGB32().toRadixString(16).padLeft(8, '0').substring(2)}',
-      ) ?? BadgePremiumSkin.violet;
+      ) ??
+      BadgePremiumSkin.violet;
 
   final TransformationController _controller = TransformationController();
   Uint8List? _bytes;
