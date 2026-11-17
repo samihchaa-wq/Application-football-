@@ -3,6 +3,8 @@
 > Première photographie du chantier : 12 novembre 2026.
 > Référence de coordination opérationnelle : [HANDOFF.md](HANDOFF.md).
 > Ce fichier est un **tableau d'avancement vérifiable**, pas une preuve que les conversations travaillent en arrière-plan.
+>
+> **Alerte opérationnelle du 17/11/2026 :** le workflow `.github/workflows/auto_release_commercial.yml` réagit à **chaque push sur `main`** et peut, après contrôles, sauvegarder la base commerciale, appliquer les migrations en attente puis publier sur Cloudflare. Ne fusionner aucune PR, même documentaire, sans vérifier l'effet de production et son autorisation. Les statuts des missions et automatisations décrits ci-dessous sont des photographies historiques ; vérifier leur état actuel sur GitHub/ChatGPT.
 
 ## Règles de gouvernance
 
