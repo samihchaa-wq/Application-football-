@@ -99,6 +99,25 @@ Color badgePremiumDark(BadgePremiumSkin skin) => switch (skin) {
       BadgePremiumSkin.violet => const Color(0xFF270D54),
     };
 
+/// Visuels de la planche de référence validée : un fichier par couleur.
+/// Les portraits et les légendes restent indépendants de ces images.
+String badgePremiumBackgroundAsset(BadgePremiumSkin skin) => switch (skin) {
+      BadgePremiumSkin.steel => 'assets/images/badge_backgrounds/gris.jpg',
+      BadgePremiumSkin.bronze => 'assets/images/badge_backgrounds/bronze.jpg',
+      BadgePremiumSkin.silver => 'assets/images/badge_backgrounds/argent.jpg',
+      BadgePremiumSkin.gold => 'assets/images/badge_backgrounds/or.jpg',
+      BadgePremiumSkin.cyan => 'assets/images/badge_backgrounds/bleu_clair.jpg',
+      BadgePremiumSkin.blue => 'assets/images/badge_backgrounds/bleu.jpg',
+      BadgePremiumSkin.navy => 'assets/images/badge_backgrounds/bleu_fonce.jpg',
+      BadgePremiumSkin.obsidian => 'assets/images/badge_backgrounds/noir.jpg',
+      BadgePremiumSkin.orange => 'assets/images/badge_backgrounds/orange.jpg',
+      BadgePremiumSkin.ruby => 'assets/images/badge_backgrounds/rubis.jpg',
+      BadgePremiumSkin.garnet => 'assets/images/badge_backgrounds/grenat.jpg',
+      BadgePremiumSkin.diamond => 'assets/images/badge_backgrounds/diamant.jpg',
+      BadgePremiumSkin.emerald => 'assets/images/badge_backgrounds/emeraude.jpg',
+      BadgePremiumSkin.violet => 'assets/images/badge_backgrounds/violet.jpg',
+    };
+
 /// Dessin statique et léger (aucune animation permanente) : les badges
 /// continuent à se rendre correctement même sans accès réseau.
 /// L'illustration du joueur reste rendue au-dessus de cette texture.

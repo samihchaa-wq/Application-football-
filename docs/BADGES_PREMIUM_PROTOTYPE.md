@@ -65,3 +65,10 @@ Ne pas faire de conversion destructive automatique de la production.
 ## Garantie de périmètre
 
 Aucune migration SQL, aucune modification des données métier, aucun téléversement Storage ni déploiement. Le dépôt original AS Grinta et ses données ne sont jamais modifiés.
+
+## Intégration des fonds issus de la planche de référence
+
+- La planche finale de 14 cartes vides du propriétaire a été découpée en images individuelles, nettoyées des titres et encadrés d'infographie, puis encodées en JPEG 180 × 240 légers. Cela reproduit la **texture de la planche**, mais ne constitue pas des masters natifs haute résolution.
+- Les 14 fichiers se trouvent dans `assets/images/badge_backgrounds/`. Une correspondance explicite dans `badgePremiumBackgroundAsset` relie chaque famille au bon fichier, sans réécriture SQL ni changement de palmarès.
+- Le socle texte conserve le calcul dynamique et un voile sombre semi-transparent pour rester lisible. Les illustrations de joueurs restent au-dessus. Les anciens JPEG opaques contenant déjà leur arrière-plan masqueront encore la texture sous la photo : il faudra les détourer un jour avec l'accord de leur propriétaire.
+- Le test visuel `badge_visual_gallery_test.dart` fournit une comparaison des 14 variantes avec illustrations fictives. Tant que cette preuve graphique et une recette représentative avec images réelles ne sont pas disponibles, la PR demeure **en brouillon**.

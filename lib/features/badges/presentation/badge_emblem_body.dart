@@ -87,7 +87,7 @@ class BadgeEmblemBody extends StatelessWidget {
     final hasValue = value?.isNotEmpty == true;
     final period = descriptor.period;
     final illustrationTone = _shiftBadgeTone(base, 0.02);
-    final bandsTone = _socleTone(base);
+    final bandsTone = skin == null ? _socleTone(base) : badgePremiumDark(skin!);
     // Le critère prend tout ce que le nombre et la temporalité laissent du
     // socle : une ligne sur un badge complet, bien plus sur un badge sans
     // nombre.
@@ -103,6 +103,12 @@ class BadgeEmblemBody extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: bandsTone,
+        image: skin == null
+            ? null
+            : DecorationImage(
+                image: AssetImage(badgePremiumBackgroundAsset(skin!)),
+                fit: BoxFit.fill,
+              ),
         borderRadius: BorderRadius.circular(size * 0.16),
       ),
       foregroundDecoration: skin == null
@@ -120,16 +126,13 @@ class BadgeEmblemBody extends StatelessWidget {
           Container(
             height: size * kBadgeIllustrationRatio,
             width: size,
-            color: illustrationTone,
+            color: skin == null ? illustrationTone : Colors.transparent,
             alignment: Alignment.center,
             child: skin == null
                 ? child
                 : Stack(
                     fit: StackFit.expand,
                     children: [
-                      CustomPaint(
-                        painter: BadgePremiumTexturePainter(skin: skin!),
-                      ),
                       Center(child: child),
                       IgnorePointer(
                         child: CustomPaint(
@@ -142,8 +145,10 @@ class BadgeEmblemBody extends StatelessWidget {
           if (hasValue)
             _Band(
               height: size * _valueRatio,
-              color: bandsTone,
-              skin: skin,
+              color: skin == null
+                  ? bandsTone
+                  : bandsTone.withValues(alpha: .80),
+              skin: null,
               child: _BandText(
                 value!,
                 fontSize: size * 0.16,
@@ -153,8 +158,10 @@ class BadgeEmblemBody extends StatelessWidget {
             ),
           _Band(
             height: size * labelRatio,
-            color: bandsTone,
-            skin: skin,
+            color: skin == null
+                ? bandsTone
+                : bandsTone.withValues(alpha: .80),
+            skin: null,
             child: hasValue
                 ? _BandText(
                     descriptor.label,
@@ -172,8 +179,10 @@ class BadgeEmblemBody extends StatelessWidget {
           if (period != null)
             _Band(
               height: size * _lineRatio,
-              color: bandsTone,
-              skin: skin,
+              color: skin == null
+                  ? bandsTone
+                  : bandsTone.withValues(alpha: .80),
+              skin: null,
               child: _BandText(
                 period,
                 fontSize: size * 0.095,
