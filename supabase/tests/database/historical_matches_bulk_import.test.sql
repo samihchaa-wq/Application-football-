@@ -96,5 +96,67 @@ select throws_ok(
 );
 reset role;
 
+
+-- Décision métier : une saison déjà présente reste importable.
+-- Les informations de domicile et de type peuvent rester inconnues.
+select pg_temp.as_profile('ab910000-0000-0000-0000-000000000001');
+set local role authenticated;
+
+select is(
+  (public.admin_import_historical_matches(pg_temp.doc(jsonb_build_array(
+    jsonb_build_object(
+      'date', current_date - 2, 'opponent', 'Sans métadonnées FC',
+      'score_for', 1, 'score_against', 0
+    )
+  ))) ->> 'imported')::integer,
+  1, 'une saison déjà suivie accepte un résultat passé sans domicile ni type'
+);
+reset role;
+select is(
+  (select is_home from public.historical_match_scores h
+    join public.opponents o on o.id = h.opponent_id
+    where o.name = 'Sans métadonnées FC'),
+  null::boolean, 'le domicile inconnu est conservé à NULL sans invention'
+);
+select is(
+  (select match_type from public.historical_match_scores h
+    join public.opponents o on o.id = h.opponent_id
+    where o.name = 'Sans métadonnées FC'),
+  null::text, 'le type de rencontre inconnu est conservé à NULL'
+);
+
+-- Un match déjà saisi dans le calendrier normal ne doit jamais être doublé
+-- par une archive et fausser les statistiques.
+insert into public.opponents(name)
+values ('Calendrier existant FC');
+insert into public.matches(
+  id, season_id, opponent_id, match_date, match_time, location,
+  planned_duration_minutes, status, match_type, created_by
+) values (
+  'ab930000-0000-0000-0000-000000000001',
+  (select id from public.seasons order by name limit 1),
+  (select id from public.opponents where name = 'Calendrier existant FC'),
+  current_date - 3, '19:30', 'domicile', 90, 'a_venir', 'championnat',
+  'ab910000-0000-0000-0000-000000000001'
+);
+select pg_temp.as_profile('ab910000-0000-0000-0000-000000000001');
+set local role authenticated;
+select throws_ok(
+  $select public.admin_import_historical_matches(
+    pg_temp.doc(jsonb_build_array(
+      pg_temp.match(current_date - 3, 'Calendrier existant FC', 2)
+    )))$,
+  '22023', null,
+  'un match existant non validé dans Petit Filet refuse un doublon historique'
+);
+reset role;
+select is(
+  (select count(*)::integer
+   from public.historical_match_scores h
+   join public.opponents o on o.id = h.opponent_id
+   where o.name = 'Calendrier existant FC'),
+  0, 'aucune archive n’a été créée en double du calendrier'
+);
+
 select * from finish();
 rollback;
