@@ -1,0 +1,48 @@
+name: "M09 - probe isolation for future restore (no commercial data)"
+
+# Verifies whether a GitHub runner can create a private network namespace.
+# THIS JOB NEVER downloads, decrypts or restores the commercial backup.
+# It receives NO secrets and gives NO restoration certificate.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tool/qa/restore_isolation_gate.py'
+      - 'tool/qa/test_restore_isolation_gate.py'
+      - '.github/workflows/restore_isolation_probe.yml'
+      - 'docs/missions/M09_RESTAURATION_COMPLETE_GARDE_20261117.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m09-probe-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  isolated-network-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Checkout only commercial code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Run offline gate contract tests
+        run: python3 -m unittest discover -s tool/qa -p 'test_restore_isolation_gate.py' -v
+
+      - name: Prove isolated network namespace is available
+        shell: bash
+        run: |
+          set -euo pipefail
+          # This is an intentionally isolated, data-free probe.
+          # It proves neither Postgres/Auth/Storage restorability nor SMTP safety.
+          test -x "$(command -v unshare)"
+          test -x "$(command -v ip)"
+          sudo unshare --net -- bash -euc '
+            ip link set lo up
+            export RESTORE_LOCAL_DB_URL="postgresql://postgres:fixture@127.0.0.1:54322/postgres"
+            export RESTORE_LOCAL_API_URL="http://127.0.0.1:54321"
+            python3 tool/qa/restore_isolation_gate.py preflight
+            test "$(find /sys/class/net -mindepth 1 -maxdepth 1 -printf "%f\n" | sort)" = "lo"
+          '
+          echo "PASS: isolated namespace available. No backup or personal data processed."
