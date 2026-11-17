@@ -29,6 +29,7 @@ class HistoricalMatchResult {
   final int grintaScore;
   final int opponentScore;
   final bool isHome;
+
   /// Faux quand l'export n'a pas indiqué domicile ou extérieur.
   final bool hasKnownVenue;
   final String? address;
