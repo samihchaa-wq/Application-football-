@@ -2,6 +2,7 @@ import 'package:as_grinta/features/badges/data/badge_repository.dart';
 import 'package:as_grinta/features/badges/presentation/badge_emblem.dart';
 import 'package:as_grinta/features/badges/presentation/badge_emblem_body.dart';
 import 'package:as_grinta/features/season_wrapped/data/season_wrapped_repository.dart';
+import 'package:as_grinta/features/season_wrapped/domain/wrapped_stat_selection.dart';
 import 'package:as_grinta/features/season_wrapped/presentation/wrapped_ink_pitch.dart';
 import 'package:as_grinta/features/season_wrapped/presentation/wrapped_motion.dart';
 import 'package:as_grinta/features/season_wrapped/presentation/wrapped_theme.dart';
@@ -14,67 +15,95 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// écrire plus petit, et la moins bien placée passait pour une note de bas de
 /// page. L'ordre suit le fil d'un match — la présence, le résultat, ce qu'on y
 /// a apporté, où on a joué — et referme sur le récapitulatif, prêt à partager.
+List<WrappedSkin> wrappedSlideSkins(int statsMask) {
+  final skins = WrappedSkin.sequence;
+  return [
+    skins[0],
+    if (WrappedStatOption.matches.enabledIn(statsMask)) skins[1],
+    if (WrappedStatOption.results.enabledIn(statsMask)) skins[2],
+    if (WrappedStatOption.winRate.enabledIn(statsMask)) skins[3],
+    if (WrappedStatOption.goals.enabledIn(statsMask)) skins[4],
+    if (WrappedStatOption.motm.enabledIn(statsMask)) skins[5],
+    if (WrappedStatOption.cleanSheets.enabledIn(statsMask)) skins[6],
+    if (WrappedStatOption.position.enabledIn(statsMask)) skins[7],
+    if (WrappedStatOption.responsiveness.enabledIn(statsMask)) skins[8],
+    if (WrappedStatOption.badges.enabledIn(statsMask)) skins[9],
+    skins[10],
+  ];
+}
+
 List<Widget> buildWrappedSlides({
   required SeasonWrapped wrapped,
   required String? playerName,
   required VoidCallback onShare,
   required VoidCallback onShareByTheme,
   bool preview = false,
+  int statsMask = WrappedStatOption.allMask,
 }) {
   final skins = WrappedSkin.sequence;
 
   return [
     _OpeningSlide(skin: skins[0], wrapped: wrapped, playerName: playerName),
-    _FigureSlide(
-      skin: skins[1],
-      label: 'Matchs joués',
-      value: wrapped.matchesPlayed,
-      rank: wrapped.matchesPlayedRank,
-      caption: wrapped.matchesPlayed <= 1
-          ? 'Une feuille de match à ton nom.'
-          : 'Autant de fois où tu as répondu présent.',
-    ),
-    _ResultsSlide(skin: skins[2], wrapped: wrapped),
-    _WinRateSlide(skin: skins[3], wrapped: wrapped),
-    _FigureSlide(
-      skin: skins[4],
-      label: 'Buts',
-      value: wrapped.goals,
-      rank: wrapped.goalsRank,
-      caption: switch (wrapped.goals) {
-        0 => 'Aucun cette saison. Le premier est pour la prochaine.',
-        1 => 'Un but, et il compte autant que les autres.',
-        _ => 'Inscrits cette saison, toutes compétitions confondues.',
-      },
-    ),
-    _FigureSlide(
-      skin: skins[5],
-      label: 'Homme du match',
-      value: wrapped.motm,
-      rank: wrapped.motmRank,
-      caption: wrapped.motm == 0
-          ? 'Le vote reste anonyme, comme toujours.'
-          : 'Élu par tes coéquipiers. Les bulletins restent secrets.',
-    ),
-    _FigureSlide(
-      skin: skins[6],
-      label: 'Matchs sans encaisser',
-      value: wrapped.cleanMatches,
-      rank: wrapped.cleanMatchesRank,
-      caption: wrapped.cleanMatches == 0
-          ? 'L’équipe a encaissé à chacune de tes sorties.'
-          : 'Autant de matchs où la cage est restée inviolée, toi sur le '
-              'terrain.',
-    ),
-    _PositionSlide(skin: skins[7], wrapped: wrapped),
-    _ResponsivenessSlide(skin: skins[8], wrapped: wrapped),
-    _BadgesSlide(skin: skins[9], wrapped: wrapped, preview: preview),
+    if (WrappedStatOption.matches.enabledIn(statsMask))
+      _FigureSlide(
+        skin: skins[1],
+        label: 'Matchs joués',
+        value: wrapped.matchesPlayed,
+        rank: wrapped.matchesPlayedRank,
+        caption: wrapped.matchesPlayed <= 1
+            ? 'Une feuille de match à ton nom.'
+            : 'Autant de fois où tu as répondu présent.',
+      ),
+    if (WrappedStatOption.results.enabledIn(statsMask))
+      _ResultsSlide(skin: skins[2], wrapped: wrapped),
+    if (WrappedStatOption.winRate.enabledIn(statsMask))
+      _WinRateSlide(skin: skins[3], wrapped: wrapped),
+    if (WrappedStatOption.goals.enabledIn(statsMask))
+      _FigureSlide(
+        skin: skins[4],
+        label: 'Buts',
+        value: wrapped.goals,
+        rank: wrapped.goalsRank,
+        caption: switch (wrapped.goals) {
+          0 => 'Aucun cette saison. Le premier est pour la prochaine.',
+          1 => 'Un but, et il compte autant que les autres.',
+          _ => 'Inscrits cette saison, toutes compétitions confondues.',
+        },
+      ),
+    if (WrappedStatOption.motm.enabledIn(statsMask))
+      _FigureSlide(
+        skin: skins[5],
+        label: 'Homme du match',
+        value: wrapped.motm,
+        rank: wrapped.motmRank,
+        caption: wrapped.motm == 0
+            ? 'Le vote reste anonyme, comme toujours.'
+            : 'Élu par tes coéquipiers. Les bulletins restent secrets.',
+      ),
+    if (WrappedStatOption.cleanSheets.enabledIn(statsMask))
+      _FigureSlide(
+        skin: skins[6],
+        label: 'Matchs sans encaisser',
+        value: wrapped.cleanMatches,
+        rank: wrapped.cleanMatchesRank,
+        caption: wrapped.cleanMatches == 0
+            ? 'L’équipe a encaissé à chacune de tes sorties.'
+            : 'Autant de matchs où la cage est restée inviolée, toi sur le '
+                'terrain.',
+      ),
+    if (WrappedStatOption.position.enabledIn(statsMask))
+      _PositionSlide(skin: skins[7], wrapped: wrapped),
+    if (WrappedStatOption.responsiveness.enabledIn(statsMask))
+      _ResponsivenessSlide(skin: skins[8], wrapped: wrapped),
+    if (WrappedStatOption.badges.enabledIn(statsMask))
+      _BadgesSlide(skin: skins[9], wrapped: wrapped, preview: preview),
     _ClosingSlide(
       skin: skins[10],
       wrapped: wrapped,
       playerName: playerName,
       onShare: onShare,
       onShareByTheme: onShareByTheme,
+      statsMask: statsMask,
     ),
   ];
 }
@@ -843,10 +872,12 @@ class _ClosingSlide extends StatelessWidget {
     required this.playerName,
     required this.onShare,
     required this.onShareByTheme,
+    required this.statsMask,
   });
 
   final WrappedSkin skin;
   final SeasonWrapped wrapped;
+  final int statsMask;
   final String? playerName;
   final VoidCallback onShare;
   final VoidCallback onShareByTheme;
@@ -860,11 +891,11 @@ class _ClosingSlide extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          for (var i = 0; i < wrapped.stats.length; i += 1)
+          for (var i = 0; i < wrapped.statsForMask(statsMask).length; i += 1)
             WrappedReveal(
               delay: Duration(milliseconds: 100 + i * 80),
               child: WrappedRecapLine(
-                stat: wrapped.stats[i],
+                stat: wrapped.statsForMask(statsMask)[i],
                 skin: skin,
                 highlighted: i.isEven,
               ),
