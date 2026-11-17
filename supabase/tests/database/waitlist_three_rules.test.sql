@@ -363,8 +363,8 @@ select ok(
   'aucun crédit dans le journal n est produit automatiquement'
 );
 
--- La priorite suit les +1 cumules depuis le debut de saison ;
--- l'ancien point de depart n'annule jamais les credits permanents.
+-- Parité mode Historique d'AS Grinta : le classement tient compte des
+-- +1 obtenus DEPUIS la photographie de départ, puis de l'ordre initial.
 delete from private.sport_waitlist_start
 where season_id = 'b5200000-0000-0000-0000-000000000001';
 insert into private.sport_waitlist_start
@@ -385,11 +385,11 @@ select is(
    from public.sport_waitlist_entries e
    where e.season_id = 'b5200000-0000-0000-0000-000000000001'),
   array[
+    'b5400000-0000-0000-0000-000000000001'::uuid,
     'b5400000-0000-0000-0000-000000000002'::uuid,
-    'b5400000-0000-0000-0000-000000000003'::uuid,
-    'b5400000-0000-0000-0000-000000000001'::uuid
+    'b5400000-0000-0000-0000-000000000003'::uuid
   ],
-  'les credits cumules priment sur le point de depart historique'
+  'a delta egal, l ordre initial prime sur le credit total'
 );
 select public.admin_set_waitlist_manual_count(
   'b5400000-0000-0000-0000-000000000002',
@@ -401,12 +401,47 @@ select is(
    from public.sport_waitlist_entries e
    where e.season_id = 'b5200000-0000-0000-0000-000000000001'),
   array[
+    'b5400000-0000-0000-0000-000000000001'::uuid,
     'b5400000-0000-0000-0000-000000000003'::uuid,
-    'b5400000-0000-0000-0000-000000000002'::uuid,
-    'b5400000-0000-0000-0000-000000000001'::uuid
+    'b5400000-0000-0000-0000-000000000002'::uuid
   ],
-  'un nouveau +1 place Bruno devant celui qui a zero credit'
+  'le premier nouveau +1 de Bruno lui donne priorite sur les autres'
 );
+
+-- Option OFF : le +1 déjà obtenu est conservé mais ne modifie plus les
+-- priorités ; une réactivation restaure l'ordre original immédiatement.
+set local role authenticated;
+select public.admin_set_club_rule('waitlist_priority_enabled', 0);
+reset role;
+select is(
+  (select array_agg(e.season_player_id order by e.position)
+   from public.sport_waitlist_entries e
+   where e.season_id = 'b5200000-0000-0000-0000-000000000001'),
+  array[
+    'b5400000-0000-0000-0000-000000000001'::uuid,
+    'b5400000-0000-0000-0000-000000000002'::uuid,
+    'b5400000-0000-0000-0000-000000000003'::uuid
+  ],
+  'option OFF : les credits sont ignores pour le rang Historique');
+select is(
+  (select manual_waitlist_count from public.sport_waitlist_entries
+   where season_player_id='b5400000-0000-0000-0000-000000000002'),
+  1, 'option OFF : le credit de Bruno n est jamais supprime');
+set local role authenticated;
+select public.admin_set_club_rule('waitlist_priority_enabled', null);
+reset role;
+select is(private.club_rule('waitlist_priority_enabled'), 1,
+  'supprimer le reglage OFF restaure la priorite ON par defaut');
+select is(
+  (select array_agg(e.season_player_id order by e.position)
+   from public.sport_waitlist_entries e
+   where e.season_id = 'b5200000-0000-0000-0000-000000000001'),
+  array[
+    'b5400000-0000-0000-0000-000000000001'::uuid,
+    'b5400000-0000-0000-0000-000000000003'::uuid,
+    'b5400000-0000-0000-0000-000000000002'::uuid
+  ],
+  'retour ON : la priorite acquise restaure le classement');
 
 select * from finish();
 rollback;

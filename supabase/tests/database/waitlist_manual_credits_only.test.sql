@@ -2,32 +2,32 @@ begin;
 set local search_path = public, extensions, pg_catalog;
 select no_plan();
 
--- Décision finale : aucun +1 automatique, seul l'admin corrige un compteur.
--- La tâche ne doit plus être planifiée (et pas seulement inoffensive).
+-- Décision #183 : les +1 sont crédités au coup d'envoi et restent modifiables
+-- par un administrateur ; l'option de priorité ne supprime jamais les crédits.
 select ok(
-  not exists (select 1 from cron.job where jobname = 'waitlist-credit'),
-  'Le cron automatique de credits a ete supprime'
+  exists (select 1 from cron.job where jobname = 'waitlist-credit'),
+  'Le cron des +1 au coup d envoi est planifie'
 );
 
--- Défense en profondeur : même un appel direct ne peut plus attribuer de +1.
+-- Aucun match fictif éligible : le cron et les appels directs restent neutres.
 select is(
   private.process_due_waitlist_credits(),
   0,
-  'Le traitement historique du cron est un no-op'
+  'Aucun match a crediter dans cet environnement fictif'
 );
 select is(
   private.finalize_due_waitlist_turns_for_season(
     '00000000-0000-0000-0000-000000000000'::uuid
   ),
   0,
-  'La lecture ne rattrape pas de credits'
+  'Aucun match dans la saison inexistante'
 );
 select is(
   private.finalize_match_waitlist_turns_internal(
     '00000000-0000-0000-0000-000000000000'::uuid, true
   ),
   0,
-  'La finalisation forcee ne credite jamais'
+  'Le parametre force ne cree pas de credit pour un match inexistant'
 );
 select is(
   private.void_match_waitlist_credits(

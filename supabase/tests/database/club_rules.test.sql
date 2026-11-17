@@ -64,6 +64,15 @@ select is(
 set local role authenticated;
 
 select lives_ok(
+  $$select public.admin_set_club_rule('waitlist_priority_enabled', 0)$$,
+  'admin A peut désactiver la priorité des +1 indépendamment du mode'
+);
+select is(
+  (select (r ->> 'value')::int from jsonb_array_elements(public.get_club_rules()) r
+   where r ->> 'key' = 'waitlist_priority_enabled'),
+  0, 'la règle de priorité des +1 est enregistrée pour A'
+);
+select lives_ok(
   $$select public.admin_set_club_rule('features_open_days', 3)$$,
   'l’administrateur change le délai d’ouverture'
 );
@@ -91,6 +100,10 @@ select set_config('request.jwt.claims',
   '{"sub":"4c000000-0000-0000-0000-00000000000c","role":"authenticated","aud":"authenticated"}', true);
 set local role authenticated;
 select throws_ok(
+  $$select public.admin_set_club_rule('waitlist_priority_enabled', 1)$$,
+  '42501', null, 'joueur A ne peut pas modifier la priorité des +1'
+);
+select throws_ok(
   $$select public.admin_set_club_rule('motm_window_hours', 48)$$,
   '42501', null, 'un joueur ne peut pas modifier les règles du club'
 );
@@ -108,6 +121,11 @@ select is(
   'les règles d’un club ne changent pas celles d’un autre'
 );
 set local role authenticated;
+select is(
+  (select (r ->> 'value')::int from jsonb_array_elements(public.get_club_rules()) r
+   where r ->> 'key' = 'waitlist_priority_enabled'),
+  1, 'la désactivation des +1 dans A ne touche pas B'
+);
 select lives_ok(
   $$select public.admin_set_club_rule('motm_window_hours', 48)$$,
   'le second club fixe ses propres règles'
