@@ -33,7 +33,9 @@ void main() {
     const mask = WrappedStatOption.allMask ^ 256;
     expect(wrappedSlideSkins(mask), hasLength(10));
     expect(
-      wrapped.statsForMask(mask).any((stat) => stat.label == 'Badges décrochés'),
+      wrapped
+          .statsForMask(mask)
+          .any((stat) => stat.label == 'Badges décrochés'),
       isFalse,
     );
   });
