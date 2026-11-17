@@ -339,94 +339,40 @@ void main() {
     );
   });
 
-  group('coupure générale des notifications (administrateur)', () {
-    late List<bool> pauseCalls;
-
-    Future<void> pumpAdmin(WidgetTester tester) async {
-      pauseCalls = [];
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            setNotificationsPausedProvider.overrideWithValue(
-              (enable) async => pauseCalls.add(enable),
-            ),
-            pushSubscriptionsRepositoryProvider.overrideWithValue(
-              _FakePushSubscriptions(subscribed: true),
-            ),
-            pushStatusProvider.overrideWith(
-              (ref) async => (supported: true, subscribed: true),
-            ),
-            appPreferencesProvider.overrideWith(
-              (ref) async => const AppPreferences(),
-            ),
-            isAdminViewProvider.overrideWithValue(true),
-            adminAvailabilityChangeNotificationProvider.overrideWith(
-              (ref) async => true,
-            ),
-            notificationsPausedProvider.overrideWith((ref) async => false),
-            hasUnseenBadgeProvider.overrideWith((ref) async => false),
-            seasonWrappedStateProvider.overrideWith(
-              (ref) async => const SeasonWrappedState.unavailable(),
-            ),
-            notificationInboxRepositoryProvider.overrideWithValue(
-              _EmptyInbox(),
-            ),
-          ],
-          child: const MaterialApp(
-            home: NotificationsPage(initialTab: NotificationsTab.settings),
+  testWidgets('la coupure générale n’est plus proposée aux administrateurs',
+      (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          pushSubscriptionsRepositoryProvider.overrideWithValue(
+            _FakePushSubscriptions(subscribed: true),
           ),
+          pushStatusProvider.overrideWith(
+            (ref) async => (supported: true, subscribed: true),
+          ),
+          appPreferencesProvider.overrideWith(
+            (ref) async => const AppPreferences(),
+          ),
+          isAdminViewProvider.overrideWithValue(true),
+          adminAvailabilityChangeNotificationProvider.overrideWith(
+            (ref) async => true,
+          ),
+          hasUnseenBadgeProvider.overrideWith((ref) async => false),
+          seasonWrappedStateProvider.overrideWith(
+            (ref) async => const SeasonWrappedState.unavailable(),
+          ),
+          notificationInboxRepositoryProvider.overrideWithValue(_EmptyInbox()),
+        ],
+        child: const MaterialApp(
+          home: NotificationsPage(initialTab: NotificationsTab.settings),
         ),
-      );
-      await tester.pumpAndSettle();
-    }
-
-    Future<void> tapKillSwitch(WidgetTester tester) async {
-      // La carte est en bas d'une liste construite à la demande.
-      final title = find.text('Désactiver toutes les notifications');
-      await tester.scrollUntilVisible(
-        title,
-        200,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.ensureVisible(title);
-      await tester.pumpAndSettle();
-      await tester.tap(title);
-      await tester.pumpAndSettle();
-    }
-
-    testWidgets('annuler la confirmation ne coupe rien', (tester) async {
-      await pumpAdmin(tester);
-      await tapKillSwitch(tester);
-
-      expect(
-        find.text('Désactiver toutes les notifications ?'),
-        findsOneWidget,
-      );
-      await tester.tap(find.widgetWithText(TextButton, 'Annuler'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Désactiver toutes les notifications ?'), findsNothing);
-      expect(pauseCalls, isEmpty);
-      expect(
-        find.text('Toutes les notifications sont désactivées.'),
-        findsNothing,
-      );
-    });
-
-    testWidgets('confirmer coupe les notifications du club', (tester) async {
-      await pumpAdmin(tester);
-      await tapKillSwitch(tester);
-
-      await tester.tap(find.widgetWithText(FilledButton, 'Tout désactiver'));
-      await tester.pumpAndSettle();
-
-      expect(pauseCalls, [true]);
-      expect(
-        find.text('Toutes les notifications sont désactivées.'),
-        findsOneWidget,
-      );
-    });
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Désactiver toutes les notifications'), findsNothing);
+    expect(find.text('Notifications essentielles'), findsOneWidget);
   });
+
 }
 
 /// Historique vide : l'onglet Historique reste monté derrière les réglages.
