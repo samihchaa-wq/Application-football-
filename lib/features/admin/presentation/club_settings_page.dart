@@ -491,6 +491,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     'notify_availability_open': 'squad',
     'notify_availability_reminders': 'squad',
     ClubRules.waitlistModeKey: 'squad',
+    ClubRules.waitlistPriorityEnabledKey: 'squad',
     'notify_convocation': 'squad',
     'notify_composition': 'squad',
     ClubRules.correctionWindowHoursKey: 'matches',
@@ -723,9 +724,10 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       rule.description,
       for (final mode in WaitlistMode.values)
         '${mode.label} : ${mode.description}',
-      'Les crédits +1 ne sont jamais ajoutés ni retirés automatiquement. '
-          'Seuls les administrateurs les modifient avec +/− dans la liste d’attente. '
-          'Les crédits enregistrés sont conservés pendant la saison et guident les prochains matchs.',
+      'Au coup d’envoi, un joueur présent non retenu reçoit +1, '
+          'même lorsque la priorité est désactivée. '
+          'Le compteur se réinitialise à chaque saison ; les archives restent consultables. '
+          'L’admin peut aussi corriger les +1 manuellement.',
     ].join('\n\n');
     return Padding(
       key: ValueKey('club-rule-${rule.key}'),
