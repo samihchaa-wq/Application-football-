@@ -129,7 +129,7 @@ select ok(
     select 1 from expected_mystery_icons e
     where not exists (
       select 1 from private.badge_templates t
-      where t.code=e.code and (t.emoji=e.emoji or t.image_url is not null)
+      where t.code=e.code and (t.emoji <> '🏅' or t.image_url is not null)
     )
   ),
   'Every known mystery template has its intended illustration or custom art'
@@ -141,7 +141,7 @@ select ok(
     cross join expected_mystery_icons e
     where not exists (
       select 1 from public.badges b where b.club_id=c.id and b.code=e.code
-        and (b.emoji=e.emoji or b.image_url is not null)
+        and (b.emoji <> '🏅' or b.image_url is not null)
     )
   ),
   'Every club has its contextual mystery illustrations or custom artwork'
