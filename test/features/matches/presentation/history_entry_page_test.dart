@@ -1,4 +1,5 @@
 import 'package:as_grinta/features/matches/data/history_entry_repository.dart';
+import 'package:as_grinta/features/matches/domain/history_import_batch.dart';
 import 'package:as_grinta/features/matches/domain/history_match_draft.dart';
 import 'package:as_grinta/features/matches/presentation/history_entry_page.dart';
 import 'package:flutter/material.dart';
@@ -151,4 +152,10 @@ class _FakeHistoryRepository implements HistoryEntryRepository {
 
   @override
   Future<bool> deleteMatch(String matchId) async => true;
+
+  @override
+  Future<({int imported, int skipped})> importMatches(
+    HistoryImportBatch batch,
+    HistoryEntryContext context,
+  ) async => (imported: batch.count, skipped: 0);
 }
