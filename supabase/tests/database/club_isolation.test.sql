@@ -334,7 +334,11 @@ select is(
         'private.platform_operators',
         'private.client_incident_log_unassigned',
         'private.email_confirmations',
-        'private.email_attempts'
+        'private.email_attempts',
+        -- Coordonnées de l'éditeur et compteur de numéros de facture :
+        -- globaux, sans droit pour aucun compte.
+        'private.invoice_settings',
+        'private.invoice_counters'
       )
       and not exists (
         select 1 from pg_policy p
@@ -384,6 +388,16 @@ select is(
         'platform_health()',
         'platform_record_offline_payment(uuid,integer,text,date,text)',
         'platform_club_billing(uuid)',
+        'platform_invoice_settings()',
+        'platform_save_invoice_settings(text,text,text,text)',
+        'platform_set_club_billing_details(uuid,text,text)',
+        'platform_list_invoices()',
+        'platform_issue_pending_invoices()',
+        'platform_discard_pending_invoice(uuid)',
+        -- Triggers internes des factures : créent ou écartent la facture du
+        -- paiement qui vient d'être noté ou supprimé par l'éditeur.
+        'private.create_invoice_for_payment()',
+        'private.discard_pending_invoice_of_payment()',
         'private.is_platform_operator()',
         -- Trigger interne sans argument : émet uniquement une révision pour
         -- la ligne déjà autorisée, y compris lors d'une opération éditeur.

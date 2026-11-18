@@ -6,6 +6,14 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- factures : chaque paiement noté crée une facture PDF numérotée sans trou
+  (PF-2027-0001…), avec la mention « TVA non applicable, art. 293 B du CGI ».
+  L'administrateur du club la télécharge dans « Réglages du club >
+  Abonnement ». Le poste de contrôle a une section « Factures » : coordonnées
+  du vendeur (nom, adresse, SIRET, e-mail), factures en attente (aperçu en
+  brouillon tant que le SIRET ou l'adresse du club manquent), émission,
+  téléchargement et export du livre des recettes au format tableur. Une
+  facture émise ne se modifie plus et reste conservée si le club est supprimé ;
 - inscription : l'adresse e-mail est obligatoire pour créer un club
   (facultative pour rejoindre un club). Elle est enregistrée en attente de
   confirmation même tant que l'envoi d'e-mails n'est pas configuré ;
