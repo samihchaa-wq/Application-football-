@@ -253,7 +253,6 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                   textCapitalization: TextCapitalization.characters,
                   decoration: const InputDecoration(
                     labelText: 'Nom court (facultatif)',
-                    helperText: 'Affiché sur les scores. Ex. : FCV',
                     prefixIcon: Icon(Icons.short_text),
                   ),
                 ),
