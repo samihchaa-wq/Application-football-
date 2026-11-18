@@ -43,13 +43,40 @@ abstract final class ClubRules {
     livePilotModeKey: ['Coach seulement', 'Coach et administrateurs'],
   };
 
-  /// Pas des boutons +/− : 1 par défaut, plus grand pour les longues durées.
+  /// Pas des boutons +/− : 1 par défaut, plus grand pour les longues durées
+  /// (sinon passer de 15 à 60 minutes demanderait 45 appuis).
   static int stepFor(String key) => switch (key) {
         'odds_form_memory_days' => 30,
         'odds_h2h_memory_days' => 90,
         'match_duration_minutes' => 5,
+        predictionCloseMinutesKey => 5,
+        'prediction_reminder_lead_minutes' => 15,
+        'motm_window_hours' => 6,
+        correctionWindowHoursKey => 6,
+        predictionPointsExactKey ||
+        predictionPointsGoalDifferenceKey ||
+        predictionPointsOneScoreKey ||
+        predictionPointsWinnerKey =>
+          5,
         _ => 1,
       };
+
+  /// Valeur suivante (ou précédente) d'un bouton +/− : on se cale sur un
+  /// multiple du pas, pour retomber sur des valeurs rondes même si la valeur
+  /// enregistrée n'en est pas une, sans sortir des bornes.
+  static int stepValue(
+    String key,
+    int value, {
+    required bool up,
+    required int min,
+    required int max,
+  }) {
+    final step = stepFor(key);
+    final next = up
+        ? (value ~/ step + 1) * step
+        : ((value + step - 1) ~/ step - 1) * step;
+    return next.clamp(min, max);
+  }
 
   static final Map<String, int> defaults = {
     for (final feature in ClubFeature.values)

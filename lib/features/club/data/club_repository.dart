@@ -87,7 +87,7 @@ enum ClubModule {
   ),
   liveMode(
     'live_mode',
-    'Mode live',
+    'Match en direct',
     'Le suivi du match en direct (score, buteurs) et les alertes de but.',
   ),
   badges(

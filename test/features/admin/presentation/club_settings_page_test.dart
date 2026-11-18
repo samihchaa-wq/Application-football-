@@ -257,11 +257,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(repository.ruleValues['prediction_close_minutes'], 16);
-      expect(find.text('16 min'), findsOneWidget);
+      // Les minutes avancent par pas de 5 : 15 → 20.
+      expect(repository.ruleValues['prediction_close_minutes'], 20);
+      expect(find.text('20 min'), findsOneWidget);
       expect(
         ClubRules.predictionCloseBeforeKickoff,
-        const Duration(minutes: 16),
+        const Duration(minutes: 20),
       );
     },
   );

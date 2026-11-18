@@ -823,7 +823,13 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   }
 
   Widget _numberRuleTile(ClubRule rule) {
-    final step = ClubRules.stepFor(rule.key);
+    int stepped({required bool up}) => ClubRules.stepValue(
+          rule.key,
+          rule.value,
+          up: up,
+          min: rule.min,
+          max: rule.max,
+        );
     final locked = _ruleLocked(rule);
     return ListTile(
       key: ValueKey('club-rule-${rule.key}'),
@@ -838,10 +844,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
             icon: const Icon(Icons.remove_circle_outline),
             onPressed: locked || rule.value <= rule.min
                 ? null
-                : () => _setRule(
-                      rule,
-                      (rule.value - step).clamp(rule.min, rule.max),
-                    ),
+                : () => _setRule(rule, stepped(up: false)),
           ),
           Text(_ruleValueLabel(rule, rule.value)),
           IconButton(
@@ -850,10 +853,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
             icon: const Icon(Icons.add_circle_outline),
             onPressed: locked || rule.value >= rule.max
                 ? null
-                : () => _setRule(
-                      rule,
-                      (rule.value + step).clamp(rule.min, rule.max),
-                    ),
+                : () => _setRule(rule, stepped(up: true)),
           ),
         ],
       ),
@@ -1172,6 +1172,9 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
               key: const Key('club-settings-badge-catalogue'),
               leading: const Icon(Icons.workspace_premium_outlined),
               title: const Text('Catalogue et seuils des badges'),
+              subtitle: _modules.isEnabled(ClubModule.badges)
+                  ? null
+                  : const Text('Active d’abord « Badges » ci-dessus.'),
               trailing: const Icon(Icons.chevron_right_rounded),
               onTap: _modules.isEnabled(ClubModule.badges)
                   ? () => context.push('/admin/badges')
