@@ -333,17 +333,23 @@ const LegalDocument clubSalesTerms = LegalDocument(
           'prévenu au moins un mois avant le renouvellement.',
     ]),
     LegalSection('4. Facturation et paiement', [
-      'L’éditeur adresse une facture au club. Elle est payable sous 30 jours '
-          'par virement, ou par carte ou prélèvement quand ce moyen sera '
+      'L’éditeur adresse une facture au club. Elle est payable par virement '
+          'ou par chèque, ou par carte ou prélèvement quand ce moyen sera '
           'proposé.',
-      'En cas de retard, l’éditeur relance le club. Sans paiement 15 jours '
-          'après cette relance, il peut suspendre l’accès du club. Lorsque le '
+      'Le paiement est attendu à la fin de l’essai, puis à la fin de chaque '
+          'période payée. L’administrateur du club est prévenu dans '
+          'l’application avant cette échéance. Sans paiement 15 jours après '
+          'l’échéance, l’accès du club est suspendu automatiquement ; ses '
+          'données sont conservées et l’accès revient dès que le paiement est '
+          'enregistré. Lorsque le '
           'club agit en qualité de professionnel, des pénalités de retard au '
           'taux de trois fois l’intérêt légal et l’indemnité forfaitaire de '
           '40 € pour frais de recouvrement sont dues.',
     ]),
     LegalSection('5. Durée, renouvellement et résiliation', [
-      'L’abonnement couvre une période de 12 mois à compter du paiement. Il '
+      'L’abonnement couvre une période de 12 mois. Payé avant la fin de '
+          'l’essai ou de la période en cours, il commence à cette date ; payé '
+          'après, il commence le jour du paiement. Il '
           'ne se renouvelle pas tacitement : l’éditeur propose le '
           'renouvellement avant la fin de la période et le club reste libre '
           'de ne pas renouveler.',

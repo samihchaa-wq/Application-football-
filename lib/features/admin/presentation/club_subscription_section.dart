@@ -80,21 +80,36 @@ class _SubscriptionCard extends StatelessWidget {
 
   String? get _advice => switch (subscription.state) {
         ClubSubscriptionState.trialEnding =>
-          'Pour continuer après l’essai, contacte-nous pour activer '
-              'l’abonnement du club.',
+          'Pour continuer après l’essai, contacte-nous pour régler '
+              'l’abonnement du club (virement ou chèque).',
         ClubSubscriptionState.toPay =>
-          'Ton club garde l’accès pour l’instant. Contacte-nous pour activer '
-              'l’abonnement.',
+          'Contacte-nous pour régler l’abonnement du club (virement ou '
+              'chèque).',
         ClubSubscriptionState.pastDue =>
-          'Le dernier paiement n’a pas abouti. Contacte-nous pour le '
-              'régulariser.',
+          'Un paiement reste à régulariser. Contacte-nous pour le régler.',
+        ClubSubscriptionState.active when _renewalDue =>
+          'L’abonnement arrive à échéance. Contacte-nous pour le renouveler.',
         _ => null,
       };
+
+  bool get _renewalDue => subscription.renewalDueBy(DateTime.now());
+
+  /// Rappel de la suspension automatique, seulement quand elle approche.
+  String? get _suspensionWarning {
+    final date = subscription.suspensionOn;
+    if (date == null) return null;
+    final attention = subscription.state.needsAttention || _renewalDue;
+    if (!attention) return null;
+    return 'Sans paiement, l’accès du club sera suspendu à partir du '
+        '${_day(date)}. Les données sont conservées.';
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final advice = _advice;
+    final warning = _suspensionWarning;
+    final periodEnd = subscription.currentPeriodEnd;
     final players = subscription.billablePlayers;
     final perPlayer = subscription.pricePerPlayerCents;
     final base = subscription.basePriceCents;
@@ -108,7 +123,7 @@ class _SubscriptionCard extends StatelessWidget {
     return Card(
       key: const Key('club-subscription-card'),
       margin: EdgeInsets.zero,
-      color: subscription.state.needsAttention
+      color: subscription.state.needsAttention || _renewalDue
           ? theme.colorScheme.errorContainer
           : null,
       child: Padding(
@@ -125,13 +140,31 @@ class _SubscriptionCard extends StatelessWidget {
               key: const Key('club-subscription-total'),
               style: theme.textTheme.titleMedium,
             ),
+            if (subscription.state == ClubSubscriptionState.active &&
+                periodEnd != null) ...[
+              const SizedBox(height: 4),
+              Text('Payé jusqu’au ${_day(periodEnd)}'),
+            ],
             if (advice != null) ...[
               const SizedBox(height: 8),
               Text(advice),
+            ],
+            if (warning != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                warning,
+                key: const Key('club-subscription-suspension-warning'),
+              ),
             ],
           ],
         ),
       ),
     );
   }
+}
+
+String _day(DateTime date) {
+  final local = date.toLocal();
+  return '${local.day.toString().padLeft(2, '0')}/'
+      '${local.month.toString().padLeft(2, '0')}/${local.year}';
 }

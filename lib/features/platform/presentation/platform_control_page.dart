@@ -5,6 +5,7 @@ import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:petit_filet/features/auth/presentation/sign_out_confirmation.dart';
 import 'package:petit_filet/features/platform/data/platform_repository.dart';
 import 'package:petit_filet/features/platform/domain/platform_snapshot.dart';
+import 'package:petit_filet/features/platform/presentation/platform_billing_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -235,10 +236,12 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                     selected == null ? _sections[_section] : selected.name,
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
-                  const Chip(
-                    avatar: Icon(Icons.visibility_outlined, size: 16),
-                    label: Text('Lecture seule'),
-                  ),
+                  // Seule la fiche d'une équipe permet d'agir (paiements).
+                  if (selected == null)
+                    const Chip(
+                      avatar: Icon(Icons.visibility_outlined, size: 16),
+                      label: Text('Lecture seule'),
+                    ),
                 ],
               ),
               Text(
@@ -466,8 +469,10 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
             ),
           ]),
           const SizedBox(height: 16),
+          PlatformBillingPanel(team: team),
+          const SizedBox(height: 16),
           const Text(
-            'Stockage complet, connexions et encaissements : mesures à raccorder pour cette équipe.',
+            'Stockage complet et connexions : mesures à raccorder pour cette équipe.',
           ),
         ],
       );
@@ -537,7 +542,10 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
         ListTile(
           leading: Icon(Icons.payments_outlined),
           title: Text('Pilotage commercial · prévu'),
-          subtitle: Text('Paiements, promotions, parrainage et simulations.'),
+          subtitle: Text(
+            'Paiement en ligne, promotions, parrainage et simulations. '
+            'Les paiements hors ligne se notent depuis la fiche équipe.',
+          ),
         ),
         ListTile(
           leading: Icon(Icons.campaign_outlined),
