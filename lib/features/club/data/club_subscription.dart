@@ -39,6 +39,7 @@ class ClubSubscription {
     required this.trialEndsAt,
     required this.trialDaysLeft,
     required this.currentPeriodEnd,
+    this.accessEndsAt,
     required this.billablePlayers,
     required this.pricePerPlayerCents,
     required this.basePriceCents,
@@ -54,6 +55,7 @@ class ClubSubscription {
       trialEndsAt: date(json['trial_ends_at']),
       trialDaysLeft: number(json['trial_days_left']),
       currentPeriodEnd: date(json['current_period_end']),
+      accessEndsAt: date(json['access_ends_at']),
       billablePlayers: number(json['billable_players']),
       pricePerPlayerCents: number(json['price_per_player_cents']),
       basePriceCents: number(json['base_price_cents']),
@@ -65,6 +67,10 @@ class ClubSubscription {
   final DateTime? trialEndsAt;
   final int trialDaysLeft;
   final DateTime? currentPeriodEnd;
+
+  /// Sans paiement, date à laquelle l'accès du club sera coupé (15 jours
+  /// après la fin de l'essai ou de la période payée).
+  final DateTime? accessEndsAt;
   final int billablePlayers;
   final int pricePerPlayerCents;
   final int basePriceCents;

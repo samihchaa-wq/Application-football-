@@ -30,6 +30,7 @@ void main() {
     Future<PlatformSnapshot> Function()? fetch,
     _Controller? controller,
     double textScale = 1,
+    PlatformRepository? repository,
   }) async {
     tester.view.physicalSize = Size(width, 1000);
     tester.view.devicePixelRatio = 1;
@@ -44,6 +45,8 @@ void main() {
           platformSnapshotProvider.overrideWith(
             (ref) => (fetch ?? () async => _snapshot)(),
           ),
+          if (repository != null)
+            platformRepositoryProvider.overrideWithValue(repository),
         ],
         child: MaterialApp(
           theme: AppTheme.dark,
@@ -66,7 +69,6 @@ void main() {
       await open(tester, width: width);
       expect(find.text('Poste de contrôle'), findsOneWidget);
       expect(find.text('Non mesuré'), findsWidgets);
-      expect(find.text('Lecture seule'), findsOneWidget);
       expect(
         width < 1000 ? find.byType(NavigationBar) : find.byType(NavigationRail),
         findsOneWidget,
@@ -103,6 +105,71 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
     },
   );
+
+  testWidgets('the operator records a payment after confirming', (
+    tester,
+  ) async {
+    final calls = <(String, Map<String, dynamic>)>[];
+    final repository = PlatformRepository(
+      (name) async => throw StateError('unused'),
+      (name, params) async {
+        calls.add((name, params));
+        return {'current_period_end': '2027-11-18T10:00:00Z'};
+      },
+    );
+    await open(tester, width: 1280, repository: repository);
+    await tester.tap(find.byIcon(Icons.groups_outlined));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Équipe Beta'));
+    await tester.pumpAndSettle();
+
+    final button = find.byKey(const Key('platform-record-payment'));
+    await tester.ensureVisible(button);
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Annuler'));
+    await tester.pumpAndSettle();
+    expect(calls, isEmpty);
+
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Noter le paiement'));
+    await tester.pumpAndSettle();
+    expect(calls.single.$1, 'platform_record_payment');
+    expect(calls.single.$2, {'p_club_id': 'b'});
+    expect(
+      find.text('Paiement noté : abonnement actif jusqu’au 18/11/2027.'),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('platform-extend-trial')), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('a failed action shows a neutral message, never the error', (
+    tester,
+  ) async {
+    final repository = PlatformRepository(
+      (name) async => throw StateError('unused'),
+      (name, params) async => throw StateError('secret detail'),
+    );
+    await open(tester, width: 1280, repository: repository);
+    await tester.tap(find.byIcon(Icons.groups_outlined));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Équipe Beta'));
+    await tester.pumpAndSettle();
+    final button = find.byKey(const Key('platform-extend-trial'));
+    await tester.ensureVisible(button);
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Prolonger'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('L’opération n’a pas abouti. Réessaie dans un instant.'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('secret detail'), findsNothing);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 
   testWidgets('refresh after revocation removes previously visible team data', (
     tester,

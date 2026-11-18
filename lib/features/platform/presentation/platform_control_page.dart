@@ -32,6 +32,7 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
   String? _status;
   final _search = TextEditingController();
   bool _obscured = false;
+  bool _busy = false;
   Timer? _refresh;
 
   @override
@@ -234,10 +235,6 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                   Text(
                     selected == null ? _sections[_section] : selected.name,
                     style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  const Chip(
-                    avatar: Icon(Icons.visibility_outlined, size: 16),
-                    label: Text('Lecture seule'),
                   ),
                 ],
               ),
@@ -466,11 +463,118 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
             ),
           ]),
           const SizedBox(height: 16),
+          _panel('Encaissement', [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Virement, chèque ou lien de paiement reçu : note-le ici. '
+                    'L’abonnement devient actif pour un an et l’équipe est '
+                    'rouverte si elle était bloquée pour impayé.',
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: [
+                      FilledButton.icon(
+                        key: const Key('platform-record-payment'),
+                        onPressed: _busy ? null : () => _recordPayment(team),
+                        icon: const Icon(Icons.euro),
+                        label: const Text('Paiement reçu'),
+                      ),
+                      if (team.subscriptionStatus != 'active')
+                        OutlinedButton.icon(
+                          key: const Key('platform-extend-trial'),
+                          onPressed: _busy ? null : () => _extendTrial(team),
+                          icon: const Icon(Icons.more_time),
+                          label: const Text('Prolonger l’essai de 30 jours'),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ]),
+          const SizedBox(height: 16),
           const Text(
-            'Stockage complet, connexions et encaissements : mesures à raccorder pour cette équipe.',
+            'Stockage complet et connexions : mesures à raccorder pour cette équipe.',
           ),
         ],
       );
+
+  Future<void> _recordPayment(PlatformTeam team) async {
+    final confirmed = await _confirm(
+      title: 'Paiement reçu',
+      message: 'Noter un paiement reçu pour « ${team.name} » ? '
+          'Son abonnement sera actif pour un an.',
+      action: 'Noter le paiement',
+    );
+    if (!confirmed) return;
+    await _runAction(
+      () => ref.read(platformRepositoryProvider).recordPayment(team.id),
+      (end) => 'Paiement noté : abonnement actif jusqu’au ${_day(end)}.',
+    );
+  }
+
+  Future<void> _extendTrial(PlatformTeam team) async {
+    final confirmed = await _confirm(
+      title: 'Prolonger l’essai',
+      message: 'Donner 30 jours d’essai de plus à « ${team.name} » ?',
+      action: 'Prolonger',
+    );
+    if (!confirmed) return;
+    await _runAction(
+      () => ref.read(platformRepositoryProvider).extendTrial(team.id),
+      (end) => 'Essai prolongé jusqu’au ${_day(end)}.',
+    );
+  }
+
+  Future<bool> _confirm({
+    required String title,
+    required String message,
+    required String action,
+  }) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(action),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
+  Future<void> _runAction(
+    Future<DateTime?> Function() action,
+    String Function(DateTime? end) success,
+  ) async {
+    setState(() => _busy = true);
+    String message;
+    try {
+      message = success(await action());
+    } catch (_) {
+      // Jamais le détail technique : il peut contenir des données internes.
+      message = 'L’opération n’a pas abouti. Réessaie dans un instant.';
+    }
+    if (!mounted) return;
+    setState(() => _busy = false);
+    ref.invalidate(platformSnapshotProvider);
+    ScaffoldMessenger.maybeOf(context)
+        ?.showSnackBar(SnackBar(content: Text(message)));
+  }
 
   Widget _health(PlatformSnapshot snapshot) {
     final health = snapshot.health;

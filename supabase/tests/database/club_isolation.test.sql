@@ -377,7 +377,11 @@ select is(
         'platform_list_clubs()',
         'platform_update_club(uuid,text,text,timestamp with time zone,timestamp with time zone,integer,integer,bigint,text)',
         'platform_health()',
+        'platform_record_payment(uuid)',
+        'platform_extend_trial(uuid,integer)',
         'private.is_platform_operator()',
+        -- Blocage nocturne des impayés : tous les clubs, jamais appelable par un compte.
+        'private.suspend_unpaid_clubs(timestamp with time zone)',
         -- Trigger interne sans argument : émet uniquement une révision pour
         -- la ligne déjà autorisée, y compris lors d'une opération éditeur.
         'private.signal_club_configuration_change()',

@@ -17,6 +17,15 @@ void main() {
     expect(snapshot.activeMemberCount, isNull);
   });
 
+  test('the server trial status is shown as a trial', () {
+    final team = PlatformTeam.fromJson({
+      'id': 'a',
+      'name': 'Équipe A',
+      'subscription_status': 'trialing',
+    });
+    expect(team.subscriptionLabel, 'Essai');
+  });
+
   test('aggregates actual profiles, never players or historical price', () {
     final team = PlatformTeam.fromJson({
       'id': 'a',

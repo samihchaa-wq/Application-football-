@@ -6,6 +6,14 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- encaissement : dans le poste de contrôle, bouton « Paiement reçu » (un an
+  d'abonnement, paiement journalisé) et « Prolonger l'essai de 30 jours ».
+  Chaque nuit, un club qui n'a pas payé 15 jours après la fin de son essai
+  ou de sa période payée est suspendu (données conservées) ; noter le
+  paiement le rouvre. Une suspension décidée à la main n'est jamais levée par
+  un paiement. L'administrateur du club voit la date de coupure ;
+- poste de contrôle : les équipes en essai s'affichaient « Abonnement non
+  renseigné » ;
 - abonnement : forfait de 79 € par club et par an, quel que soit le nombre
   de joueurs (au lieu de 10 € par joueur). Tous les clubs existants (clubs
   de test uniquement) passent au forfait.

@@ -50,7 +50,8 @@ class PlatformTeam {
       };
 
   String get subscriptionLabel => switch (subscriptionStatus) {
-        'trial' => 'Essai',
+        // Valeur réelle du serveur : 'trialing' ('trial' gardé par sécurité).
+        'trialing' || 'trial' => 'Essai',
         'active' => 'Abonnement actif',
         'past_due' => 'Paiement à régulariser',
         'canceled' => 'Abonnement arrêté',

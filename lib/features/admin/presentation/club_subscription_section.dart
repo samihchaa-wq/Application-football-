@@ -78,18 +78,23 @@ class _SubscriptionCard extends StatelessWidget {
     };
   }
 
-  String? get _advice => switch (subscription.state) {
-        ClubSubscriptionState.trialEnding =>
-          'Pour continuer après l’essai, contacte-nous pour activer '
-              'l’abonnement du club.',
-        ClubSubscriptionState.toPay =>
-          'Ton club garde l’accès pour l’instant. Contacte-nous pour activer '
-              'l’abonnement.',
-        ClubSubscriptionState.pastDue =>
-          'Le dernier paiement n’a pas abouti. Contacte-nous pour le '
-              'régulariser.',
-        _ => null,
-      };
+  String? get _advice {
+    final end = subscription.accessEndsAt;
+    final cutoff = end == null
+        ? 'Sans paiement, l’accès du club sera coupé 15 jours après '
+            'l’échéance. '
+        : 'Sans paiement, l’accès du club sera coupé le ${_day(end)}. '
+            'Ses données seront conservées. ';
+    return switch (subscription.state) {
+      ClubSubscriptionState.trialEnding =>
+        'Pour continuer après l’essai, contacte-nous pour activer '
+            'l’abonnement du club.',
+      ClubSubscriptionState.toPay ||
+      ClubSubscriptionState.pastDue =>
+        '${cutoff}Contacte-nous pour activer l’abonnement.',
+      _ => null,
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,3 +140,6 @@ class _SubscriptionCard extends StatelessWidget {
     );
   }
 }
+
+String _day(DateTime date) =>
+    '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';

@@ -322,7 +322,10 @@ const LegalDocument clubSalesTerms = LegalDocument(
     LegalSection('2. Essai gratuit', [
       'Chaque nouveau club bénéficie d’un essai gratuit de 30 jours, sans '
           'engagement et sans moyen de paiement. À la fin de l’essai, le club '
-          'choisit de s’abonner ou non ; rien n’est facturé automatiquement.',
+          'choisit de s’abonner ou non ; rien n’est facturé automatiquement. '
+          'Sans abonnement 15 jours après la fin de l’essai, l’accès du club '
+          'est suspendu ; ses données sont conservées dans les conditions de '
+          'l’article 8.',
     ]),
     LegalSection('3. Prix', [
       'L’abonnement est annuel. Son prix est un forfait de 79 € par club et '
@@ -349,6 +352,9 @@ const LegalDocument clubSalesTerms = LegalDocument(
           'de ne pas renouveler.',
       'Le club peut arrêter à tout moment ; l’accès reste ouvert jusqu’à la '
           'fin de la période payée, sans remboursement de la période en cours.',
+      'Sans renouvellement payé 15 jours après la fin de la période, l’accès '
+          'du club est suspendu ; ses données sont conservées dans les '
+          'conditions de l’article 8. Le paiement rétablit l’accès.',
       'En cas de manquement grave du club à ces conditions ou aux CGU, '
           'l’éditeur peut résilier après une mise en demeure restée sans effet '
           'pendant 15 jours.',
