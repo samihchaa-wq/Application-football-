@@ -261,11 +261,14 @@ def cmd_storage(payload: Path) -> dict:
 
 def _club_tables(environ: dict[str, str]) -> list[str]:
     raw = _select(
-        "select string_agg(c.table_name, ',' order by c.table_name) "
-        "from information_schema.columns c "
-        "join pg_tables t on t.schemaname = 'public' and t.tablename = c.table_name "
-        "where c.table_schema = 'public' and c.column_name = 'club_id' "
-        "and has_table_privilege('authenticated', format('public.%I', c.table_name), 'select');",
+        # Droit vérifié par identifiant interne (oid) : un nom de table ne peut
+        # pas être résolu dans le mauvais schéma.
+        "select string_agg(c.relname, ',' order by c.relname) "
+        "from pg_class c join pg_namespace n on n.oid = c.relnamespace "
+        "join pg_attribute a on a.attrelid = c.oid and a.attname = 'club_id' "
+        "and not a.attisdropped "
+        "where n.nspname = 'public' and c.relkind in ('r', 'p') "
+        "and has_table_privilege('authenticated', c.oid, 'select');",
         environ)
     tables = [name for name in raw.split(",") if name]
     if not tables or any(not re.fullmatch(r"[a-z_][a-z0-9_]*", name) for name in tables):
