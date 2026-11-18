@@ -30,7 +30,7 @@ select is((
     and p.proname not in (
       'get_my_club_access', 'platform_health', 'platform_list_clubs',
       'platform_update_club', 'platform_record_offline_payment',
-      'platform_club_billing'
+      'platform_club_billing', 'platform_control_overview'
     )
 ), 0::bigint, 'aucune nouvelle RPC exposee ne contourne les RLS');
 
@@ -55,7 +55,8 @@ select is((
   join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public'
     and p.proname in ('platform_health','platform_list_clubs','platform_update_club',
-                      'platform_record_offline_payment','platform_club_billing')
+                      'platform_record_offline_payment','platform_club_billing',
+                      'platform_control_overview')
     and p.prosecdef
     and position('private.is_platform_operator()' in pg_get_functiondef(p.oid)) = 0
 ), 0::bigint, 'toutes les RPC de plateforme verifient le statut operateur');

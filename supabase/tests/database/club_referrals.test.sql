@@ -80,6 +80,11 @@ update public.clubs set status = 'active' where id = (select id from test_clubs 
 select is(private.club_referral_discount_percent((select id from test_clubs where label = 'parrain')), 0,
   'tant qu''aucun filleul n''a payé, pas de réduction');
 
+select is(private.club_amount_due_cents((select id from test_clubs where label = 'f1')), 7505,
+  'un club parrainé a lui aussi −5 % sur sa première année');
+select is(private.club_amount_due_cents((select id from test_clubs where label = 'autre')), 7900,
+  'un club sans parrain paie le tarif plein');
+
 -- ---------------------------------------------------------------------------
 -- Paiements des filleuls
 -- ---------------------------------------------------------------------------
@@ -106,6 +111,8 @@ select lives_ok(
 reset role;
 select is(private.club_referral_discount_percent((select id from test_clubs where label = 'parrain')), 5,
   'un filleul ne compte qu''une fois');
+select is(private.club_amount_due_cents((select id from test_clubs where label = 'f1')), 7900,
+  'après son premier paiement, le filleul revient au tarif plein');
 
 set local role authenticated;
 select lives_ok(

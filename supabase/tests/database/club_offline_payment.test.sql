@@ -5,7 +5,7 @@ select no_plan();
 
 -- Paiement hors ligne noté par l'éditeur et suspension automatique des clubs
 -- impayés le jour de l'échéance (plus de délai de grâce depuis
--- 20261126000000_rappel_echeance_abonnement.sql).
+-- 20261127000000_rappel_echeance_abonnement.sql).
 create temporary table test_clubs (label text primary key, id uuid not null) on commit drop;
 grant select on test_clubs to authenticated;
 

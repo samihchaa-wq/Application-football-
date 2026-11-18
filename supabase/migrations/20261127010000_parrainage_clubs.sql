@@ -101,6 +101,9 @@ create table private.club_referrals (
   qualified_at timestamptz,
   -- Réduction utilisée sur un paiement du parrain.
   used_at timestamptz,
+  -- Réduction de bienvenue du filleul (−5 % sur sa première année) utilisée
+  -- à son premier paiement.
+  welcome_used_at timestamptz,
   constraint club_referrals_not_self check (referred_club_id <> referrer_club_id),
   constraint club_referrals_used_after_qualified check (used_at is null or qualified_at is not null)
 );
@@ -128,14 +131,32 @@ create policy club_isolation on private.club_referrals
 create policy club_scope_access on private.club_referrals
   for all to club_scope using (true) with check (true);
 
--- Réduction acquise et pas encore utilisée, en pourcentage (0 à 100).
+-- Réduction de bienvenue d'un club parrainé : −5 % jusqu'à son premier
+-- paiement.
+create function private.club_referral_welcome_percent(p_club_id uuid) returns integer
+language sql stable
+set search_path to ''
+as $$
+  select case when exists (
+    select 1
+    from private.club_referrals referral
+    where referral.referred_club_id = p_club_id
+      and referral.welcome_used_at is null
+  ) then private.referral_rate_percent() else 0 end
+$$;
+
+revoke all on function private.club_referral_welcome_percent(uuid) from public, anon, authenticated;
+
+-- Réduction acquise et pas encore utilisée, en pourcentage (0 à 100) :
+-- 5 % par filleul payé, plus 5 % la première année si le club a été parrainé.
 create function private.club_referral_discount_percent(p_club_id uuid) returns integer
 language sql stable
 set search_path to ''
 as $$
   select least(
     private.referral_cap_percent(),
-    private.referral_rate_percent() * count(*)::integer
+    private.club_referral_welcome_percent(p_club_id)
+      + private.referral_rate_percent() * count(*)::integer
   )
   from private.club_referrals referral
   where referral.referrer_club_id = p_club_id
@@ -224,6 +245,7 @@ declare
   v_end timestamptz;
   v_reopened boolean := false;
   v_discount integer;
+  v_welcome integer;
 begin
   if not private.is_platform_operator() then
     raise exception 'Réservé à l''éditeur de l''application.' using errcode = '42501';
@@ -277,7 +299,13 @@ begin
 
   -- Ce paiement utilise la réduction de parrainage acquise par ce club (au
   -- plus le nombre de filleuls qui fait 100 %), les plus anciens d'abord.
+  -- La réduction de bienvenue (club parrainé) passe en premier.
   v_discount := private.club_referral_discount_percent(p_club_id);
+  v_welcome := private.club_referral_welcome_percent(p_club_id);
+  update private.club_referrals referral
+  set welcome_used_at = now()
+  where referral.referred_club_id = p_club_id
+    and referral.welcome_used_at is null;
   update private.club_referrals referral
   set used_at = now()
   where referral.referred_club_id in (
@@ -287,7 +315,7 @@ begin
       and candidate.qualified_at is not null
       and candidate.used_at is null
     order by candidate.qualified_at, candidate.referred_club_id
-    limit private.referral_cap_percent() / private.referral_rate_percent()
+    limit (private.referral_cap_percent() - v_welcome) / private.referral_rate_percent()
   );
 
   -- Premier paiement d'un filleul : son parrain gagne sa réduction.
@@ -451,7 +479,8 @@ begin
     'code', (select club.referral_code from public.clubs club where club.id = v_club),
     'rate_percent', private.referral_rate_percent(),
     'cap_percent', private.referral_cap_percent(),
-    'discount_percent', private.club_referral_discount_percent(v_club)
+    'discount_percent', private.club_referral_discount_percent(v_club),
+    'welcome_percent', private.club_referral_welcome_percent(v_club)
   ) || private.club_referral_overview(v_club);
 end;
 $$;

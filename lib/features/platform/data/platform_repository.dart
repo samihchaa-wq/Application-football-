@@ -16,9 +16,11 @@ class PlatformRepository {
 
   Future<PlatformSnapshot> fetch() async {
     try {
-      // This RPC checks private.platform_operators before returning any team.
-      final rows = await _rpc('platform_list_clubs')
+      // This RPC checks private.platform_operators before returning any club.
+      final response = await _rpc('platform_control_overview')
           .timeout(const Duration(seconds: 15));
+      if (response is! Map) throw const FormatException('Invalid overview');
+      final rows = response['clubs'];
       if (rows is! List) throw const FormatException('Invalid team list');
       final teams = rows.map((row) {
         if (row is! Map) throw const FormatException('Invalid team');
@@ -26,6 +28,22 @@ class PlatformRepository {
       }).toList();
       if (teams.map((team) => team.id).toSet().length != teams.length) {
         throw const FormatException('Duplicate team identifiers');
+      }
+      final totalsJson = response['totals'];
+      final totals = totalsJson is Map
+          ? PlatformTotals.fromJson(Map<String, dynamic>.from(totalsJson))
+          : const PlatformTotals();
+      final dailyVisits = <PlatformDailyVisits>[];
+      final dailyJson = response['daily_visits'];
+      if (dailyJson is List) {
+        for (final point in dailyJson) {
+          if (point is! Map) continue;
+          final day = measuredDate(point['day']);
+          final visits = measuredCount(point['visits']);
+          if (day != null && visits != null) {
+            dailyVisits.add(PlatformDailyVisits(day, visits));
+          }
+        }
       }
 
       PlatformHealth? health;
@@ -46,6 +64,8 @@ class PlatformRepository {
         teams: teams,
         fetchedAt: DateTime.now().toUtc(),
         health: health,
+        totals: totals,
+        dailyVisits: dailyVisits,
       );
     } on PostgrestException catch (error) {
       if (_isAccessError(error)) throw const PlatformAccessDenied();

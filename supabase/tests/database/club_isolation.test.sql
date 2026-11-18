@@ -391,6 +391,9 @@ select is(
         'platform_health()',
         'platform_record_offline_payment(uuid,integer,text,date,text)',
         'platform_club_billing(uuid)',
+        'platform_control_overview()',
+        -- Effacement planifié des clubs impayés depuis 3 ans (tâche de nuit).
+        'private.purge_expired_clubs(timestamp with time zone)',
         'private.is_platform_operator()',
         -- Trigger interne sans argument : émet uniquement une révision pour
         -- la ligne déjà autorisée, y compris lors d'une opération éditeur.
