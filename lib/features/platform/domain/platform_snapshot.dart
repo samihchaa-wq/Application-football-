@@ -297,3 +297,110 @@ List<PlatformTeam> filterPlatformTeams(
       .toList()
     ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 }
+
+enum PlatformClubFilter { all, trial, paying, dueSoon, suspended }
+
+enum PlatformClubSort { nextDue, visits, squad, seniority, amountDue, name }
+
+extension PlatformClubFilterLabel on PlatformClubFilter {
+  String get label => switch (this) {
+        PlatformClubFilter.all => 'Tous',
+        PlatformClubFilter.trial => 'Mois gratuit',
+        PlatformClubFilter.paying => 'Abonnés',
+        PlatformClubFilter.dueSoon => 'Échéance sous 30 j',
+        PlatformClubFilter.suspended => 'Suspendus',
+      };
+}
+
+extension PlatformClubSortLabel on PlatformClubSort {
+  String get label => switch (this) {
+        PlatformClubSort.nextDue => 'Prochaine échéance',
+        PlatformClubSort.visits => 'Visites par jour',
+        PlatformClubSort.squad => 'Effectif',
+        PlatformClubSort.seniority => 'Ancienneté',
+        PlatformClubSort.amountDue => 'Montant à payer',
+        PlatformClubSort.name => 'Nom',
+      };
+}
+
+/// Liste des clubs du poste de contrôle : recherche, filtre et tri. Les
+/// valeurs absentes passent toujours en fin de liste.
+List<PlatformTeam> selectPlatformClubs(
+  List<PlatformTeam> teams, {
+  required DateTime now,
+  String query = '',
+  PlatformClubFilter filter = PlatformClubFilter.all,
+  PlatformClubSort sort = PlatformClubSort.nextDue,
+}) {
+  final normalized = query.trim().toLowerCase();
+  bool keep(PlatformTeam team) => switch (filter) {
+        PlatformClubFilter.all => true,
+        PlatformClubFilter.trial => team.status == 'active' && team.isTrial,
+        PlatformClubFilter.paying =>
+          team.status == 'active' && team.subscriptionStatus == 'active',
+        PlatformClubFilter.dueSoon => team.status == 'active' &&
+            team.nextDueAt != null &&
+            team.nextDueAt!.isBefore(now.add(const Duration(days: 30))),
+        PlatformClubFilter.suspended => team.status == 'suspended',
+      };
+
+  int compareNullable(
+    Comparable<dynamic>? a,
+    Comparable<dynamic>? b, {
+    bool descending = false,
+  }) {
+    if (a == null && b == null) return 0;
+    if (a == null) return 1;
+    if (b == null) return -1;
+    return descending ? b.compareTo(a) : a.compareTo(b);
+  }
+
+  int byName(PlatformTeam a, PlatformTeam b) =>
+      a.name.toLowerCase().compareTo(b.name.toLowerCase());
+
+  final selected = teams
+      .where(
+        (team) =>
+            keep(team) &&
+            (normalized.isEmpty ||
+                team.name.toLowerCase().contains(normalized)),
+      )
+      .toList();
+  selected.sort((a, b) {
+    final result = switch (sort) {
+      PlatformClubSort.nextDue => compareNullable(a.nextDueAt, b.nextDueAt),
+      PlatformClubSort.visits =>
+        compareNullable(a.visitsPerDay, b.visitsPerDay, descending: true),
+      PlatformClubSort.squad =>
+        compareNullable(a.players, b.players, descending: true),
+      PlatformClubSort.seniority => compareNullable(a.createdAt, b.createdAt),
+      PlatformClubSort.amountDue =>
+        compareNullable(a.amountDueCents, b.amountDueCents, descending: true),
+      PlatformClubSort.name => 0,
+    };
+    return result != 0 ? result : byName(a, b);
+  });
+  return selected;
+}
+
+/// « 12 j », « 3 mois », « 1 an et 2 mois ».
+String formatSeniority(DateTime? createdAt, DateTime now) {
+  if (createdAt == null) return 'Non renseigné';
+  final days = now.difference(createdAt).inDays;
+  if (days < 1) return 'Aujourd’hui';
+  if (days < 31) return '$days j';
+  final months = days ~/ 30.44;
+  if (months < 12) return '$months mois';
+  final years = months ~/ 12;
+  final rest = months % 12;
+  final yearText = years == 1 ? '1 an' : '$years ans';
+  return rest == 0 ? yearText : '$yearText et $rest mois';
+}
+
+/// « dans 12 j », « aujourd’hui », « dépassée de 3 j ».
+String formatDueIn(int? days) {
+  if (days == null) return 'Aucune';
+  if (days == 0) return 'aujourd’hui';
+  if (days > 0) return 'dans $days j';
+  return 'dépassée de ${-days} j';
+}

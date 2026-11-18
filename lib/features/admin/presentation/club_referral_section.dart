@@ -65,7 +65,8 @@ class _ReferralCard extends StatelessWidget {
               'qui s’inscrit avec ton code et paie son abonnement, ton club '
               'gagne −$rate % sur son prochain renouvellement, jusqu’à '
               '−$cap %${cap >= 100 ? ' : $maxClubs clubs parrainés, et '
-                  'l’année est offerte' : ''}.',
+                  'l’année est offerte' : ''}. Le club parrainé a lui aussi '
+              '−$rate % sur sa première année.',
               key: const Key('club-referral-explanation'),
             ),
             const SizedBox(height: 12),
@@ -108,7 +109,13 @@ class _ReferralCard extends StatelessWidget {
             ],
             if (referrals.referredBy != null) ...[
               const SizedBox(height: 8),
-              Text('Ton club a été parrainé par ${referrals.referredBy}.'),
+              Text(
+                referrals.welcomePercent > 0
+                    ? 'Ton club a été parrainé par ${referrals.referredBy} : '
+                        '−${referrals.welcomePercent} % sur ta première année.'
+                    : 'Ton club a été parrainé par ${referrals.referredBy}.',
+                key: const Key('club-referral-referred-by'),
+              ),
             ],
             const SizedBox(height: 12),
             Text('Clubs parrainés', style: theme.textTheme.labelLarge),

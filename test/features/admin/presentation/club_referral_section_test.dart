@@ -98,6 +98,33 @@ void main() {
         find.text('Ton club a été parrainé par FC Parrain.'), findsOneWidget);
   });
 
+  testWidgets('un club parrainé voit sa réduction de bienvenue', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      const ClubReferrals(
+        code: 'PFABCDEF',
+        ratePercent: 5,
+        capPercent: 100,
+        discountPercent: 5,
+        welcomePercent: 5,
+        referredBy: 'FC Parrain',
+        referrals: [],
+      ),
+    );
+    expect(
+      find.text('Ton club a été parrainé par FC Parrain : −5 % sur ta '
+          'première année.'),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('Le club parrainé a lui aussi −5 % sur sa première '
+          'année.'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('rien n’est affiché si le serveur ne renvoie rien', (
     tester,
   ) async {

@@ -134,6 +134,7 @@ class ClubReferrals {
     required this.discountPercent,
     required this.referrals,
     this.referredBy,
+    this.welcomePercent = 0,
   });
 
   factory ClubReferrals.fromJson(Map<String, dynamic> json) {
@@ -146,6 +147,7 @@ class ClubReferrals {
       capPercent: number(json['cap_percent'], 100),
       discountPercent: number(json['discount_percent'], 0),
       referredBy: json['referred_by']?.toString(),
+      welcomePercent: number(json['welcome_percent'], 0),
       referrals: [
         if (raw is List)
           for (final item in raw.whereType<Map>())
@@ -165,6 +167,10 @@ class ClubReferrals {
   final int capPercent;
   final int discountPercent;
   final String? referredBy;
+
+  /// Réduction de bienvenue d'un club parrainé, tant qu'il n'a pas payé sa
+  /// première année.
+  final int welcomePercent;
   final List<ClubReferral> referrals;
 }
 

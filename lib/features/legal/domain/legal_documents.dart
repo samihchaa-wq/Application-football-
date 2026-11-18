@@ -15,11 +15,11 @@ library;
 
 /// Version des CGU et de la politique de confidentialité acceptée à
 /// l'inscription. Format AAAA-MM-JJ.
-const String legalVersion = '2026-11-12';
+const String legalVersion = '2026-11-19';
 
 /// Version des conditions d'abonnement et de l'accord sur les données,
 /// acceptée par la personne qui crée un club. Format AAAA-MM-JJ.
-const String clubContractVersion = '2026-11-18';
+const String clubContractVersion = '2026-11-19';
 
 class LegalSection {
   const LegalSection(this.title, this.paragraphs);
@@ -52,7 +52,7 @@ const String _editorAddress = '[Adresse postale de l’éditeur]';
 const String _editorEmail = '[adresse e-mail de contact]';
 const String _editorSiret = 'SIRET : [numéro, une fois l’entreprise créée]';
 const String _vatMention = 'TVA non applicable, article 293 B du CGI';
-const String _dataRetentionAfterEnd = '6 mois';
+const String _dataRetentionAfterEnd = '3 ans';
 
 const LegalDocument legalNotice = LegalDocument(
   slug: 'mentions',
@@ -266,8 +266,9 @@ const LegalDocument privacyPolicy = LegalDocument(
           'Les faits sportifs déjà validés (score, buteur d’un match passé) '
           'peuvent rester dans l’historique du club, sans lien avec ton '
           'compte. Tu peux demander qu’ils soient aussi anonymisés.',
-      'Si ton club arrête l’application, ses données sont supprimées '
-          '$_dataRetentionAfterEnd après la fin de son abonnement.',
+      'Si ton club arrête l’application, ses données sont gardées '
+          '$_dataRetentionAfterEnd après la fin de son abonnement, pour qu’il '
+          'les retrouve intactes s’il revient, puis supprimées.',
       'La preuve de ton acceptation des conditions est gardée 5 ans après la '
           'fin de ton compte, le temps pendant lequel un litige reste possible.',
     ]),
