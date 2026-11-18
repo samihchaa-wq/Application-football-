@@ -1,6 +1,6 @@
-import 'package:as_grinta/core/utils/name_validation.dart';
-import 'package:as_grinta/features/matches/data/historical_match_detail_repository.dart';
-import 'package:as_grinta/features/matches/presentation/historical_match_detail_page.dart';
+import 'package:petit_filet/core/utils/name_validation.dart';
+import 'package:petit_filet/features/matches/data/historical_match_detail_repository.dart';
+import 'package:petit_filet/features/matches/presentation/historical_match_detail_page.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Map<String, dynamic> _archiveRow({

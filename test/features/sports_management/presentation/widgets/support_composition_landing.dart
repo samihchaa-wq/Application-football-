@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_presentation.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_presentation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Fait avancer la vidéo jusqu'à l'instant où le terrain est posé, puis

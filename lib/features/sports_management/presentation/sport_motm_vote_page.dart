@@ -1,16 +1,16 @@
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/utils/app_formats.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/widgets/match_contribution_icons.dart';
-import 'package:as_grinta/core/widgets/match_fixture.dart';
-import 'package:as_grinta/features/notifications/data/notification_inbox_repository.dart';
-import 'package:as_grinta/features/sports_management/data/sport_motm_vote_repository.dart';
-import 'package:as_grinta/features/sports_management/domain/sport_motm_vote.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/utils/app_formats.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/widgets/match_contribution_icons.dart';
+import 'package:petit_filet/core/widgets/match_fixture.dart';
+import 'package:petit_filet/features/notifications/data/notification_inbox_repository.dart';
+import 'package:petit_filet/features/sports_management/data/sport_motm_vote_repository.dart';
+import 'package:petit_filet/features/sports_management/domain/sport_motm_vote.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
 
 class SportMotmVotePage extends ConsumerStatefulWidget {
   const SportMotmVotePage({super.key, required this.matchId});
@@ -92,7 +92,7 @@ class _SportMotmVotePageState extends ConsumerState<SportMotmVotePage> {
     final voteAsync = ref.watch(sportMotmVoteProvider(widget.matchId));
 
     return Scaffold(
-      appBar: GrintaAppBar(title: const Text('Homme du match')),
+      appBar: PfAppBar(title: const Text('Homme du match')),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(sportMotmVoteProvider(widget.matchId));
@@ -102,7 +102,7 @@ class _SportMotmVotePageState extends ConsumerState<SportMotmVotePage> {
           loading: () => ListView(
             children: const [
               SizedBox(height: 240),
-              Center(child: GrintaProgressIndicator()),
+              Center(child: PfProgressIndicator()),
             ],
           ),
           error: (error, _) => ListView(
@@ -218,7 +218,7 @@ class _SportMotmVotePageState extends ConsumerState<SportMotmVotePage> {
                   ? const SizedBox(
                       width: 18,
                       height: 18,
-                      child: GrintaProgressIndicator(strokeWidth: 2),
+                      child: PfProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.how_to_vote_outlined),
               label: const Text('Valider définitivement mon vote'),
@@ -366,9 +366,9 @@ class _VoteHeader extends StatelessWidget {
             MatchFixture(
               homeName: vote.isHome ? ClubIdentity.name : vote.opponentName,
               awayName: vote.isHome ? vote.opponentName : ClubIdentity.name,
-              grintaIsHome: vote.isHome,
-              homeScore: vote.isHome ? vote.scoreAsGrinta : vote.scoreAdverse,
-              awayScore: vote.isHome ? vote.scoreAdverse : vote.scoreAsGrinta,
+              ownIsHome: vote.isHome,
+              homeScore: vote.isHome ? vote.scoreOwn : vote.scoreAdverse,
+              awayScore: vote.isHome ? vote.scoreAdverse : vote.scoreOwn,
               finished: vote.hasScore,
               nameStyle: Theme.of(context).textTheme.titleLarge,
             ),

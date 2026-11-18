@@ -1,11 +1,11 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 /// Barre de progression réservée au démarrage de l'application.
 ///
 /// C'est le seul indicateur de chargement visuel autorisé dans l'application.
-class GrintaStartupProgressBar extends StatelessWidget {
-  const GrintaStartupProgressBar({
+class PfStartupProgressBar extends StatelessWidget {
+  const PfStartupProgressBar({
     super.key,
     this.width = 132,
     this.semanticLabel = 'Démarrage de l’application',
@@ -41,20 +41,20 @@ class GrintaStartupProgressBar extends StatelessWidget {
 /// Tous les loaders intervenant après le démarrage sont volontairement
 /// invisibles. Les écrans conservent simplement leur état d'attente jusqu'à
 /// l'arrivée des données.
-class GrintaLoader extends StatelessWidget {
-  const GrintaLoader.page({
+class PfLoader extends StatelessWidget {
+  const PfLoader.page({
     super.key,
     this.message,
     this.semanticLabel = 'Chargement de la page',
   }) : size = 92;
 
-  const GrintaLoader.inline({
+  const PfLoader.inline({
     super.key,
     this.message,
     this.semanticLabel = 'Chargement en cours',
   }) : size = 58;
 
-  const GrintaLoader.button({
+  const PfLoader.button({
     super.key,
     this.semanticLabel = 'Action en cours',
   })  : size = 32,
@@ -73,8 +73,8 @@ class GrintaLoader extends StatelessWidget {
 /// Les valeurs déterminées restent visibles lorsqu'elles représentent une
 /// donnée réelle (statistique, jauge, progression connue). Tout indicateur
 /// indéterminé, donc tout loader, est supprimé visuellement.
-class GrintaProgressIndicator extends StatelessWidget {
-  const GrintaProgressIndicator({
+class PfProgressIndicator extends StatelessWidget {
+  const PfProgressIndicator({
     super.key,
     this.value,
     this.backgroundColor,
@@ -125,8 +125,8 @@ class GrintaProgressIndicator extends StatelessWidget {
 
 /// Préserve uniquement les barres de progression déterminées.
 /// Toute barre indéterminée secondaire est supprimée.
-class GrintaLinearProgressIndicator extends StatelessWidget {
-  const GrintaLinearProgressIndicator({
+class PfLinearProgressIndicator extends StatelessWidget {
+  const PfLinearProgressIndicator({
     super.key,
     this.value,
     this.backgroundColor,

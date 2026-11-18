@@ -1,34 +1,34 @@
-import 'package:as_grinta/core/club/club_rules.dart';
-import 'package:as_grinta/core/club/club_identity.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
 
 import 'dart:async';
 
-import 'package:as_grinta/core/theme/app_spacing.dart';
-import 'package:as_grinta/core/utils/app_formats.dart';
-import 'package:as_grinta/core/widgets/calendar_scoreline.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/match_live/domain/next_out_players.dart';
-import 'package:as_grinta/features/match_live/domain/match_live_event.dart';
-import 'package:as_grinta/features/match_live/domain/match_live_formation.dart';
-import 'package:as_grinta/features/match_live/domain/match_live_session.dart';
-import 'package:as_grinta/features/match_live/domain/match_live_state_bundle.dart';
-import 'package:as_grinta/features/match_live/domain/substitution_salvos.dart';
-import 'package:as_grinta/features/match_live/domain/time_on_field.dart';
-import 'package:as_grinta/features/match_live/presentation/match_live_providers.dart';
-import 'package:as_grinta/features/sports_management/presentation/match_report_page.dart';
-import 'package:as_grinta/features/match_live/presentation/widgets/live_bench_tile.dart';
-import 'package:as_grinta/features/match_live/presentation/widgets/live_substitution_line.dart';
-import 'package:as_grinta/features/match_live/presentation/widgets/match_live_add_player_sheet.dart';
-import 'package:as_grinta/features/match_live/presentation/widgets/match_live_clock.dart';
-import 'package:as_grinta/features/match_live/presentation/widgets/match_live_remove_player_sheet.dart';
-import 'package:as_grinta/features/match_live/presentation/widgets/match_live_scorer_picker_dialog.dart';
-import 'package:as_grinta/features/match_live/presentation/widgets/substitution_salvo_frame.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/upcoming_match_fixture_header.dart';
-import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/formation_pitch_editor.dart';
+import 'package:petit_filet/core/theme/app_spacing.dart';
+import 'package:petit_filet/core/utils/app_formats.dart';
+import 'package:petit_filet/core/widgets/calendar_scoreline.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/match_live/domain/next_out_players.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_event.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_formation.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_session.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_state_bundle.dart';
+import 'package:petit_filet/features/match_live/domain/substitution_salvos.dart';
+import 'package:petit_filet/features/match_live/domain/time_on_field.dart';
+import 'package:petit_filet/features/match_live/presentation/match_live_providers.dart';
+import 'package:petit_filet/features/sports_management/presentation/match_report_page.dart';
+import 'package:petit_filet/features/match_live/presentation/widgets/live_bench_tile.dart';
+import 'package:petit_filet/features/match_live/presentation/widgets/live_substitution_line.dart';
+import 'package:petit_filet/features/match_live/presentation/widgets/match_live_add_player_sheet.dart';
+import 'package:petit_filet/features/match_live/presentation/widgets/match_live_clock.dart';
+import 'package:petit_filet/features/match_live/presentation/widgets/match_live_remove_player_sheet.dart';
+import 'package:petit_filet/features/match_live/presentation/widgets/match_live_scorer_picker_dialog.dart';
+import 'package:petit_filet/features/match_live/presentation/widgets/substitution_salvo_frame.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/upcoming_match_fixture_header.dart';
+import 'package:petit_filet/features/sports_management/domain/football_formation.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_kit_scope.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/formation_pitch_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -555,7 +555,7 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Buts d'AS Grinta sans buteur : un appui pour désigner
+                    // Buts de l'équipe sans buteur : un appui pour désigner
                     // le buteur puis le passeur.
                     for (final event in goalsToAttribute)
                       Padding(

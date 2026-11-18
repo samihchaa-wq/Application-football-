@@ -153,7 +153,7 @@ class _Frame {
   /// Échelle de projection du terrain d'arrivée (pixels de scène par unité).
   double get landingScale => landing.width / presentationPitchWidth;
 
-  /// Haut du bandeau « AS Grinta » : à la hauteur du bouton « Passer », sous
+  /// Haut du bandeau du club : à la hauteur du bouton « Passer », sous
   /// la barre d'état, quelle que soit la part de la scène rognée en haut.
   double get bugTop => (safeArea.top + 29 - stage.origin.dy) / stage.scale - 13;
 

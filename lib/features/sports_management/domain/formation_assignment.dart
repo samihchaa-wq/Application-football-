@@ -1,7 +1,7 @@
 import 'dart:ui' show Offset;
 
-import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/domain/football_formation.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
 
 /// Coût d'un gardien placé ailleurs que dans les cages.
 ///

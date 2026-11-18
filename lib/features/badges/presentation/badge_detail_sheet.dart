@@ -1,11 +1,11 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/widgets/equal_height_column.dart';
-import 'package:as_grinta/features/badges/data/badge_repository.dart';
-import 'package:as_grinta/features/badges/presentation/badge_emblem.dart';
-import 'package:as_grinta/features/badges/presentation/badge_image_editor.dart';
-import 'package:as_grinta/features/badges/presentation/badge_text_editor.dart';
-import 'package:as_grinta/features/badges/presentation/badge_threshold_editor.dart';
-import 'package:as_grinta/features/badges/presentation/locked_badge_emblem.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/widgets/equal_height_column.dart';
+import 'package:petit_filet/features/badges/data/badge_repository.dart';
+import 'package:petit_filet/features/badges/presentation/badge_emblem.dart';
+import 'package:petit_filet/features/badges/presentation/badge_image_editor.dart';
+import 'package:petit_filet/features/badges/presentation/badge_text_editor.dart';
+import 'package:petit_filet/features/badges/presentation/badge_threshold_editor.dart';
+import 'package:petit_filet/features/badges/presentation/locked_badge_emblem.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

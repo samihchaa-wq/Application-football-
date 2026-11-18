@@ -1,6 +1,6 @@
-import 'package:as_grinta/features/match_live/domain/match_live_event.dart';
-import 'package:as_grinta/features/match_live/domain/time_on_field.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_event.dart';
+import 'package:petit_filet/features/match_live/domain/time_on_field.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 MatchCompositionEntry player(String id) => MatchCompositionEntry(

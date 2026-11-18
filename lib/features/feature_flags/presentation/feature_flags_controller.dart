@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:as_grinta/core/logging/app_logger.dart';
-import 'package:as_grinta/core/sync/shared_data_sync.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
-import 'package:as_grinta/features/feature_flags/data/feature_flags_repository.dart';
-import 'package:as_grinta/features/feature_flags/domain/feature_flags.dart';
+import 'package:petit_filet/core/logging/app_logger.dart';
+import 'package:petit_filet/core/sync/shared_data_sync.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
+import 'package:petit_filet/features/feature_flags/data/feature_flags_repository.dart';
+import 'package:petit_filet/features/feature_flags/domain/feature_flags.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final featureFlagsSessionReadyProvider = Provider<bool>((ref) {
@@ -24,7 +24,7 @@ final featureFlagsWatchRetryDelayProvider =
   };
 });
 
-/// Réutilise le coordinateur de caches d'AS Grinta : un changement de règle
+/// Réutilise le coordinateur de caches de l'application : un changement de règle
 /// peut aussi modifier un classement ou les fenêtres d'accès d'un match.
 final featureFlagsConfigurationRefreshProvider = Provider<void Function()>((
   ref,

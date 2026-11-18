@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:as_grinta/features/sports_management/domain/composition_publication_rules.dart';
+import 'package:petit_filet/features/sports_management/domain/composition_publication_rules.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

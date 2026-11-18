@@ -1,16 +1,16 @@
 import 'dart:ui' as ui;
 
-import 'package:as_grinta/core/club/club_rules.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/widgets/grinta_empty_state.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/season_wrapped/data/season_wrapped_repository.dart';
-import 'package:as_grinta/features/season_wrapped/data/wrapped_music.dart';
-import 'package:as_grinta/features/season_wrapped/presentation/season_wrapped_share_sheet.dart';
-import 'package:as_grinta/features/season_wrapped/presentation/wrapped_motion.dart';
-import 'package:as_grinta/features/season_wrapped/presentation/wrapped_slides.dart';
-import 'package:as_grinta/features/season_wrapped/presentation/wrapped_theme.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/widgets/pf_empty_state.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/season_wrapped/data/season_wrapped_repository.dart';
+import 'package:petit_filet/features/season_wrapped/data/wrapped_music.dart';
+import 'package:petit_filet/features/season_wrapped/presentation/season_wrapped_share_sheet.dart';
+import 'package:petit_filet/features/season_wrapped/presentation/wrapped_motion.dart';
+import 'package:petit_filet/features/season_wrapped/presentation/wrapped_slides.dart';
+import 'package:petit_filet/features/season_wrapped/presentation/wrapped_theme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -84,14 +84,14 @@ class _WrappedLoading extends StatelessWidget {
     return const Stack(
       children: [
         Center(
-          child: GrintaLoader.page(message: 'Préparation de ton bilan'),
+          child: PfLoader.page(message: 'Préparation de ton bilan'),
         ),
         SafeArea(
           child: Align(
             alignment: Alignment.topLeft,
             child: Padding(
               padding: EdgeInsets.only(left: 6, top: 4),
-              child: GrintaClubHomeButton(),
+              child: PfClubHomeButton(),
             ),
           ),
         ),
@@ -119,7 +119,7 @@ class _WrappedMessage extends StatelessWidget {
         child: Stack(
           children: [
             Center(
-              child: GrintaEmptyState(
+              child: PfEmptyState(
                 icon: icon,
                 title: title,
                 message: message,
@@ -128,7 +128,7 @@ class _WrappedMessage extends StatelessWidget {
             const Positioned(
               top: 4,
               left: 6,
-              child: GrintaClubHomeButton(),
+              child: PfClubHomeButton(),
             ),
             const _CloseButton(),
           ],
@@ -590,7 +590,7 @@ class _StoryControls extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6),
       child: Row(
         children: [
-          const GrintaClubHomeButton(),
+          const PfClubHomeButton(),
           if (preview)
             // Des chiffres d'exemple ne doivent jamais pouvoir passer pour
             // un vrai bilan : l'aperçu le dit sur chaque écran.

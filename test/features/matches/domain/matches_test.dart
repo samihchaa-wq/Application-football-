@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/matches/domain/match_model.dart';
+import 'package:petit_filet/features/matches/domain/match_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -12,7 +12,7 @@ void main() {
         isHome: true,
         plannedDurationMinutes: 90,
         status: 'termine',
-        grintaScore: 2,
+        ownScore: 2,
         opponentScore: 1,
       );
 

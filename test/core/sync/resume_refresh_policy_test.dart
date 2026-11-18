@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:as_grinta/core/sync/resume_refresh_policy.dart';
+import 'package:petit_filet/core/sync/resume_refresh_policy.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

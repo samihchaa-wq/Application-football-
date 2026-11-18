@@ -1,12 +1,12 @@
 import 'dart:typed_data';
 
-import 'package:as_grinta/core/club/club_kits.dart';
-import 'package:as_grinta/core/config/app_config.dart';
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/core/security/password_policy.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/feature_flags/domain/feature_flags.dart';
+import 'package:petit_filet/core/club/club_kits.dart';
+import 'package:petit_filet/core/config/app_config.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/core/security/password_policy.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/feature_flags/domain/feature_flags.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

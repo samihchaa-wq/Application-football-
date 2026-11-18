@@ -20,7 +20,7 @@ class _GeneralRankingsSection extends ConsumerWidget {
 
     return leaderboard.when(
       loading: () => const Center(
-        child: GrintaLoader.page(
+        child: PfLoader.page(
           message: 'Le classement se met en place…',
           semanticLabel: 'Chargement du classement des matchs',
         ),
@@ -29,7 +29,7 @@ class _GeneralRankingsSection extends ConsumerWidget {
         title: 'Classement indisponible',
         icon: Icons.wifi_off_rounded,
         message: 'Le classement des matchs n’a pas pu être chargé.',
-        tone: GrintaEmptyTone.alert,
+        tone: PfEmptyTone.alert,
       ),
       data: (entries) => Padding(
         padding: const EdgeInsets.fromLTRB(

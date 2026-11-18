@@ -41,8 +41,8 @@ void main() {
       if (!source.contains('Scaffold(')) continue;
 
       checked.add(path);
-      final hasSharedHeader = source.contains('GrintaAppBar(');
-      final hasExplicitHomeBadge = source.contains('GrintaClubHomeButton(');
+      final hasSharedHeader = source.contains('PfAppBar(');
+      final hasExplicitHomeBadge = source.contains('PfClubHomeButton(');
       // Les fiches de match remplacent la barre par une flèche retour placée
       // à côté du bandeau ; sans écran précédent, elle ramène au calendrier.
       final hasMatchSheetBack = source.contains('MatchSheetTopRow(');
@@ -60,7 +60,7 @@ void main() {
       offenders,
       isEmpty,
       reason: 'Toute page authentifiée qui possède son propre Scaffold doit '
-          'afficher GrintaAppBar, GrintaClubHomeButton ou MatchSheetTopRow. '
+          'afficher PfAppBar, PfClubHomeButton ou MatchSheetTopRow. '
           'Pages non conformes: '
           '${offenders.join(', ')}',
     );

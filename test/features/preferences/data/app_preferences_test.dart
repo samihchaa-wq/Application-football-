@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/preferences/data/preferences_repository.dart';
+import 'package:petit_filet/features/preferences/data/preferences_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

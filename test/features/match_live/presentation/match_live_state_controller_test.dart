@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:as_grinta/features/match_live/data/match_live_repository.dart';
-import 'package:as_grinta/features/match_live/domain/match_live_state_bundle.dart';
-import 'package:as_grinta/features/match_live/presentation/match_live_providers.dart';
+import 'package:petit_filet/features/match_live/data/match_live_repository.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_state_bundle.dart';
+import 'package:petit_filet/features/match_live/presentation/match_live_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -41,13 +41,13 @@ void main() {
 
     newer.complete(_bundle(score: 2));
     await _flush();
-    expect(container.read(provider).value?.session.scoreAsGrinta, 2);
+    expect(container.read(provider).value?.session.scoreOwn, 2);
 
     older.complete(_bundle(score: 1));
     await _flush();
 
     expect(
-      container.read(provider).value?.session.scoreAsGrinta,
+      container.read(provider).value?.session.scoreOwn,
       2,
       reason: 'la réponse plus ancienne ne doit jamais remettre le Live à 1-0',
     );
@@ -95,7 +95,7 @@ void main() {
       repository.pendingFetches.removeAt(0).complete(_bundle(score: 1));
 
       await expectLater(mutation, throwsA(isA<StateError>()));
-      expect(container.read(provider).value?.session.scoreAsGrinta, 1);
+      expect(container.read(provider).value?.session.scoreOwn, 1);
       expect(
         container.read(matchLiveActionMessageProvider('match-1')),
         contains('Action non confirmée'),
@@ -142,7 +142,7 @@ void main() {
           ),
         ),
       );
-      expect(container.read(provider).value?.session.scoreAsGrinta, 1);
+      expect(container.read(provider).value?.session.scoreOwn, 1);
     },
   );
 
@@ -186,7 +186,7 @@ void main() {
 
       await expectLater(pending, throwsA(isA<TimeoutException>()));
       expect(repository.endMatchCalls, 1);
-      expect(container.read(provider).value?.session.scoreAsGrinta, 3);
+      expect(container.read(provider).value?.session.scoreOwn, 3);
       expect(
         container.read(matchLiveActionMessageProvider('match-1')),
         contains('rechargé'),

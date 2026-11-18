@@ -1,13 +1,13 @@
-import 'package:as_grinta/core/storage/player_photo_mode.dart';
-import 'package:as_grinta/core/club/club_kits.dart';
-import 'package:as_grinta/core/storage/profile_photo_urls.dart';
-import 'package:as_grinta/core/widgets/kit_portrait.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/utils/name_validation.dart';
-import 'package:as_grinta/core/widgets/match_contribution_icons.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/football_pitch.dart';
+import 'package:petit_filet/core/storage/player_photo_mode.dart';
+import 'package:petit_filet/core/club/club_kits.dart';
+import 'package:petit_filet/core/storage/profile_photo_urls.dart';
+import 'package:petit_filet/core/widgets/kit_portrait.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_kit_scope.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/utils/name_validation.dart';
+import 'package:petit_filet/core/widgets/match_contribution_icons.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/football_pitch.dart';
 import 'package:flutter/material.dart';
 
 class CompositionPitch extends StatefulWidget {

@@ -1,5 +1,5 @@
-import 'package:as_grinta/core/utils/match_window.dart';
-import 'package:as_grinta/features/matches/domain/match_model.dart';
+import 'package:petit_filet/core/utils/match_window.dart';
+import 'package:petit_filet/features/matches/domain/match_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -11,7 +11,7 @@ void main() {
         isHome: true,
         plannedDurationMinutes: 90,
         status: 'a_venir',
-        grintaScore: null,
+        ownScore: null,
         opponentScore: null,
         matchType: 'entre_nous',
       );
@@ -38,7 +38,7 @@ void main() {
       isHome: true,
       plannedDurationMinutes: 90,
       status: 'a_venir',
-      grintaScore: null,
+      ownScore: null,
       opponentScore: null,
       matchType: 'championnat',
     );

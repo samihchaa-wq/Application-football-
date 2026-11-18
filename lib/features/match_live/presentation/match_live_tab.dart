@@ -1,15 +1,15 @@
-import 'package:as_grinta/core/club/club_rules.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
 
 import 'dart:async';
 
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/match_live/domain/match_live_session.dart';
-import 'package:as_grinta/features/match_live/domain/match_live_state_bundle.dart';
-import 'package:as_grinta/features/match_live/presentation/match_live_pilot.dart';
-import 'package:as_grinta/features/match_live/presentation/match_live_pre_kickoff_page.dart';
-import 'package:as_grinta/features/match_live/presentation/match_live_providers.dart';
-import 'package:as_grinta/features/match_live/presentation/match_live_running_page.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_session.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_state_bundle.dart';
+import 'package:petit_filet/features/match_live/presentation/match_live_pilot.dart';
+import 'package:petit_filet/features/match_live/presentation/match_live_pre_kickoff_page.dart';
+import 'package:petit_filet/features/match_live/presentation/match_live_providers.dart';
+import 'package:petit_filet/features/match_live/presentation/match_live_running_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -43,7 +43,7 @@ class MatchLiveTab extends ConsumerWidget {
 
     return stateAsync.when(
       loading: () => const Center(
-        child: GrintaLoader.page(
+        child: PfLoader.page(
           message: 'Le Tableau Blanc se prépare…',
           semanticLabel: 'Chargement du Tableau Blanc',
         ),
@@ -194,7 +194,7 @@ class _CoachLiveViewState extends ConsumerState<_CoachLiveView>
       LivePilot.nobody when _claiming => const Padding(
           padding: EdgeInsets.symmetric(vertical: 48),
           child: Center(
-            child: GrintaLoader.page(
+            child: PfLoader.page(
               message: 'Ouverture du pilotage…',
               semanticLabel: 'Ouverture du pilotage du Live',
             ),

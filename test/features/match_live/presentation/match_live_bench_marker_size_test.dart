@@ -1,6 +1,6 @@
-import 'package:as_grinta/core/theme/app_spacing.dart';
-import 'package:as_grinta/features/match_live/presentation/match_live_running_page.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/formation_pitch_editor.dart';
+import 'package:petit_filet/core/theme/app_spacing.dart';
+import 'package:petit_filet/features/match_live/presentation/match_live_running_page.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/formation_pitch_editor.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

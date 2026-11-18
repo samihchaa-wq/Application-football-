@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:as_grinta/features/match_live/data/match_live_repository.dart';
-import 'package:as_grinta/features/match_live/domain/match_live_state_bundle.dart';
-import 'package:as_grinta/features/match_live/presentation/match_live_providers.dart';
+import 'package:petit_filet/features/match_live/data/match_live_repository.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_state_bundle.dart';
+import 'package:petit_filet/features/match_live/presentation/match_live_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

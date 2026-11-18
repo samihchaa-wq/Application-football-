@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
 import 'package:flutter/material.dart';
 
 /// Choix du joueur à retirer de la feuille de match, puis confirmation.

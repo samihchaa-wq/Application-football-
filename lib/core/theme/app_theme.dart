@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-class _GrintaPageTransitionsBuilder extends PageTransitionsBuilder {
-  const _GrintaPageTransitionsBuilder();
+class _PfPageTransitionsBuilder extends PageTransitionsBuilder {
+  const _PfPageTransitionsBuilder();
 
   @override
   Widget buildTransitions<T>(
@@ -206,12 +206,12 @@ abstract final class AppTheme {
       visualDensity: VisualDensity.standard,
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
-          TargetPlatform.android: _GrintaPageTransitionsBuilder(),
-          TargetPlatform.iOS: _GrintaPageTransitionsBuilder(),
-          TargetPlatform.macOS: _GrintaPageTransitionsBuilder(),
-          TargetPlatform.windows: _GrintaPageTransitionsBuilder(),
-          TargetPlatform.linux: _GrintaPageTransitionsBuilder(),
-          TargetPlatform.fuchsia: _GrintaPageTransitionsBuilder(),
+          TargetPlatform.android: _PfPageTransitionsBuilder(),
+          TargetPlatform.iOS: _PfPageTransitionsBuilder(),
+          TargetPlatform.macOS: _PfPageTransitionsBuilder(),
+          TargetPlatform.windows: _PfPageTransitionsBuilder(),
+          TargetPlatform.linux: _PfPageTransitionsBuilder(),
+          TargetPlatform.fuchsia: _PfPageTransitionsBuilder(),
         },
       ),
     );

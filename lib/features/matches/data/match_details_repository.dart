@@ -1,11 +1,11 @@
-import 'package:as_grinta/core/providers/supabase_provider.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HeadToHeadMatch {
   const HeadToHeadMatch({
     required this.date,
-    required this.scoreGrinta,
+    required this.scoreOwn,
     required this.scoreOpponent,
     this.location = '',
     this.id,
@@ -14,7 +14,7 @@ class HeadToHeadMatch {
 
   final DateTime date;
   final String location;
-  final int? scoreGrinta;
+  final int? scoreOwn;
   final int? scoreOpponent;
   final String? id;
   final bool isHistorical;
@@ -62,14 +62,14 @@ class MatchPredictionResult {
   const MatchPredictionResult({
     required this.profileId,
     required this.name,
-    required this.scoreGrinta,
+    required this.scoreOwn,
     required this.scoreOpponent,
     required this.points,
   });
 
   final String profileId;
   final String name;
-  final int scoreGrinta;
+  final int scoreOwn;
   final int scoreOpponent;
 
   /// Points déjà convertis en base 100 pour l'affichage.
@@ -89,7 +89,7 @@ class MatchDetailsData {
     required this.address,
     required this.matchType,
     required this.championshipRound,
-    required this.scoreGrinta,
+    required this.scoreOwn,
     required this.scoreOpponent,
     required this.oddsWin,
     required this.oddsDraw,
@@ -120,7 +120,7 @@ class MatchDetailsData {
   final String? address;
   final String matchType;
   final int? championshipRound;
-  final int? scoreGrinta;
+  final int? scoreOwn;
   final int? scoreOpponent;
   final double? oddsWin;
   final double? oddsDraw;
@@ -240,7 +240,7 @@ class MatchDetailsRepository {
           (row) => HeadToHeadMatch(
             date:
                 DateTime.tryParse('${row['encounter_date']}') ?? DateTime(1970),
-            scoreGrinta: (row['grinta_score'] as num?)?.toInt(),
+            scoreOwn: (row['grinta_score'] as num?)?.toInt(),
             scoreOpponent: (row['opponent_score'] as num?)?.toInt(),
             id: row['encounter_id']?.toString(),
             isHistorical: row['is_historical'] == true,
@@ -339,7 +339,7 @@ class MatchDetailsRepository {
         return MatchPredictionResult(
           profileId: profileId,
           name: _resolveName(profile['surnom'], profile['first_name']),
-          scoreGrinta: (map['predicted_score_as_grinta'] as num?)?.toInt() ?? 0,
+          scoreOwn: (map['predicted_score_as_grinta'] as num?)?.toInt() ?? 0,
           scoreOpponent: (map['predicted_score_adverse'] as num?)?.toInt() ?? 0,
           points: pointsByProfile[profileId] ?? 0,
         );
@@ -368,7 +368,7 @@ class MatchDetailsRepository {
           directAddress ?? (location == 'exterieur' ? opponentAddress : null),
       matchType: matchType,
       championshipRound: (match['championship_round'] as num?)?.toInt(),
-      scoreGrinta: match['score_as_grinta'] == null
+      scoreOwn: match['score_as_grinta'] == null
           ? null
           : int.tryParse('${match['score_as_grinta']}'),
       scoreOpponent: match['score_adverse'] == null

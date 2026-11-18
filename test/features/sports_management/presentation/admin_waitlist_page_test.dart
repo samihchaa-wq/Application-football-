@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:as_grinta/core/widgets/sticky_header_table.dart';
-import 'package:as_grinta/features/sports_management/data/sport_waitlist_repository.dart';
-import 'package:as_grinta/features/sports_management/domain/availability_reminder_models.dart';
-import 'package:as_grinta/features/sports_management/domain/sport_waitlist_models.dart';
-import 'package:as_grinta/features/sports_management/presentation/admin_waitlist_page.dart';
+import 'package:petit_filet/core/widgets/sticky_header_table.dart';
+import 'package:petit_filet/features/sports_management/data/sport_waitlist_repository.dart';
+import 'package:petit_filet/features/sports_management/domain/availability_reminder_models.dart';
+import 'package:petit_filet/features/sports_management/domain/sport_waitlist_models.dart';
+import 'package:petit_filet/features/sports_management/presentation/admin_waitlist_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

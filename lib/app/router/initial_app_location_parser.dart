@@ -33,8 +33,8 @@ String initialLocationFromBrowserHash(String hash) {
 
 /// Résout la route de démarrage à partir de l'adresse complète.
 ///
-/// L'application lit ses routes après `#` (`/AS-Grinta/#/matches/…`). Mais
-/// certaines adresses arrivent sous la forme chemin (`/AS-Grinta/matches/…`) :
+/// L'application lit ses routes après `#` (`/Application-football-/#/matches/…`). Mais
+/// certaines adresses arrivent sous la forme chemin (`/Application-football-/matches/…`) :
 /// anciennes notifications, lien copié, favori. GitHub Pages sert alors
 /// `404.html`, copie d'`index.html`, et l'application démarrait sur le
 /// calendrier. Quand la partie `#` est vide, le chemin situé sous [basePath]

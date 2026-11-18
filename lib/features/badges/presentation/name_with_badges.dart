@@ -1,9 +1,9 @@
-import 'package:as_grinta/core/utils/name_validation.dart';
-import 'package:as_grinta/core/widgets/sticky_header_table.dart';
-import 'package:as_grinta/features/badges/data/statistics_badge_emblems_provider.dart';
-import 'package:as_grinta/features/badges/presentation/badge_display_scope.dart';
-import 'package:as_grinta/features/badges/presentation/badge_emblem.dart';
-import 'package:as_grinta/features/badges/presentation/badge_emblem_body.dart';
+import 'package:petit_filet/core/utils/name_validation.dart';
+import 'package:petit_filet/core/widgets/sticky_header_table.dart';
+import 'package:petit_filet/features/badges/data/statistics_badge_emblems_provider.dart';
+import 'package:petit_filet/features/badges/presentation/badge_display_scope.dart';
+import 'package:petit_filet/features/badges/presentation/badge_emblem.dart';
+import 'package:petit_filet/features/badges/presentation/badge_emblem_body.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -33,7 +33,7 @@ class NameWithBadges extends ConsumerWidget {
   final bool alignBadgesEnd;
 
   TextStyle _resolvedStyle(BuildContext context) {
-    final base = grintaTableCellTextStyle(
+    final base = pfTableCellTextStyle(
       context,
       fontWeight: FontWeight.w400,
     );
@@ -58,7 +58,7 @@ class NameWithBadges extends ConsumerWidget {
     if (badges.isEmpty) return nameText;
 
     final requested =
-        badgeSize ?? (resolved.fontSize ?? grintaTableCellFontSize) * 1.35;
+        badgeSize ?? (resolved.fontSize ?? pfTableCellFontSize) * 1.35;
     final emblemSize = requested < nameWithBadgesMinimumSize
         ? nameWithBadgesMinimumSize
         : requested;

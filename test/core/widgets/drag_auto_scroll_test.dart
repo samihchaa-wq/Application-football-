@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/widgets/drag_auto_scroll.dart';
+import 'package:petit_filet/core/widgets/drag_auto_scroll.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

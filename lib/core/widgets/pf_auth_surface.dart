@@ -1,9 +1,9 @@
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
-class GrintaAuthSurface extends StatelessWidget {
-  const GrintaAuthSurface({
+class PfAuthSurface extends StatelessWidget {
+  const PfAuthSurface({
     super.key,
     required this.child,
     this.title,

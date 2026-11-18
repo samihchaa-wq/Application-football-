@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
-import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
-import 'package:as_grinta/features/sports_management/domain/player_position_profiles.dart';
+import 'package:petit_filet/features/sports_management/domain/football_formation.dart';
+import 'package:petit_filet/features/sports_management/domain/player_position_profiles.dart';
 import 'package:flutter/material.dart';
 
 /// Portée de l'affinité entre deux postes, en unités de terrain.

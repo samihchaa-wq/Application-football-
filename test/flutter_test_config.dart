@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:as_grinta/core/club/club_identity.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
 
 /// Réglage commun à tous les tests.
 ///

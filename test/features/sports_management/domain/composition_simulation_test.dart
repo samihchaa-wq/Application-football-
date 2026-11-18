@@ -1,6 +1,6 @@
 import 'position_profiles_fixture.dart';
-import 'package:as_grinta/features/sports_management/domain/composition_simulation.dart';
-import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
+import 'package:petit_filet/features/sports_management/domain/composition_simulation.dart';
+import 'package:petit_filet/features/sports_management/domain/football_formation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Identités fictives de l'effectif d'essai, telles que le fichier de postes

@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/core/utils/match_window.dart';
-import 'package:as_grinta/features/matches/data/match_info_repository.dart';
-import 'package:as_grinta/features/predictions/domain/prediction_scoring.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/core/utils/match_window.dart';
+import 'package:petit_filet/features/matches/data/match_info_repository.dart';
+import 'package:petit_filet/features/predictions/domain/prediction_scoring.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -56,13 +56,13 @@ class MatchPredictionItem {
     required this.kickoffAt,
     required this.status,
     this.isHome = true,
-    required this.scoreGrinta,
+    required this.scoreOwn,
     required this.scoreOpponent,
     required this.isFilled,
     required this.oddsWin,
     required this.oddsDraw,
     required this.oddsLoss,
-    required this.actualScoreGrinta,
+    required this.actualScoreOwn,
     required this.actualScoreOpponent,
     this.predictionsClosedAt,
     this.availabilityOpensAt,
@@ -73,13 +73,13 @@ class MatchPredictionItem {
   final DateTime kickoffAt;
   final String status;
   final bool isHome;
-  final int scoreGrinta;
+  final int scoreOwn;
   final int scoreOpponent;
   final bool isFilled;
   final double? oddsWin;
   final double? oddsDraw;
   final double? oddsLoss;
-  final int? actualScoreGrinta;
+  final int? actualScoreOwn;
   final int? actualScoreOpponent;
   final DateTime? predictionsClosedAt;
 
@@ -102,29 +102,28 @@ class MatchPredictionItem {
   bool canEditAt(DateTime now) => !isClosedAt(now);
   bool get isClosed => isClosedAt(DateTime.now());
   bool get canEdit => canEditAt(DateTime.now());
-  bool get hasResult =>
-      actualScoreGrinta != null && actualScoreOpponent != null;
+  bool get hasResult => actualScoreOwn != null && actualScoreOpponent != null;
 
   double? get earnedPoints {
     if (!isFilled || !hasResult) return hasResult ? 0 : null;
-    final actualResult = _result(actualScoreGrinta!, actualScoreOpponent!);
+    final actualResult = _result(actualScoreOwn!, actualScoreOpponent!);
     final decimalOdds = switch (actualResult) {
       1 => oddsWin,
       0 => oddsDraw,
       _ => oddsLoss,
     };
     return PredictionScoring.points(
-      predictedHome: scoreGrinta,
+      predictedHome: scoreOwn,
       predictedAway: scoreOpponent,
-      actualHome: actualScoreGrinta!,
+      actualHome: actualScoreOwn!,
       actualAway: actualScoreOpponent!,
       baseOdds: decimalOdds,
     );
   }
 
-  static int _result(int grinta, int opponent) {
-    if (grinta > opponent) return 1;
-    if (grinta == opponent) return 0;
+  static int _result(int own, int opponent) {
+    if (own > opponent) return 1;
+    if (own == opponent) return 0;
     return -1;
   }
 }
@@ -210,7 +209,7 @@ class PredictionsRepository {
       kickoffAt: kickoffAt,
       status: matchMap['status']?.toString() ?? 'a_venir',
       isHome: matchMap['location']?.toString() != 'exterieur',
-      scoreGrinta:
+      scoreOwn:
           int.tryParse('${prediction?['predicted_score_as_grinta'] ?? 0}') ?? 0,
       scoreOpponent:
           int.tryParse('${prediction?['predicted_score_adverse'] ?? 0}') ?? 0,
@@ -218,7 +217,7 @@ class PredictionsRepository {
       oddsWin: (odds['odds_victoire_as_grinta'] as num?)?.toDouble(),
       oddsDraw: (odds['odds_nul'] as num?)?.toDouble(),
       oddsLoss: (odds['odds_victoire_adverse'] as num?)?.toDouble(),
-      actualScoreGrinta: matchMap['score_as_grinta'] == null
+      actualScoreOwn: matchMap['score_as_grinta'] == null
           ? null
           : int.tryParse('${matchMap['score_as_grinta']}'),
       actualScoreOpponent: matchMap['score_adverse'] == null
@@ -235,14 +234,14 @@ class PredictionsRepository {
 
   Future<void> savePrediction({
     required String matchId,
-    required int scoreGrinta,
+    required int scoreOwn,
     required int scoreOpponent,
   }) async {
     if (_client.auth.currentUser == null) {
       throw StateError('Ta session a expiré. Reconnecte-toi.');
     }
-    if (scoreGrinta < 0 ||
-        scoreGrinta > 99 ||
+    if (scoreOwn < 0 ||
+        scoreOwn > 99 ||
         scoreOpponent < 0 ||
         scoreOpponent > 99) {
       throw ArgumentError('Les scores doivent être compris entre 0 et 99.');
@@ -254,7 +253,7 @@ class PredictionsRepository {
           'save_match_prediction',
           params: {
             'p_match_id': matchId,
-            'p_score_as_grinta': scoreGrinta,
+            'p_score_as_grinta': scoreOwn,
             'p_score_adverse': scoreOpponent,
           },
         );
@@ -266,7 +265,7 @@ class PredictionsRepository {
         final current = await fetchMatchPrediction(matchId);
         return current != null &&
             current.isFilled &&
-            current.scoreGrinta == scoreGrinta &&
+            current.scoreOwn == scoreOwn &&
             current.scoreOpponent == scoreOpponent;
       },
     );

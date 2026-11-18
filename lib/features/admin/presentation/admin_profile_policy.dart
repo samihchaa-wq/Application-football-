@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/admin/data/admin_repository.dart';
+import 'package:petit_filet/features/admin/data/admin_repository.dart';
 
 class AdminProfileGroups {
   const AdminProfileGroups({

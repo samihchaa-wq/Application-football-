@@ -1,7 +1,7 @@
 // Données d'essai anonymisées : postes de référence de joueurs fictifs, pour
 // tester les calculs de composition. Elles ne sont jamais embarquées dans
 // l'application.
-import 'package:as_grinta/features/sports_management/domain/player_position_profiles.dart';
+import 'package:petit_filet/features/sports_management/domain/player_position_profiles.dart';
 
 const Map<String, PlayerPositionProfile> kTestPositionProfiles =
     <String, PlayerPositionProfile>{

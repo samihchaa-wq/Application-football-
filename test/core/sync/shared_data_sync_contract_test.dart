@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:as_grinta/core/sync/shared_data_sync.dart';
+import 'package:petit_filet/core/sync/shared_data_sync.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

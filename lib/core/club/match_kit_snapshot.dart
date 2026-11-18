@@ -1,6 +1,6 @@
-import 'package:as_grinta/core/club/club_kits.dart';
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/features/matches/domain/jersey_option.dart';
+import 'package:petit_filet/core/club/club_kits.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/features/matches/domain/jersey_option.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

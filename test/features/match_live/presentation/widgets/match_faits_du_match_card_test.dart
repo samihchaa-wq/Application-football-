@@ -1,8 +1,8 @@
-import 'package:as_grinta/features/match_live/presentation/widgets/match_faits_du_match_card.dart';
-import 'package:as_grinta/features/sports_management/data/match_sport_report_repository.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/domain/match_goal_action.dart';
-import 'package:as_grinta/features/sports_management/domain/match_sport_report.dart';
+import 'package:petit_filet/features/match_live/presentation/widgets/match_faits_du_match_card.dart';
+import 'package:petit_filet/features/sports_management/data/match_sport_report_repository.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/domain/match_goal_action.dart';
+import 'package:petit_filet/features/sports_management/domain/match_sport_report.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -160,7 +160,7 @@ class _GoalActionsOnlyRepository implements MatchSportReportRepository {
   Future<MatchSportReport> submit({
     required String matchId,
     required int knownVersion,
-    required int scoreAsGrinta,
+    required int scoreOwn,
     required int scoreAdverse,
     required MatchComposition lineup,
     required List<MatchGoalAction> goalActions,

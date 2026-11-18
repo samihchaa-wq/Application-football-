@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:as_grinta/core/logging/app_logger.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
-import 'package:as_grinta/features/feature_flags/data/feature_flags_repository.dart';
-import 'package:as_grinta/features/feature_flags/domain/feature_flags.dart';
-import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
+import 'package:petit_filet/core/logging/app_logger.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
+import 'package:petit_filet/features/feature_flags/data/feature_flags_repository.dart';
+import 'package:petit_filet/features/feature_flags/domain/feature_flags.dart';
+import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

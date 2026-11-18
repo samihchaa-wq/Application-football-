@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:as_grinta/core/logging/app_logger.dart';
-import 'package:as_grinta/core/logging/error_category.dart';
+import 'package:petit_filet/core/logging/app_logger.dart';
+import 'package:petit_filet/core/logging/error_category.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

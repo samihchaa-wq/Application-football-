@@ -1,15 +1,15 @@
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/theme/app_spacing.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/theme/calendar_card_palette.dart';
-import 'package:as_grinta/core/widgets/match_address_sheet.dart';
-import 'package:as_grinta/core/widgets/match_date_column.dart';
-import 'package:as_grinta/core/widgets/calendar_scoreline.dart';
-import 'package:as_grinta/features/match_live/data/match_live_notification_repository.dart';
-import 'package:as_grinta/features/match_live/presentation/widgets/match_live_notification_bell.dart';
-import 'package:as_grinta/features/matches/domain/match_model.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/admin_match_options_button.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/match_availability_selector.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/theme/app_spacing.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/theme/calendar_card_palette.dart';
+import 'package:petit_filet/core/widgets/match_address_sheet.dart';
+import 'package:petit_filet/core/widgets/match_date_column.dart';
+import 'package:petit_filet/core/widgets/calendar_scoreline.dart';
+import 'package:petit_filet/features/match_live/data/match_live_notification_repository.dart';
+import 'package:petit_filet/features/match_live/presentation/widgets/match_live_notification_bell.dart';
+import 'package:petit_filet/features/matches/domain/match_model.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/admin_match_options_button.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/match_availability_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -88,7 +88,7 @@ class HomeNextMatchCard extends ConsumerWidget {
               : CalendarScoreline(
                   homeName: homeName,
                   awayName: awayName,
-                  grintaIsHome: match.isHome,
+                  ownIsHome: match.isHome,
                   foreground: AppTheme.textPrimary,
                 ),
         ),

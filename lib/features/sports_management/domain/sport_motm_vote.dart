@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/club/club_rules.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
 
 enum SportMotmVoteState {
   unavailable,
@@ -77,7 +77,7 @@ class SportMotmVote {
     required this.matchId,
     required this.opponentName,
     required this.isHome,
-    required this.scoreAsGrinta,
+    required this.scoreOwn,
     required this.scoreAdverse,
     required this.state,
     required this.opensAt,
@@ -102,7 +102,7 @@ class SportMotmVote {
       matchId: json['match_id'].toString(),
       opponentName: (json['opponent_name'] ?? 'Adversaire').toString(),
       isHome: json['is_home'] != false,
-      scoreAsGrinta: (json['score_as_grinta'] as num?)?.toInt(),
+      scoreOwn: (json['score_as_grinta'] as num?)?.toInt(),
       scoreAdverse: (json['score_adverse'] as num?)?.toInt(),
       state: SportMotmVoteState.parse(json['state']),
       opensAt: parseDate(json['opens_at']),
@@ -127,7 +127,7 @@ class SportMotmVote {
   final String matchId;
   final String opponentName;
   final bool isHome;
-  final int? scoreAsGrinta;
+  final int? scoreOwn;
   final int? scoreAdverse;
   final SportMotmVoteState state;
   final DateTime? opensAt;
@@ -149,5 +149,5 @@ class SportMotmVote {
   bool get isClosed => state == SportMotmVoteState.closed;
 
   /// Le score n'est connu qu'une fois la feuille de match validée.
-  bool get hasScore => scoreAsGrinta != null && scoreAdverse != null;
+  bool get hasScore => scoreOwn != null && scoreAdverse != null;
 }

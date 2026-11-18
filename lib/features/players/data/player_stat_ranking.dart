@@ -1,6 +1,6 @@
-import 'package:as_grinta/features/players/data/player_card_repository.dart';
-import 'package:as_grinta/features/players/presentation/player_card_link.dart';
-import 'package:as_grinta/features/statistics/data/statistics_repository.dart';
+import 'package:petit_filet/features/players/data/player_card_repository.dart';
+import 'package:petit_filet/features/players/presentation/player_card_link.dart';
+import 'package:petit_filet/features/statistics/data/statistics_repository.dart';
 
 /// Les six statistiques de la fiche joueur, chacune ouvrant son classement
 /// complet.

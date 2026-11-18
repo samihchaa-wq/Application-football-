@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/auth/presentation/widgets/email_verification_panel.dart';
+import 'package:petit_filet/features/auth/presentation/widgets/email_verification_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

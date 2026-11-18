@@ -47,8 +47,8 @@ void main() {
           continue;
         }
         final targetSource = File(targetPath).readAsStringSync();
-        final compliant = targetSource.contains('GrintaAppBar(') ||
-            targetSource.contains('GrintaClubHomeButton(') ||
+        final compliant = targetSource.contains('PfAppBar(') ||
+            targetSource.contains('PfClubHomeButton(') ||
             targetSource.contains('MatchSheetTopRow(');
         if (!compliant) {
           nonCompliantTargets.add('$path -> $targetPath');

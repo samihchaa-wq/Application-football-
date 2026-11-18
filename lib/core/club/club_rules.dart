@@ -1,7 +1,7 @@
-import 'package:as_grinta/core/club/club_feature.dart';
+import 'package:petit_filet/core/club/club_feature.dart';
 import 'package:flutter/foundation.dart';
 
-export 'package:as_grinta/core/club/club_feature.dart';
+export 'package:petit_filet/core/club/club_feature.dart';
 
 /// Règles du club qui pilotent les horaires d'un match (ouverture des
 /// pronostics, fermeture, mode live…). Les valeurs par défaut sont celles

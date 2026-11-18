@@ -1,31 +1,31 @@
-import 'package:as_grinta/core/club/club_rules.dart';
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/widgets/collapsible_section_card.dart';
-import 'package:as_grinta/core/widgets/match_detail_header_card.dart';
-import 'package:as_grinta/core/widgets/match_sheet_top_row.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/badges/presentation/name_with_badges.dart';
-import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
-import 'package:as_grinta/features/sports_management/data/match_sport_report_repository.dart';
-import 'package:as_grinta/features/match_live/presentation/widgets/match_faits_du_match_card.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
-import 'package:as_grinta/features/matches/data/match_details_repository.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/completed_match_composition_card.dart';
-import 'package:as_grinta/features/sports_management/data/match_availability_board_repository.dart';
-import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
-import 'package:as_grinta/features/sports_management/data/sport_motm_vote_repository.dart';
-import 'package:as_grinta/features/sports_management/domain/match_availability_board.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/domain/sport_motm_vote.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/stadium_video.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/widgets/collapsible_section_card.dart';
+import 'package:petit_filet/core/widgets/match_detail_header_card.dart';
+import 'package:petit_filet/core/widgets/match_sheet_top_row.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/badges/presentation/name_with_badges.dart';
+import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
+import 'package:petit_filet/features/sports_management/data/match_sport_report_repository.dart';
+import 'package:petit_filet/features/match_live/presentation/widgets/match_faits_du_match_card.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
+import 'package:petit_filet/features/matches/data/match_details_repository.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/completed_match_composition_card.dart';
+import 'package:petit_filet/features/sports_management/data/match_availability_board_repository.dart';
+import 'package:petit_filet/features/sports_management/data/match_composition_repository.dart';
+import 'package:petit_filet/features/sports_management/data/sport_motm_vote_repository.dart';
+import 'package:petit_filet/features/sports_management/domain/match_availability_board.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/domain/sport_motm_vote.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_kit_scope.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/stadium_video.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
 
 int compareMatchPredictionResultsForDisplay(
   MatchPredictionResult a,
@@ -102,7 +102,7 @@ class MatchDetailsPage extends ConsumerWidget {
               children: const [
                 MatchSheetTopRow(),
                 SizedBox(height: 170),
-                Center(child: GrintaProgressIndicator()),
+                Center(child: PfProgressIndicator()),
               ],
             ),
             error: (error, _) => MatchSheetListView(
@@ -161,13 +161,13 @@ class MatchDetailsPage extends ConsumerWidget {
                       awayName: details.location == 'domicile'
                           ? details.opponentName
                           : ClubIdentity.name,
-                      grintaIsHome: details.location == 'domicile',
+                      ownIsHome: details.location == 'domicile',
                       homeScore: details.location == 'domicile'
-                          ? details.scoreGrinta ?? 0
+                          ? details.scoreOwn ?? 0
                           : details.scoreOpponent ?? 0,
                       awayScore: details.location == 'domicile'
                           ? details.scoreOpponent ?? 0
-                          : details.scoreGrinta ?? 0,
+                          : details.scoreOwn ?? 0,
                       finished: true,
                       kickoffAt: details.kickoffAt,
                       matchType: details.matchType,
@@ -199,7 +199,7 @@ class MatchDetailsPage extends ConsumerWidget {
                     _PredictionsTable(
                       matchId: matchId,
                       predictions: details.predictions,
-                      actualGrinta: details.scoreGrinta ?? 0,
+                      actualOwn: details.scoreOwn ?? 0,
                       actualOpponent: details.scoreOpponent ?? 0,
                       isHome: details.location == 'domicile',
                       currentProfileId: currentProfileId,
@@ -354,7 +354,7 @@ class _UpcomingHeader extends StatelessWidget {
     return MatchDetailHeaderCard(
       homeName: home ? ClubIdentity.name : details.opponentName,
       awayName: home ? details.opponentName : ClubIdentity.name,
-      grintaIsHome: home,
+      ownIsHome: home,
       kickoffAt: details.kickoffAt,
       matchType: details.matchType,
       typeLabel: calendarMatchTypeLabel(
@@ -688,7 +688,7 @@ class _PredictionsTable extends StatelessWidget {
   const _PredictionsTable({
     required this.matchId,
     required this.predictions,
-    required this.actualGrinta,
+    required this.actualOwn,
     required this.actualOpponent,
     required this.isHome,
     required this.currentProfileId,
@@ -696,7 +696,7 @@ class _PredictionsTable extends StatelessWidget {
 
   final String matchId;
   final List<MatchPredictionResult> predictions;
-  final int actualGrinta;
+  final int actualOwn;
   final int actualOpponent;
   final bool isHome;
   final String? currentProfileId;
@@ -707,16 +707,16 @@ class _PredictionsTable extends StatelessWidget {
   /// (voir PredictionScoring) : violet ×2, or ×1,5, vert ×1, rien à 0.
   Color? _colorFor(MatchPredictionResult prediction) {
     if (prediction.points <= 0) return null;
-    final exact = prediction.scoreGrinta == actualGrinta &&
+    final exact = prediction.scoreOwn == actualOwn &&
         prediction.scoreOpponent == actualOpponent;
     if (exact) return const Color(0xFF9B6CFF);
     final correctWinner =
-        _result(prediction.scoreGrinta, prediction.scoreOpponent) ==
-            _result(actualGrinta, actualOpponent);
+        _result(prediction.scoreOwn, prediction.scoreOpponent) ==
+            _result(actualOwn, actualOpponent);
     if (!correctWinner) return null;
-    final sameGap = prediction.scoreGrinta - prediction.scoreOpponent ==
-        actualGrinta - actualOpponent;
-    final oneTeamExact = prediction.scoreGrinta == actualGrinta ||
+    final sameGap = prediction.scoreOwn - prediction.scoreOpponent ==
+        actualOwn - actualOpponent;
+    final oneTeamExact = prediction.scoreOwn == actualOwn ||
         prediction.scoreOpponent == actualOpponent;
     if (sameGap || oneTeamExact) return AppTheme.reward;
     return const Color(0xFF39E784);
@@ -750,8 +750,8 @@ class _PredictionsTable extends StatelessWidget {
           Expanded(
             child: Text(
               isHome
-                  ? '${prediction.scoreGrinta}–${prediction.scoreOpponent}'
-                  : '${prediction.scoreOpponent}–${prediction.scoreGrinta}',
+                  ? '${prediction.scoreOwn}–${prediction.scoreOpponent}'
+                  : '${prediction.scoreOpponent}–${prediction.scoreOwn}',
               textAlign: TextAlign.center,
             ),
           ),

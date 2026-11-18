@@ -1,15 +1,15 @@
 import 'dart:typed_data';
 
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/widgets/equal_height_column.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/badges/data/badge_admin_repository.dart';
-import 'package:as_grinta/features/badges/data/badge_repository.dart';
-import 'package:as_grinta/features/badges/presentation/badge_detail_sheet.dart';
-import 'package:as_grinta/features/badges/presentation/badge_emblem.dart';
-import 'package:as_grinta/features/badges/presentation/badge_image_editor.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/widgets/equal_height_column.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/badges/data/badge_admin_repository.dart';
+import 'package:petit_filet/features/badges/data/badge_repository.dart';
+import 'package:petit_filet/features/badges/presentation/badge_detail_sheet.dart';
+import 'package:petit_filet/features/badges/presentation/badge_emblem.dart';
+import 'package:petit_filet/features/badges/presentation/badge_image_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -112,7 +112,7 @@ class _BadgeAdminPageState extends ConsumerState<BadgeAdminPage> {
         badgesAsync.when(
           loading: () => const Padding(
             padding: EdgeInsets.all(24),
-            child: Center(child: GrintaProgressIndicator()),
+            child: Center(child: PfProgressIndicator()),
           ),
           error: (e, _) => Text(humanizeError(e)),
           data: (badges) {
@@ -236,7 +236,7 @@ class _BadgeAdminPageState extends ConsumerState<BadgeAdminPage> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        appBar: GrintaAppBar(title: const Text('Badges')),
+        appBar: PfAppBar(title: const Text('Badges')),
         body: Column(
           children: [
             Padding(
@@ -450,7 +450,7 @@ class _CreateBadgeCard extends StatelessWidget {
                     ? const SizedBox(
                         width: 18,
                         height: 18,
-                        child: GrintaProgressIndicator(strokeWidth: 2),
+                        child: PfProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.add),
                 label: const Text('Créer le badge'),
@@ -628,7 +628,7 @@ class _AwardSheetState extends ConsumerState<_AwardSheet> {
               padding: const EdgeInsets.all(20),
               child: _error != null
                   ? Text(_error!)
-                  : const Center(child: GrintaProgressIndicator()),
+                  : const Center(child: PfProgressIndicator()),
             )
           else
             ConstrainedBox(
@@ -636,7 +636,7 @@ class _AwardSheetState extends ConsumerState<_AwardSheet> {
                 maxHeight: MediaQuery.of(context).size.height * 0.5,
               ),
               child: peopleAsync.when(
-                loading: () => const Center(child: GrintaProgressIndicator()),
+                loading: () => const Center(child: PfProgressIndicator()),
                 error: (e, _) => Text(humanizeError(e)),
                 data: (people) {
                   final candidates = people
@@ -659,7 +659,7 @@ class _AwardSheetState extends ConsumerState<_AwardSheet> {
                               ? const SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child: GrintaProgressIndicator(
+                                  child: PfProgressIndicator(
                                     strokeWidth: 2,
                                   ),
                                 )

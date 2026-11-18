@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:as_grinta/core/utils/name_validation.dart';
-import 'package:as_grinta/features/admin/data/admin_repository.dart';
+import 'package:petit_filet/core/utils/name_validation.dart';
+import 'package:petit_filet/features/admin/data/admin_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

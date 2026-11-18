@@ -1,6 +1,6 @@
-import 'package:as_grinta/features/match_live/domain/match_live_add_player_options.dart';
-import 'package:as_grinta/features/match_live/domain/match_live_event.dart';
-import 'package:as_grinta/features/match_live/domain/match_live_state_bundle.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_add_player_options.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_event.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_state_bundle.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -1,8 +1,8 @@
 import 'dart:math';
 
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/features/sports_management/domain/availability_reminder_models.dart';
-import 'package:as_grinta/features/sports_management/domain/sport_waitlist_models.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/features/sports_management/domain/availability_reminder_models.dart';
+import 'package:petit_filet/features/sports_management/domain/sport_waitlist_models.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

@@ -1,16 +1,16 @@
-import 'package:as_grinta/core/widgets/player_photo_mode_picker.dart';
-import 'package:as_grinta/core/storage/player_photo_mode.dart';
-import 'package:as_grinta/core/security/password_policy.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/utils/name_validation.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/core/widgets/photo_crop_preview.dart';
-import 'package:as_grinta/features/auth/data/account_email_repository.dart';
-import 'package:as_grinta/features/auth/domain/auth_profile.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/profile/presentation/my_data_section.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:petit_filet/core/widgets/player_photo_mode_picker.dart';
+import 'package:petit_filet/core/storage/player_photo_mode.dart';
+import 'package:petit_filet/core/security/password_policy.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/utils/name_validation.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/core/widgets/photo_crop_preview.dart';
+import 'package:petit_filet/features/auth/data/account_email_repository.dart';
+import 'package:petit_filet/features/auth/domain/auth_profile.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/profile/presentation/my_data_section.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -66,7 +66,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         : 'Modifier la photo de profil';
 
     return Scaffold(
-      appBar: GrintaAppBar(title: const Text('Profil')),
+      appBar: PfAppBar(title: const Text('Profil')),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final compact = constraints.maxHeight < 700;
@@ -251,7 +251,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     ? const SizedBox(
                         width: 18,
                         height: 18,
-                        child: GrintaProgressIndicator(strokeWidth: 2),
+                        child: PfProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.save_rounded),
                 label: const Text('Enregistrer les modifications'),

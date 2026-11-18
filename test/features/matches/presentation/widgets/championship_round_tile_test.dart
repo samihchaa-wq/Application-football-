@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/matches/presentation/widgets/championship_round_tile.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/championship_round_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

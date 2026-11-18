@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:as_grinta/core/widgets/grinta_status_banner.dart';
-import 'package:as_grinta/features/auth/data/auth_repository.dart';
-import 'package:as_grinta/features/auth/presentation/auth_sign_in_page.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/core/widgets/pf_status_banner.dart';
+import 'package:petit_filet/features/auth/data/auth_repository.dart';
+import 'package:petit_filet/features/auth/presentation/auth_sign_in_page.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -27,15 +27,15 @@ void main() {
     await tester.pump();
   }
 
-  GrintaStatusBanner banner(WidgetTester tester) =>
-      tester.widget<GrintaStatusBanner>(find.byType(GrintaStatusBanner));
+  PfStatusBanner banner(WidgetTester tester) =>
+      tester.widget<PfStatusBanner>(find.byType(PfStatusBanner));
 
   testWidgets('l’erreur reste affichée dans un bandeau d’erreur',
       (tester) async {
     const error = 'Connexion au serveur impossible. Vérifie ton réseau.';
     await pumpSignIn(tester, error: error);
 
-    expect(banner(tester).tone, GrintaStatusTone.error);
+    expect(banner(tester).tone, PfStatusTone.error);
     expect(banner(tester).title, 'Connexion impossible');
     expect(find.text(error), findsOneWidget);
 
@@ -49,7 +49,7 @@ void main() {
       (tester) async {
     await pumpSignIn(tester, error: 'Ce compte n’est pas actif.');
 
-    expect(banner(tester).tone, GrintaStatusTone.error);
+    expect(banner(tester).tone, PfStatusTone.error);
     expect(find.text('Accès refusé'), findsOneWidget);
     expect(find.text('Ce compte n’est pas actif.'), findsOneWidget);
   });
@@ -57,7 +57,7 @@ void main() {
   testWidgets('sans erreur, aucun bandeau', (tester) async {
     await pumpSignIn(tester);
 
-    expect(find.byType(GrintaStatusBanner), findsNothing);
+    expect(find.byType(PfStatusBanner), findsNothing);
   });
 }
 

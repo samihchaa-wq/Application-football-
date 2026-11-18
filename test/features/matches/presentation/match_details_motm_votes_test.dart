@@ -1,17 +1,17 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/features/auth/data/auth_repository.dart';
-import 'package:as_grinta/features/auth/domain/auth_profile.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
-import 'package:as_grinta/features/matches/data/match_details_repository.dart';
-import 'package:as_grinta/features/matches/presentation/match_details_page.dart';
-import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
-import 'package:as_grinta/features/sports_management/data/match_sport_report_repository.dart';
-import 'package:as_grinta/features/sports_management/data/sport_motm_vote_repository.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/domain/sport_motm_vote.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/features/auth/data/auth_repository.dart';
+import 'package:petit_filet/features/auth/domain/auth_profile.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
+import 'package:petit_filet/features/matches/data/match_details_repository.dart';
+import 'package:petit_filet/features/matches/presentation/match_details_page.dart';
+import 'package:petit_filet/features/sports_management/data/match_composition_repository.dart';
+import 'package:petit_filet/features/sports_management/data/match_sport_report_repository.dart';
+import 'package:petit_filet/features/sports_management/data/sport_motm_vote_repository.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/domain/sport_motm_vote.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -31,7 +31,7 @@ MatchDetailsData _details() => MatchDetailsData(
       address: null,
       matchType: 'amical',
       championshipRound: null,
-      scoreGrinta: 2,
+      scoreOwn: 2,
       scoreOpponent: 1,
       oddsWin: null,
       oddsDraw: null,
@@ -207,7 +207,7 @@ void main() {
         address: base.address,
         matchType: base.matchType,
         championshipRound: base.championshipRound,
-        scoreGrinta: base.scoreGrinta,
+        scoreOwn: base.scoreOwn,
         scoreOpponent: base.scoreOpponent,
         oddsWin: null,
         oddsDraw: null,
@@ -221,7 +221,7 @@ void main() {
             MatchPredictionResult(
               profileId: 'p$i',
               name: 'Joueur $i',
-              scoreGrinta: 2,
+              scoreOwn: 2,
               scoreOpponent: 1,
               points: 3,
             ),
@@ -261,7 +261,7 @@ void main() {
         MatchPredictionResult(
           profileId: name,
           name: name,
-          scoreGrinta: g,
+          scoreOwn: g,
           scoreOpponent: o,
           points: points,
         );
@@ -281,7 +281,7 @@ void main() {
         address: base.address,
         matchType: base.matchType,
         championshipRound: base.championshipRound,
-        scoreGrinta: base.scoreGrinta,
+        scoreOwn: base.scoreOwn,
         scoreOpponent: base.scoreOpponent,
         oddsWin: null,
         oddsDraw: null,

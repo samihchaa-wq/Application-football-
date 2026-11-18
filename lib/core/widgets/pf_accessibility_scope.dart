@@ -8,17 +8,16 @@ import 'package:flutter/material.dart';
 /// démarrait sur les fiches de matchs terminés situées plus de 1 600 px
 /// au-dessus de la fenêtre, et il fallait dix-sept tabulations devant un écran
 /// figé avant qu'un élément visible ne réagisse (échec WCAG 2.4.7).
-class GrintaAccessibilityScope extends StatefulWidget {
-  const GrintaAccessibilityScope({required this.child, super.key});
+class PfAccessibilityScope extends StatefulWidget {
+  const PfAccessibilityScope({required this.child, super.key});
 
   final Widget child;
 
   @override
-  State<GrintaAccessibilityScope> createState() =>
-      _GrintaAccessibilityScopeState();
+  State<PfAccessibilityScope> createState() => _PfAccessibilityScopeState();
 }
 
-class _GrintaAccessibilityScopeState extends State<GrintaAccessibilityScope> {
+class _PfAccessibilityScopeState extends State<PfAccessibilityScope> {
   FocusNode? _lastFocused;
 
   @override
@@ -64,7 +63,7 @@ class _GrintaAccessibilityScopeState extends State<GrintaAccessibilityScope> {
     return FocusTraversalGroup(
       policy: ReadingOrderTraversalPolicy(),
       child: ScrollConfiguration(
-        behavior: const _GrintaScrollBehavior(),
+        behavior: const _PfScrollBehavior(),
         child: Semantics(
           container: true,
           explicitChildNodes: false,
@@ -75,8 +74,8 @@ class _GrintaAccessibilityScopeState extends State<GrintaAccessibilityScope> {
   }
 }
 
-class _GrintaScrollBehavior extends MaterialScrollBehavior {
-  const _GrintaScrollBehavior();
+class _PfScrollBehavior extends MaterialScrollBehavior {
+  const _PfScrollBehavior();
 
   @override
   Set<PointerDeviceKind> get dragDevices => const {

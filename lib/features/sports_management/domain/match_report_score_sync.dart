@@ -1,8 +1,8 @@
-import 'package:as_grinta/features/sports_management/domain/match_goal_action.dart';
+import 'package:petit_filet/features/sports_management/domain/match_goal_action.dart';
 
 /// Le score et la liste des buts ne peuvent jamais diverger.
 ///
-/// Un 4–2 veut dire exactement quatre buts d'AS Grinta et deux buts adverses
+/// Un 4–2 veut dire exactement quatre buts de l'équipe et deux buts adverses
 /// dans la chronologie. Ces fonctions traduisent un changement de score en
 /// changement de faits : ajouter un but à compléter quand le score monte,
 /// demander lequel supprimer quand il descend.
@@ -10,40 +10,40 @@ import 'package:as_grinta/features/sports_management/domain/match_goal_action.da
 /// Ce qu'un changement de score implique sur les faits du match.
 class MatchScoreChangePlan {
   const MatchScoreChangePlan({
-    required this.asGrintaToRemove,
+    required this.ownToRemove,
     required this.opponentToRemove,
-    required this.asGrintaToAdd,
+    required this.ownToAdd,
     required this.opponentToAdd,
   });
 
-  /// Nombre de buts d'AS Grinta que l'administrateur doit désigner.
-  final int asGrintaToRemove;
+  /// Nombre de buts de l'équipe que l'administrateur doit désigner.
+  final int ownToRemove;
 
   /// Nombre de buts adverses que l'administrateur doit désigner.
   final int opponentToRemove;
-  final int asGrintaToAdd;
+  final int ownToAdd;
   final int opponentToAdd;
 
-  bool get needsChoice => asGrintaToRemove > 0 || opponentToRemove > 0;
+  bool get needsChoice => ownToRemove > 0 || opponentToRemove > 0;
   bool get isEmpty =>
-      asGrintaToRemove == 0 &&
+      ownToRemove == 0 &&
       opponentToRemove == 0 &&
-      asGrintaToAdd == 0 &&
+      ownToAdd == 0 &&
       opponentToAdd == 0;
 }
 
 /// Compare le score visé aux faits déjà enregistrés.
 MatchScoreChangePlan planScoreChange({
   required List<MatchGoalAction> goalActions,
-  required int scoreAsGrinta,
+  required int scoreOwn,
   required int scoreAdverse,
 }) {
-  final currentAsGrinta = countGoals(goalActions, MatchGoalTeamSide.asGrinta);
+  final currentOwn = countGoals(goalActions, MatchGoalTeamSide.own);
   final currentOpponent = countGoals(goalActions, MatchGoalTeamSide.opponent);
   return MatchScoreChangePlan(
-    asGrintaToRemove: (currentAsGrinta - scoreAsGrinta).clamp(0, 99),
+    ownToRemove: (currentOwn - scoreOwn).clamp(0, 99),
     opponentToRemove: (currentOpponent - scoreAdverse).clamp(0, 99),
-    asGrintaToAdd: (scoreAsGrinta - currentAsGrinta).clamp(0, 99),
+    ownToAdd: (scoreOwn - currentOwn).clamp(0, 99),
     opponentToAdd: (scoreAdverse - currentOpponent).clamp(0, 99),
   );
 }
@@ -62,13 +62,13 @@ List<MatchGoalAction> addMissingGoals({
   required MatchScoreChangePlan plan,
   required int Function() nextLocalKey,
 }) {
-  if (plan.asGrintaToAdd == 0 && plan.opponentToAdd == 0) return goalActions;
+  if (plan.ownToAdd == 0 && plan.opponentToAdd == 0) return goalActions;
   return [
     ...goalActions,
-    for (var index = 0; index < plan.asGrintaToAdd; index += 1)
+    for (var index = 0; index < plan.ownToAdd; index += 1)
       MatchGoalAction.blank(
         localKey: 'new-${nextLocalKey()}',
-        teamSide: MatchGoalTeamSide.asGrinta,
+        teamSide: MatchGoalTeamSide.own,
       ),
     for (var index = 0; index < plan.opponentToAdd; index += 1)
       MatchGoalAction.blank(
@@ -140,11 +140,11 @@ List<MatchGoalAction> moveGoal({
 /// Message d'erreur si les faits du match ne sont pas validables, sinon `null`.
 String? validateGoalActions({
   required List<MatchGoalAction> goalActions,
-  required int scoreAsGrinta,
+  required int scoreOwn,
   required int scoreAdverse,
   required Set<String> squadParticipantIds,
 }) {
-  if (countGoals(goalActions, MatchGoalTeamSide.asGrinta) != scoreAsGrinta ||
+  if (countGoals(goalActions, MatchGoalTeamSide.own) != scoreOwn ||
       countGoals(goalActions, MatchGoalTeamSide.opponent) != scoreAdverse) {
     return 'Le score ne correspond pas à la liste des buts.';
   }

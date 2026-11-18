@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

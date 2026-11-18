@@ -1,6 +1,6 @@
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/features/matches/domain/history_match_draft.dart';
-import 'package:as_grinta/features/matches/domain/history_import_batch.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/features/matches/domain/history_match_draft.dart';
+import 'package:petit_filet/features/matches/domain/history_import_batch.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

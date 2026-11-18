@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

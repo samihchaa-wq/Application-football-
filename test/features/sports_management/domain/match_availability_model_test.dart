@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/sports_management/domain/match_availability.dart';
+import 'package:petit_filet/features/sports_management/domain/match_availability.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

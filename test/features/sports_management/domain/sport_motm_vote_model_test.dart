@@ -1,5 +1,5 @@
-import 'package:as_grinta/core/club/club_rules.dart';
-import 'package:as_grinta/features/sports_management/domain/sport_motm_vote.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
+import 'package:petit_filet/features/sports_management/domain/sport_motm_vote.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

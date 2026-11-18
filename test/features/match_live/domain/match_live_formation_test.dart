@@ -1,6 +1,6 @@
-import 'package:as_grinta/features/match_live/domain/match_live_formation.dart';
-import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_formation.dart';
+import 'package:petit_filet/features/sports_management/domain/football_formation.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

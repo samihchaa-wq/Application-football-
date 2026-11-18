@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/widgets/sticky_header_table.dart';
+import 'package:petit_filet/core/widgets/sticky_header_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

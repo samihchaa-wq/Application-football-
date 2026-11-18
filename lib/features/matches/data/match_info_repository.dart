@@ -1,5 +1,5 @@
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/features/matches/domain/match_meeting.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/features/matches/domain/match_meeting.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Données légères communes à toute la fiche d'un match.
@@ -50,33 +50,33 @@ class MatchCore {
   bool get isUpcoming => status == 'a_venir';
   bool get isFinished => status == 'termine' || status == 'archive';
   bool get isCancelled => status == 'annule';
-  bool get grintaIsHome => location == 'domicile';
+  bool get ownIsHome => location == 'domicile';
 }
 
 /// Une rencontre passée contre l'adversaire (pour l'historique « 5 dernières »).
 class MatchEncounter {
   const MatchEncounter({
-    required this.grintaScore,
+    required this.ownScore,
     required this.opponentScore,
     this.date,
     this.id,
     this.isHistorical = false,
-    this.grintaIsHome,
+    this.ownIsHome,
   });
 
-  final int grintaScore;
+  final int ownScore;
   final int opponentScore;
   final DateTime? date;
 
-  /// Vrai si AS Grinta recevait. Absent tant que le backend n'a pas déployé
-  /// la version qui l'expose : le score reste alors écrit AS Grinta en premier.
-  final bool? grintaIsHome;
+  /// Vrai si l'équipe du club recevait. Absent tant que le backend n'a pas déployé
+  /// la version qui l'expose : le score reste alors écrit avec l'équipe du club en premier.
+  final bool? ownIsHome;
 
   /// Score écrit dans l'ordre domicile – extérieur, comme sur la fiche du
   /// match et dans le calendrier.
-  String get scoreLabel => grintaIsHome == false
-      ? '$opponentScore–$grintaScore'
-      : '$grintaScore–$opponentScore';
+  String get scoreLabel => ownIsHome == false
+      ? '$opponentScore–$ownScore'
+      : '$ownScore–$opponentScore';
 
   /// Identifiant de la rencontre source. Absent uniquement tant que le backend
   /// n'a pas encore déployé la version enrichie de l'historique.
@@ -249,12 +249,12 @@ final matchDetailedInfoProvider = FutureProvider.family<MatchInfo, String>((
       final map = Map<String, dynamic>.from(row as Map);
       encounters.add(
         MatchEncounter(
-          grintaScore: (map['grinta_score'] as num?)?.toInt() ?? 0,
+          ownScore: (map['grinta_score'] as num?)?.toInt() ?? 0,
           opponentScore: (map['opponent_score'] as num?)?.toInt() ?? 0,
           date: DateTime.tryParse('${map['encounter_date'] ?? ''}')?.toLocal(),
           id: _clean(map['encounter_id']),
           isHistorical: map['is_historical'] == true,
-          grintaIsHome: map['is_home'] as bool?,
+          ownIsHome: map['is_home'] as bool?,
         ),
       );
     }

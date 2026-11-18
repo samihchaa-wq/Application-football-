@@ -1,6 +1,6 @@
-import 'package:as_grinta/core/utils/name_validation.dart';
-import 'package:as_grinta/features/sports_management/domain/sport_match_finalization.dart';
-import 'package:as_grinta/features/sports_management/domain/sport_waitlist_models.dart';
+import 'package:petit_filet/core/utils/name_validation.dart';
+import 'package:petit_filet/features/sports_management/domain/sport_match_finalization.dart';
+import 'package:petit_filet/features/sports_management/domain/sport_waitlist_models.dart';
 
 enum MatchCompositionZone {
   available,

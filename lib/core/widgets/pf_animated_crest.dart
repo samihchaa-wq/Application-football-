@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/club/club_identity.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
 import 'package:flutter/material.dart';
 
 /// Écusson du club animé, réservé aux écrans d'attente qui disposent de place.
@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 /// L'animation reste volontairement discrète : une respiration lente et un
 /// reflet qui balaie le blason. Elle signale que l'application travaille sans
 /// jamais donner l'impression de clignoter.
-class GrintaAnimatedCrest extends StatefulWidget {
-  const GrintaAnimatedCrest({
+class PfAnimatedCrest extends StatefulWidget {
+  const PfAnimatedCrest({
     super.key,
     this.width = 240,
     this.semanticLabel = 'Écusson du club',
@@ -17,10 +17,10 @@ class GrintaAnimatedCrest extends StatefulWidget {
   final String semanticLabel;
 
   @override
-  State<GrintaAnimatedCrest> createState() => _GrintaAnimatedCrestState();
+  State<PfAnimatedCrest> createState() => _PfAnimatedCrestState();
 }
 
-class _GrintaAnimatedCrestState extends State<GrintaAnimatedCrest>
+class _PfAnimatedCrestState extends State<PfAnimatedCrest>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   bool _reduceMotion = false;

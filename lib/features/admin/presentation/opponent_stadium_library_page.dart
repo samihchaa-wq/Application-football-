@@ -1,7 +1,7 @@
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -174,7 +174,7 @@ class _OpponentStadiumLibraryPageState
   Widget build(BuildContext context) {
     final items = _filteredItems;
     return Scaffold(
-      appBar: GrintaAppBar(title: const Text('Équipes & stades')),
+      appBar: PfAppBar(title: const Text('Équipes & stades')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _saving ? null : () => _openEditor(),
         icon: const Icon(Icons.add_rounded),
@@ -198,7 +198,7 @@ class _OpponentStadiumLibraryPageState
             if (_loading)
               const Padding(
                 padding: EdgeInsets.only(top: 48),
-                child: Center(child: GrintaProgressIndicator()),
+                child: Center(child: PfProgressIndicator()),
               )
             else if (_error != null)
               Card(

@@ -1,17 +1,17 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
-import 'package:as_grinta/features/notifications/data/notification_inbox_repository.dart';
-import 'package:as_grinta/features/sports_management/data/match_availability_board_repository.dart';
-import 'package:as_grinta/features/sports_management/data/match_availability_repository.dart';
-import 'package:as_grinta/features/sports_management/domain/match_availability.dart';
-import 'package:as_grinta/features/sports_management/presentation/match_availability_provider.dart';
-import 'package:as_grinta/features/unavailability/domain/player_unavailability.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/stadium_video.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
+import 'package:petit_filet/features/notifications/data/notification_inbox_repository.dart';
+import 'package:petit_filet/features/sports_management/data/match_availability_board_repository.dart';
+import 'package:petit_filet/features/sports_management/data/match_availability_repository.dart';
+import 'package:petit_filet/features/sports_management/domain/match_availability.dart';
+import 'package:petit_filet/features/sports_management/presentation/match_availability_provider.dart';
+import 'package:petit_filet/features/unavailability/domain/player_unavailability.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/stadium_video.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
 
 class MatchAvailabilitySelector extends ConsumerStatefulWidget {
   const MatchAvailabilitySelector({
@@ -327,7 +327,7 @@ class _AvailabilityPanel extends StatelessWidget {
           ),
           if (saving) ...[
             const SizedBox(height: 8),
-            const GrintaLinearProgressIndicator(minHeight: 2),
+            const PfLinearProgressIndicator(minHeight: 2),
           ],
           if (showManageShortcut) ...[
             const SizedBox(height: 14),

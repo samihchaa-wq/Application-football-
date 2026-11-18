@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/club/data/club_repository.dart';
-import 'package:as_grinta/features/predictions/presentation/widgets/inline_match_prediction_card.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
+import 'package:petit_filet/features/predictions/presentation/widgets/inline_match_prediction_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

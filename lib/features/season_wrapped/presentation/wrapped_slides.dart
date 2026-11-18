@@ -1,11 +1,11 @@
-import 'package:as_grinta/features/badges/data/badge_repository.dart';
-import 'package:as_grinta/features/badges/presentation/badge_emblem.dart';
-import 'package:as_grinta/features/badges/presentation/badge_emblem_body.dart';
-import 'package:as_grinta/features/season_wrapped/data/season_wrapped_repository.dart';
-import 'package:as_grinta/features/season_wrapped/domain/wrapped_stat_selection.dart';
-import 'package:as_grinta/features/season_wrapped/presentation/wrapped_ink_pitch.dart';
-import 'package:as_grinta/features/season_wrapped/presentation/wrapped_motion.dart';
-import 'package:as_grinta/features/season_wrapped/presentation/wrapped_theme.dart';
+import 'package:petit_filet/features/badges/data/badge_repository.dart';
+import 'package:petit_filet/features/badges/presentation/badge_emblem.dart';
+import 'package:petit_filet/features/badges/presentation/badge_emblem_body.dart';
+import 'package:petit_filet/features/season_wrapped/data/season_wrapped_repository.dart';
+import 'package:petit_filet/features/season_wrapped/domain/wrapped_stat_selection.dart';
+import 'package:petit_filet/features/season_wrapped/presentation/wrapped_ink_pitch.dart';
+import 'package:petit_filet/features/season_wrapped/presentation/wrapped_motion.dart';
+import 'package:petit_filet/features/season_wrapped/presentation/wrapped_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

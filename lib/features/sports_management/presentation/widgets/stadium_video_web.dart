@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:js_interop';
 import 'dart:ui_web' as ui_web;
 
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/stadium_club_colors_web.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/stadium_poster.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/stadium_club_colors_web.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/stadium_poster.dart';
 import 'package:flutter/widgets.dart';
 import 'package:web/web.dart' as web;
 

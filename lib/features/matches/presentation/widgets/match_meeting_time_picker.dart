@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/matches/domain/match_meeting.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/match_wheel_picker.dart';
+import 'package:petit_filet/features/matches/domain/match_meeting.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/match_wheel_picker.dart';
 import 'package:flutter/material.dart';
 
 class MatchMeetingTimePicker extends StatelessWidget {

@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/platform/data/platform_repository.dart';
+import 'package:petit_filet/features/platform/data/platform_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

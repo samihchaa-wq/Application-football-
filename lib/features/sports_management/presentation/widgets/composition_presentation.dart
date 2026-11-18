@@ -1,23 +1,23 @@
-import 'package:as_grinta/core/club/club_rules.dart';
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/club/club_kits.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/club/club_kits.dart';
 
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:as_grinta/core/storage/profile_photo_urls.dart';
-import 'package:as_grinta/core/theme/app_spacing.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/utils/app_formats.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/core/widgets/match_detail_header_card.dart';
-import 'package:as_grinta/features/sports_management/domain/composition_presentation_plan.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_presentation_camera.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/football_pitch.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/stadium_video.dart';
+import 'package:petit_filet/core/storage/profile_photo_urls.dart';
+import 'package:petit_filet/core/theme/app_spacing.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/utils/app_formats.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/core/widgets/match_detail_header_card.dart';
+import 'package:petit_filet/features/sports_management/domain/composition_presentation_plan.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_kit_scope.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_presentation_camera.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/football_pitch.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/stadium_video.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
@@ -42,7 +42,7 @@ class CompositionPresentationData {
   const CompositionPresentationData({
     required this.homeName,
     required this.awayName,
-    required this.grintaIsHome,
+    required this.ownIsHome,
     required this.field,
     this.bench = const [],
     this.coach,
@@ -59,7 +59,7 @@ class CompositionPresentationData {
 
   final String homeName;
   final String awayName;
-  final bool grintaIsHome;
+  final bool ownIsHome;
 
   /// Titulaires, déjà alignés sur le dispositif comme sur l'écran
   /// Composition : la vidéo les pose exactement là où l'écran les montre.
@@ -509,7 +509,7 @@ class _CompositionPresentationPageState
                       child: ColoredBox(
                         color: AppTheme.background,
                         child: Center(
-                          child: GrintaLoader.inline(
+                          child: PfLoader.inline(
                             message: 'Préparation de la vidéo…',
                           ),
                         ),
@@ -570,7 +570,7 @@ class _CompositionPresentationPageState
                     child: MatchDetailHeaderCard(
                       homeName: data.homeName,
                       awayName: data.awayName,
-                      grintaIsHome: data.grintaIsHome,
+                      ownIsHome: data.ownIsHome,
                       kickoffAt: kickoffAt,
                       matchType: data.matchType,
                       typeLabel: data.typeLabel,

@@ -1,11 +1,11 @@
-import 'package:as_grinta/core/club/club_rules.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/widgets/grinta_empty_state.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/core/widgets/sticky_header_table.dart';
-import 'package:as_grinta/features/sports_management/data/sport_waitlist_repository.dart';
-import 'package:as_grinta/features/sports_management/domain/sport_waitlist_models.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/widgets/pf_empty_state.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/core/widgets/sticky_header_table.dart';
+import 'package:petit_filet/features/sports_management/data/sport_waitlist_repository.dart';
+import 'package:petit_filet/features/sports_management/domain/sport_waitlist_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -168,14 +168,14 @@ class _AdminWaitlistPageState extends ConsumerState<AdminWaitlistPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: GrintaAppBar(title: const Text('Liste d’attente')),
+      appBar: PfAppBar(title: const Text('Liste d’attente')),
       body: _body(context),
     );
   }
 
   Widget _body(BuildContext context) {
     if (_loading) {
-      return const Center(child: GrintaProgressIndicator());
+      return const Center(child: PfProgressIndicator());
     }
     if (_error != null) {
       return ListView(
@@ -191,7 +191,7 @@ class _AdminWaitlistPageState extends ConsumerState<AdminWaitlistPage> {
     final waitlist = _waitlist;
     if (waitlist == null || _entries.isEmpty) {
       return const Center(
-        child: GrintaEmptyState(
+        child: PfEmptyState(
           icon: Icons.format_list_numbered_rounded,
           title: 'Aucun joueur dans la saison',
           message: 'Ajoute des joueurs à l’effectif pour construire l’ordre '
@@ -265,7 +265,7 @@ class _WaitlistPinnedHeader extends StatelessWidget {
       child: Text(
         'Joueurs',
         textAlign: TextAlign.center,
-        style: grintaTableHeaderTextStyle(context),
+        style: pfTableHeaderTextStyle(context),
       ),
     );
   }
@@ -277,7 +277,7 @@ class _WaitlistScrollableHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final borderColor = Theme.of(context).colorScheme.outlineVariant;
-    final style = grintaTableHeaderTextStyle(context).copyWith(height: 1.2);
+    final style = pfTableHeaderTextStyle(context).copyWith(height: 1.2);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -352,16 +352,16 @@ class _WaitlistPinnedRow extends StatelessWidget {
         border: Border(right: BorderSide(color: borderColor)),
       ),
       child: Padding(
-        padding: grintaTablePinnedRowPadding,
+        padding: pfTablePinnedRowPadding,
         child: Row(
           children: [
-            GrintaTableRankCell(rank: index + 1),
+            PfTableRankCell(rank: index + 1),
             Expanded(
               child: Text(
                 entry.displayName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: grintaTableCellTextStyle(
+                style: pfTableCellTextStyle(
                   context,
                   fontWeight: FontWeight.w400,
                 ),
@@ -396,7 +396,7 @@ class _WaitlistScrollableRow extends StatelessWidget {
     final attendance = entry.previousSeasonAttendanceCount;
     final previousSeasonPresence = total > 0 ? '$attendance' : 'Aucune donnée';
     final waitlistCount = entry.currentSeasonWaitlistCount;
-    final valueStyle = grintaTableCellTextStyle(context);
+    final valueStyle = pfTableCellTextStyle(context);
 
     final content = Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,

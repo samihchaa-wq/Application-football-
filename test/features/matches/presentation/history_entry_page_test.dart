@@ -1,7 +1,7 @@
-import 'package:as_grinta/features/matches/data/history_entry_repository.dart';
-import 'package:as_grinta/features/matches/domain/history_import_batch.dart';
-import 'package:as_grinta/features/matches/domain/history_match_draft.dart';
-import 'package:as_grinta/features/matches/presentation/history_entry_page.dart';
+import 'package:petit_filet/features/matches/data/history_entry_repository.dart';
+import 'package:petit_filet/features/matches/domain/history_import_batch.dart';
+import 'package:petit_filet/features/matches/domain/history_match_draft.dart';
+import 'package:petit_filet/features/matches/presentation/history_entry_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

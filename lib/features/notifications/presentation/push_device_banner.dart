@@ -1,5 +1,5 @@
-import 'package:as_grinta/core/widgets/grinta_status_banner.dart';
-import 'package:as_grinta/features/preferences/data/push_subscriptions_repository.dart';
+import 'package:petit_filet/core/widgets/pf_status_banner.dart';
+import 'package:petit_filet/features/preferences/data/push_subscriptions_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -72,7 +72,7 @@ class _PushDeviceBannerState extends ConsumerState<PushDeviceBanner> {
         bottom: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-          child: GrintaStatusBanner(
+          child: PfStatusBanner(
             title: blocked
                 ? 'Notifications bloquées'
                 : 'Notifications désactivées',
@@ -82,7 +82,7 @@ class _PushDeviceBannerState extends ConsumerState<PushDeviceBanner> {
                     'disponibilités et des convocations.'
                 : 'Tu ne reçois pas les notifications du club sur cet '
                     'appareil : ouverture des disponibilités, convocations.',
-            tone: GrintaStatusTone.warning,
+            tone: PfStatusTone.warning,
             compact: true,
             action: Column(
               mainAxisSize: MainAxisSize.min,

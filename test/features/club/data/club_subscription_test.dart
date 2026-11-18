@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/club/data/club_subscription.dart';
+import 'package:petit_filet/features/club/data/club_subscription.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

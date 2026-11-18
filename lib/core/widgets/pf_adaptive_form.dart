@@ -1,9 +1,9 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 /// Dispose les champs sur une ou deux colonnes selon l'espace disponible.
-class GrintaAdaptiveForm extends StatelessWidget {
-  const GrintaAdaptiveForm({
+class PfAdaptiveForm extends StatelessWidget {
+  const PfAdaptiveForm({
     required this.children,
     super.key,
     this.breakpoint = 720,

@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/match_live/domain/live_guest_display_name.dart';
+import 'package:petit_filet/features/match_live/domain/live_guest_display_name.dart';
 
 class MatchLiveAddPlayerOption {
   const MatchLiveAddPlayerOption({

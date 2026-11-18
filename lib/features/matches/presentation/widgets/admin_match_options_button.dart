@@ -1,10 +1,10 @@
-import 'package:as_grinta/app/shell/module_navigation.dart';
-import 'package:as_grinta/core/utils/match_window.dart';
-import 'package:as_grinta/features/matches/data/match_details_repository.dart';
-import 'package:as_grinta/features/matches/domain/match_deletion_window.dart';
-import 'package:as_grinta/features/matches/domain/match_model.dart';
-import 'package:as_grinta/features/matches/presentation/match_form_page.dart';
-import 'package:as_grinta/features/matches/presentation/matches_controller.dart';
+import 'package:petit_filet/app/shell/module_navigation.dart';
+import 'package:petit_filet/core/utils/match_window.dart';
+import 'package:petit_filet/features/matches/data/match_details_repository.dart';
+import 'package:petit_filet/features/matches/domain/match_deletion_window.dart';
+import 'package:petit_filet/features/matches/domain/match_model.dart';
+import 'package:petit_filet/features/matches/presentation/match_form_page.dart';
+import 'package:petit_filet/features/matches/presentation/matches_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';

@@ -1,7 +1,7 @@
 import 'dart:developer' as developer;
 
-import 'package:as_grinta/core/config/app_config.dart';
-import 'package:as_grinta/core/logging/error_category.dart';
+import 'package:petit_filet/core/config/app_config.dart';
+import 'package:petit_filet/core/logging/error_category.dart';
 
 /// Enregistrement d'incident transmis au collecteur.
 ///

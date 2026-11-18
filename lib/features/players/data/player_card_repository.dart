@@ -1,7 +1,7 @@
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/core/utils/name_validation.dart';
-import 'package:as_grinta/features/badges/data/badge_repository.dart';
-import 'package:as_grinta/features/statistics/data/statistics_repository.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/core/utils/name_validation.dart';
+import 'package:petit_filet/features/badges/data/badge_repository.dart';
+import 'package:petit_filet/features/statistics/data/statistics_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -23,7 +23,7 @@ class PlayerMatchLine {
     required this.matchId,
     required this.date,
     required this.opponentName,
-    required this.grintaScore,
+    required this.ownScore,
     required this.opponentScore,
     required this.isHome,
     required this.matchType,
@@ -35,7 +35,7 @@ class PlayerMatchLine {
   final String matchId;
   final DateTime date;
   final String opponentName;
-  final int grintaScore;
+  final int ownScore;
   final int opponentScore;
   final bool isHome;
   final String? matchType;
@@ -43,17 +43,17 @@ class PlayerMatchLine {
   final int assists;
   final bool isManOfTheMatch;
 
-  /// « V », « N » ou « D », vu d'AS La Grinta.
-  String get result => grintaScore > opponentScore
+  /// « V », « N » ou « D », vu de l'équipe du club.
+  String get result => ownScore > opponentScore
       ? 'V'
-      : grintaScore == opponentScore
+      : ownScore == opponentScore
           ? 'N'
           : 'D';
 
   /// Score dans l'ordre domicile – extérieur, comme la fiche du match : une
   /// victoire 5-0 à l'extérieur s'écrit 0-5.
   String get scoreLabel =>
-      isHome ? '$grintaScore-$opponentScore' : '$opponentScore-$grintaScore';
+      isHome ? '$ownScore-$opponentScore' : '$opponentScore-$ownScore';
 }
 
 /// Ce que la fiche affiche en plus des statistiques par période : l'identité
@@ -333,7 +333,7 @@ class PlayerCardRepository {
       opponentName: (opponent == null || opponent.trim().isEmpty)
           ? 'Adversaire'
           : opponent.trim(),
-      grintaScore: (row['score_as_grinta'] as num?)?.toInt() ?? 0,
+      ownScore: (row['score_as_grinta'] as num?)?.toInt() ?? 0,
       opponentScore: (row['score_adverse'] as num?)?.toInt() ?? 0,
       isHome: row['location']?.toString() != 'exterieur',
       matchType: row['match_type']?.toString(),

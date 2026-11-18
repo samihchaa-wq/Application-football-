@@ -1,11 +1,11 @@
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/features/badges/data/badge_inbox_repository.dart';
-import 'package:as_grinta/features/notifications/data/notification_inbox_repository.dart';
-import 'package:as_grinta/features/notifications/presentation/notification_history_view.dart';
-import 'package:as_grinta/features/notifications/presentation/notification_inbox_button.dart';
-import 'package:as_grinta/features/notifications/presentation/notifications_page.dart';
-import 'package:as_grinta/features/season_wrapped/data/season_wrapped_repository.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/features/badges/data/badge_inbox_repository.dart';
+import 'package:petit_filet/features/notifications/data/notification_inbox_repository.dart';
+import 'package:petit_filet/features/notifications/presentation/notification_history_view.dart';
+import 'package:petit_filet/features/notifications/presentation/notification_inbox_button.dart';
+import 'package:petit_filet/features/notifications/presentation/notifications_page.dart';
+import 'package:petit_filet/features/season_wrapped/data/season_wrapped_repository.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -353,9 +353,9 @@ void main() {
         child: MaterialApp(
           home: Builder(
             builder: (context) => Scaffold(
-              appBar: GrintaAppBar(
+              appBar: PfAppBar(
                 title: const Text('Statistiques'),
-                actions: grintaHomeActions(context),
+                actions: pfHomeActions(context),
               ),
             ),
           ),

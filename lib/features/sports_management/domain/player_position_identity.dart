@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/sports_management/domain/player_position_profiles.dart';
+import 'package:petit_filet/features/sports_management/domain/player_position_profiles.dart';
 
 /// Normalise un nom de joueur comme le fait la base.
 ///

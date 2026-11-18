@@ -1,6 +1,6 @@
-import 'package:as_grinta/app/router/auth_redirect.dart';
-import 'package:as_grinta/features/auth/domain/auth_profile.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/app/router/auth_redirect.dart';
+import 'package:petit_filet/features/auth/domain/auth_profile.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

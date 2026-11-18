@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_presentation_camera.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_presentation_camera.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
 

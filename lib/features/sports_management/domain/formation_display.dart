@@ -1,9 +1,9 @@
 import 'dart:math' as math;
 import 'dart:ui' show Offset;
 
-import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
-import 'package:as_grinta/features/sports_management/domain/formation_assignment.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/domain/football_formation.dart';
+import 'package:petit_filet/features/sports_management/domain/formation_assignment.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
 
 /// Écart maximal accepté entre un joueur et le poste qui lui est attribué
 /// quand ses coordonnées viennent déjà de la grille de l'application.

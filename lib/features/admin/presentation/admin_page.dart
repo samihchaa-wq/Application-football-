@@ -1,18 +1,18 @@
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/utils/app_formats.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/features/admin/data/admin_repository.dart';
-import 'package:as_grinta/features/admin/presentation/admin_profile_policy.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/utils/app_formats.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/features/admin/data/admin_repository.dart';
+import 'package:petit_filet/features/admin/presentation/admin_profile_policy.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
 import 'package:go_router/go_router.dart';
-import 'package:as_grinta/features/players/data/roster_repository.dart';
-import 'package:as_grinta/features/players/presentation/players_registry_page.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:petit_filet/features/players/data/roster_repository.dart';
+import 'package:petit_filet/features/players/presentation/players_registry_page.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
 
 part 'admin_season_section.dart';
 part 'admin_profiles_section_v2.dart';
@@ -35,7 +35,7 @@ class _AdminPageState extends ConsumerState<AdminPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: GrintaAppBar(title: const Text('Effectif')),
+      appBar: PfAppBar(title: const Text('Effectif')),
       body: _AdminDashboardBody(
         builder: (dashboard) => _UsersAdminSection(
           dashboard: dashboard,
@@ -57,7 +57,7 @@ class _AdminDashboardBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardAsync = ref.watch(adminDashboardProvider);
     return dashboardAsync.when(
-      loading: () => const Center(child: GrintaProgressIndicator()),
+      loading: () => const Center(child: PfProgressIndicator()),
       error: (error, _) => ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -131,7 +131,7 @@ class _UsersAdminSection extends ConsumerWidget {
             width: double.infinity,
             child: FilledButton.tonal(
               onPressed: () async {
-                // Même bouton qu'AS Grinta, mais l'invitation doit rester
+                // Même bouton que dans l'administration d'origine, mais l'invitation doit rester
                 // propre au club courant de Petit Filet.
                 try {
                   final club =
@@ -231,7 +231,7 @@ class _UsersAdminSection extends ConsumerWidget {
 }
 
 /// Gestion des saisons propre à Petit Filet, isolée de l'écran « Effectif ».
-/// L'administration principale reste visuellement identique à AS Grinta.
+/// L'administration principale reste visuellement identique à l'administration d'origine.
 /// On préserve ici la création/clôture de saison nécessaire au multiclub.
 class AdminSeasonPage extends ConsumerWidget {
   const AdminSeasonPage({super.key});
@@ -240,9 +240,9 @@ class AdminSeasonPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardAsync = ref.watch(adminDashboardProvider);
     return Scaffold(
-      appBar: GrintaAppBar(title: const Text('Saison')),
+      appBar: PfAppBar(title: const Text('Saison')),
       body: dashboardAsync.when(
-        loading: () => const Center(child: GrintaProgressIndicator()),
+        loading: () => const Center(child: PfProgressIndicator()),
         error: (error, _) => Center(
           child: Text(
             'Impossible de charger les saisons. ${humanizeError(error)}',

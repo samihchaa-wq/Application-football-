@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/club/club_rules.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
 
 enum ConvocationLaunchMode { automatic, custom, now }
 

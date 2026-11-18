@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/badges/data/badge_repository.dart';
+import 'package:petit_filet/features/badges/data/badge_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 BadgeDef _tier(String code, String name, String metric, int threshold,

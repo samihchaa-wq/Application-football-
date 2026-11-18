@@ -1,7 +1,7 @@
-import 'package:as_grinta/features/matches/data/match_details_repository.dart';
-import 'package:as_grinta/features/predictions/data/predictions_repository.dart';
-import 'package:as_grinta/features/predictions/presentation/widgets/inline_match_prediction_card.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
+import 'package:petit_filet/features/matches/data/match_details_repository.dart';
+import 'package:petit_filet/features/predictions/data/predictions_repository.dart';
+import 'package:petit_filet/features/predictions/presentation/widgets/inline_match_prediction_card.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -102,13 +102,13 @@ class _FakePredictionsRepository implements PredictionsRepository {
       opponentName: 'Olympique Test',
       kickoffAt: DateTime.now().add(const Duration(days: 3)),
       status: 'a_venir',
-      scoreGrinta: 2,
+      scoreOwn: 2,
       scoreOpponent: 1,
       isFilled: false,
       oddsWin: 2,
       oddsDraw: 3,
       oddsLoss: 4,
-      actualScoreGrinta: null,
+      actualScoreOwn: null,
       actualScoreOpponent: null,
     );
   }
@@ -116,7 +116,7 @@ class _FakePredictionsRepository implements PredictionsRepository {
   @override
   Future<void> savePrediction({
     required String matchId,
-    required int scoreGrinta,
+    required int scoreOwn,
     required int scoreOpponent,
   }) async {
     saveCalls += 1;

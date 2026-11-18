@@ -1,16 +1,16 @@
 import 'dart:async';
 
-import 'package:as_grinta/features/auth/data/auth_repository.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
-import 'package:as_grinta/features/matches/data/calendar_history_repository.dart';
-import 'package:as_grinta/features/matches/data/club_events_repository.dart';
-import 'package:as_grinta/features/matches/data/matches_repository.dart';
-import 'package:as_grinta/features/matches/domain/club_event.dart';
-import 'package:as_grinta/features/matches/domain/match_model.dart';
-import 'package:as_grinta/features/matches/presentation/matches_controller.dart';
-import 'package:as_grinta/features/predictions/presentation/merged_matches_view.dart';
-import 'package:as_grinta/features/sports_management/presentation/match_availability_provider.dart';
+import 'package:petit_filet/features/auth/data/auth_repository.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
+import 'package:petit_filet/features/matches/data/calendar_history_repository.dart';
+import 'package:petit_filet/features/matches/data/club_events_repository.dart';
+import 'package:petit_filet/features/matches/data/matches_repository.dart';
+import 'package:petit_filet/features/matches/domain/club_event.dart';
+import 'package:petit_filet/features/matches/domain/match_model.dart';
+import 'package:petit_filet/features/matches/presentation/matches_controller.dart';
+import 'package:petit_filet/features/predictions/presentation/merged_matches_view.dart';
+import 'package:petit_filet/features/sports_management/presentation/match_availability_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -234,7 +234,7 @@ void main() {
           id: 'old-$i',
           date: DateTime(2014, 4, 1).add(Duration(days: 7 * i)),
           opponentName: 'Ancien$i',
-          grintaScore: 1,
+          ownScore: 1,
           opponentScore: 0,
           isHome: true,
         ),
@@ -321,7 +321,7 @@ void main() {
               id: 'old-$i',
               date: DateTime(2014, 4, 1).add(Duration(days: 7 * i)),
               opponentName: 'Ancien$i',
-              grintaScore: 1,
+              ownScore: 1,
               opponentScore: 0,
               isHome: true,
             ),
@@ -524,7 +524,7 @@ MatchModel _match(
           : finished
               ? 'termine'
               : 'a_venir',
-      grintaScore: finished ? 2 : null,
+      ownScore: finished ? 2 : null,
       opponentScore: finished ? 1 : null,
       resultValidatedAt:
           finished ? kickoffAt.add(const Duration(hours: 2)) : null,

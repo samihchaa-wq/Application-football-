@@ -1,11 +1,11 @@
 import 'dart:io';
 
-import 'package:as_grinta/core/logging/app_logger.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/utils/app_formats.dart';
-import 'package:as_grinta/core/utils/match_window.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/predictions/presentation/widgets/inline_match_prediction_card.dart';
+import 'package:petit_filet/core/logging/app_logger.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/utils/app_formats.dart';
+import 'package:petit_filet/core/utils/match_window.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/predictions/presentation/widgets/inline_match_prediction_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
@@ -66,19 +66,19 @@ void main() {
   group('couleur des cotes de pronostic', () {
     test('AS Grinta est vert à domicile comme à l’extérieur', () {
       expect(
-        predictionOddAccentForSide(isHomeSide: true, isGrintaHome: true),
+        predictionOddAccentForSide(isHomeSide: true, isOwnHome: true),
         const Color(0xFF39E784),
       );
       expect(
-        predictionOddAccentForSide(isHomeSide: false, isGrintaHome: false),
+        predictionOddAccentForSide(isHomeSide: false, isOwnHome: false),
         const Color(0xFF39E784),
       );
       expect(
-        predictionOddAccentForSide(isHomeSide: false, isGrintaHome: true),
+        predictionOddAccentForSide(isHomeSide: false, isOwnHome: true),
         const Color(0xFFFF6B6B),
       );
       expect(
-        predictionOddAccentForSide(isHomeSide: true, isGrintaHome: false),
+        predictionOddAccentForSide(isHomeSide: true, isOwnHome: false),
         const Color(0xFFFF6B6B),
       );
     });

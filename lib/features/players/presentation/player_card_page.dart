@@ -1,25 +1,25 @@
-import 'package:as_grinta/core/theme/app_spacing.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/theme/calendar_card_palette.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/utils/name_validation.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/widgets/grinta_empty_state.dart';
-import 'package:as_grinta/core/widgets/grinta_secondary_tabs.dart';
-import 'package:as_grinta/core/widgets/match_contribution_icons.dart';
-import 'package:as_grinta/core/widgets/grinta_skeleton.dart';
-import 'package:as_grinta/features/badges/data/badge_repository.dart';
-import 'package:as_grinta/features/badges/data/statistics_badge_emblems_provider.dart';
-import 'package:as_grinta/features/badges/presentation/badge_detail_sheet.dart';
-import 'package:as_grinta/features/badges/presentation/badge_emblem.dart';
-import 'package:as_grinta/features/badges/presentation/badge_emblem_body.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
-import 'package:as_grinta/features/players/data/player_card_repository.dart';
-import 'package:as_grinta/features/players/data/player_stat_ranking.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
-import 'package:as_grinta/features/statistics/data/statistics_repository.dart';
-import 'package:as_grinta/features/statistics/presentation/stats_hub_page.dart';
-import 'package:as_grinta/core/club/club_identity.dart';
+import 'package:petit_filet/core/theme/app_spacing.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/theme/calendar_card_palette.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/utils/name_validation.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/widgets/pf_empty_state.dart';
+import 'package:petit_filet/core/widgets/pf_secondary_tabs.dart';
+import 'package:petit_filet/core/widgets/match_contribution_icons.dart';
+import 'package:petit_filet/core/widgets/pf_skeleton.dart';
+import 'package:petit_filet/features/badges/data/badge_repository.dart';
+import 'package:petit_filet/features/badges/data/statistics_badge_emblems_provider.dart';
+import 'package:petit_filet/features/badges/presentation/badge_detail_sheet.dart';
+import 'package:petit_filet/features/badges/presentation/badge_emblem.dart';
+import 'package:petit_filet/features/badges/presentation/badge_emblem_body.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
+import 'package:petit_filet/features/players/data/player_card_repository.dart';
+import 'package:petit_filet/features/players/data/player_stat_ranking.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:petit_filet/features/statistics/data/statistics_repository.dart';
+import 'package:petit_filet/features/statistics/presentation/stats_hub_page.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -69,7 +69,7 @@ class _PlayerCardPageState extends ConsumerState<PlayerCardPage> {
   Widget build(BuildContext context) {
     final key = widget.playerKey;
     return Scaffold(
-      appBar: GrintaAppBar(title: const Text('Fiche joueur')),
+      appBar: PfAppBar(title: const Text('Fiche joueur')),
       body: key == null
           ? const _Message(
               title: 'Joueur introuvable',
@@ -100,7 +100,7 @@ class _PlayerCardPageState extends ConsumerState<PlayerCardPage> {
     if (details.isLoading && !details.hasValue) {
       return Padding(
         padding: const EdgeInsets.all(16),
-        child: GrintaSkeleton.rows(itemCount: 6),
+        child: PfSkeleton.rows(itemCount: 6),
       );
     }
     if (details.hasError && !details.hasValue) {
@@ -145,7 +145,7 @@ class _PlayerCardPageState extends ConsumerState<PlayerCardPage> {
             isGoalkeeper: isGoalkeeper,
           ),
           const SizedBox(height: 16),
-          GrintaSecondaryTabs<StatisticsPeriod>(
+          PfSecondaryTabs<StatisticsPeriod>(
             segments: const [
               ButtonSegment(
                 value: StatisticsPeriod.current,
@@ -168,7 +168,7 @@ class _PlayerCardPageState extends ConsumerState<PlayerCardPage> {
           ),
           const SizedBox(height: 12),
           periodData.when(
-            loading: () => GrintaSkeleton.rows(itemCount: 2),
+            loading: () => PfSkeleton.rows(itemCount: 2),
             error: (error, _) => _InlineNote(humanizeError(error)),
             data: (data) {
               final row =
@@ -445,7 +445,7 @@ class _BadgeSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final badges = ref.watch(playerCardBadgesProvider(profileId));
     return badges.when(
-      loading: () => GrintaSkeleton.rows(itemCount: 2),
+      loading: () => PfSkeleton.rows(itemCount: 2),
       error: (error, _) => _InlineNote(humanizeError(error)),
       data: (list) {
         if (list.isEmpty) {
@@ -589,7 +589,7 @@ class _Message extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.screenGutter + 4),
       children: [
         Card(
-          child: GrintaEmptyState(
+          child: PfEmptyState(
             icon: Icons.person_search_rounded,
             title: title,
             message: message,

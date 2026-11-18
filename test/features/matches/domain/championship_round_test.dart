@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/matches/domain/championship_round.dart';
+import 'package:petit_filet/features/matches/domain/championship_round.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -1,6 +1,6 @@
-import 'package:as_grinta/core/widgets/match_detail_header_card.dart';
-import 'package:as_grinta/features/match_live/domain/match_live_event.dart';
-import 'package:as_grinta/features/match_live/domain/match_live_state_bundle.dart';
+import 'package:petit_filet/core/widgets/match_detail_header_card.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_event.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_state_bundle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -102,7 +102,7 @@ void main() {
             child: MatchDetailHeaderCard(
               homeName: 'Rouffiac Tolosan FC',
               awayName: 'AS Grinta',
-              grintaIsHome: false,
+              ownIsHome: false,
               homeScore: 2,
               awayScore: 8,
               finished: true,
@@ -135,7 +135,7 @@ void main() {
             child: MatchDetailHeaderCard(
               homeName: 'Toulouse Métropole',
               awayName: 'AS Grinta',
-              grintaIsHome: false,
+              ownIsHome: false,
               kickoffAt: DateTime(2026, 9, 28, 21),
               matchType: 'amical',
               typeLabel: calendarMatchTypeLabel('amical', null),
@@ -160,7 +160,7 @@ void main() {
             child: MatchDetailHeaderCard(
               homeName: 'AS Grinta',
               awayName: 'Test FC',
-              grintaIsHome: true,
+              ownIsHome: true,
               homeScore: 1,
               awayScore: 0,
               finished: true,

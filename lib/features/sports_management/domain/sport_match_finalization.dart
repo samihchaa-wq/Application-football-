@@ -135,7 +135,7 @@ class SportMatchFinalization {
     required this.matchStatus,
     required this.isValidated,
     required this.version,
-    required this.scoreAsGrinta,
+    required this.scoreOwn,
     required this.scoreAdverse,
     required this.compositionVersion,
     required this.presenceState,
@@ -156,7 +156,7 @@ class SportMatchFinalization {
       matchStatus: (json['match_status'] ?? 'a_venir').toString(),
       isValidated: json['is_validated'] == true,
       version: (json['version'] as num?)?.toInt() ?? 0,
-      scoreAsGrinta: (json['score_as_grinta'] as num?)?.toInt() ?? 0,
+      scoreOwn: (json['score_as_grinta'] as num?)?.toInt() ?? 0,
       scoreAdverse: (json['score_adverse'] as num?)?.toInt() ?? 0,
       compositionVersion: (json['composition_version'] as num?)?.toInt() ?? 0,
       presenceState: (json['presence_state'] ?? 'pending').toString(),
@@ -174,13 +174,13 @@ class SportMatchFinalization {
   final String matchId;
   final String opponentName;
 
-  /// Vrai si AS Grinta reçoit (match à domicile).
+  /// Vrai si l'équipe du club reçoit (match à domicile).
   final bool isHome;
   final DateTime kickoffAt;
   final String matchStatus;
   final bool isValidated;
   final int version;
-  final int scoreAsGrinta;
+  final int scoreOwn;
   final int scoreAdverse;
   final int compositionVersion;
   final String presenceState;
@@ -212,7 +212,7 @@ class SportMatchFinalization {
       participants.fold(0, (sum, participant) => sum + participant.assists);
 
   SportMatchFinalization copyWith({
-    int? scoreAsGrinta,
+    int? scoreOwn,
     int? scoreAdverse,
     List<SportFinalParticipant>? participants,
   }) {
@@ -224,7 +224,7 @@ class SportMatchFinalization {
       matchStatus: matchStatus,
       isValidated: isValidated,
       version: version,
-      scoreAsGrinta: scoreAsGrinta ?? this.scoreAsGrinta,
+      scoreOwn: scoreOwn ?? this.scoreOwn,
       scoreAdverse: scoreAdverse ?? this.scoreAdverse,
       compositionVersion: compositionVersion,
       presenceState: presenceState,

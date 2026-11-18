@@ -1,11 +1,11 @@
 import 'dart:typed_data';
 
-import 'package:as_grinta/core/club/club_kits.dart';
-import 'package:as_grinta/core/storage/avatar_image.dart';
-import 'package:as_grinta/core/widgets/kit_portrait.dart';
-import 'package:as_grinta/core/widgets/match_contribution_icons.dart';
-import 'package:as_grinta/core/widgets/photo_crop_preview.dart';
-import 'package:as_grinta/core/widgets/portrait_alignment_guide.dart';
+import 'package:petit_filet/core/club/club_kits.dart';
+import 'package:petit_filet/core/storage/avatar_image.dart';
+import 'package:petit_filet/core/widgets/kit_portrait.dart';
+import 'package:petit_filet/core/widgets/match_contribution_icons.dart';
+import 'package:petit_filet/core/widgets/photo_crop_preview.dart';
+import 'package:petit_filet/core/widgets/portrait_alignment_guide.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;

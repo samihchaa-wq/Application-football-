@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/badges/presentation/badge_descriptor.dart';
-import 'package:as_grinta/features/badges/presentation/badge_premium_skins.dart';
+import 'package:petit_filet/features/badges/presentation/badge_descriptor.dart';
+import 'package:petit_filet/features/badges/presentation/badge_premium_skins.dart';
 import 'package:flutter/material.dart';
 
 /// Proportions des zones de l'emblème, rapportées à sa largeur.

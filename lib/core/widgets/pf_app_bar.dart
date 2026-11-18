@@ -1,18 +1,18 @@
-import 'package:as_grinta/core/theme/app_spacing.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/features/badges/presentation/badge_trophy_button.dart';
-import 'package:as_grinta/features/notifications/presentation/notification_inbox_button.dart';
-import 'package:as_grinta/features/season_wrapped/presentation/season_wrapped_entry_button.dart';
-import 'package:as_grinta/core/club/club_identity.dart';
+import 'package:petit_filet/core/theme/app_spacing.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/features/badges/presentation/badge_trophy_button.dart';
+import 'package:petit_filet/features/notifications/presentation/notification_inbox_button.dart';
+import 'package:petit_filet/features/season_wrapped/presentation/season_wrapped_entry_button.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 /// Clé stable du badge club qui ramène au calendrier.
-const grintaClubHomeBadgeKey = ValueKey<String>('club-home-badge');
+const pfClubHomeBadgeKey = ValueKey<String>('club-home-badge');
 
 /// Barre supérieure commune de l'application.
-class GrintaAppBar extends AppBar {
-  GrintaAppBar({
+class PfAppBar extends AppBar {
+  PfAppBar({
     required Widget title,
     super.key,
     List<Widget>? actions,
@@ -23,7 +23,7 @@ class GrintaAppBar extends AppBar {
           titleSpacing: 0,
           centerTitle: false,
           flexibleSpace: const _HeaderBackdrop(),
-          title: _GrintaTitleBar(
+          title: _PfTitleBar(
             pageName: title,
             actions: actions,
           ),
@@ -43,12 +43,12 @@ void _returnToCalendar(BuildContext context) {
   router.go('/matches');
 }
 
-/// Badge AS Grinta réutilisable pour les en-têtes hors [GrintaAppBar].
+/// Badge du club réutilisable pour les en-têtes hors [PfAppBar].
 ///
 /// Sa destination est volontairement absolue : quel que soit l'historique de
 /// navigation, un appui revient toujours à la racine Calendrier.
-class GrintaClubHomeButton extends StatelessWidget {
-  const GrintaClubHomeButton({super.key});
+class PfClubHomeButton extends StatelessWidget {
+  const PfClubHomeButton({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +59,7 @@ class GrintaClubHomeButton extends StatelessWidget {
       // faire apparaître de carré gris. Pas d'infobulle non plus : sur mobile,
       // un appui long l'affichait par-dessus l'en-tête sans rien apporter.
       child: GestureDetector(
-        key: grintaClubHomeBadgeKey,
+        key: pfClubHomeBadgeKey,
         behavior: HitTestBehavior.opaque,
         onTap: () => _returnToCalendar(context),
         child: SizedBox(
@@ -114,8 +114,8 @@ class _HeaderBackdrop extends StatelessWidget {
   }
 }
 
-class _GrintaTitleBar extends StatelessWidget {
-  const _GrintaTitleBar({
+class _PfTitleBar extends StatelessWidget {
+  const _PfTitleBar({
     required this.pageName,
     this.actions,
   });
@@ -132,7 +132,7 @@ class _GrintaTitleBar extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const GrintaClubHomeButton(),
+          const PfClubHomeButton(),
           const SizedBox(width: AppSpacing.contentGap),
           Expanded(
             child: DefaultTextStyle.merge(
@@ -165,7 +165,7 @@ class _GrintaTitleBar extends StatelessWidget {
   }
 }
 
-List<Widget> grintaHomeActions(BuildContext context) => [
+List<Widget> pfHomeActions(BuildContext context) => [
       const SeasonWrappedEntryButton(),
       const BadgeTrophyButton(),
       const SizedBox(width: 2),

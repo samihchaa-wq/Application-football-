@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/matches/presentation/widgets/calendar_actions_bar.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/calendar_actions_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

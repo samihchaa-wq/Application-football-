@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/features/matches/data/upcoming_match_states_loader.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/features/matches/data/upcoming_match_states_loader.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

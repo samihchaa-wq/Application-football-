@@ -1,14 +1,14 @@
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/club/club_rules.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/admin/presentation/club_subscription_section.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
-import 'package:as_grinta/features/club/presentation/club_identity_sync.dart';
-import 'package:as_grinta/features/club/presentation/club_rules_sync.dart';
-import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
-import 'package:as_grinta/features/season_wrapped/domain/wrapped_stat_selection.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/admin/presentation/club_subscription_section.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
+import 'package:petit_filet/features/club/presentation/club_identity_sync.dart';
+import 'package:petit_filet/features/club/presentation/club_rules_sync.dart';
+import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
+import 'package:petit_filet/features/season_wrapped/domain/wrapped_stat_selection.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
@@ -916,13 +916,13 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: GrintaAppBar(title: const Text('Réglages du club')),
+      appBar: PfAppBar(title: const Text('Réglages du club')),
       body: _buildBody(context),
     );
   }
 
   Widget _buildBody(BuildContext context) {
-    if (_loading) return const Center(child: GrintaProgressIndicator());
+    if (_loading) return const Center(child: PfProgressIndicator());
     final club = _club;
     if (_loadError != null || club == null) {
       return Center(

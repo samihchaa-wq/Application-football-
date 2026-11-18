@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/match_live/domain/match_live_session.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_session.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -11,7 +11,7 @@ void main() {
         planPlannedDurationMinutes: 90,
         half: 1,
         elapsedSeconds: 754,
-        scoreAsGrinta: 1,
+        scoreOwn: 1,
         scoreAdverse: 0,
         exported: false,
         lineupRevision: 0,
@@ -34,7 +34,7 @@ void main() {
         half: 1,
         elapsedSeconds: 60,
         runningSince: runningSince,
-        scoreAsGrinta: 0,
+        scoreOwn: 0,
         scoreAdverse: 0,
         exported: false,
         lineupRevision: 0,
@@ -55,7 +55,7 @@ void main() {
           planPlannedDurationMinutes: 90,
           half: 1,
           elapsedSeconds: 0,
-          scoreAsGrinta: 0,
+          scoreOwn: 0,
           scoreAdverse: 0,
           exported: false,
           lineupRevision: 0,
@@ -88,7 +88,7 @@ void main() {
       expect(session.state, MatchLiveState.running);
       expect(session.planPlannedDurationMinutes, 70);
       expect(session.half, 2);
-      expect(session.scoreAsGrinta, 2);
+      expect(session.scoreOwn, 2);
       expect(session.scoreAdverse, 1);
       expect(session.lineupRevision, 4);
       expect(session.pilotActive, isTrue);

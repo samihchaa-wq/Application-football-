@@ -1,5 +1,5 @@
-import 'package:as_grinta/core/widgets/sticky_header_table.dart';
-import 'package:as_grinta/features/badges/presentation/name_with_badges.dart';
+import 'package:petit_filet/core/widgets/sticky_header_table.dart';
+import 'package:petit_filet/features/badges/presentation/name_with_badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -27,7 +27,7 @@ void main() {
     testWidgets('sans style, le nom prend la taille de référence', (
       tester,
     ) async {
-      expect(await _renderedFontSize(tester), grintaTableCellFontSize);
+      expect(await _renderedFontSize(tester), pfTableCellFontSize);
     });
 
     testWidgets('un style sans taille garde la taille de référence', (
@@ -39,7 +39,7 @@ void main() {
         tester,
         style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w900),
       );
-      expect(size, grintaTableCellFontSize);
+      expect(size, pfTableCellFontSize);
     });
 
     testWidgets('la taille ambiante du contexte ne déteint pas', (
@@ -49,7 +49,7 @@ void main() {
         tester,
         ambient: const TextStyle(fontSize: 28),
       );
-      expect(size, grintaTableCellFontSize);
+      expect(size, pfTableCellFontSize);
     });
 
     testWidgets('une taille explicite reste respectée', (tester) async {

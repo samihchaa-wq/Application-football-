@@ -2,16 +2,16 @@ import 'dart:async';
 
 import 'dart:typed_data';
 
-import 'package:as_grinta/core/storage/player_photo_mode.dart';
-import 'package:as_grinta/app/router/app_router.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
-import 'package:as_grinta/app/router/auth_redirect.dart';
-import 'package:as_grinta/features/auth/data/auth_repository.dart';
-import 'package:as_grinta/features/auth/domain/auth_profile.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/feature_flags/data/feature_flags_repository.dart';
-import 'package:as_grinta/features/feature_flags/domain/feature_flags.dart';
-import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
+import 'package:petit_filet/core/storage/player_photo_mode.dart';
+import 'package:petit_filet/app/router/app_router.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
+import 'package:petit_filet/app/router/auth_redirect.dart';
+import 'package:petit_filet/features/auth/data/auth_repository.dart';
+import 'package:petit_filet/features/auth/domain/auth_profile.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/feature_flags/data/feature_flags_repository.dart';
+import 'package:petit_filet/features/feature_flags/domain/feature_flags.dart';
+import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

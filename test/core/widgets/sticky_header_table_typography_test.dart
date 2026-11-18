@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/widgets/sticky_header_table.dart';
+import 'package:petit_filet/core/widgets/sticky_header_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -24,7 +24,7 @@ void main() {
                   const badgeSize = 48.0;
                   const badgeGap = 3.0;
                   final inheritedStyle = DefaultTextStyle.of(context).style;
-                  final cellStyle = grintaTableCellTextStyle(
+                  final cellStyle = pfTableCellTextStyle(
                     context,
                     fontWeight: FontWeight.w800,
                   );
@@ -37,14 +37,14 @@ void main() {
                     maxLines: 1,
                   )..layout();
 
-                  exactRequiredWidth = grintaTablePinnedRowPadding.left +
-                      grintaTableRankWidth +
-                      grintaTableRankGap +
+                  exactRequiredWidth = pfTablePinnedRowPadding.left +
+                      pfTableRankWidth +
+                      pfTableRankGap +
                       painter.width +
                       badgeGap +
                       badgeSize +
-                      grintaTablePinnedRowPadding.right;
-                  pinnedWidth = grintaTablePinnedWidthForNames(
+                      pfTablePinnedRowPadding.right;
+                  pinnedWidth = pfTablePinnedWidthForNames(
                     context,
                     const [name],
                     trailingWidth: badgeSize,

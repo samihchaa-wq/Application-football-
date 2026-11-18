@@ -1,5 +1,5 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/features/match_live/domain/substitution_salvos.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/features/match_live/domain/substitution_salvos.dart';
 import 'package:flutter/material.dart';
 
 /// Douze couleurs bien distinctes, une par salve de remplacements. Au-delà de

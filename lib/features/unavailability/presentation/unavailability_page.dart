@@ -1,14 +1,14 @@
-import 'package:as_grinta/core/theme/app_spacing.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/widgets/grinta_empty_state.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/core/widgets/grinta_secondary_tabs.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/unavailability/data/player_unavailability_repository.dart';
-import 'package:as_grinta/features/unavailability/domain/player_unavailability.dart';
-import 'package:as_grinta/features/unavailability/presentation/unavailability_form_sheet.dart';
+import 'package:petit_filet/core/theme/app_spacing.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/widgets/pf_empty_state.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/core/widgets/pf_secondary_tabs.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/unavailability/data/player_unavailability_repository.dart';
+import 'package:petit_filet/features/unavailability/domain/player_unavailability.dart';
+import 'package:petit_filet/features/unavailability/presentation/unavailability_form_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -35,13 +35,13 @@ class _UnavailabilityPageState extends ConsumerState<UnavailabilityPage> {
     final section = isAdminView ? _section : _UnavailabilitySection.mine;
 
     return Scaffold(
-      appBar: GrintaAppBar(
+      appBar: PfAppBar(
         title: const Text('Indisponibilité'),
       ),
       body: Column(
         children: [
           if (isAdminView)
-            GrintaSecondaryTabs<_UnavailabilitySection>(
+            PfSecondaryTabs<_UnavailabilitySection>(
               segments: const [
                 ButtonSegment(
                   value: _UnavailabilitySection.mine,
@@ -137,7 +137,7 @@ class _MyUnavailabilitiesPanel extends ConsumerWidget {
       children: [
         Expanded(
           child: periodsAsync.when(
-            loading: () => const Center(child: GrintaProgressIndicator()),
+            loading: () => const Center(child: PfProgressIndicator()),
             error: (error, _) => _PanelMessage(
               message: humanizeError(error),
               onRefresh: () => ref.invalidate(myUnavailabilitiesProvider),
@@ -323,7 +323,7 @@ class _ClubUnavailabilitiesPanel extends ConsumerWidget {
     final periodsAsync = ref.watch(clubUnavailabilitiesProvider);
 
     return periodsAsync.when(
-      loading: () => const Center(child: GrintaProgressIndicator()),
+      loading: () => const Center(child: PfProgressIndicator()),
       error: (error, _) => _PanelMessage(
         message: humanizeError(error),
         onRefresh: () => ref.invalidate(clubUnavailabilitiesProvider),
@@ -442,7 +442,7 @@ class _ScrollableEmptyState extends StatelessWidget {
       ),
       children: [
         const SizedBox(height: 24),
-        GrintaEmptyState(icon: icon, title: title, message: message),
+        PfEmptyState(icon: icon, title: title, message: message),
       ],
     );
   }
@@ -463,11 +463,11 @@ class _PanelMessage extends StatelessWidget {
       ),
       children: [
         const SizedBox(height: 24),
-        GrintaEmptyState(
+        PfEmptyState(
           icon: Icons.error_outline,
           title: 'Chargement impossible',
           message: message,
-          tone: GrintaEmptyTone.alert,
+          tone: PfEmptyTone.alert,
           action: TextButton(
             onPressed: onRefresh,
             child: const Text('Réessayer'),

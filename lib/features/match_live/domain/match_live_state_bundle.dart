@@ -1,7 +1,7 @@
-import 'package:as_grinta/features/match_live/domain/live_guest_display_name.dart';
-import 'package:as_grinta/features/match_live/domain/match_live_event.dart';
-import 'package:as_grinta/features/match_live/domain/match_live_session.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/match_live/domain/live_guest_display_name.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_event.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_session.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
 
 /// Regroupe tout ce que renvoie get_match_live_state (et chaque RPC
 /// d'écriture, qui renvoie la même forme) : le client interprète toujours un

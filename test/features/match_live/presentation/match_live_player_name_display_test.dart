@@ -1,9 +1,9 @@
-import 'package:as_grinta/features/match_live/domain/substitution_salvos.dart';
-import 'package:as_grinta/features/match_live/presentation/match_live_running_page.dart';
-import 'package:as_grinta/features/match_live/presentation/widgets/live_bench_tile.dart';
-import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/formation_pitch_editor.dart';
+import 'package:petit_filet/features/match_live/domain/substitution_salvos.dart';
+import 'package:petit_filet/features/match_live/presentation/match_live_running_page.dart';
+import 'package:petit_filet/features/match_live/presentation/widgets/live_bench_tile.dart';
+import 'package:petit_filet/features/sports_management/domain/football_formation.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/formation_pitch_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';

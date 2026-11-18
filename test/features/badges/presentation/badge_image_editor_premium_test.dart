@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/badges/presentation/badge_image_editor.dart';
-import 'package:as_grinta/features/badges/presentation/badge_premium_skins.dart';
+import 'package:petit_filet/features/badges/presentation/badge_image_editor.dart';
+import 'package:petit_filet/features/badges/presentation/badge_premium_skins.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

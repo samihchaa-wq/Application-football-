@@ -1,17 +1,17 @@
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/config/app_config.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/features/admin/data/admin_repository.dart';
-import 'package:as_grinta/features/auth/domain/auth_profile.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/auth/presentation/sign_out_confirmation.dart';
-import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
-import 'package:as_grinta/features/matches/presentation/matches_controller.dart';
-import 'package:as_grinta/features/more/presentation/calendar_subscription_tile.dart';
-import 'package:as_grinta/features/players/data/roster_repository.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/config/app_config.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/features/admin/data/admin_repository.dart';
+import 'package:petit_filet/features/auth/domain/auth_profile.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/auth/presentation/sign_out_confirmation.dart';
+import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
+import 'package:petit_filet/features/matches/presentation/matches_controller.dart';
+import 'package:petit_filet/features/more/presentation/calendar_subscription_tile.dart';
+import 'package:petit_filet/features/players/data/roster_repository.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -26,7 +26,7 @@ class MorePage extends ConsumerWidget {
     final sportsEnabled = ref.watch(sportsManagementEnabledProvider);
 
     return Scaffold(
-      appBar: GrintaAppBar(title: const Text('Paramètres')),
+      appBar: PfAppBar(title: const Text('Paramètres')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

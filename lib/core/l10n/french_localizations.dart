@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/l10n/french_date_data.dart';
+import 'package:petit_filet/core/l10n/french_date_data.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';

@@ -1,60 +1,60 @@
 import 'dart:async';
 
-import 'package:as_grinta/app/router/auth_redirect.dart';
-import 'package:as_grinta/app/router/deferred_route_page.dart';
-import 'package:as_grinta/app/router/initial_app_location.dart';
-import 'package:as_grinta/app/shell/app_shell.dart';
-import 'package:as_grinta/features/admin/presentation/club_kits_page.dart';
-import 'package:as_grinta/features/admin/presentation/club_settings_page.dart';
-import 'package:as_grinta/features/matches/presentation/history_entry_page.dart';
-import 'package:as_grinta/features/admin/presentation/admin_menu_page.dart'
+import 'package:petit_filet/app/router/auth_redirect.dart';
+import 'package:petit_filet/app/router/deferred_route_page.dart';
+import 'package:petit_filet/app/router/initial_app_location.dart';
+import 'package:petit_filet/app/shell/app_shell.dart';
+import 'package:petit_filet/features/admin/presentation/club_kits_page.dart';
+import 'package:petit_filet/features/admin/presentation/club_settings_page.dart';
+import 'package:petit_filet/features/matches/presentation/history_entry_page.dart';
+import 'package:petit_filet/features/admin/presentation/admin_menu_page.dart'
     deferred as admin_menu;
-import 'package:as_grinta/features/admin/presentation/admin_notification_page.dart'
+import 'package:petit_filet/features/admin/presentation/admin_notification_page.dart'
     deferred as admin_notification;
-import 'package:as_grinta/features/admin/presentation/admin_page.dart'
+import 'package:petit_filet/features/admin/presentation/admin_page.dart'
     deferred as admin_administration;
-import 'package:as_grinta/features/admin/presentation/opponent_stadium_library_page.dart'
+import 'package:petit_filet/features/admin/presentation/opponent_stadium_library_page.dart'
     deferred as admin_stadiums;
-import 'package:as_grinta/features/auth/presentation/auth_loading_page.dart';
-import 'package:as_grinta/features/auth/presentation/auth_register_page.dart';
-import 'package:as_grinta/features/auth/presentation/choose_club_page.dart';
-import 'package:as_grinta/features/auth/presentation/confirm_email_page.dart';
-import 'package:as_grinta/features/auth/presentation/legal_document_page.dart';
-import 'package:as_grinta/features/auth/presentation/auth_sign_in_page.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/auth/presentation/forced_password_change_page.dart';
-import 'package:as_grinta/features/badges/presentation/armoire_page.dart';
-import 'package:as_grinta/features/badges/presentation/badge_admin_page.dart'
+import 'package:petit_filet/features/auth/presentation/auth_loading_page.dart';
+import 'package:petit_filet/features/auth/presentation/auth_register_page.dart';
+import 'package:petit_filet/features/auth/presentation/choose_club_page.dart';
+import 'package:petit_filet/features/auth/presentation/confirm_email_page.dart';
+import 'package:petit_filet/features/auth/presentation/legal_document_page.dart';
+import 'package:petit_filet/features/auth/presentation/auth_sign_in_page.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/auth/presentation/forced_password_change_page.dart';
+import 'package:petit_filet/features/badges/presentation/armoire_page.dart';
+import 'package:petit_filet/features/badges/presentation/badge_admin_page.dart'
     deferred as badge_admin;
-import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
-import 'package:as_grinta/features/matches/data/calendar_history_repository.dart';
-import 'package:as_grinta/features/matches/presentation/historical_match_detail_page.dart';
-import 'package:as_grinta/features/matches/presentation/match_details_page.dart';
-import 'package:as_grinta/features/matches/presentation/matches_page.dart';
-import 'package:as_grinta/features/matches/presentation/upcoming_match_prediction_page.dart';
-import 'package:as_grinta/features/more/presentation/more_page.dart';
-import 'package:as_grinta/features/notifications/presentation/notifications_page.dart';
-import 'package:as_grinta/features/players/presentation/player_card_link.dart';
-import 'package:as_grinta/features/players/data/player_stat_ranking.dart';
-import 'package:as_grinta/features/players/presentation/player_card_page.dart';
-import 'package:as_grinta/features/players/presentation/player_stat_ranking_page.dart';
-import 'package:as_grinta/features/players/presentation/players_registry_page.dart';
-import 'package:as_grinta/features/predictions/presentation/pronos_hub_page.dart';
-import 'package:as_grinta/features/profile/presentation/profile_page.dart';
-import 'package:as_grinta/features/platform/presentation/platform_control_page.dart'
+import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
+import 'package:petit_filet/features/matches/data/calendar_history_repository.dart';
+import 'package:petit_filet/features/matches/presentation/historical_match_detail_page.dart';
+import 'package:petit_filet/features/matches/presentation/match_details_page.dart';
+import 'package:petit_filet/features/matches/presentation/matches_page.dart';
+import 'package:petit_filet/features/matches/presentation/upcoming_match_prediction_page.dart';
+import 'package:petit_filet/features/more/presentation/more_page.dart';
+import 'package:petit_filet/features/notifications/presentation/notifications_page.dart';
+import 'package:petit_filet/features/players/presentation/player_card_link.dart';
+import 'package:petit_filet/features/players/data/player_stat_ranking.dart';
+import 'package:petit_filet/features/players/presentation/player_card_page.dart';
+import 'package:petit_filet/features/players/presentation/player_stat_ranking_page.dart';
+import 'package:petit_filet/features/players/presentation/players_registry_page.dart';
+import 'package:petit_filet/features/predictions/presentation/pronos_hub_page.dart';
+import 'package:petit_filet/features/profile/presentation/profile_page.dart';
+import 'package:petit_filet/features/platform/presentation/platform_control_page.dart'
     deferred as platform_control;
-import 'package:as_grinta/features/season_wrapped/presentation/season_wrapped_page.dart'
+import 'package:petit_filet/features/season_wrapped/presentation/season_wrapped_page.dart'
     deferred as season_wrapped;
-import 'package:as_grinta/features/sports_management/presentation/admin_guests_page.dart'
+import 'package:petit_filet/features/sports_management/presentation/admin_guests_page.dart'
     deferred as admin_guests;
-import 'package:as_grinta/features/sports_management/presentation/admin_squad_plan_page.dart';
-import 'package:as_grinta/features/sports_management/presentation/admin_waitlist_page.dart'
+import 'package:petit_filet/features/sports_management/presentation/admin_squad_plan_page.dart';
+import 'package:petit_filet/features/sports_management/presentation/admin_waitlist_page.dart'
     deferred as admin_waitlist;
-import 'package:as_grinta/features/sports_management/presentation/match_lineup_page.dart';
-import 'package:as_grinta/features/sports_management/presentation/match_report_page.dart';
-import 'package:as_grinta/features/sports_management/presentation/sport_motm_vote_page.dart';
-import 'package:as_grinta/features/statistics/presentation/stats_hub_page.dart';
-import 'package:as_grinta/features/unavailability/presentation/unavailability_page.dart';
+import 'package:petit_filet/features/sports_management/presentation/match_lineup_page.dart';
+import 'package:petit_filet/features/sports_management/presentation/match_report_page.dart';
+import 'package:petit_filet/features/sports_management/presentation/sport_motm_vote_page.dart';
+import 'package:petit_filet/features/statistics/presentation/stats_hub_page.dart';
+import 'package:petit_filet/features/unavailability/presentation/unavailability_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

@@ -1,36 +1,36 @@
 import 'dart:async';
 
-import 'package:as_grinta/app/router/app_router.dart';
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/club/club_rules.dart';
-import 'package:as_grinta/core/l10n/french_localizations.dart';
-import 'package:as_grinta/core/network/connectivity_service.dart';
-import 'package:as_grinta/core/push/push_client.dart';
-import 'package:as_grinta/core/sync/resume_refresh_policy.dart';
-import 'package:as_grinta/core/sync/shared_data_sync.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/widgets/grinta_accessibility_scope.dart';
-import 'package:as_grinta/core/widgets/grinta_status_banner.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
-import 'package:as_grinta/features/club/presentation/club_configuration_status_banner.dart';
-import 'package:as_grinta/features/club/presentation/club_identity_sync.dart';
-import 'package:as_grinta/features/club/presentation/club_rules_sync.dart';
-import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
-import 'package:as_grinta/features/notifications/data/notification_inbox_repository.dart';
-import 'package:as_grinta/features/notifications/presentation/push_device_banner.dart';
-import 'package:as_grinta/features/preferences/data/push_subscriptions_repository.dart';
+import 'package:petit_filet/app/router/app_router.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
+import 'package:petit_filet/core/l10n/french_localizations.dart';
+import 'package:petit_filet/core/network/connectivity_service.dart';
+import 'package:petit_filet/core/push/push_client.dart';
+import 'package:petit_filet/core/sync/resume_refresh_policy.dart';
+import 'package:petit_filet/core/sync/shared_data_sync.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/widgets/pf_accessibility_scope.dart';
+import 'package:petit_filet/core/widgets/pf_status_banner.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
+import 'package:petit_filet/features/club/presentation/club_configuration_status_banner.dart';
+import 'package:petit_filet/features/club/presentation/club_identity_sync.dart';
+import 'package:petit_filet/features/club/presentation/club_rules_sync.dart';
+import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
+import 'package:petit_filet/features/notifications/data/notification_inbox_repository.dart';
+import 'package:petit_filet/features/notifications/presentation/push_device_banner.dart';
+import 'package:petit_filet/features/preferences/data/push_subscriptions_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AsGrintaApp extends ConsumerStatefulWidget {
-  const AsGrintaApp({super.key});
+class PetitFiletApp extends ConsumerStatefulWidget {
+  const PetitFiletApp({super.key});
 
   @override
-  ConsumerState<AsGrintaApp> createState() => _AsGrintaAppState();
+  ConsumerState<PetitFiletApp> createState() => _PetitFiletAppState();
 }
 
-class _AsGrintaAppState extends ConsumerState<AsGrintaApp>
+class _PetitFiletAppState extends ConsumerState<PetitFiletApp>
     with WidgetsBindingObserver {
   /// Moment où l'application est passée en arrière-plan, `null` au premier
   /// plan.
@@ -210,7 +210,7 @@ class _AsGrintaAppState extends ConsumerState<AsGrintaApp>
               (systemScale * 1.10).clamp(1.10, 1.60),
             ),
           ),
-          child: GrintaAccessibilityScope(
+          child: PfAccessibilityScope(
             child: ColoredBox(
               color: AppTheme.background,
               child: Column(
@@ -222,11 +222,11 @@ class _AsGrintaAppState extends ConsumerState<AsGrintaApp>
                         bottom: false,
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-                          child: GrintaStatusBanner(
+                          child: PfStatusBanner(
                             title: 'Connexion perdue',
                             message:
                                 'Les données affichées peuvent être obsolètes.',
-                            tone: GrintaStatusTone.warning,
+                            tone: PfStatusTone.warning,
                             compact: true,
                             action: TextButton(
                               onPressed: () =>

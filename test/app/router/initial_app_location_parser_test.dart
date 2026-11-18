@@ -1,4 +1,4 @@
-import 'package:as_grinta/app/router/initial_app_location_parser.dart';
+import 'package:petit_filet/app/router/initial_app_location_parser.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

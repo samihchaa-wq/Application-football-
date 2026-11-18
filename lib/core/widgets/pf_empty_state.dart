@@ -1,16 +1,16 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 /// Message vide, informatif, positif ou d'erreur cohérent dans l'application.
-class GrintaEmptyState extends StatelessWidget {
-  const GrintaEmptyState({
+class PfEmptyState extends StatelessWidget {
+  const PfEmptyState({
     super.key,
     required this.icon,
     required this.title,
     this.message,
     this.action,
     this.compact = false,
-    this.tone = GrintaEmptyTone.neutral,
+    this.tone = PfEmptyTone.neutral,
   });
 
   final IconData icon;
@@ -18,7 +18,7 @@ class GrintaEmptyState extends StatelessWidget {
   final String? message;
   final Widget? action;
   final bool compact;
-  final GrintaEmptyTone tone;
+  final PfEmptyTone tone;
 
   @override
   Widget build(BuildContext context) {
@@ -26,10 +26,10 @@ class GrintaEmptyState extends StatelessWidget {
     final reduceMotion =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     final accent = switch (tone) {
-      GrintaEmptyTone.neutral => AppTheme.primaryBright,
-      GrintaEmptyTone.success => AppTheme.success,
-      GrintaEmptyTone.warning => AppTheme.warning,
-      GrintaEmptyTone.alert => theme.colorScheme.error,
+      PfEmptyTone.neutral => AppTheme.primaryBright,
+      PfEmptyTone.success => AppTheme.success,
+      PfEmptyTone.warning => AppTheme.warning,
+      PfEmptyTone.alert => theme.colorScheme.error,
     };
     final badge = compact ? 54.0 : 76.0;
     final iconSize = compact ? 27.0 : 36.0;
@@ -125,4 +125,4 @@ class GrintaEmptyState extends StatelessWidget {
   }
 }
 
-enum GrintaEmptyTone { neutral, success, warning, alert }
+enum PfEmptyTone { neutral, success, warning, alert }

@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/auth/domain/auth_profile.dart';
+import 'package:petit_filet/features/auth/domain/auth_profile.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

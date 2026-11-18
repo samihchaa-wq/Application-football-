@@ -392,10 +392,10 @@ class _AdminSquadPlanPageState extends ConsumerState<AdminSquadPlanPage> {
             Expanded(child: Center(child: child)),
           ],
         );
-    if (_loading) return withBackArrow(const GrintaProgressIndicator());
+    if (_loading) return withBackArrow(const PfProgressIndicator());
     if (_matches.isEmpty) {
       return withBackArrow(
-        const GrintaEmptyState(
+        const PfEmptyState(
           icon: Icons.event_busy_rounded,
           title: 'Aucun match disponible',
           message: 'Crée un match depuis l’onglet Matchs pour préparer '
@@ -500,7 +500,7 @@ class _AdminSquadPlanPageState extends ConsumerState<AdminSquadPlanPage> {
           ),
           if (_busy) ...[
             const SizedBox(height: AppSpacing.contentGap),
-            const GrintaLinearProgressIndicator(),
+            const PfLinearProgressIndicator(),
           ],
           if (_error != null) ...[
             const SizedBox(height: AppSpacing.sectionGap),

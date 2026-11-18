@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/match_live/domain/match_live_event.dart';
-import 'package:as_grinta/features/match_live/domain/substitution_salvos.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_event.dart';
+import 'package:petit_filet/features/match_live/domain/substitution_salvos.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

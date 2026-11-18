@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/sports_management/domain/player_position_affinity.dart';
-import 'package:as_grinta/features/sports_management/domain/player_position_profiles.dart';
+import 'package:petit_filet/features/sports_management/domain/player_position_affinity.dart';
+import 'package:petit_filet/features/sports_management/domain/player_position_profiles.dart';
 
 /// Catégories compactes utilisées pour répartir visuellement les joueurs
 /// d'un match entre nous.

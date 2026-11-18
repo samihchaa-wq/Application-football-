@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/match_live/domain/live_guest_display_name.dart';
+import 'package:petit_filet/features/match_live/domain/live_guest_display_name.dart';
 
 enum MatchLiveEventType {
   goalUs,
@@ -24,7 +24,7 @@ class MatchLiveEvent {
     this.scorerName,
     this.assistParticipantId,
     this.assistName,
-    this.scoreAsGrintaAfter,
+    this.scoreOwnAfter,
     this.scoreAdverseAfter,
     this.playerInParticipantId,
     this.playerInName,
@@ -44,7 +44,7 @@ class MatchLiveEvent {
       scorerName: liveEventDisplayName(json['scorer_name']),
       assistParticipantId: _nullableText(json['assist_participant_id']),
       assistName: liveEventDisplayName(json['assist_name']),
-      scoreAsGrintaAfter: (json['score_as_grinta_after'] as num?)?.toInt(),
+      scoreOwnAfter: (json['score_as_grinta_after'] as num?)?.toInt(),
       scoreAdverseAfter: (json['score_adverse_after'] as num?)?.toInt(),
       playerInParticipantId: _nullableText(json['player_in_participant_id']),
       playerInName: liveEventDisplayName(json['player_in_name']),
@@ -66,14 +66,14 @@ class MatchLiveEvent {
   /// buteur, et jamais renseigné sur un CSC adverse.
   final String? assistParticipantId;
   final String? assistName;
-  final int? scoreAsGrintaAfter;
+  final int? scoreOwnAfter;
   final int? scoreAdverseAfter;
   final String? playerInParticipantId;
   final String? playerInName;
   final String? playerOutParticipantId;
   final String? playerOutName;
 
-  /// But d'AS Grinta marqué contre son camp par l'adversaire : il compte au
+  /// But de l'équipe marqué contre son camp par l'adversaire : il compte au
   /// score mais n'est crédité à aucun joueur.
   final bool isOpponentOwnGoal;
 
@@ -82,7 +82,7 @@ class MatchLiveEvent {
   /// `null` quand la source ne la fournit pas.
   final DateTime? createdAt;
 
-  /// Un but d'AS Grinta dont le buteur reste à désigner.
+  /// Un but de l'équipe dont le buteur reste à désigner.
   bool get needsScorer =>
       type == MatchLiveEventType.goalUs &&
       scorerParticipantId == null &&

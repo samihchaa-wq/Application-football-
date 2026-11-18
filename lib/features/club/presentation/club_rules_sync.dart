@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:as_grinta/core/club/club_rules.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Charge les règles du club (ouverture des pronostics, fermeture…) dès qu'un

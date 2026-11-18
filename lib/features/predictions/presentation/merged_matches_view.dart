@@ -1,30 +1,30 @@
-import 'package:as_grinta/core/club/club_identity.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
 import 'dart:async';
 
-import 'package:as_grinta/app/shell/module_navigation.dart';
-import 'package:as_grinta/core/theme/app_spacing.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/theme/calendar_card_palette.dart';
-import 'package:as_grinta/core/utils/match_window.dart';
-import 'package:as_grinta/core/widgets/calendar_scoreline.dart';
-import 'package:as_grinta/core/widgets/grinta_empty_state.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/core/widgets/match_address_sheet.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/home/presentation/home_next_match_card.dart';
-import 'package:as_grinta/features/match_live/data/match_live_notification_repository.dart';
-import 'package:as_grinta/features/match_live/presentation/widgets/match_live_notification_bell.dart';
-import 'package:as_grinta/features/matches/data/calendar_history_repository.dart';
-import 'package:as_grinta/features/matches/data/club_events_repository.dart';
-import 'package:as_grinta/features/matches/domain/club_event.dart';
-import 'package:as_grinta/features/matches/domain/match_model.dart';
-import 'package:as_grinta/features/matches/presentation/matches_controller.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/admin_match_options_button.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/calendar_feed_event_card.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/historical_match_card.dart';
-import 'package:as_grinta/features/predictions/presentation/widgets/match_history_card.dart';
-import 'package:as_grinta/features/sports_management/presentation/match_availability_provider.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/match_availability_selector.dart';
+import 'package:petit_filet/app/shell/module_navigation.dart';
+import 'package:petit_filet/core/theme/app_spacing.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/theme/calendar_card_palette.dart';
+import 'package:petit_filet/core/utils/match_window.dart';
+import 'package:petit_filet/core/widgets/calendar_scoreline.dart';
+import 'package:petit_filet/core/widgets/pf_empty_state.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/core/widgets/match_address_sheet.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/home/presentation/home_next_match_card.dart';
+import 'package:petit_filet/features/match_live/data/match_live_notification_repository.dart';
+import 'package:petit_filet/features/match_live/presentation/widgets/match_live_notification_bell.dart';
+import 'package:petit_filet/features/matches/data/calendar_history_repository.dart';
+import 'package:petit_filet/features/matches/data/club_events_repository.dart';
+import 'package:petit_filet/features/matches/domain/club_event.dart';
+import 'package:petit_filet/features/matches/domain/match_model.dart';
+import 'package:petit_filet/features/matches/presentation/matches_controller.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/admin_match_options_button.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/calendar_feed_event_card.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/historical_match_card.dart';
+import 'package:petit_filet/features/predictions/presentation/widgets/match_history_card.dart';
+import 'package:petit_filet/features/sports_management/presentation/match_availability_provider.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/match_availability_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -359,7 +359,7 @@ class _MergedMatchesViewState extends ConsumerState<MergedMatchesView> {
                           title: 'Matchs indisponibles',
                           icon: Icons.wifi_off_rounded,
                           message: state.error!,
-                          tone: GrintaEmptyTone.alert,
+                          tone: PfEmptyTone.alert,
                         ),
                       ),
                     )
@@ -747,7 +747,7 @@ class _UpcomingMatchCard extends ConsumerWidget {
         : CalendarScoreline(
             homeName: homeName,
             awayName: awayName,
-            grintaIsHome: match.isHome,
+            ownIsHome: match.isHome,
             foreground: AppTheme.textPrimary,
           );
 
@@ -930,7 +930,7 @@ class _LoadingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Padding(
       padding: EdgeInsets.only(top: AppSpacing.contentGap),
-      child: Center(child: GrintaProgressIndicator()),
+      child: Center(child: PfProgressIndicator()),
     );
   }
 }
@@ -940,18 +940,18 @@ class _MessageCard extends StatelessWidget {
     required this.title,
     required this.message,
     this.icon = Icons.sports_soccer_rounded,
-    this.tone = GrintaEmptyTone.neutral,
+    this.tone = PfEmptyTone.neutral,
   });
 
   final String title;
   final String message;
   final IconData icon;
-  final GrintaEmptyTone tone;
+  final PfEmptyTone tone;
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: GrintaEmptyState(
+      child: PfEmptyState(
         icon: icon,
         title: title,
         message: message,

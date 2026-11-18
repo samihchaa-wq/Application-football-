@@ -1,10 +1,10 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/utils/app_formats.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/notifications/data/notification_inbox_repository.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/player_composition_video.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/stadium_video.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/utils/app_formats.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/notifications/data/notification_inbox_repository.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/player_composition_video.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/stadium_video.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -149,7 +149,7 @@ class _NotificationHistoryViewState
           onRetry: _load,
         );
       }
-      return const Center(child: GrintaLoader.inline());
+      return const Center(child: PfLoader.inline());
     }
 
     return RefreshIndicator(

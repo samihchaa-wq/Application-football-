@@ -1,13 +1,13 @@
-import 'package:as_grinta/core/theme/app_spacing.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
+import 'package:petit_filet/core/theme/app_spacing.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 /// Barre de sous-onglets uniforme utilisée dans le module Stats.
 ///
 /// Centralise les dimensions, les espacements et la typographie afin que les
 /// sous-familles de Prono, Joueur et Équipe restent parfaitement alignées.
-class GrintaSecondaryTabs<T> extends StatelessWidget {
-  const GrintaSecondaryTabs({
+class PfSecondaryTabs<T> extends StatelessWidget {
+  const PfSecondaryTabs({
     required this.segments,
     required this.selected,
     required this.onSelectionChanged,

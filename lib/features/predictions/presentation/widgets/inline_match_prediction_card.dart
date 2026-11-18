@@ -1,28 +1,28 @@
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/club/club_rules.dart';
-import 'package:as_grinta/core/theme/app_spacing.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/utils/app_formats.dart';
-import 'package:as_grinta/features/matches/data/match_details_repository.dart';
-import 'package:as_grinta/features/matches/presentation/match_encounter_route.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/match_result_score_chip.dart';
-import 'package:as_grinta/features/notifications/data/notification_inbox_repository.dart';
-import 'package:as_grinta/features/predictions/data/predictions_repository.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
+import 'package:petit_filet/core/theme/app_spacing.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/utils/app_formats.dart';
+import 'package:petit_filet/features/matches/data/match_details_repository.dart';
+import 'package:petit_filet/features/matches/presentation/match_encounter_route.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/match_result_score_chip.dart';
+import 'package:petit_filet/features/notifications/data/notification_inbox_repository.dart';
+import 'package:petit_filet/features/predictions/data/predictions_repository.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
 
-const Color _grintaOddAccent = Color(0xFF39E784);
+const Color _pfOddAccent = Color(0xFF39E784);
 const Color _opponentOddAccent = Color(0xFFFF6B6B);
 
 Color predictionOddAccentForSide({
   required bool isHomeSide,
-  required bool isGrintaHome,
+  required bool isOwnHome,
 }) {
-  return isHomeSide == isGrintaHome ? _grintaOddAccent : _opponentOddAccent;
+  return isHomeSide == isOwnHome ? _pfOddAccent : _opponentOddAccent;
 }
 
 final inlineMatchPredictionProvider = FutureProvider.autoDispose
@@ -42,7 +42,7 @@ class InlineMatchPredictionCard extends ConsumerStatefulWidget {
 
 class _InlineMatchPredictionCardState
     extends ConsumerState<InlineMatchPredictionCard> {
-  int? _scoreGrinta;
+  int? _scoreOwn;
   int? _scoreOpponent;
   bool _saving = false;
 
@@ -59,7 +59,7 @@ class _InlineMatchPredictionCardState
       loading: () => const Card(
         child: Padding(
           padding: EdgeInsets.all(AppSpacing.cardPadding),
-          child: Center(child: GrintaProgressIndicator()),
+          child: Center(child: PfProgressIndicator()),
         ),
       ),
       error: (error, _) => Card(
@@ -78,25 +78,25 @@ class _InlineMatchPredictionCardState
           );
         }
 
-        _scoreGrinta ??= item.scoreGrinta;
+        _scoreOwn ??= item.scoreOwn;
         _scoreOpponent ??= item.scoreOpponent;
 
-        final grinta = _scoreGrinta ?? item.scoreGrinta;
+        final own = _scoreOwn ?? item.scoreOwn;
         final opponent = _scoreOpponent ?? item.scoreOpponent;
         final now = DateTime.now();
         final notOpenYet = now.isBefore(item.opensAt);
         final closed = !notOpenYet && !item.canEditAt(now);
         final canEdit = !notOpenYet && !closed && !_saving;
 
-        final grintaPicker = Expanded(
+        final pfPicker = Expanded(
           child: _ScorePicker(
             label: ClubIdentity.name,
-            value: grinta,
+            value: own,
             enabled: canEdit,
             onMinus: () => setState(() {
-              if (grinta > 0) _scoreGrinta = grinta - 1;
+              if (own > 0) _scoreOwn = own - 1;
             }),
-            onPlus: () => setState(() => _scoreGrinta = grinta + 1),
+            onPlus: () => setState(() => _scoreOwn = own + 1),
           ),
         );
         final opponentPicker = Expanded(
@@ -135,7 +135,7 @@ class _InlineMatchPredictionCardState
                 loading: () => const Center(
                   child: SizedBox.square(
                     dimension: 24,
-                    child: GrintaProgressIndicator(strokeWidth: 2),
+                    child: PfProgressIndicator(strokeWidth: 2),
                   ),
                 ),
                 error: (_, __) => const Text(
@@ -149,9 +149,9 @@ class _InlineMatchPredictionCardState
               const SizedBox(height: AppSpacing.sectionGap),
               Row(
                 children: [
-                  if (item.isHome) grintaPicker else opponentPicker,
+                  if (item.isHome) pfPicker else opponentPicker,
                   const Text('–'),
-                  if (item.isHome) opponentPicker else grintaPicker,
+                  if (item.isHome) opponentPicker else pfPicker,
                 ],
               ),
               // Club sans cotes : chaque issue vaut 1, inutile de l’afficher.
@@ -167,11 +167,10 @@ class _InlineMatchPredictionCardState
                         value: AppFormats.odds(
                           item.isHome ? item.oddsWin : item.oddsLoss,
                         ),
-                        selected:
-                            item.isHome ? grinta > opponent : opponent > grinta,
+                        selected: item.isHome ? own > opponent : opponent > own,
                         accent: predictionOddAccentForSide(
                           isHomeSide: true,
-                          isGrintaHome: item.isHome,
+                          isOwnHome: item.isHome,
                         ),
                       ),
                     ),
@@ -180,7 +179,7 @@ class _InlineMatchPredictionCardState
                       child: _Odd(
                         label: 'N',
                         value: AppFormats.odds(item.oddsDraw),
-                        selected: grinta == opponent,
+                        selected: own == opponent,
                         accent: const Color(0xFFE59A1F),
                       ),
                     ),
@@ -191,11 +190,10 @@ class _InlineMatchPredictionCardState
                         value: AppFormats.odds(
                           item.isHome ? item.oddsLoss : item.oddsWin,
                         ),
-                        selected:
-                            item.isHome ? grinta < opponent : opponent < grinta,
+                        selected: item.isHome ? own < opponent : opponent < own,
                         accent: predictionOddAccentForSide(
                           isHomeSide: false,
-                          isGrintaHome: item.isHome,
+                          isOwnHome: item.isHome,
                         ),
                       ),
                     ),
@@ -215,7 +213,7 @@ class _InlineMatchPredictionCardState
                       ? const SizedBox(
                           width: 18,
                           height: 18,
-                          child: GrintaProgressIndicator(strokeWidth: 2),
+                          child: PfProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.save_outlined),
                   label: const Text('Enregistrer'),
@@ -248,7 +246,7 @@ class _InlineMatchPredictionCardState
     try {
       await ref.read(predictionsRepositoryProvider).savePrediction(
             matchId: item.matchId,
-            scoreGrinta: _scoreGrinta ?? item.scoreGrinta,
+            scoreOwn: _scoreOwn ?? item.scoreOwn,
             scoreOpponent: _scoreOpponent ?? item.scoreOpponent,
           );
       ref
@@ -357,7 +355,7 @@ class _HeadToHead extends StatelessWidget {
       chips.add(
         Expanded(
           child: MatchResultScoreChip(
-            scoreGrinta: match.scoreGrinta ?? 0,
+            scoreOwn: match.scoreOwn ?? 0,
             scoreOpponent: match.scoreOpponent ?? 0,
             subtitle: dateLabel,
             semanticLabel:

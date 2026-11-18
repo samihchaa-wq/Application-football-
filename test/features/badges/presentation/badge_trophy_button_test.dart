@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:as_grinta/features/badges/data/badge_inbox_repository.dart';
-import 'package:as_grinta/features/badges/presentation/badge_trophy_button.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
+import 'package:petit_filet/features/badges/data/badge_inbox_repository.dart';
+import 'package:petit_filet/features/badges/presentation/badge_trophy_button.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

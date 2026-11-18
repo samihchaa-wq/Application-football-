@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
 import 'package:flutter/material.dart';
 
 /// Valeur renvoyée quand le choix supplémentaire est retenu (« CSC adverse »).

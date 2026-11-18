@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/matches/domain/match_model.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/admin_match_options_button.dart';
+import 'package:petit_filet/features/matches/domain/match_model.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/admin_match_options_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,7 +13,7 @@ MatchModel _match({required DateTime kickoffAt, required String status}) =>
       isHome: true,
       plannedDurationMinutes: 90,
       status: status,
-      grintaScore: 6,
+      ownScore: 6,
       opponentScore: 0,
       opponentName: 'FC Booster',
     );

@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:as_grinta/core/club/club_rules.dart';
-import 'package:as_grinta/core/logging/app_logger.dart';
-import 'package:as_grinta/core/network/confirmed_write.dart';
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/features/auth/domain/auth_profile.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/match_live/data/match_live_repository.dart';
-import 'package:as_grinta/features/match_live/domain/match_live_add_player_options.dart';
-import 'package:as_grinta/features/match_live/domain/match_live_state_bundle.dart';
-import 'package:as_grinta/features/match_live/presentation/match_live_pilot.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
+import 'package:petit_filet/core/logging/app_logger.dart';
+import 'package:petit_filet/core/network/confirmed_write.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/features/auth/domain/auth_profile.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/match_live/data/match_live_repository.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_add_player_options.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_state_bundle.dart';
+import 'package:petit_filet/features/match_live/presentation/match_live_pilot.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final Random _scoreOperationRandom = Random.secure();

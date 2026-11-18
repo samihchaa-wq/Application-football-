@@ -1,5 +1,5 @@
-import 'package:as_grinta/core/club/club_kits.dart';
-import 'package:as_grinta/features/matches/domain/jersey_option.dart';
+import 'package:petit_filet/core/club/club_kits.dart';
+import 'package:petit_filet/features/matches/domain/jersey_option.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
 

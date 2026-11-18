@@ -1,12 +1,12 @@
 import 'dart:math' as math;
 
-import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
-import 'package:as_grinta/features/sports_management/domain/player_position_profiles.dart';
+import 'package:petit_filet/features/sports_management/domain/football_formation.dart';
+import 'package:petit_filet/features/sports_management/domain/player_position_profiles.dart';
 import 'package:flutter/painting.dart' show Offset;
 
 /// Première date interrogée pour retrouver les postes déjà joués.
 ///
-/// AS Grinta limitait cette lecture à août 2026 afin de ne pas compter deux
+/// L'application d'origine limitait cette lecture à août 2026 afin de ne pas compter deux
 /// fois son archive locale. Petit Filet n'embarque aucune archive : chaque club
 /// doit pouvoir exploiter ses compositions historiques, même antérieures à
 /// 2026. Le filtrage par club reste appliqué par la RPC côté serveur.

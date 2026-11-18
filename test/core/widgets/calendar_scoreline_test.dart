@@ -1,6 +1,6 @@
-import 'package:as_grinta/core/widgets/calendar_scoreline.dart';
-import 'package:as_grinta/features/matches/domain/match_model.dart';
-import 'package:as_grinta/features/predictions/presentation/widgets/match_history_card.dart';
+import 'package:petit_filet/core/widgets/calendar_scoreline.dart';
+import 'package:petit_filet/features/matches/domain/match_model.dart';
+import 'package:petit_filet/features/predictions/presentation/widgets/match_history_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,7 +15,7 @@ void main() {
         isHome: isHome,
         plannedDurationMinutes: 90,
         status: 'termine',
-        grintaScore: 3,
+        ownScore: 3,
         opponentScore: 4,
         opponentName: opponent,
         matchType: 'championnat',
@@ -136,7 +136,7 @@ void main() {
                 isHome: true,
                 plannedDurationMinutes: 90,
                 status: 'termine',
-                grintaScore: 1,
+                ownScore: 1,
                 opponentScore: 0,
                 opponentName: 'FCB',
                 matchType: 'amical',

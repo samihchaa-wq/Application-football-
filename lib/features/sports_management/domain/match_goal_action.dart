@@ -1,16 +1,16 @@
 /// Camp qui a marqué le but.
 enum MatchGoalTeamSide {
-  asGrinta,
+  own,
   opponent;
 
   static MatchGoalTeamSide fromWire(Object? value) {
     return value?.toString() == 'opponent'
         ? MatchGoalTeamSide.opponent
-        : MatchGoalTeamSide.asGrinta;
+        : MatchGoalTeamSide.own;
   }
 
   String get wireValue => switch (this) {
-        MatchGoalTeamSide.asGrinta => 'as_grinta',
+        MatchGoalTeamSide.own => 'as_grinta',
         MatchGoalTeamSide.opponent => 'opponent',
       };
 }
@@ -91,7 +91,7 @@ class MatchGoalAction {
     return MatchGoalAction(
       localKey: localKey,
       teamSide: teamSide,
-      assistKind: teamSide == MatchGoalTeamSide.asGrinta
+      assistKind: teamSide == MatchGoalTeamSide.own
           ? MatchGoalAssistKind.unknown
           : MatchGoalAssistKind.none,
     );
@@ -110,21 +110,21 @@ class MatchGoalAction {
   final String? assistName;
   final MatchGoalAssistKind assistKind;
 
-  /// But contre son camp : côté AS Grinta c'est un CSC adverse, côté adverse
-  /// c'est un joueur d'AS Grinta qui marque contre son camp.
+  /// But contre son camp : côté équipe du club c'est un CSC adverse, côté adverse
+  /// c'est un joueur du club qui marque contre son camp.
   final bool isOwnGoal;
   final String source;
   final String? sourceLiveEventId;
 
-  bool get isAsGrinta => teamSide == MatchGoalTeamSide.asGrinta;
+  bool get isOwnTeam => teamSide == MatchGoalTeamSide.own;
 
-  /// Un but d'AS Grinta dont le buteur reste à désigner.
+  /// Un but de l'équipe dont le buteur reste à désigner.
   bool get hasUnknownScorer =>
-      isAsGrinta && !isOwnGoal && scorerParticipantId == null;
+      isOwnTeam && !isOwnGoal && scorerParticipantId == null;
 
-  /// Seul un but d'AS Grinta réellement marqué par un joueur peut porter une
+  /// Seul un but de l'équipe réellement marqué par un joueur peut porter une
   /// passe décisive.
-  bool get canCarryAssist => isAsGrinta && !isOwnGoal;
+  bool get canCarryAssist => isOwnTeam && !isOwnGoal;
 
   MatchGoalAction _copy({
     Object? minute = _keep,
@@ -185,7 +185,7 @@ class MatchGoalAction {
         isOwnGoal: false,
       );
 
-  /// Contre-son-camp : CSC adverse côté AS Grinta, CSC AS Grinta côté adverse.
+  /// Contre-son-camp : CSC adverse côté équipe du club, CSC du club côté adverse.
   MatchGoalAction withOwnGoal() => _copy(
         assistKind: MatchGoalAssistKind.none,
         isOwnGoal: true,
@@ -194,7 +194,7 @@ class MatchGoalAction {
   /// But adverse ordinaire, sans contre-son-camp.
   MatchGoalAction withoutOwnGoal() => _copy(
         assistKind:
-            isAsGrinta ? MatchGoalAssistKind.unknown : MatchGoalAssistKind.none,
+            isOwnTeam ? MatchGoalAssistKind.unknown : MatchGoalAssistKind.none,
         isOwnGoal: false,
       );
 

@@ -1,7 +1,7 @@
-import 'package:as_grinta/features/matches/data/historical_match_detail_repository.dart';
-import 'package:as_grinta/features/matches/presentation/historical_match_detail_page.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/completed_match_composition_card.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:petit_filet/features/matches/data/historical_match_detail_repository.dart';
+import 'package:petit_filet/features/matches/presentation/historical_match_detail_page.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/completed_match_composition_card.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

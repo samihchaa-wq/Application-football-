@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:as_grinta/features/auth/data/auth_repository.dart';
+import 'package:petit_filet/features/auth/data/auth_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/matches/domain/history_match_draft.dart';
+import 'package:petit_filet/features/matches/domain/history_match_draft.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

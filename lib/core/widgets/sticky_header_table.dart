@@ -1,20 +1,20 @@
 import 'dart:math' as math;
 
-import 'package:as_grinta/core/theme/app_theme.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
-const grintaTableMinWidth = 620.0;
+const pfTableMinWidth = 620.0;
 
 /// Largeur de la colonne figée « Joueur ». Assez large pour un nom lisible
 /// à côté de deux emblèmes : c'est elle qui décale d'autant la première
 /// colonne de statistiques.
-const grintaTablePinnedWidth = 216.0;
+const pfTablePinnedWidth = 216.0;
 
-const grintaTableHeaderFontSize = 11.5;
-const grintaTableCellFontSize = 13.5;
-const grintaTableRankFontSize = 12.5;
-const grintaTablePinnedHeaderPadding = EdgeInsets.fromLTRB(6, 12, 4, 12);
-const grintaTableScrollableHeaderPadding = EdgeInsets.fromLTRB(8, 12, 16, 12);
+const pfTableHeaderFontSize = 11.5;
+const pfTableCellFontSize = 13.5;
+const pfTableRankFontSize = 12.5;
+const pfTablePinnedHeaderPadding = EdgeInsets.fromLTRB(6, 12, 4, 12);
+const pfTableScrollableHeaderPadding = EdgeInsets.fromLTRB(8, 12, 16, 12);
 
 /// Marge verticale réduite côté colonne figée : la hauteur des lignes reste
 /// donnée par les cellules de stats, mais un emblème peut occuper toute la
@@ -22,40 +22,40 @@ const grintaTableScrollableHeaderPadding = EdgeInsets.fromLTRB(8, 12, 16, 12);
 ///
 /// À gauche, 2 px seulement : le rang colle au bord du tableau, et la place
 /// gagnée revient aux emblèmes.
-const grintaTablePinnedRowPadding = EdgeInsets.fromLTRB(2, 8, 4, 8);
+const pfTablePinnedRowPadding = EdgeInsets.fromLTRB(2, 8, 4, 8);
 
-const grintaTableScrollableRowPadding = EdgeInsets.fromLTRB(8, 17, 16, 17);
-const grintaTableRankWidth = 18.0;
-const grintaTableRankGap = 6.0;
+const pfTableScrollableRowPadding = EdgeInsets.fromLTRB(8, 17, 16, 17);
+const pfTableRankWidth = 18.0;
+const pfTableRankGap = 6.0;
 
-TextStyle grintaTableHeaderTextStyle(BuildContext context, {Color? color}) {
+TextStyle pfTableHeaderTextStyle(BuildContext context, {Color? color}) {
   return TextStyle(
     color: color ?? AppTheme.textSecondary,
-    fontSize: grintaTableHeaderFontSize,
+    fontSize: pfTableHeaderFontSize,
     fontWeight: FontWeight.w400,
     letterSpacing: .55,
     height: 1,
   );
 }
 
-TextStyle grintaTableCellTextStyle(
+TextStyle pfTableCellTextStyle(
   BuildContext context, {
   Color? color,
   FontWeight fontWeight = FontWeight.w400,
 }) {
   return TextStyle(
     color: color ?? Theme.of(context).colorScheme.onSurface,
-    fontSize: grintaTableCellFontSize,
+    fontSize: pfTableCellFontSize,
     fontWeight: fontWeight,
     height: 1.15,
     fontFeatures: const [FontFeature.tabularFigures()],
   );
 }
 
-TextStyle grintaTableRankTextStyle(BuildContext context, {Color? color}) {
+TextStyle pfTableRankTextStyle(BuildContext context, {Color? color}) {
   return TextStyle(
     color: color ?? AppTheme.textFaint,
-    fontSize: grintaTableRankFontSize,
+    fontSize: pfTableRankFontSize,
     fontWeight: FontWeight.w400,
     fontFeatures: const [FontFeature.tabularFigures()],
   );
@@ -69,7 +69,7 @@ TextStyle grintaTableRankTextStyle(BuildContext context, {Color? color}) {
 /// (famille de police, letter-spacing, fallback), du facteur d'échelle de
 /// texte de l'appareil, puis arrondit au pixel supérieur pour éviter une
 /// ellipse due aux sous-pixels.
-double grintaTablePinnedWidthForNames(
+double pfTablePinnedWidthForNames(
   BuildContext context,
   Iterable<String> names, {
   double trailingWidth = 0,
@@ -83,7 +83,7 @@ double grintaTablePinnedWidthForNames(
   // colonne doit faire exactement la même chose, sinon la largeur peut être
   // sous-estimée sur iOS/Web (notamment à cause de la police/letter-spacing).
   final style = DefaultTextStyle.of(context).style.merge(
-        grintaTableCellTextStyle(
+        pfTableCellTextStyle(
           context,
           fontWeight: FontWeight.w400,
         ),
@@ -105,12 +105,12 @@ double grintaTablePinnedWidthForNames(
   }
 
   final trailing = trailingWidth == 0 ? 0.0 : trailingGap + trailingWidth;
-  final required = grintaTablePinnedRowPadding.left +
-      grintaTableRankWidth +
-      grintaTableRankGap +
+  final required = pfTablePinnedRowPadding.left +
+      pfTableRankWidth +
+      pfTableRankGap +
       widestName +
       trailing +
-      grintaTablePinnedRowPadding.right;
+      pfTablePinnedRowPadding.right;
   return required.ceilToDouble();
 }
 
@@ -121,8 +121,8 @@ double grintaTablePinnedWidthForNames(
 /// Aligné à gauche, un rang à un chiffre laissait derrière lui un trou aussi
 /// large que le chiffre manquant, et le nom ne démarrait jamais au même
 /// endroit d'une ligne à l'autre.
-class GrintaTableRankCell extends StatelessWidget {
-  const GrintaTableRankCell({required this.rank, this.color, super.key});
+class PfTableRankCell extends StatelessWidget {
+  const PfTableRankCell({required this.rank, this.color, super.key});
 
   final int rank;
   final Color? color;
@@ -130,9 +130,9 @@ class GrintaTableRankCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(right: grintaTableRankGap),
+      padding: const EdgeInsets.only(right: pfTableRankGap),
       child: SizedBox(
-        width: grintaTableRankWidth,
+        width: pfTableRankWidth,
         child: FittedBox(
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerRight,
@@ -140,7 +140,7 @@ class GrintaTableRankCell extends StatelessWidget {
             '$rank',
             maxLines: 1,
             textAlign: TextAlign.end,
-            style: grintaTableRankTextStyle(context, color: color),
+            style: pfTableRankTextStyle(context, color: color),
           ),
         ),
       ),
@@ -205,8 +205,8 @@ class StickyHeaderTableCard extends StatefulWidget {
     required this.scrollableHeader,
     required this.rows,
     this.onRefresh,
-    this.minWidth = grintaTableMinWidth,
-    this.pinnedWidth = grintaTablePinnedWidth,
+    this.minWidth = pfTableMinWidth,
+    this.pinnedWidth = pfTablePinnedWidth,
     this.controller,
     super.key,
   });
