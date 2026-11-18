@@ -21,6 +21,7 @@ import { validatePassword } from "./password_policy.ts";
 const USERNAME_DOMAIN = Deno.env.get("USERNAME_DOMAIN")?.trim() ||
   "comptes.club-app.local";
 const INVITE_CODE_PATTERN = /^[A-Z2-9]{8}$/;
+const REFERRAL_CODE_PATTERN = /^PF[A-Z2-9]{6}$/;
 const MAX_BODY_BYTES = 4_096;
 
 const corsHeaders = {
@@ -133,6 +134,10 @@ Deno.serve(async (req: Request) => {
   // Obligatoire pour créer un club (contact pour l'abonnement), facultative
   // pour rejoindre un club. Sert aussi à retrouver le compte par e-mail.
   const contactEmail = normalizeEmail(body.email);
+  // Code parrain d'un autre club, facultatif, à la création d'un club.
+  const referralCode = mode === "create"
+    ? String(body.referralCode ?? "").trim().toUpperCase().replace(/[\s-]/g, "")
+    : "";
 
   // Les requêtes manifestement invalides ne consomment pas le quota partagé.
   if (
@@ -167,6 +172,12 @@ Deno.serve(async (req: Request) => {
   }
   if (contactEmail && !isValidEmail(contactEmail)) {
     return jsonResponse({ error: "Adresse e-mail invalide." }, 400);
+  }
+  if (referralCode && !REFERRAL_CODE_PATTERN.test(referralCode)) {
+    return jsonResponse(
+      { error: "Code parrain invalide. Vérifie-le avec le club qui te l’a donné." },
+      400,
+    );
   }
   const consent = parseConsent(body);
   if (!consent) {
@@ -230,6 +241,22 @@ Deno.serve(async (req: Request) => {
 
     // Le club est fixé ici, côté serveur : jamais choisi par le client
     // autrement que par un code d'invitation valide.
+    // Code parrain vérifié avant de créer quoi que ce soit, après le quota :
+    // on ne peut pas tester des codes en rafale.
+    if (referralCode) {
+      const { data: referrer, error: referrerError } = await admin.rpc(
+        "club_for_referral_code",
+        { p_code: referralCode },
+      );
+      if (referrerError) throw referrerError;
+      if (!Array.isArray(referrer) || referrer.length === 0) {
+        return jsonResponse(
+          { error: "Code parrain inconnu. Vérifie-le avec le club qui te l’a donné." },
+          404,
+        );
+      }
+    }
+
     let club: { id: string; name: string };
     if (mode === "create") {
       const { data: createdClub, error: clubError } = await admin.rpc(
@@ -337,6 +364,17 @@ Deno.serve(async (req: Request) => {
         p_contract_version: clubContractVersion,
       });
       if (founderError) throw founderError;
+
+      if (referralCode) {
+        // Le club est créé : un échec ici ne doit pas annuler l'inscription.
+        const { error: referralError } = await admin.rpc(
+          "attach_club_referral",
+          { p_club_id: club.id, p_code: referralCode },
+        );
+        if (referralError) {
+          console.error("register-account referral failure", referralError);
+        }
+      }
     }
 
     // Le compte est créé : l'envoi du lien de confirmation est un plus. S'il

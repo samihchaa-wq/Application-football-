@@ -370,6 +370,13 @@ select is(
         'private.run_for_each_club(text)',
         'create_club(text,text,text,text,text,uuid)',
         'club_for_invite_code(text)',
+        -- Parrainage : réservées à la fonction serveur d'inscription
+        -- (service_role), comme le code d'invitation.
+        'club_for_referral_code(text)',
+        'attach_club_referral(uuid,text)',
+        -- Ne livre au parrain que le nom de ses clubs filleuls (et au filleul
+        -- celui de son parrain) ; exécutable seulement par club_scope.
+        'private.club_referral_overview(uuid)',
         'promote_club_founder(uuid,uuid)',
         'found_club(uuid,uuid,text)',
         'discard_empty_club(uuid)',

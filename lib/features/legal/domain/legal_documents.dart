@@ -338,8 +338,9 @@ const LegalDocument clubSalesTerms = LegalDocument(
           'proposé.',
       'Le paiement est attendu à la fin de l’essai, puis à la fin de chaque '
           'période payée. L’administrateur du club est prévenu dans '
-          'l’application avant cette échéance. Sans paiement 15 jours après '
-          'l’échéance, l’accès du club est suspendu automatiquement ; ses '
+          'l’application et par e-mail 10 jours avant cette échéance. Sans '
+          'paiement à l’échéance, l’accès du club est suspendu '
+          'automatiquement ; ses '
           'données sont conservées et l’accès revient dès que le paiement est '
           'enregistré. Lorsque le '
           'club agit en qualité de professionnel, des pénalités de retard au '

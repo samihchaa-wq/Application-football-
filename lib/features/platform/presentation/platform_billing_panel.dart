@@ -67,6 +67,19 @@ class PlatformBillingPanel extends ConsumerWidget {
   ) {
     final autoSuspended = billing.autoSuspendedAt != null;
     return [
+      if (billing.referralDiscountPercent > 0)
+        ListTile(
+          key: const Key('platform-billing-referral'),
+          leading: const Icon(Icons.card_giftcard_outlined),
+          title: Text(
+            'Parrainage : −${billing.referralDiscountPercent} %',
+          ),
+          subtitle: Text(
+            'À demander pour la prochaine année : '
+            '${formatEuros(billing.amountDueCents ?? 0)}. '
+            'La réduction est utilisée au prochain paiement noté.',
+          ),
+        ),
       if (autoSuspended && team.status == 'suspended')
         ListTile(
           leading:
@@ -92,8 +105,8 @@ class PlatformBillingPanel extends ConsumerWidget {
             'Suspension prévue le ${platformDay(billing.suspensionOn)}',
           ),
           subtitle: const Text(
-            'Si aucun paiement n’est noté d’ici là (15 jours après '
-            'l’échéance).',
+            'Si aucun paiement n’est noté d’ici là. Les administrateurs '
+            'du club sont prévenus par e-mail 10 jours avant.',
           ),
         ),
       Padding(
@@ -137,7 +150,8 @@ class PlatformBillingPanel extends ConsumerWidget {
       context: context,
       builder: (_) => _RecordPaymentDialog(
         team: team,
-        defaultAmountCents: billing.basePriceCents ?? 7900,
+        defaultAmountCents:
+            billing.amountDueCents ?? billing.basePriceCents ?? 7900,
         repository: ref.read(platformBillingRepositoryProvider),
       ),
     );

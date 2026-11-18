@@ -1,4 +1,5 @@
 import 'package:petit_filet/core/widgets/support_contact.dart';
+import 'package:petit_filet/features/admin/presentation/club_referral_section.dart';
 import 'package:petit_filet/features/club/data/club_subscription.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,6 +27,8 @@ class ClubSubscriptionSection extends ConsumerWidget {
               ? const SizedBox.shrink()
               : _SubscriptionCard(subscription: value),
         ),
+        const SizedBox(height: 12),
+        const ClubReferralSection(),
         const SizedBox(height: 20),
         Text('Espace photos', style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
@@ -152,6 +155,14 @@ class _SubscriptionCard extends StatelessWidget {
                   color: alert ? theme.colorScheme.onErrorContainer : null,
                 ),
               ),
+              if (subscription.referralDiscountPercent > 0) ...[
+                const SizedBox(height: 4),
+                Text(
+                  'Parrainage : −${subscription.referralDiscountPercent} %, '
+                  'reste à payer ${formatEuros(subscription.amountDueCents)}',
+                  key: const Key('club-subscription-amount-due'),
+                ),
+              ],
               if (subscription.state == ClubSubscriptionState.active &&
                   periodEnd != null) ...[
                 const SizedBox(height: 4),

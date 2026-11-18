@@ -44,7 +44,9 @@ class ClubSubscription {
     required this.basePriceCents,
     required this.yearlyAmountCents,
     this.suspensionOn,
-  });
+    this.referralDiscountPercent = 0,
+    int? amountDueCents,
+  }) : amountDueCents = amountDueCents ?? yearlyAmountCents;
 
   factory ClubSubscription.fromJson(Map<String, dynamic> json) {
     DateTime? date(Object? value) =>
@@ -60,6 +62,10 @@ class ClubSubscription {
       basePriceCents: number(json['base_price_cents']),
       yearlyAmountCents: number(json['yearly_amount_cents']),
       suspensionOn: date(json['suspension_on']),
+      referralDiscountPercent: number(json['referral_discount_percent']),
+      amountDueCents: json['amount_due_cents'] is num
+          ? number(json['amount_due_cents'])
+          : null,
     );
   }
 
@@ -72,15 +78,94 @@ class ClubSubscription {
   final int basePriceCents;
   final int yearlyAmountCents;
 
-  /// Date à partir de laquelle le club sera suspendu sans paiement (15 jours
-  /// après la fin de l'essai ou de l'année payée). Null si rien n'est dû.
+  /// Date à partir de laquelle le club sera suspendu sans paiement : la fin
+  /// de l'essai ou de l'année payée. Null si rien n'est dû.
   final DateTime? suspensionOn;
+
+  /// Réduction de parrainage acquise pour le prochain paiement (0 à 100).
+  final int referralDiscountPercent;
+
+  /// Montant du prochain paiement, réduction de parrainage déduite.
+  final int amountDueCents;
 
   /// Abonnement payé qui arrive à échéance dans moins de 30 jours.
   bool renewalDueBy(DateTime now) =>
       state == ClubSubscriptionState.active &&
       currentPeriodEnd != null &&
       currentPeriodEnd!.difference(now).inDays < 30;
+}
+
+/// Où en est un club parrainé.
+enum ClubReferralState {
+  /// Inscrit, pas encore payé : ne compte pas encore.
+  trial,
+
+  /// A payé : la réduction est acquise pour le prochain renouvellement.
+  paid,
+
+  /// Réduction déjà utilisée sur un renouvellement.
+  used;
+
+  static ClubReferralState parse(Object? value) => switch (value) {
+        'paid' => paid,
+        'used' => used,
+        _ => trial,
+      };
+}
+
+class ClubReferral {
+  const ClubReferral({
+    required this.clubName,
+    required this.state,
+    this.joinedAt,
+  });
+
+  final String clubName;
+  final ClubReferralState state;
+  final DateTime? joinedAt;
+}
+
+/// Parrainage du club : son code, les règles, ses filleuls.
+class ClubReferrals {
+  const ClubReferrals({
+    required this.code,
+    required this.ratePercent,
+    required this.capPercent,
+    required this.discountPercent,
+    required this.referrals,
+    this.referredBy,
+  });
+
+  factory ClubReferrals.fromJson(Map<String, dynamic> json) {
+    int number(Object? value, int fallback) =>
+        value is num ? value.toInt() : fallback;
+    final raw = json['referrals'];
+    return ClubReferrals(
+      code: json['code']?.toString() ?? '',
+      ratePercent: number(json['rate_percent'], 5),
+      capPercent: number(json['cap_percent'], 100),
+      discountPercent: number(json['discount_percent'], 0),
+      referredBy: json['referred_by']?.toString(),
+      referrals: [
+        if (raw is List)
+          for (final item in raw.whereType<Map>())
+            ClubReferral(
+              clubName: item['club_name']?.toString() ?? 'Club',
+              state: ClubReferralState.parse(item['state']),
+              joinedAt: item['joined_at'] is String
+                  ? DateTime.tryParse(item['joined_at'] as String)?.toLocal()
+                  : null,
+            ),
+      ],
+    );
+  }
+
+  final String code;
+  final int ratePercent;
+  final int capPercent;
+  final int discountPercent;
+  final String? referredBy;
+  final List<ClubReferral> referrals;
 }
 
 /// Espace de fichiers occupé par le club et son quota.
@@ -139,6 +224,13 @@ class ClubSubscriptionRepository {
   }
 
   /// Réservé aux administrateurs du club.
+  Future<ClubReferrals?> fetchReferrals() async {
+    final result = await _client.rpc('admin_get_club_referrals');
+    if (result is! Map) return null;
+    return ClubReferrals.fromJson(Map<String, dynamic>.from(result));
+  }
+
+  /// Réservé aux administrateurs du club.
   Future<ClubStorageUsage?> fetchStorageUsage() async {
     final result = await _client.rpc('admin_get_club_storage_usage');
     if (result is! Map) return null;
@@ -164,6 +256,10 @@ final clubSubscriptionRepositoryProvider =
 final clubSubscriptionProvider =
     FutureProvider.autoDispose<ClubSubscription?>((ref) {
   return ref.watch(clubSubscriptionRepositoryProvider).fetchSubscription();
+});
+
+final clubReferralsProvider = FutureProvider.autoDispose<ClubReferrals?>((ref) {
+  return ref.watch(clubSubscriptionRepositoryProvider).fetchReferrals();
 });
 
 final clubStorageUsageProvider =

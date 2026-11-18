@@ -31,7 +31,6 @@ class SupportContact extends StatelessWidget {
           AppConfig.supportEmail,
           key: const Key('support-contact-email'),
           textAlign: center ? TextAlign.center : TextAlign.start,
-          style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         TextButton.icon(
           key: const Key('support-contact-button'),

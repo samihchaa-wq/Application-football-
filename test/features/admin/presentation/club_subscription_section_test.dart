@@ -11,6 +11,7 @@ void main() {
         overrides: [
           clubSubscriptionProvider.overrideWith((ref) async => subscription),
           clubStorageUsageProvider.overrideWith((ref) async => null),
+          clubReferralsProvider.overrideWith((ref) async => null),
         ],
         child: const MaterialApp(
           home: Scaffold(
@@ -129,5 +130,37 @@ void main() {
       ),
     );
     expect(find.byKey(const Key('support-contact-email')), findsNothing);
+  });
+
+  testWidgets('réduction de parrainage : le montant restant est affiché', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      ClubSubscription(
+        state: ClubSubscriptionState.active,
+        trialEndsAt: null,
+        trialDaysLeft: 0,
+        currentPeriodEnd: DateTime.now().add(const Duration(days: 20)),
+        billablePlayers: 20,
+        pricePerPlayerCents: 0,
+        basePriceCents: 7900,
+        yearlyAmountCents: 7900,
+        referralDiscountPercent: 15,
+        amountDueCents: 6715,
+      ),
+    );
+    expect(
+      find.textContaining('Parrainage : −15 %, reste à payer 67,15'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('sans parrainage : pas de ligne de réduction', (tester) async {
+    await pump(
+      tester,
+      subscription(state: ClubSubscriptionState.toPay),
+    );
+    expect(find.byKey(const Key('club-subscription-amount-due')), findsNothing);
   });
 }

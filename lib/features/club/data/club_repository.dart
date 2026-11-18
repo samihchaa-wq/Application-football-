@@ -68,6 +68,13 @@ final RegExp inviteCodePattern = RegExp(r'^[A-Z2-9]{8}$');
 String normalizeInviteCode(String input) =>
     input.toUpperCase().replaceAll(RegExp(r'[\s-]'), '');
 
+/// Code parrain d'un autre club : « PF » suivi de 6 caractères.
+String normalizeReferralCode(String input) =>
+    input.toUpperCase().replaceAll(RegExp(r'[\s-]'), '');
+
+bool isValidReferralCode(String code) =>
+    RegExp(r'^PF[A-Z2-9]{6}$').hasMatch(code);
+
 /// Une fonctionnalité que l'administrateur peut activer ou non pour son club.
 enum ClubModule {
   predictions(
@@ -456,7 +463,9 @@ class ClubRepository {
     required String acceptedClubContractVersion,
     required AgeConfirmation ageConfirmation,
     String? email,
+    String? referralCode,
   }) {
+    final referral = normalizeReferralCode(referralCode ?? '');
     return _register({
       'mode': 'create',
       'acceptedTermsVersion': acceptedTermsVersion,
@@ -469,6 +478,7 @@ class ClubRepository {
       'lastName': lastName.trim(),
       'password': password,
       if (email != null && email.trim().isNotEmpty) 'email': email.trim(),
+      if (referral.isNotEmpty) 'referralCode': referral,
     }, password);
   }
 

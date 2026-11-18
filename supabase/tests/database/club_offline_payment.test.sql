@@ -4,7 +4,8 @@ set local search_path = public, extensions, pg_catalog;
 select no_plan();
 
 -- Paiement hors ligne noté par l'éditeur et suspension automatique des clubs
--- impayés après le délai de grâce.
+-- impayés le jour de l'échéance (plus de délai de grâce depuis
+-- 20261126000000_rappel_echeance_abonnement.sql).
 create temporary table test_clubs (label text primary key, id uuid not null) on commit drop;
 grant select on test_clubs to authenticated;
 
@@ -44,11 +45,11 @@ select is(
 );
 
 -- ---------------------------------------------------------------------------
--- Délai de grâce
+-- Suspension à l'échéance
 -- ---------------------------------------------------------------------------
 
--- Alpha : essai fini depuis 10 jours, encore dans le délai de grâce.
-update public.club_subscriptions set trial_ends_at = now() - interval '10 days'
+-- Alpha : essai qui se termine dans 5 jours.
+update public.club_subscriptions set trial_ends_at = now() + interval '5 days'
 where club_id = (select id from test_clubs where label = 'a');
 -- Charlie : essai fini depuis 20 jours.
 update public.club_subscriptions set trial_ends_at = now() - interval '20 days'
@@ -60,21 +61,21 @@ set local role authenticated;
 select ok(
   (public.admin_get_club_subscription() ->> 'suspension_on')::timestamptz
     between now() + interval '4 days' and now() + interval '6 days',
-  'l''administrateur voit la date de suspension : 15 jours après la fin de l''essai'
+  'l''administrateur voit la date de suspension : le jour de la fin de l''essai'
 );
 reset role;
 
 select is(private.suspend_unpaid_clubs(now()), 1,
-  'un seul club dépasse le délai de grâce');
+  'un seul club a dépassé son échéance');
 select is(
   (select status from public.clubs where id = (select id from test_clubs where label = 'a')),
   'active',
-  'un club encore dans le délai de grâce garde l''accès'
+  'un club avant son échéance garde l''accès'
 );
 select is(
   (select status from public.clubs where id = (select id from test_clubs where label = 'c')),
   'suspended',
-  'un club impayé après le délai de grâce est suspendu'
+  'un club impayé après son échéance est suspendu, sans délai de grâce'
 );
 select is(
   (select status from public.clubs where id = (select id from test_clubs where label = 'b')),
@@ -82,10 +83,12 @@ select is(
   'un club en essai n''est pas touché'
 );
 
--- Alpha dépasse à son tour le délai.
-select is(private.suspend_unpaid_clubs(now() + interval '6 days'), 1,
-  'le délai écoulé, le club suivant est suspendu');
-select is(private.suspend_unpaid_clubs(now() + interval '6 days'), 0,
+-- Alpha dépasse à son tour son échéance (essai fini hier).
+update public.club_subscriptions set trial_ends_at = now() - interval '1 day'
+where club_id = (select id from test_clubs where label = 'a');
+select is(private.suspend_unpaid_clubs(now()), 1,
+  'l''échéance passée, le club suivant est suspendu');
+select is(private.suspend_unpaid_clubs(now()), 0,
   'un club déjà suspendu n''est pas compté deux fois');
 
 select set_config('request.jwt.claims',
