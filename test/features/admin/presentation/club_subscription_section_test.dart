@@ -101,4 +101,33 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('à régler : l’admin voit l’adresse où écrire pour payer', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      subscription(
+        state: ClubSubscriptionState.toPay,
+        suspensionOn: DateTime(2026, 12, 3, 12),
+      ),
+    );
+    expect(find.byKey(const Key('support-contact-email')), findsOneWidget);
+    expect(find.text('contact@petitfilet.fr'), findsOneWidget);
+    expect(find.byKey(const Key('support-contact-button')), findsOneWidget);
+  });
+
+  testWidgets('abonnement actif loin de l’échéance : pas d’adresse affichée', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      subscription(
+        state: ClubSubscriptionState.active,
+        periodEnd: DateTime.now().add(const Duration(days: 300)),
+        suspensionOn: DateTime.now().add(const Duration(days: 315)),
+      ),
+    );
+    expect(find.byKey(const Key('support-contact-email')), findsNothing);
+  });
 }
