@@ -950,7 +950,6 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           onChanged: (value) => setState(() => _settingsSearch = value),
           decoration: InputDecoration(
             labelText: 'Rechercher un réglage',
-            hintText: 'Ex. bilan, notifications, maillots…',
             prefixIcon: const Icon(Icons.search_rounded),
             suffixIcon: _settingsSearch.isEmpty
                 ? null
@@ -1131,7 +1130,6 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
                 'Terrain à domicile',
                 'Proposé par défaut pour les matchs à domicile. Modifiable par match.',
               ),
-              hintText: 'Rue, code postal, ville',
               prefixIcon: Icon(Icons.place_outlined),
             ),
           ),
