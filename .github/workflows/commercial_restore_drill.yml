@@ -91,7 +91,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/pf-preload-stack"
           cd "$RUNNER_TEMP/pf-preload-stack"
           supabase init >/dev/null
-          supabase start -x studio,imgproxy,edge-runtime,logflare,vector,realtime >/dev/null
+          supabase start -x studio,imgproxy,edge-runtime,logflare,vector >/dev/null
           docker ps --format '{{.Image}}' | sort -u > "$RUNNER_TEMP/pf-images-list.txt"
           test -s "$RUNNER_TEMP/pf-images-list.txt"
           supabase stop --no-backup >/dev/null
@@ -156,7 +156,7 @@ jobs:
           docker load -i "$RUNNER_TEMP/pf-local-images.tar" >/dev/null
           mkdir -p "$root/local" && cd "$root/local"
           supabase init >/dev/null
-          if ! supabase start -x studio,imgproxy,edge-runtime,logflare,vector,realtime >"$root/stack.log" 2>&1; then
+          if ! supabase start -x studio,imgproxy,edge-runtime,logflare,vector >"$root/stack.log" 2>&1; then
             echo '::error::Pile Supabase isolée impossible à démarrer.'
             tail -n 12 "$root/stack.log" | sed -E 's#https?://[^ ]+#(URL masquée)#g'
             exit 1
