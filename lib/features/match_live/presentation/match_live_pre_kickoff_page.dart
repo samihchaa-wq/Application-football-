@@ -436,24 +436,11 @@ class MatchLivePreKickoffSpectatorView extends ConsumerWidget {
         ),
       );
     }
-    final theme = Theme.of(context);
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       children: [
-        Card(
-          margin: EdgeInsets.zero,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Text(
-              'Le match n’a pas encore démarré',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.titleSmall,
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
         MediaQuery.withClampedTextScaling(
           maxScaleFactor: 1,
           child: MatchCompositionKitScope(
