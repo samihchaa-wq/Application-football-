@@ -5,11 +5,43 @@ import 'package:as_grinta/features/match_live/domain/match_live_add_player_optio
 import 'package:as_grinta/features/match_live/domain/match_live_state_bundle.dart';
 import 'package:as_grinta/features/match_live/presentation/match_live_pre_kickoff_page.dart';
 import 'package:as_grinta/features/sports_management/domain/sport_match_finalization.dart';
+import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets(
+    'le spectateur distingue une composition non publiée d’une panne Live',
+    (tester) async {
+      final empty = MatchLiveStateBundle.fromRpc({
+        'match_id': 'match-1',
+        'session_exists': false,
+        'state': 'not_started',
+        'planned_duration_minutes': 90,
+        'events': const [],
+        'substitute_counts': const <String, int>{},
+        'lineup': null,
+      });
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            publishedMatchCompositionProvider('match-1')
+                .overrideWith((ref) async => null),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: MatchLivePreKickoffSpectatorView(bundle: empty),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Composition non publiée.'), findsOneWidget);
+      expect(find.text('La composition n’est pas encore prête.'), findsNothing);
+    },
+  );
+
   group('Tableau Blanc : préparation du coup d’envoi', () {
     testWidgets(
       'le dispositif se change avant le coup d’envoi',
