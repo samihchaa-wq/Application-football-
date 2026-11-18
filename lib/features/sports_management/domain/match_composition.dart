@@ -97,12 +97,17 @@ class MatchCompositionEntry {
   final bool isGuest;
   final bool isGoalkeeper;
 
-  /// Le poste placé sur le terrain prime sur le poste habituel.
-  bool get wearsGoalkeeperKit => zone == MatchCompositionZone.field &&
-          slotLabel != null &&
-          slotLabel!.trim().isNotEmpty
-      ? slotLabel!.trim().toUpperCase() == 'GB'
-      : isGoalkeeper;
+  /// La tenue dépend du poste réellement occupé, pas du poste habituel.
+  /// Certaines anciennes compositions conservent un libellé obsolète après
+  /// déplacement ; la position sur le terrain prime quand elle est connue.
+  bool get wearsGoalkeeperKit {
+    if (zone != MatchCompositionZone.field) return isGoalkeeper;
+    if (x != null && y != null) {
+      return (x! - .5).abs() <= .18 && y! >= .79;
+    }
+    final label = slotLabel?.trim().toUpperCase();
+    return label == null || label.isEmpty ? isGoalkeeper : label == 'GB';
+  }
   final MatchCompositionZone zone;
   final double? x;
   final double? y;
@@ -173,6 +178,7 @@ class MatchCompositionEntry {
     MatchCompositionZone nextZone, {
     double? x,
     double? y,
+    String? slotLabel,
     int? sortOrder,
   }) {
     final isField = nextZone == MatchCompositionZone.field;
@@ -187,7 +193,7 @@ class MatchCompositionEntry {
       zone: nextZone,
       x: isField ? x : null,
       y: isField ? y : null,
-      slotLabel: slotLabel,
+      slotLabel: isField ? (slotLabel ?? this.slotLabel) : null,
       photoUrl: photoUrl,
       goals: goals,
       assists: assists,
