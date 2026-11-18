@@ -50,3 +50,19 @@
 - Tests de non-régression **ajoutés dans le dépôt** : placement et tenue gardien, alignement des équipes dans le calendrier, affichage « Composition non publiée » côté spectateur.
 - L'ajout des tests ne démontre pas leur succès : vérifier les contrôles CI sur la PR (formatage/analyse Flutter, tests, build web).
 - **Limite de l'audit** : revue statique du code et recherches de textes ; aucun parcours manuel exhaustif de tous les écrans sur appareil n'a été effectué. Ne pas présenter ce travail comme une certification complète de tous les microtextes.
+
+## Nettoyage complémentaire des textes évidents
+
+- **Terrain de composition vide :** retrait de « Glisse un joueur ici ou utilise son menu. ».
+- **Zones de dépôt :** retrait de « Dépose un joueur ici. » et « Aucun joueur. » quand le compteur suffit.
+- **Calendrier mensuel vide :** retrait de « Change de mois avec les flèches pour continuer. ».
+- **Calendrier historique vide :** retrait de « Historique [saison] — change de mois avec les flèches. ».
+- **Effectif vide :** retrait de « Les membres validés apparaissent ici tout seuls. Ajoute avec le bouton ci-dessus un joueur qui n’a pas encore de compte. » ; l'action conserve son libellé.
+
+## Recette visuelle complémentaire avant fusion
+
+1. iPhone, calendrier domicile / extérieur : deux noms courts, très longs et écran étroit, sans chevauchement avec « VS ».
+2. Live T−15 : composition déjà publiée, composition jamais publiée, erreur de réseau ; distinguer la vue spectateur du pilotage coach.
+3. Sur le terrain : placer un joueur de champ en GB, échanger avec un défenseur, passer sur le banc et changer de dispositif ; vérifier couleurs du gardien avant / pendant / après match.
+4. Formulaires : labels à vide et lors de la saisie ; validations et lisibilité VoiceOver.
+5. Analyse Flutter, tests ciblés, build Web et essai réel sur téléphone. Une CI verte n'est pas une preuve de recette smartphone.
