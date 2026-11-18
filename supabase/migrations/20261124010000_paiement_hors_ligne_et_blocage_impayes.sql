@@ -36,6 +36,13 @@ create index club_payments_club_idx on private.club_payments (club_id, recorded_
 alter table private.club_payments enable row level security;
 revoke all on private.club_payments from public, anon, authenticated;
 
+-- Même cloisonnement que toute table de club. Seules les fonctions de la
+-- console (propriétaire postgres) y écrivent ; aucun compte n'y a accès.
+create policy club_isolation on private.club_payments
+  as restrictive for all to public
+  using (club_id = (select private.current_club_id()))
+  with check (club_id = (select private.current_club_id()));
+
 -- ---------------------------------------------------------------------------
 -- 2. Ce que voit l'administrateur du club
 -- ---------------------------------------------------------------------------
