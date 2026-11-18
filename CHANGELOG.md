@@ -6,6 +6,10 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- abonnement : forfait de 79 € par club et par an, quel que soit le nombre
+  de joueurs (au lieu de 10 € par joueur). Les clubs restés au tarif par
+  défaut passent au forfait ; un tarif ajusté à la main est conservé.
+  Conditions d'abonnement mises à jour (version 2026-11-18) ;
 - réglages du club : chaque fonctionnalité a maintenant ses sous-réglages,
   rangés sous elle dans « Réglages du club ». Douze notifications se coupent
   une par une pour tout le club (disponibilités, relances, convocation,

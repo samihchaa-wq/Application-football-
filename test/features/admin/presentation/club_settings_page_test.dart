@@ -42,9 +42,9 @@ void main() {
               trialDaysLeft: 5,
               currentPeriodEnd: null,
               billablePlayers: 24,
-              pricePerPlayerCents: 1000,
-              basePriceCents: 0,
-              yearlyAmountCents: 24000,
+              pricePerPlayerCents: 0,
+              basePriceCents: 7900,
+              yearlyAmountCents: 7900,
             ),
           ),
           clubStorageUsageProvider.overrideWith(
@@ -95,15 +95,18 @@ void main() {
     }
   });
 
-  testWidgets('l’admin voit son essai, ses joueurs facturés et son espace', (
+  testWidgets('l’admin voit son essai, son forfait annuel et son espace', (
     tester,
   ) async {
     await pumpPage(tester);
 
     await openSection(tester, 'subscription');
     expect(find.text('Essai gratuit : encore 5 jours'), findsOneWidget);
-    expect(find.textContaining('24 joueurs'), findsOneWidget);
-    expect(find.text('Total annuel : 240\u00a0€'), findsOneWidget);
+    expect(
+      find.text('Forfait club, quel que soit le nombre de joueurs'),
+      findsOneWidget,
+    );
+    expect(find.text('Total annuel : 79\u00a0€'), findsOneWidget);
     expect(find.text('50\u00a0Mo utilisés sur 200\u00a0Mo.'), findsOneWidget);
   });
 

@@ -19,7 +19,7 @@ const String legalVersion = '2026-11-12';
 
 /// Version des conditions d'abonnement et de l'accord sur les données,
 /// acceptée par la personne qui crée un club. Format AAAA-MM-JJ.
-const String clubContractVersion = '2026-11-12';
+const String clubContractVersion = '2026-11-18';
 
 class LegalSection {
   const LegalSection(this.title, this.paragraphs);
@@ -325,10 +325,10 @@ const LegalDocument clubSalesTerms = LegalDocument(
           'choisit de s’abonner ou non ; rien n’est facturé automatiquement.',
     ]),
     LegalSection('3. Prix', [
-      'L’abonnement est annuel. Son prix dépend du nombre de joueurs de '
-          'l’effectif de la saison : [10] € par joueur et par an au lancement, '
-          'sauf devis particulier. Le montant exact est indiqué au club avant '
-          'tout paiement. $_vatMention.',
+      'L’abonnement est annuel. Son prix est un forfait de 79 € par club et '
+          'par an, quel que soit le nombre de joueurs, sauf devis particulier. '
+          'Le montant exact est indiqué au club avant tout paiement. '
+          '$_vatMention.',
       'Les prix peuvent évoluer pour les saisons suivantes ; le club est '
           'prévenu au moins un mois avant le renouvellement.',
     ]),
@@ -371,7 +371,7 @@ const LegalDocument clubSalesTerms = LegalDocument(
           'l’application, n’y enregistrer que des personnes qui l’acceptent, '
           'et respecter ses obligations de responsable du traitement, '
           'décrites dans l’accord sur les données.',
-      'Déclarer un effectif exact pour le calcul du prix.',
+      'Déclarer un effectif exact.',
     ]),
     LegalSection('8. Données du club et réversibilité', [
       'Le club reste propriétaire de ses données, de son nom et de son logo. '
