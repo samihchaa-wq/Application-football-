@@ -85,7 +85,8 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('les deux équipes encadrent le VS dans le calendrier', (tester) async {
+  testWidgets('les deux équipes encadrent le VS dans le calendrier',
+      (tester) async {
     await pumpCard(tester, isAdmin: false, eligible: false);
     expect(find.byType(CalendarScoreline), findsOneWidget);
     final names = find.byType(CalendarTeamName);
