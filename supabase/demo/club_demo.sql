@@ -44,6 +44,7 @@
   \quit
 \endif
 
+select set_config('request.jwt.claims', '', true);
 select set_config('demo.password', :'demo_password', true);
 select set_config('demo.username_domain', :'username_domain', true);
 
@@ -67,6 +68,9 @@ create or replace function pg_temp.demo_as(p_profile uuid) returns void
 language plpgsql as $$
 begin
   if p_profile is null then
+    -- Sans cela, le club du dernier compte joué resterait le club courant
+    -- des écritures suivantes, même revenu au propriétaire.
+    perform set_config('request.jwt.claims', '', true);
     execute 'reset role';
     return;
   end if;
