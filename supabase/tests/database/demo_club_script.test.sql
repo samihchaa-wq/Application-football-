@@ -138,11 +138,17 @@ select ok(
    where match.club_id = current_setting('demo.club_id')::uuid and winner.is_winner),
   'au moins 5 joueurs différents ont été Homme du match'
 );
+-- Règle de l'appli : pas de bilan personnel avant la saison 2026-2027.
+-- Tant que la saison terminée de la démo est plus ancienne, elle n'en a pas.
 select ok(
-  (select count(*) from public.season_wrapped wrapped
-   join public.seasons season on season.id = wrapped.season_id
-   where season.club_id = current_setting('demo.club_id')::uuid and season.status = 'archived') >= 12,
-  'la saison terminée a ses bilans personnels'
+  (select case
+     when private.season_wrapped_is_supported(season.id)
+       then (select count(*) from public.season_wrapped wrapped where wrapped.season_id = season.id) >= 12
+     else (select count(*) from public.season_wrapped wrapped where wrapped.season_id = season.id) = 0
+   end
+   from public.seasons season
+   where season.club_id = current_setting('demo.club_id')::uuid and season.status = 'archived'),
+  'la saison terminée a ses bilans personnels quand l’appli les prévoit'
 );
 select ok(
   (select count(*) from public.profile_badges where club_id = current_setting('demo.club_id')::uuid) > 0,

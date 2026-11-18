@@ -1,7 +1,7 @@
 -- Club de démonstration pour les prospects : « FC Démo ».
 --
 -- Crée (ou recrée à neuf) un club fictif complet : un administrateur,
--- 18 joueurs, une saison terminée avec son bilan, une saison en cours et un
+-- 18 joueurs, une saison terminée avec ses titres, une saison en cours et un
 -- match à venir dans 3 jours (disponibilités et pronostics ouverts).
 -- Toutes les dates sont calculées à partir du jour où le script tourne : la
 -- démo a toujours un « prochain match ».
@@ -500,7 +500,9 @@ select set_config(
 );
 
 -- Saison précédente : 10 matchs, un toutes les deux semaines, il y a 20 à 38
--- semaines. Puis clôture et bilan de saison.
+-- semaines. Puis clôture. L'appli ne calcule pas de bilan personnel avant la
+-- saison 2026-2027 : la démo n'en montrera qu'à partir de l'été 2027, quand
+-- sa saison terminée sera 2026-2027.
 do $$
 declare
   v_year integer := current_setting('demo.current_start_year')::integer;
