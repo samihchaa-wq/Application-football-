@@ -49,6 +49,7 @@ MatchComposition placeEntryOnSlot(
             MatchCompositionZone.field,
             x: slot.position.dx,
             y: slot.position.dy,
+            slotLabel: slot.label,
           )
         else if (currentAtSlot != null &&
             entry.participantId == currentAtSlot.participantId)
@@ -61,6 +62,7 @@ MatchComposition placeEntryOnSlot(
                   MatchCompositionZone.field,
                   x: oldPosition.dx,
                   y: oldPosition.dy,
+                  slotLabel: moving.slotLabel,
                 )
         else
           entry,
@@ -180,6 +182,7 @@ MatchComposition repositionForFormation(
             MatchCompositionZone.field,
             x: slot.position.dx,
             y: slot.position.dy,
+            slotLabel: slot.label,
           )
         else
           entry,
