@@ -108,6 +108,7 @@ class MatchCompositionEntry {
     final label = slotLabel?.trim().toUpperCase();
     return label == null || label.isEmpty ? isGoalkeeper : label == 'GB';
   }
+
   final MatchCompositionZone zone;
   final double? x;
   final double? y;
