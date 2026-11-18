@@ -4,7 +4,6 @@ begin;
 -- 20261125000000 (l'appli ne les appelle plus). Ce test exerce encore leur
 -- logique interne : le droit est rendu le temps du test, annulé au rollback.
 grant execute on function public.admin_recent_client_incidents(integer) to authenticated;
-grant execute on function public.platform_update_club(uuid,text,text,timestamp with time zone,timestamp with time zone,integer,integer,bigint,text) to authenticated;
 
 set local search_path = public, extensions, pg_catalog;
 select no_plan();

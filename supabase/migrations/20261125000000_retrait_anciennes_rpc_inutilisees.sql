@@ -2,7 +2,7 @@
 -- n'appelle plus.
 --
 -- Pourquoi : chaque fonction appelable par un compte connecté est une porte à
--- surveiller. Ces 46 fonctions sont des versions remplacées (v1/v2 des
+-- surveiller. Ces 45 fonctions sont des versions remplacées (v1/v2 des
 -- créations de match, ancienne création avec cotes, ancien pronostic avec ×2,
 -- etc.) ou des outils jamais branchés à l'interface. Elles vérifient toutes
 -- leur appelant, mais elles restent une surface d'attaque inutile.
@@ -69,7 +69,6 @@ revoke execute on function public.create_match_with_odds(uuid,uuid,date,time wit
 revoke execute on function public.create_match_with_odds_and_sport_limit(uuid,uuid,date,time without time zone,text,numeric,numeric,numeric,integer) from authenticated;
 revoke execute on function public.finalize_match_postgame_with_lineup(uuid,integer,jsonb,uuid,integer,uuid[],uuid) from authenticated;
 revoke execute on function public.is_moderator() from authenticated;
-revoke execute on function public.platform_update_club(uuid,text,text,timestamp with time zone,timestamp with time zone,integer,integer,bigint,text) from authenticated;
 revoke execute on function public.profile_badge_metrics(uuid) from authenticated;
 revoke execute on function public.save_match_prediction(uuid,integer,integer,boolean) from authenticated;
 revoke execute on function public.send_test_push() from authenticated;
