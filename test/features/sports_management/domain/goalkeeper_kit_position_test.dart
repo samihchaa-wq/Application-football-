@@ -17,6 +17,21 @@ void main() {
     expect(entry(true, null, 'bench').wearsGoalkeeperKit, isTrue);
     expect(entry(false, null, 'bench').wearsGoalkeeperKit, isFalse);
   });
+  test('la place du gardien prime sur un ancien libellé de poste', () {
+    MatchCompositionEntry positioned(double x, double y, String slot) =>
+        MatchCompositionEntry.fromJson({
+          'participant_id': 'p',
+          'season_player_id': 's',
+          'is_goalkeeper': false,
+          'zone': 'field',
+          'slot_label': slot,
+          'x': x,
+          'y': y,
+        });
+    expect(positioned(.5, .89, 'DC').wearsGoalkeeperKit, isTrue);
+    expect(positioned(.12, .67, 'GB').wearsGoalkeeperKit, isFalse);
+  });
+
   test('même règle pour les deux équipes des matchs entre nous', () {
     for (final team in [1, 2]) {
       final player = InternalCompositionEntry(
