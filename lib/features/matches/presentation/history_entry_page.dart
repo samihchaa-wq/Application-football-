@@ -114,7 +114,6 @@ class _HistoryEntryPageState extends ConsumerState<HistoryEntryPage> {
           textCapitalization: TextCapitalization.words,
           decoration: const InputDecoration(
             labelText: 'Prénom et nom',
-            helperText: 'Pour un joueur qui n’a pas de compte.',
           ),
           onSubmitted: (value) => Navigator.pop(dialogContext, value),
         ),
@@ -346,7 +345,6 @@ class _HistoryEntryPageState extends ConsumerState<HistoryEntryPage> {
             decoration: InputDecoration(
               labelText: 'Adversaire',
               prefixIcon: const Icon(Icons.shield_outlined),
-              helperText: '${ClubIdentity.name} contre…',
             ),
             onSubmitted: (_) => onSubmit(),
           );
