@@ -470,6 +470,12 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Maintenance
 
+- club de démonstration pour les prospects : `supabase/demo/club_demo.sql`
+  crée ou remet à zéro « FC Démo » (19 comptes dont `demoadmin` et
+  `demojoueur`, une saison terminée, une saison en cours, un match
+  dans 3 jours), notifications coupées et abonnement non facturé. Rejoué deux
+  fois par la CI (`demo_club_script.test.sql`). Jamais lancé sur la base en
+  ligne sans accord ;
 - rangement du dépôt, sans changement pour les joueurs : tests classés
   selon l'arborescence du code (un contrôle l'impose désormais), quatre
   gros écrans découpés, outil d'extraction de l'historique SportEasy
