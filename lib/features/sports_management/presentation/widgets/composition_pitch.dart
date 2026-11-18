@@ -92,20 +92,6 @@ class _CompositionPitchState extends State<CompositionPitch> {
                             entry,
                             constraints.biggest,
                           ),
-                        if (widget.editable && widget.entries.isEmpty)
-                          const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(24),
-                              child: Text(
-                                'Glisse un joueur ici ou utilise son menu.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ),
-                          ),
                       ],
                     ),
                   ),
@@ -435,12 +421,7 @@ class CompositionDropZone extends StatelessWidget {
                 Text(subtitle!, style: Theme.of(context).textTheme.bodySmall),
               ],
               const SizedBox(height: 10),
-              if (entries.isEmpty)
-                Text(
-                  acceptDrops ? 'Dépose un joueur ici.' : 'Aucun joueur.',
-                  style: Theme.of(context).textTheme.bodySmall,
-                )
-              else
+              if (entries.isNotEmpty)
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
