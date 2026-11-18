@@ -84,6 +84,25 @@ jobs:
           echo "PF_BACKUP_CREATED_AT=$created_at" >> "$GITHUB_ENV"
           echo "Sauvegarde du $created_at (exécution $run_id) téléchargée ; empreinte conforme."
 
+      # La pile locale doit avoir les mêmes versions d'Auth et de Storage que la
+      # production, sinon leurs tables diffèrent et l'import échoue. Lecture des
+      # seuls points publics de version, avec la clé publique de l'appli.
+      - name: Read production Auth and Storage versions (public endpoints)
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="$(jq -r .SUPABASE_URL config/production.json)"
+          key="$(jq -r .SUPABASE_ANON_KEY config/production.json)"
+          auth_version="$(curl -fsS -m 20 -H "apikey: $key" "$url/auth/v1/health" | jq -r .version)"
+          storage_version="$(curl -fsS -m 20 -H "apikey: $key" "$url/storage/v1/version" | tr -d '"[:space:]')"
+          [[ "$auth_version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo '::error::Version Auth illisible.'; exit 1; }
+          [[ "$storage_version" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo '::error::Version Storage illisible.'; exit 1; }
+          [[ "$storage_version" == v* ]] || storage_version="v$storage_version"
+          mkdir -p "$RUNNER_TEMP/pf-versions"
+          printf '%s' "$auth_version" > "$RUNNER_TEMP/pf-versions/gotrue-version"
+          printf '%s' "$storage_version" > "$RUNNER_TEMP/pf-versions/storage-version"
+          echo "Production : Auth $auth_version, Storage $storage_version"
+
       - name: Cache Supabase service images before cutting the network
         shell: bash
         run: |
@@ -91,6 +110,8 @@ jobs:
           mkdir -p "$RUNNER_TEMP/pf-preload-stack"
           cd "$RUNNER_TEMP/pf-preload-stack"
           supabase init >/dev/null
+          mkdir -p supabase/.temp
+          cp "$RUNNER_TEMP"/pf-versions/* supabase/.temp/
           supabase start -x studio,imgproxy,edge-runtime,logflare,vector >/dev/null
           docker ps --format '{{.Image}}' | sort -u > "$RUNNER_TEMP/pf-images-list.txt"
           test -s "$RUNNER_TEMP/pf-images-list.txt"
@@ -156,6 +177,8 @@ jobs:
           docker load -i "$RUNNER_TEMP/pf-local-images.tar" >/dev/null
           mkdir -p "$root/local" && cd "$root/local"
           supabase init >/dev/null
+          mkdir -p supabase/.temp
+          cp "$RUNNER_TEMP"/pf-versions/* supabase/.temp/
           if ! supabase start -x studio,imgproxy,edge-runtime,logflare,vector >"$root/stack.log" 2>&1; then
             echo '::error::Pile Supabase isolée impossible à démarrer.'
             tail -n 12 "$root/stack.log" | sed -E 's#https?://[^ ]+#(URL masquée)#g'
