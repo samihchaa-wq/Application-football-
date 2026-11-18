@@ -30,7 +30,10 @@ select is((
     and p.proname not in (
       'get_my_club_access', 'platform_health', 'platform_list_clubs',
       'platform_update_club', 'platform_record_offline_payment',
-      'platform_club_billing', 'platform_control_overview'
+      'platform_club_billing', 'platform_control_overview', 'platform_invoice_settings',
+      'platform_save_invoice_settings', 'platform_set_club_billing_details',
+      'platform_list_invoices', 'platform_issue_pending_invoices',
+      'platform_discard_pending_invoice'
     )
 ), 0::bigint, 'aucune nouvelle RPC exposee ne contourne les RLS');
 
@@ -56,7 +59,10 @@ select is((
   where n.nspname = 'public'
     and p.proname in ('platform_health','platform_list_clubs','platform_update_club',
                       'platform_record_offline_payment','platform_club_billing',
-                      'platform_control_overview')
+                      'platform_control_overview',
+                      'platform_invoice_settings','platform_save_invoice_settings',
+                      'platform_set_club_billing_details','platform_list_invoices',
+                      'platform_issue_pending_invoices','platform_discard_pending_invoice')
     and p.prosecdef
     and position('private.is_platform_operator()' in pg_get_functiondef(p.oid)) = 0
 ), 0::bigint, 'toutes les RPC de plateforme verifient le statut operateur');

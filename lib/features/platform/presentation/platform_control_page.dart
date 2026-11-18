@@ -3,18 +3,26 @@ import 'dart:async';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:petit_filet/features/auth/presentation/sign_out_confirmation.dart';
+import 'package:petit_filet/features/billing/presentation/platform_invoices_section.dart';
 import 'package:petit_filet/features/platform/data/platform_repository.dart';
 import 'package:petit_filet/features/platform/domain/platform_snapshot.dart';
 import 'package:petit_filet/features/platform/presentation/platform_billing_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-const _sections = ['Vue générale', 'Équipes', 'Supervision', 'Évolutions'];
+const _sections = [
+  'Vue générale',
+  'Équipes',
+  'Supervision',
+  'Évolutions',
+  'Factures',
+];
 const _icons = [
   Icons.space_dashboard_outlined,
   Icons.groups_outlined,
   Icons.monitor_heart_outlined,
   Icons.route_outlined,
+  Icons.receipt_long_outlined,
 ];
 
 /// Separate from the team shell: never changes team, role or JWT metadata.
@@ -136,7 +144,8 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                           'Accueil',
                           'Équipes',
                           'Santé',
-                          'Suite'
+                          'Suite',
+                          'Factures',
                         ][i],
                       ),
                     ),
@@ -236,8 +245,9 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                     selected == null ? _sections[_section] : selected.name,
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
-                  // Seule la fiche d'une équipe permet d'agir (paiements).
-                  if (selected == null)
+                  // Seules la fiche d'une équipe (paiements) et les factures
+                  // permettent d'agir.
+                  if (selected == null && _section != 4)
                     const Chip(
                       avatar: Icon(Icons.visibility_outlined, size: 16),
                       label: Text('Lecture seule'),
@@ -256,6 +266,7 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                   0 => _overview(snapshot),
                   1 => _teams(snapshot),
                   2 => _health(snapshot),
+                  4 => const PlatformInvoicesSection(),
                   _ => _roadmap(),
                 },
               const SizedBox(height: 24),
