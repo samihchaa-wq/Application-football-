@@ -28,7 +28,7 @@ class MatchLiveSession {
     required this.planPlannedDurationMinutes,
     required this.half,
     required this.elapsedSeconds,
-    required this.scoreAsGrinta,
+    required this.scoreOwn,
     required this.scoreAdverse,
     required this.exported,
     required this.lineupRevision,
@@ -50,7 +50,7 @@ class MatchLiveSession {
       half: (json['half'] as num?)?.toInt() ?? 1,
       elapsedSeconds: (json['elapsed_seconds'] as num?)?.toInt() ?? 0,
       runningSince: _dateOrNull(json['running_since']),
-      scoreAsGrinta: (json['score_as_grinta'] as num?)?.toInt() ?? 0,
+      scoreOwn: (json['score_as_grinta'] as num?)?.toInt() ?? 0,
       scoreAdverse: (json['score_adverse'] as num?)?.toInt() ?? 0,
       startedAt: _dateOrNull(json['started_at']),
       finishedAt: _dateOrNull(json['finished_at']),
@@ -69,7 +69,7 @@ class MatchLiveSession {
   final int half;
   final int elapsedSeconds;
   final DateTime? runningSince;
-  final int scoreAsGrinta;
+  final int scoreOwn;
   final int scoreAdverse;
   final DateTime? startedAt;
   final DateTime? finishedAt;

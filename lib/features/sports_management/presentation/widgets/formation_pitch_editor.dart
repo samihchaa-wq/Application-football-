@@ -1,8 +1,8 @@
-import 'package:as_grinta/core/widgets/drag_auto_scroll.dart';
-import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/football_pitch.dart';
+import 'package:petit_filet/core/widgets/drag_auto_scroll.dart';
+import 'package:petit_filet/features/sports_management/domain/football_formation.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/football_pitch.dart';
 import 'package:flutter/material.dart';
 
 /// Relie le terrain aux vignettes de joueurs affichées en dehors du terrain

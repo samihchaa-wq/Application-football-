@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/feature_flags/domain/feature_flags.dart';
+import 'package:petit_filet/features/feature_flags/domain/feature_flags.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -1,8 +1,8 @@
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/theme/calendar_card_palette.dart';
-import 'package:as_grinta/core/widgets/calendar_scoreline.dart';
-import 'package:as_grinta/core/widgets/match_address_sheet.dart';
-import 'package:as_grinta/features/matches/data/calendar_history_repository.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/theme/calendar_card_palette.dart';
+import 'package:petit_filet/core/widgets/calendar_scoreline.dart';
+import 'package:petit_filet/core/widgets/match_address_sheet.dart';
+import 'package:petit_filet/features/matches/data/calendar_history_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -19,8 +19,8 @@ class HistoricalMatchCard extends StatelessWidget {
     final isHome = match.isHome;
     final homeName = isHome ? ClubIdentity.name : match.opponentName;
     final awayName = isHome ? match.opponentName : ClubIdentity.name;
-    final homeScore = isHome ? match.grintaScore : match.opponentScore;
-    final awayScore = isHome ? match.opponentScore : match.grintaScore;
+    final homeScore = isHome ? match.ownScore : match.opponentScore;
+    final awayScore = isHome ? match.opponentScore : match.ownScore;
     final cleanAddress = match.address?.trim();
     final surface = CalendarCardPalette.matchSurface(
       match.matchType,
@@ -49,7 +49,7 @@ class HistoricalMatchCard extends StatelessWidget {
           body: CalendarScoreline(
             homeName: homeName,
             awayName: awayName,
-            grintaIsHome: isHome,
+            ownIsHome: isHome,
             homeScore: homeScore,
             awayScore: awayScore,
             finished: true,

@@ -1,5 +1,5 @@
-import 'package:as_grinta/core/club/club_rules.dart';
-import 'package:as_grinta/core/utils/match_window.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
+import 'package:petit_filet/core/utils/match_window.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

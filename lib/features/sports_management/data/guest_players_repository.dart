@@ -1,10 +1,10 @@
 import 'dart:typed_data';
 
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/core/storage/avatar_image_codec.dart'
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/core/storage/avatar_image_codec.dart'
     deferred as avatar_codec;
-import 'package:as_grinta/core/storage/image_mime.dart';
-import 'package:as_grinta/features/sports_management/domain/guest_player_models.dart';
+import 'package:petit_filet/core/storage/image_mime.dart';
+import 'package:petit_filet/features/sports_management/domain/guest_player_models.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

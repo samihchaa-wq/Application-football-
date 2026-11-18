@@ -1,10 +1,10 @@
-import 'package:as_grinta/core/sync/shared_data_sync.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/badges/data/badge_repository.dart';
-import 'package:as_grinta/features/badges/data/featured_badges_repository.dart';
-import 'package:as_grinta/features/badges/data/statistics_badge_emblems_provider.dart';
-import 'package:as_grinta/features/badges/domain/badge_admin_access.dart';
-import 'package:as_grinta/features/badges/presentation/armoire_page.dart';
+import 'package:petit_filet/core/sync/shared_data_sync.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/badges/data/badge_repository.dart';
+import 'package:petit_filet/features/badges/data/featured_badges_repository.dart';
+import 'package:petit_filet/features/badges/data/statistics_badge_emblems_provider.dart';
+import 'package:petit_filet/features/badges/domain/badge_admin_access.dart';
+import 'package:petit_filet/features/badges/presentation/armoire_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

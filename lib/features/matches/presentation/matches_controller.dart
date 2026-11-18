@@ -1,10 +1,10 @@
-import 'package:as_grinta/features/auth/domain/auth_profile.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/features/matches/data/calendar_matches_local_cache.dart';
-import 'package:as_grinta/features/matches/data/match_info_repository.dart';
-import 'package:as_grinta/features/matches/data/matches_repository.dart';
-import 'package:as_grinta/features/matches/domain/match_model.dart';
+import 'package:petit_filet/features/auth/domain/auth_profile.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/features/matches/data/calendar_matches_local_cache.dart';
+import 'package:petit_filet/features/matches/data/match_info_repository.dart';
+import 'package:petit_filet/features/matches/data/matches_repository.dart';
+import 'package:petit_filet/features/matches/domain/match_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class MatchesState {

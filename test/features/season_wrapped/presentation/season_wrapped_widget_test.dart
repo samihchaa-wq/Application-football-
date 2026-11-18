@@ -1,13 +1,13 @@
 import 'dart:ui' as ui;
 
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/badges/data/badge_repository.dart';
-import 'package:as_grinta/features/badges/presentation/badge_emblem.dart';
-import 'package:as_grinta/features/season_wrapped/data/season_wrapped_repository.dart';
-import 'package:as_grinta/features/season_wrapped/presentation/season_wrapped_button.dart';
-import 'package:as_grinta/features/season_wrapped/presentation/season_wrapped_page.dart';
-import 'package:as_grinta/features/season_wrapped/presentation/season_wrapped_share_sheet.dart';
-import 'package:as_grinta/features/season_wrapped/presentation/wrapped_theme.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/badges/data/badge_repository.dart';
+import 'package:petit_filet/features/badges/presentation/badge_emblem.dart';
+import 'package:petit_filet/features/season_wrapped/data/season_wrapped_repository.dart';
+import 'package:petit_filet/features/season_wrapped/presentation/season_wrapped_button.dart';
+import 'package:petit_filet/features/season_wrapped/presentation/season_wrapped_page.dart';
+import 'package:petit_filet/features/season_wrapped/presentation/season_wrapped_share_sheet.dart';
+import 'package:petit_filet/features/season_wrapped/presentation/wrapped_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

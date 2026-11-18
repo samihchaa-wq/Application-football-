@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/match_live/data/match_live_notification_repository.dart';
+import 'package:petit_filet/features/match_live/data/match_live_notification_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

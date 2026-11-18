@@ -1,5 +1,5 @@
-name: as_grinta
-description: Application officielle ASG.
+name: petit_filet
+description: Petit Filet — gestion d’un club de football à 11 (PWA multi-clubs).
 publish_to: "none"
 version: 0.3.3+97
 

@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/sports_management/domain/admin_match_selection.dart';
-import 'package:as_grinta/features/sports_management/domain/sport_waitlist_models.dart';
+import 'package:petit_filet/features/sports_management/domain/admin_match_selection.dart';
+import 'package:petit_filet/features/sports_management/domain/sport_waitlist_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 AdminSportMatch _match(String id, DateTime kickoffAt) {

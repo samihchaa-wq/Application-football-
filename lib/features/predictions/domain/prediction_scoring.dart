@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/club/club_rules.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
 
 /// Barème des pronostics de match, identique à la vue SQL
 /// v_match_prediction_points. Les multiplicateurs sont réglés par chaque club

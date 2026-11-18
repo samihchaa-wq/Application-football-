@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/auth/presentation/registration_success_dialog.dart';
+import 'package:petit_filet/features/auth/presentation/registration_success_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

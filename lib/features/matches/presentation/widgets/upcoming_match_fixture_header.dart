@@ -1,6 +1,6 @@
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/widgets/match_detail_header_card.dart';
-import 'package:as_grinta/features/matches/data/match_info_repository.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/widgets/match_detail_header_card.dart';
+import 'package:petit_filet/features/matches/data/match_info_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -27,9 +27,9 @@ class UpcomingMatchFixtureData {
   bool get isFinished => status == 'termine' || status == 'archive';
   bool get isCancelled => status == 'annule';
   bool get isInternal => matchType == 'entre_nous';
-  bool get grintaIsHome => location == 'domicile';
-  String get homeName => grintaIsHome ? ClubIdentity.name : opponentName;
-  String get awayName => grintaIsHome ? opponentName : ClubIdentity.name;
+  bool get ownIsHome => location == 'domicile';
+  String get homeName => ownIsHome ? ClubIdentity.name : opponentName;
+  String get awayName => ownIsHome ? opponentName : ClubIdentity.name;
 }
 
 final upcomingMatchFixtureProvider =
@@ -81,7 +81,7 @@ class UpcomingMatchFixtureHeader extends ConsumerWidget {
           child: MatchDetailHeaderCard(
             homeName: data.homeName,
             awayName: data.awayName,
-            grintaIsHome: data.grintaIsHome,
+            ownIsHome: data.ownIsHome,
             kickoffAt: kickoffAt,
             matchType: data.matchType,
             typeLabel: calendarMatchTypeLabel(

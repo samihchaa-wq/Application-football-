@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/profile/presentation/my_data_section.dart';
+import 'package:petit_filet/features/profile/presentation/my_data_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

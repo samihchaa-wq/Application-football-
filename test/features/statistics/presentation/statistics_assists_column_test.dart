@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/statistics/data/statistics_repository.dart';
-import 'package:as_grinta/features/statistics/presentation/stats_hub_page.dart';
+import 'package:petit_filet/features/statistics/data/statistics_repository.dart';
+import 'package:petit_filet/features/statistics/presentation/stats_hub_page.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 PlayerStatistics _player({required StatisticsPeriod period, int assists = 0}) {

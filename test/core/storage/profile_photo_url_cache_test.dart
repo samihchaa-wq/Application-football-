@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:as_grinta/core/storage/profile_photo_urls.dart';
+import 'package:petit_filet/core/storage/profile_photo_urls.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

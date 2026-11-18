@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/sports_management/domain/sport_waitlist_models.dart';
+import 'package:petit_filet/features/sports_management/domain/sport_waitlist_models.dart';
 
 /// Match ouvert par défaut par les écrans d'administration sportive.
 ///

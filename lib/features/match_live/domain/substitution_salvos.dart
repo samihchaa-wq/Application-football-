@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/match_live/domain/match_live_event.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_event.dart';
 
 /// Une salve de remplacements : les changements validés ensemble par le coach.
 ///

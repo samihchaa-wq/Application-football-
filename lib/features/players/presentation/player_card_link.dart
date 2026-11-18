@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/players/data/player_card_repository.dart';
+import 'package:petit_filet/features/players/data/player_card_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 

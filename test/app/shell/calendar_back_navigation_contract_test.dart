@@ -1,4 +1,4 @@
-import 'package:as_grinta/app/shell/app_shell.dart';
+import 'package:petit_filet/app/shell/app_shell.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

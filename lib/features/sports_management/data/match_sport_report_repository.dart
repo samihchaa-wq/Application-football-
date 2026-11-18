@@ -1,8 +1,8 @@
-import 'package:as_grinta/core/network/confirmed_write.dart';
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/domain/match_goal_action.dart';
-import 'package:as_grinta/features/sports_management/domain/match_sport_report.dart';
+import 'package:petit_filet/core/network/confirmed_write.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/domain/match_goal_action.dart';
+import 'package:petit_filet/features/sports_management/domain/match_sport_report.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -26,7 +26,7 @@ abstract interface class MatchSportReportRepository {
   Future<MatchSportReport> submit({
     required String matchId,
     required int knownVersion,
-    required int scoreAsGrinta,
+    required int scoreOwn,
     required int scoreAdverse,
     required MatchComposition lineup,
     required List<MatchGoalAction> goalActions,
@@ -79,7 +79,7 @@ class SupabaseMatchSportReportRepository implements MatchSportReportRepository {
   Future<MatchSportReport> submit({
     required String matchId,
     required int knownVersion,
-    required int scoreAsGrinta,
+    required int scoreOwn,
     required int scoreAdverse,
     required MatchComposition lineup,
     required List<MatchGoalAction> goalActions,
@@ -91,7 +91,7 @@ class SupabaseMatchSportReportRepository implements MatchSportReportRepository {
           'admin_submit_match_sport_report',
           params: {
             'p_match_id': matchId,
-            'p_score_as_grinta': scoreAsGrinta,
+            'p_score_as_grinta': scoreOwn,
             'p_score_adverse': scoreAdverse,
             'p_lineup': {
               'formation_code': lineup.formationCode,
@@ -111,7 +111,7 @@ class SupabaseMatchSportReportRepository implements MatchSportReportRepository {
       isExpected: (current) => matchSportReportWriteLanded(
         current: current,
         knownVersion: knownVersion,
-        scoreAsGrinta: scoreAsGrinta,
+        scoreOwn: scoreOwn,
         scoreAdverse: scoreAdverse,
       ),
     );
@@ -158,13 +158,13 @@ class SupabaseMatchSportReportRepository implements MatchSportReportRepository {
 bool matchSportReportWriteLanded({
   required MatchSportReport current,
   required int knownVersion,
-  required int scoreAsGrinta,
+  required int scoreOwn,
   required int scoreAdverse,
 }) {
   final finalization = current.finalization;
   return finalization.isValidated &&
       finalization.version > knownVersion &&
-      finalization.scoreAsGrinta == scoreAsGrinta &&
+      finalization.scoreOwn == scoreOwn &&
       finalization.scoreAdverse == scoreAdverse;
 }
 

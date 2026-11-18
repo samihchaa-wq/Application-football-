@@ -1,6 +1,6 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/season_wrapped/data/season_wrapped_repository.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/season_wrapped/data/season_wrapped_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';

@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -31,7 +31,7 @@ void main() {
       await tester.pumpWidget(MaterialApp.router(routerConfig: router));
       await tester.pumpAndSettle();
 
-      expect(find.byKey(grintaClubHomeBadgeKey), findsOneWidget);
+      expect(find.byKey(pfClubHomeBadgeKey), findsOneWidget);
       expect(
         find.byKey(const ValueKey<String>('calendar-body')),
         findsOneWidget,
@@ -41,7 +41,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final backButton = find.byType(BackButton);
-      final badge = find.byKey(grintaClubHomeBadgeKey);
+      final badge = find.byKey(pfClubHomeBadgeKey);
       expect(backButton, findsOneWidget);
       expect(badge, findsOneWidget);
 
@@ -102,7 +102,7 @@ void main() {
       );
       expect(find.byType(BackButton), findsOneWidget);
 
-      await tester.tap(find.byKey(grintaClubHomeBadgeKey));
+      await tester.tap(find.byKey(pfClubHomeBadgeKey));
       await tester.pumpAndSettle();
 
       expect(router.routeInformationProvider.value.uri.path, '/matches');
@@ -127,7 +127,7 @@ class _TestPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: GrintaAppBar(title: Text(title)),
+      appBar: PfAppBar(title: Text(title)),
       body: SizedBox(key: bodyKey),
     );
   }
@@ -139,7 +139,7 @@ class _ImperativeRouteHost extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: GrintaAppBar(title: const Text('Calendrier')),
+      appBar: PfAppBar(title: const Text('Calendrier')),
       body: Column(
         children: [
           const SizedBox(key: ValueKey<String>('calendar-body')),

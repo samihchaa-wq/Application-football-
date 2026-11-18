@@ -1,15 +1,15 @@
 import 'dart:async';
 
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/club/club_kits.dart';
-import 'package:as_grinta/core/club/club_rules.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/features/auth/data/auth_repository.dart';
-import 'package:as_grinta/features/auth/domain/auth_profile.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
-import 'package:as_grinta/features/club/presentation/club_identity_sync.dart';
-import 'package:as_grinta/features/club/presentation/club_rules_sync.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/club/club_kits.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/features/auth/data/auth_repository.dart';
+import 'package:petit_filet/features/auth/domain/auth_profile.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
+import 'package:petit_filet/features/club/presentation/club_identity_sync.dart';
+import 'package:petit_filet/features/club/presentation/club_rules_sync.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;

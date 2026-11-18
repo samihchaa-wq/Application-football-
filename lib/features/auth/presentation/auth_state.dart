@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:as_grinta/core/storage/player_photo_mode.dart';
-import 'package:as_grinta/core/logging/app_logger.dart';
-import 'package:as_grinta/features/auth/data/auth_profile_cache.dart';
-import 'package:as_grinta/features/auth/data/auth_repository.dart';
-import 'package:as_grinta/features/auth/domain/auth_profile.dart';
-import 'package:as_grinta/features/preferences/data/push_subscriptions_repository.dart';
+import 'package:petit_filet/core/storage/player_photo_mode.dart';
+import 'package:petit_filet/core/logging/app_logger.dart';
+import 'package:petit_filet/features/auth/data/auth_profile_cache.dart';
+import 'package:petit_filet/features/auth/data/auth_repository.dart';
+import 'package:petit_filet/features/auth/domain/auth_profile.dart';
+import 'package:petit_filet/features/preferences/data/push_subscriptions_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 

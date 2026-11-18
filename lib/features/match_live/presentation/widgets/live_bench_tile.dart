@@ -1,10 +1,10 @@
-import 'package:as_grinta/core/club/club_rules.dart';
-import 'package:as_grinta/core/widgets/drag_auto_scroll.dart';
-import 'package:as_grinta/features/match_live/domain/substitution_salvos.dart';
-import 'package:as_grinta/features/match_live/presentation/widgets/substitution_salvo_frame.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/formation_pitch_editor.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
+import 'package:petit_filet/core/widgets/drag_auto_scroll.dart';
+import 'package:petit_filet/features/match_live/domain/substitution_salvos.dart';
+import 'package:petit_filet/features/match_live/presentation/widgets/substitution_salvo_frame.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/formation_pitch_editor.dart';
 import 'package:flutter/material.dart';
 
 /// Vignette d'un joueur sur le banc, avec le compteur 🔄 (nombre de fois sur

@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/legal/domain/legal_documents.dart';
+import 'package:petit_filet/features/legal/domain/legal_documents.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 

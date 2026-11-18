@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:as_grinta/features/match_live/domain/match_live_session.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_session.dart';
 import 'package:flutter/material.dart';
 
 /// Affiche le chrono du Tableau Blanc. Le décompte défile localement (Timer

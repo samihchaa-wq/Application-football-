@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/widgets/equal_height_column.dart';
+import 'package:petit_filet/core/widgets/equal_height_column.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';

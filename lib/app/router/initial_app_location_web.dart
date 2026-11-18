@@ -1,4 +1,4 @@
-import 'package:as_grinta/app/router/initial_app_location_parser.dart';
+import 'package:petit_filet/app/router/initial_app_location_parser.dart';
 import 'package:web/web.dart' as web;
 
 String? _capturedInitialLocation;
@@ -33,7 +33,7 @@ String _readWindowLocation() {
   return resolved.location;
 }
 
-/// Chemin de la balise `<base href>` (`/AS-Grinta/` en production).
+/// Chemin de la balise `<base href>` (`/Application-football-/` sur GitHub Pages).
 String _basePath() {
   final baseUri = Uri.tryParse(web.document.baseURI);
   final path = baseUri?.path ?? '/';

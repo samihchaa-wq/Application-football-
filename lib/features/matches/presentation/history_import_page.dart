@@ -1,10 +1,10 @@
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/features/matches/data/calendar_history_repository.dart';
-import 'package:as_grinta/features/matches/data/history_entry_repository.dart';
-import 'package:as_grinta/features/matches/domain/history_import_batch.dart';
-import 'package:as_grinta/features/matches/domain/history_match_draft.dart';
-import 'package:as_grinta/features/matches/data/history_file_picker.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/features/matches/data/calendar_history_repository.dart';
+import 'package:petit_filet/features/matches/data/history_entry_repository.dart';
+import 'package:petit_filet/features/matches/domain/history_import_batch.dart';
+import 'package:petit_filet/features/matches/domain/history_match_draft.dart';
+import 'package:petit_filet/features/matches/data/history_file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -137,7 +137,7 @@ class _HistoryImportPageState extends ConsumerState<HistoryImportPage> {
     final batch = _batch;
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: GrintaAppBar(title: const Text('Importer l’historique')),
+      appBar: PfAppBar(title: const Text('Importer l’historique')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(

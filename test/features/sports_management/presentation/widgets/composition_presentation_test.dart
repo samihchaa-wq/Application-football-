@@ -1,10 +1,10 @@
-import 'package:as_grinta/core/club/club_kits.dart';
-import 'package:as_grinta/features/matches/domain/jersey_option.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_presentation.dart';
+import 'package:petit_filet/core/club/club_kits.dart';
+import 'package:petit_filet/features/matches/domain/jersey_option.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/features/sports_management/domain/football_formation.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_presentation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -48,7 +48,7 @@ CompositionPresentationData _data({bool coach = true, ClubKit? kit}) {
     kit: kit,
     homeName: 'TOAC Foot Loisir 2',
     awayName: 'AS Grinta',
-    grintaIsHome: false,
+    ownIsHome: false,
     kickoffAt: DateTime(2026, 10, 27, 21),
     typeLabel: 'Amical',
     address: 'Complexe sportif du TOAC - 20 Chemin de Garric - Toulouse',

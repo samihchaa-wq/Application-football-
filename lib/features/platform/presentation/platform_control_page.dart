@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/auth/presentation/sign_out_confirmation.dart';
-import 'package:as_grinta/features/platform/data/platform_repository.dart';
-import 'package:as_grinta/features/platform/domain/platform_snapshot.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/auth/presentation/sign_out_confirmation.dart';
+import 'package:petit_filet/features/platform/data/platform_repository.dart';
+import 'package:petit_filet/features/platform/domain/platform_snapshot.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

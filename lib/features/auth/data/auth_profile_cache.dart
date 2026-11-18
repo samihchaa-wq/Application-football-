@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:as_grinta/features/auth/domain/auth_profile.dart';
+import 'package:petit_filet/features/auth/domain/auth_profile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Dernier profil confirmé par le serveur, gardé sur l'appareil.

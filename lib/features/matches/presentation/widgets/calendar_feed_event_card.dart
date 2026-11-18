@@ -1,9 +1,9 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/theme/calendar_card_palette.dart';
-import 'package:as_grinta/core/widgets/calendar_scoreline.dart';
-import 'package:as_grinta/features/matches/data/club_events_repository.dart';
-import 'package:as_grinta/features/matches/domain/club_event.dart';
-import 'package:as_grinta/features/matches/presentation/calendar_entry_form_page.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/theme/calendar_card_palette.dart';
+import 'package:petit_filet/core/widgets/calendar_scoreline.dart';
+import 'package:petit_filet/features/matches/data/club_events_repository.dart';
+import 'package:petit_filet/features/matches/domain/club_event.dart';
+import 'package:petit_filet/features/matches/presentation/calendar_entry_form_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/sports_management/domain/match_goal_action.dart';
-import 'package:as_grinta/features/sports_management/domain/match_report_score_sync.dart';
+import 'package:petit_filet/features/sports_management/domain/match_goal_action.dart';
+import 'package:petit_filet/features/sports_management/domain/match_report_score_sync.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Les faits du match : un but porte son buteur ET son passeur, le score ne
@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   MatchGoalAction ours(String key) => MatchGoalAction.blank(
         localKey: key,
-        teamSide: MatchGoalTeamSide.asGrinta,
+        teamSide: MatchGoalTeamSide.own,
       );
   MatchGoalAction theirs(String key) => MatchGoalAction.blank(
         localKey: key,
@@ -81,7 +81,7 @@ void main() {
     test('un CSC AS Grinta est un but adverse sans passeur possible', () {
       final goal = theirs('g1').withOwnGoal();
 
-      expect(goal.isAsGrinta, isFalse);
+      expect(goal.isOwnTeam, isFalse);
       expect(goal.isOwnGoal, isTrue);
       expect(goal.canCarryAssist, isFalse);
     });
@@ -108,7 +108,7 @@ void main() {
     test('les minutes 0 et 90 sont acceptées', () {
       final issue = validateGoalActions(
         goalActions: [ours('g1').withMinute(0), ours('g2').withMinute(90)],
-        scoreAsGrinta: 2,
+        scoreOwn: 2,
         scoreAdverse: 0,
         squadParticipantIds: const {},
       );
@@ -120,7 +120,7 @@ void main() {
       for (final minute in [-1, 91, 120]) {
         final issue = validateGoalActions(
           goalActions: [ours('g1').withMinute(minute)],
-          scoreAsGrinta: 1,
+          scoreOwn: 1,
           scoreAdverse: 0,
           squadParticipantIds: const {},
         );
@@ -136,7 +136,7 @@ void main() {
 
       final plan = planScoreChange(
         goalActions: goals,
-        scoreAsGrinta: 4,
+        scoreOwn: 4,
         scoreAdverse: 1,
       );
       final next = addMissingGoals(
@@ -145,7 +145,7 @@ void main() {
         nextLocalKey: () => seed++,
       );
 
-      expect(countGoals(next, MatchGoalTeamSide.asGrinta), 4);
+      expect(countGoals(next, MatchGoalTeamSide.own), 4);
       expect(countGoals(next, MatchGoalTeamSide.opponent), 1);
       final created = next.last;
       expect(created.minute, isNull);
@@ -158,12 +158,12 @@ void main() {
 
       final plan = planScoreChange(
         goalActions: goals,
-        scoreAsGrinta: 3,
+        scoreOwn: 3,
         scoreAdverse: 0,
       );
 
       expect(plan.needsChoice, isTrue);
-      expect(plan.asGrintaToRemove, 1);
+      expect(plan.ownToRemove, 1);
       // Rien n'a bougé tant que l'administrateur n'a pas choisi.
       expect(
         addMissingGoals(
@@ -188,10 +188,10 @@ void main() {
 
       final plan = planScoreChange(
         goalActions: goals,
-        scoreAsGrinta: 2,
+        scoreOwn: 2,
         scoreAdverse: 3,
       );
-      expect(plan.asGrintaToRemove, 2);
+      expect(plan.ownToRemove, 2);
       expect(plan.opponentToAdd, 1);
 
       final afterRemoval = removeGoals(
@@ -204,12 +204,12 @@ void main() {
         nextLocalKey: () => seed++,
       );
 
-      expect(countGoals(next, MatchGoalTeamSide.asGrinta), 2);
+      expect(countGoals(next, MatchGoalTeamSide.own), 2);
       expect(countGoals(next, MatchGoalTeamSide.opponent), 3);
       expect(
         validateGoalActions(
           goalActions: next,
-          scoreAsGrinta: 2,
+          scoreOwn: 2,
           scoreAdverse: 3,
           squadParticipantIds: const {},
         ),
@@ -220,7 +220,7 @@ void main() {
     test('un score incohérent avec les buts est refusé', () {
       final issue = validateGoalActions(
         goalActions: [ours('g1'), ours('g2')],
-        scoreAsGrinta: 3,
+        scoreOwn: 3,
         scoreAdverse: 0,
         squadParticipantIds: const {},
       );
@@ -249,7 +249,7 @@ void main() {
     test('un buteur hors de l’effectif bloque la validation', () {
       final issue = validateGoalActions(
         goalActions: [ours('g1').withScorer('p1', 'Samih')],
-        scoreAsGrinta: 1,
+        scoreOwn: 1,
         scoreAdverse: 0,
         squadParticipantIds: const {'p2'},
       );

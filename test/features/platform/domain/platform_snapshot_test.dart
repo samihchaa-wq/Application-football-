@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/platform/domain/platform_snapshot.dart';
+import 'package:petit_filet/features/platform/domain/platform_snapshot.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

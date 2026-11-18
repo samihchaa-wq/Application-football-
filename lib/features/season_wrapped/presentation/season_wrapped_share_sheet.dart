@@ -1,8 +1,8 @@
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/features/season_wrapped/data/season_wrapped_repository.dart';
-import 'package:as_grinta/features/season_wrapped/domain/wrapped_stat_selection.dart';
-import 'package:as_grinta/features/season_wrapped/presentation/wrapped_slides.dart';
-import 'package:as_grinta/features/season_wrapped/presentation/wrapped_theme.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/features/season_wrapped/data/season_wrapped_repository.dart';
+import 'package:petit_filet/features/season_wrapped/domain/wrapped_stat_selection.dart';
+import 'package:petit_filet/features/season_wrapped/presentation/wrapped_slides.dart';
+import 'package:petit_filet/features/season_wrapped/presentation/wrapped_theme.dart';
 import 'package:flutter/material.dart';
 
 /// Taille logique des images partagées. Capturées à trois fois cette taille,

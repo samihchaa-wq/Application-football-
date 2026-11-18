@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/network/request_burst_guard.dart';
+import 'package:petit_filet/core/network/request_burst_guard.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';

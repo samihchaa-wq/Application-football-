@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/sports_management/domain/internal_match_composition.dart';
-import 'package:as_grinta/features/sports_management/domain/internal_team_formation.dart';
+import 'package:petit_filet/features/sports_management/domain/internal_match_composition.dart';
+import 'package:petit_filet/features/sports_management/domain/internal_team_formation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 InternalCompositionEntry fieldPlayer(

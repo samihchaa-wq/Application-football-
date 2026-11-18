@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/club/club_kits.dart';
+import 'package:petit_filet/core/club/club_kits.dart';
 import 'package:flutter/painting.dart';
 
 /// Même motif sur la fiche Infos, le portrait, le patron et la vidéo.

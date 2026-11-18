@@ -1,6 +1,6 @@
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/domain/match_goal_action.dart';
-import 'package:as_grinta/features/sports_management/domain/sport_match_finalization.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/domain/match_goal_action.dart';
+import 'package:petit_filet/features/sports_management/domain/sport_match_finalization.dart';
 
 /// Joueur qu'on peut encore rattacher à l'effectif du compte rendu.
 class MatchReportAddablePlayer {

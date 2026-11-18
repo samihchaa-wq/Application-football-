@@ -1,9 +1,9 @@
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/widgets/match_contribution_icons.dart';
-import 'package:as_grinta/features/match_live/presentation/widgets/match_live_scorer_picker_dialog.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/domain/match_goal_action.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/widgets/match_contribution_icons.dart';
+import 'package:petit_filet/features/match_live/presentation/widgets/match_live_scorer_picker_dialog.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/domain/match_goal_action.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -103,7 +103,7 @@ class _GoalActionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final incomplete = goal.hasUnknownScorer;
-    final sideColor = goal.isAsGrinta ? AppTheme.primaryBright : AppTheme.error;
+    final sideColor = goal.isOwnTeam ? AppTheme.primaryBright : AppTheme.error;
     final borderColor =
         incomplete ? AppTheme.warning : sideColor.withValues(alpha: .55);
 
@@ -130,7 +130,7 @@ class _GoalActionCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    goal.isAsGrinta ? ClubIdentity.name : opponentName,
+                    goal.isOwnTeam ? ClubIdentity.name : opponentName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -144,8 +144,8 @@ class _GoalActionCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 6),
-            if (goal.isAsGrinta)
-              ..._buildAsGrintaRows(context)
+            if (goal.isOwnTeam)
+              ..._buildOwnRows(context)
             else
               _buildOpponentRow(context),
           ],
@@ -154,7 +154,7 @@ class _GoalActionCard extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildAsGrintaRows(BuildContext context) {
+  List<Widget> _buildOwnRows(BuildContext context) {
     return [
       _AttributionTile(
         icon: const _TileIcon(Icons.sports_soccer_rounded),

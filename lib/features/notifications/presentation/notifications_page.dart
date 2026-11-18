@@ -1,14 +1,14 @@
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/core/theme/app_spacing.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
-import 'package:as_grinta/features/match_live/presentation/widgets/match_live_notification_bell.dart';
-import 'package:as_grinta/features/notifications/presentation/notification_history_view.dart';
-import 'package:as_grinta/features/preferences/data/preferences_repository.dart';
-import 'package:as_grinta/features/preferences/data/push_subscriptions_repository.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/core/theme/app_spacing.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
+import 'package:petit_filet/features/match_live/presentation/widgets/match_live_notification_bell.dart';
+import 'package:petit_filet/features/notifications/presentation/notification_history_view.dart';
+import 'package:petit_filet/features/preferences/data/preferences_repository.dart';
+import 'package:petit_filet/features/preferences/data/push_subscriptions_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -40,7 +40,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: GrintaAppBar(title: const Text('Notifications')),
+      appBar: PfAppBar(title: const Text('Notifications')),
       body: Column(
         children: [
           Padding(
@@ -192,7 +192,7 @@ class _OptionalNotificationsCard extends ConsumerWidget {
             preferencesAsync.when(
               loading: () => const Padding(
                 padding: EdgeInsets.symmetric(vertical: 20),
-                child: Center(child: GrintaProgressIndicator()),
+                child: Center(child: PfProgressIndicator()),
               ),
               error: (_, __) => const Padding(
                 padding: EdgeInsets.symmetric(vertical: 16),
@@ -399,7 +399,7 @@ class _AdminAvailabilityNotificationTileState
     return preferenceAsync.when(
       loading: () => const Padding(
         padding: EdgeInsets.symmetric(vertical: 20),
-        child: Center(child: GrintaProgressIndicator()),
+        child: Center(child: PfProgressIndicator()),
       ),
       error: (_, __) => const Padding(
         padding: EdgeInsets.symmetric(vertical: 16),
@@ -557,7 +557,7 @@ class _TestPushButtonState extends ConsumerState<_TestPushButton> {
                 ? const SizedBox(
                     width: 18,
                     height: 18,
-                    child: GrintaProgressIndicator(strokeWidth: 2),
+                    child: PfProgressIndicator(strokeWidth: 2),
                   )
                 : const Row(
                     mainAxisSize: MainAxisSize.min,

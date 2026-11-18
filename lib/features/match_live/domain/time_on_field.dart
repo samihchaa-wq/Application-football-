@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/match_live/domain/match_live_event.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_event.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
 
 /// Minutes passées sur le terrain depuis la dernière entrée en jeu, par
 /// joueur du terrain.

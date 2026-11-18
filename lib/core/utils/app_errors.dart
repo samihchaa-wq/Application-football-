@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/logging/error_category.dart';
+import 'package:petit_filet/core/logging/error_category.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

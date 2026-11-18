@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/predictions/data/predictions_repository.dart';
+import 'package:petit_filet/features/predictions/data/predictions_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -41,7 +41,7 @@ void main() {
 MatchPredictionItem _item({
   required DateTime kickoffAt,
   String status = 'a_venir',
-  int scoreGrinta = 0,
+  int scoreOwn = 0,
   int scoreOpponent = 0,
   bool isFilled = false,
   DateTime? predictionsClosedAt,
@@ -51,13 +51,13 @@ MatchPredictionItem _item({
     opponentName: 'Opponent',
     kickoffAt: kickoffAt,
     status: status,
-    scoreGrinta: scoreGrinta,
+    scoreOwn: scoreOwn,
     scoreOpponent: scoreOpponent,
     isFilled: isFilled,
     oddsWin: 2,
     oddsDraw: 3,
     oddsLoss: 4,
-    actualScoreGrinta: null,
+    actualScoreOwn: null,
     actualScoreOpponent: null,
     predictionsClosedAt: predictionsClosedAt,
   );

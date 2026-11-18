@@ -1,6 +1,6 @@
-import 'package:as_grinta/core/logging/app_logger.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/core/widgets/incident_error_view.dart';
+import 'package:petit_filet/core/logging/app_logger.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/core/widgets/incident_error_view.dart';
 import 'package:flutter/material.dart';
 
 /// Écran dont le code n'est téléchargé qu'à sa première ouverture.
@@ -12,7 +12,7 @@ import 'package:flutter/material.dart';
 /// kilo-octets), puis gardés pour la session.
 ///
 /// Pendant le chargement, rien n'est affiché, comme pour toutes les attentes
-/// de l'application (voir [GrintaLoader]). En cas d'échec (hors ligne), une
+/// de l'application (voir [PfLoader]). En cas d'échec (hors ligne), une
 /// erreur avec « Réessayer » remplace l'écran.
 class DeferredRoutePage extends StatefulWidget {
   const DeferredRoutePage({
@@ -48,7 +48,7 @@ class _DeferredRoutePageState extends State<DeferredRoutePage> {
       future: _loading,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Scaffold(body: GrintaLoader.page());
+          return const Scaffold(body: PfLoader.page());
         }
         final error = snapshot.error;
         if (error != null) {

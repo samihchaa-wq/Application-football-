@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -79,7 +79,7 @@ class _AuthLoadingPageState extends ConsumerState<AuthLoadingPage> {
                           ? const SizedBox(
                               width: 18,
                               height: 18,
-                              child: GrintaProgressIndicator(strokeWidth: 2),
+                              child: PfProgressIndicator(strokeWidth: 2),
                             )
                           : const Icon(Icons.refresh_rounded),
                       label: const Text('Réessayer'),
@@ -105,7 +105,7 @@ class _AuthLoadingPageState extends ConsumerState<AuthLoadingPage> {
     if (auth.profile?.isPending != true) {
       return const Scaffold(
         body: Center(
-          child: GrintaLoader.page(
+          child: PfLoader.page(
             message: 'Préparation de ton espace…',
             semanticLabel: 'Préparation de ton espace',
           ),
@@ -150,7 +150,7 @@ class _AuthLoadingPageState extends ConsumerState<AuthLoadingPage> {
                         ? const SizedBox(
                             width: 18,
                             height: 18,
-                            child: GrintaProgressIndicator(strokeWidth: 2),
+                            child: PfProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.refresh_rounded),
                     label: const Text('Vérifier maintenant'),

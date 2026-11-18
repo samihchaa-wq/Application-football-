@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/matches/data/historical_match_detail_repository.dart';
+import 'package:petit_filet/features/matches/data/historical_match_detail_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// L'import d'archives place un faux joueur nommé « Poste laissé vide » aux

@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/matches/data/match_details_repository.dart';
-import 'package:as_grinta/features/matches/presentation/match_details_page.dart';
+import 'package:petit_filet/features/matches/data/match_details_repository.dart';
+import 'package:petit_filet/features/matches/presentation/match_details_page.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 MatchPredictionResult _prediction({
@@ -10,10 +10,9 @@ MatchPredictionResult _prediction({
   return MatchPredictionResult(
     profileId: profileId,
     name: name,
-    scoreGrinta: 1,
+    scoreOwn: 1,
     scoreOpponent: 0,
     points: points,
-    usedX2: false,
   );
 }
 

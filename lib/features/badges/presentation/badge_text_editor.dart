@@ -1,8 +1,8 @@
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/features/badges/data/badge_admin_repository.dart';
-import 'package:as_grinta/features/badges/data/badge_repository.dart';
-import 'package:as_grinta/features/badges/data/featured_badges_repository.dart';
-import 'package:as_grinta/features/badges/data/statistics_badge_emblems_provider.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/features/badges/data/badge_admin_repository.dart';
+import 'package:petit_filet/features/badges/data/badge_repository.dart';
+import 'package:petit_filet/features/badges/data/featured_badges_repository.dart';
+import 'package:petit_filet/features/badges/data/statistics_badge_emblems_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

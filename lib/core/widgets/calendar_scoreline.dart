@@ -1,13 +1,13 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/utils/app_formats.dart';
-import 'package:as_grinta/core/widgets/match_fixture.dart';
-import 'package:as_grinta/core/club/club_identity.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/utils/app_formats.dart';
+import 'package:petit_filet/core/widgets/match_fixture.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
 import 'package:flutter/material.dart';
 
 /// Affiche d'une rencontre sur une seule ligne, pour les cartes du calendrier :
 ///
 /// ```
-/// [écusson] AS Grinta    3 – 4    AS Clinique Pasteur
+/// [écusson] Notre club  3 – 4    AS Clinique Pasteur
 /// ```
 ///
 /// Les deux équipes occupent chacune la même largeur : le score (ou « VS »
@@ -19,7 +19,7 @@ class CalendarScoreline extends StatelessWidget {
     super.key,
     required this.homeName,
     required this.awayName,
-    required this.grintaIsHome,
+    required this.ownIsHome,
     this.homeScore,
     this.awayScore,
     this.finished = false,
@@ -31,7 +31,7 @@ class CalendarScoreline extends StatelessWidget {
 
   final String homeName;
   final String awayName;
-  final bool grintaIsHome;
+  final bool ownIsHome;
   final int? homeScore;
   final int? awayScore;
   final bool finished;
@@ -40,7 +40,7 @@ class CalendarScoreline extends StatelessWidget {
   /// Taille des noms d'équipes et du score.
   final double nameSize;
 
-  /// Taille de l'écusson AS Grinta.
+  /// Taille de l'écusson du club.
   final double crestSize;
 
   /// Sans limite, un nom très long passe sur autant de lignes que nécessaire
@@ -63,9 +63,9 @@ class CalendarScoreline extends StatelessWidget {
     final nameColor = foreground ?? AppTheme.textPrimary;
     final Widget center;
     if (_hasScores) {
-      final grinta = grintaIsHome ? homeScore! : awayScore!;
-      final opponent = grintaIsHome ? awayScore! : homeScore!;
-      final scoreColor = MatchFixture.resultColor(grinta, opponent);
+      final own = ownIsHome ? homeScore! : awayScore!;
+      final opponent = ownIsHome ? awayScore! : homeScore!;
+      final scoreColor = MatchFixture.resultColor(own, opponent);
       center = Semantics(
         label: '$homeName $homeScore, $awayName $awayScore',
         excludeSemantics: true,
@@ -110,7 +110,7 @@ class CalendarScoreline extends StatelessWidget {
         Expanded(
           child: _ScorelineTeam(
             name: homeName,
-            isGrinta: grintaIsHome,
+            isOwnTeam: ownIsHome,
             isHome: true,
             color: nameColor,
             nameSize: nameSize,
@@ -125,7 +125,7 @@ class CalendarScoreline extends StatelessWidget {
         Expanded(
           child: _ScorelineTeam(
             name: awayName,
-            isGrinta: !grintaIsHome,
+            isOwnTeam: !ownIsHome,
             isHome: false,
             color: nameColor,
             nameSize: nameSize,
@@ -141,7 +141,7 @@ class CalendarScoreline extends StatelessWidget {
 class _ScorelineTeam extends StatelessWidget {
   const _ScorelineTeam({
     required this.name,
-    required this.isGrinta,
+    required this.isOwnTeam,
     required this.isHome,
     required this.color,
     required this.nameSize,
@@ -150,7 +150,7 @@ class _ScorelineTeam extends StatelessWidget {
   });
 
   final String name;
-  final bool isGrinta;
+  final bool isOwnTeam;
 
   /// Le nom est centré dans sa moitié de carte (comme les boutons
   /// « Présent » / « Absent »). L'écusson se place côté extérieur ; un espace
@@ -191,7 +191,7 @@ class _ScorelineTeam extends StatelessWidget {
       limitLines: limitLines,
     );
 
-    if (!isGrinta) return Center(child: label);
+    if (!isOwnTeam) return Center(child: label);
 
     final reserved = SizedBox(width: crestSize + _crestGap);
     return LayoutBuilder(

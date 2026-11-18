@@ -1,13 +1,13 @@
-import 'package:as_grinta/core/security/password_policy.dart';
-import 'package:as_grinta/features/auth/data/account_email_repository.dart';
-import 'package:as_grinta/core/utils/name_validation.dart';
-import 'package:as_grinta/core/widgets/grinta_adaptive_form.dart';
-import 'package:as_grinta/core/widgets/grinta_auth_surface.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/auth/presentation/consent_fields.dart';
-import 'package:as_grinta/features/auth/presentation/registration_success_dialog.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
-import 'package:as_grinta/features/legal/domain/legal_documents.dart';
+import 'package:petit_filet/core/security/password_policy.dart';
+import 'package:petit_filet/features/auth/data/account_email_repository.dart';
+import 'package:petit_filet/core/utils/name_validation.dart';
+import 'package:petit_filet/core/widgets/pf_adaptive_form.dart';
+import 'package:petit_filet/core/widgets/pf_auth_surface.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/auth/presentation/consent_fields.dart';
+import 'package:petit_filet/features/auth/presentation/registration_success_dialog.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
+import 'package:petit_filet/features/legal/domain/legal_documents.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -191,7 +191,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    return GrintaAuthSurface(
+    return PfAuthSurface(
       maxWidth: 760,
       title:
           _mode == RegisterMode.create ? 'Créer mon club' : 'Créer mon compte',
@@ -234,7 +234,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
               ),
             )
           else
-            GrintaAdaptiveForm(
+            PfAdaptiveForm(
               children: [
                 TextField(
                   key: const Key('register-club-name'),
@@ -259,7 +259,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
               ],
             ),
           const SizedBox(height: 16),
-          GrintaAdaptiveForm(
+          PfAdaptiveForm(
             children: [
               TextField(
                 controller: _firstNameController,
@@ -365,7 +365,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                 ? const SizedBox(
                     width: 18,
                     height: 18,
-                    child: GrintaProgressIndicator(strokeWidth: 2),
+                    child: PfProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.sports_soccer),
             label: Text(

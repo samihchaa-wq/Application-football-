@@ -1,7 +1,7 @@
-import 'package:as_grinta/core/club/current_club.dart';
-import 'package:as_grinta/core/logging/app_logger.dart';
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/features/feature_flags/domain/feature_flags.dart';
+import 'package:petit_filet/core/club/current_club.dart';
+import 'package:petit_filet/core/logging/app_logger.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/features/feature_flags/domain/feature_flags.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

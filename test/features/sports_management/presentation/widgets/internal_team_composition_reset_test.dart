@@ -1,8 +1,8 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/features/sports_management/data/internal_match_composition_repository.dart';
-import 'package:as_grinta/features/sports_management/data/player_identity_repository.dart';
-import 'package:as_grinta/features/sports_management/domain/internal_match_composition.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/internal_team_composition_view.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/features/sports_management/data/internal_match_composition_repository.dart';
+import 'package:petit_filet/features/sports_management/data/player_identity_repository.dart';
+import 'package:petit_filet/features/sports_management/domain/internal_match_composition.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/internal_team_composition_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

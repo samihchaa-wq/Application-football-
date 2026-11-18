@@ -1,11 +1,11 @@
-import 'package:as_grinta/core/widgets/grinta_auth_surface.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/auth/presentation/auth_register_page.dart'
+import 'package:petit_filet/core/widgets/pf_auth_surface.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/auth/presentation/auth_register_page.dart'
     show RegisterMode;
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/auth/presentation/consent_fields.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
-import 'package:as_grinta/features/legal/domain/legal_documents.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/auth/presentation/consent_fields.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
+import 'package:petit_filet/features/legal/domain/legal_documents.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -134,7 +134,7 @@ class _ChooseClubPageState extends ConsumerState<ChooseClubPage> {
   @override
   Widget build(BuildContext context) {
     final create = _mode == RegisterMode.create;
-    return GrintaAuthSurface(
+    return PfAuthSurface(
       maxWidth: 760,
       title: 'Ton club',
       subtitle: 'Dernière étape : rejoins ton club ou crée-le.',
@@ -235,7 +235,7 @@ class _ChooseClubPageState extends ConsumerState<ChooseClubPage> {
                 ? const SizedBox(
                     width: 18,
                     height: 18,
-                    child: GrintaProgressIndicator(strokeWidth: 2),
+                    child: PfProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.sports_soccer),
             label: Text(

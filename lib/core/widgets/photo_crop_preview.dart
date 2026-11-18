@@ -2,13 +2,13 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:as_grinta/core/storage/player_photo_mode.dart';
-import 'package:as_grinta/core/club/club_kits.dart';
-import 'package:as_grinta/core/widgets/kit_portrait.dart';
-import 'package:as_grinta/core/widgets/match_contribution_icons.dart';
-import 'package:as_grinta/core/widgets/portrait_alignment_guide.dart';
-import 'package:as_grinta/core/storage/avatar_image.dart';
-import 'package:as_grinta/core/storage/avatar_image_codec.dart'
+import 'package:petit_filet/core/storage/player_photo_mode.dart';
+import 'package:petit_filet/core/club/club_kits.dart';
+import 'package:petit_filet/core/widgets/kit_portrait.dart';
+import 'package:petit_filet/core/widgets/match_contribution_icons.dart';
+import 'package:petit_filet/core/widgets/portrait_alignment_guide.dart';
+import 'package:petit_filet/core/storage/avatar_image.dart';
+import 'package:petit_filet/core/storage/avatar_image_codec.dart'
     deferred as avatar_codec;
 import 'package:flutter/material.dart';
 

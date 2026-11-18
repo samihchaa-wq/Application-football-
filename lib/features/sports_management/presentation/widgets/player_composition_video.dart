@@ -1,22 +1,22 @@
-import 'package:as_grinta/core/club/club_rules.dart';
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/club/club_kits.dart';
-import 'package:as_grinta/core/club/match_kit_snapshot.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/club/club_kits.dart';
+import 'package:petit_filet/core/club/match_kit_snapshot.dart';
 
 import 'dart:async';
 
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/core/widgets/match_detail_header_card.dart';
-import 'package:as_grinta/features/matches/data/match_info_repository.dart';
-import 'package:as_grinta/features/matches/domain/jersey_option.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/upcoming_match_fixture_header.dart';
-import 'package:as_grinta/features/sports_management/data/match_availability_board_repository.dart';
-import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
-import 'package:as_grinta/features/sports_management/domain/formation_display.dart';
-import 'package:as_grinta/features/sports_management/domain/match_availability_board.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_presentation.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/stadium_video.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/core/widgets/match_detail_header_card.dart';
+import 'package:petit_filet/features/matches/data/match_info_repository.dart';
+import 'package:petit_filet/features/matches/domain/jersey_option.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/upcoming_match_fixture_header.dart';
+import 'package:petit_filet/features/sports_management/data/match_availability_board_repository.dart';
+import 'package:petit_filet/features/sports_management/data/match_composition_repository.dart';
+import 'package:petit_filet/features/sports_management/domain/formation_display.dart';
+import 'package:petit_filet/features/sports_management/domain/match_availability_board.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_presentation.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/stadium_video.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -59,11 +59,11 @@ CompositionPresentationData buildCompositionPresentationData({
   ClubKit? kit,
 }) {
   final opponent = fixture?.opponentName ?? fallbackOpponent ?? 'Adversaire';
-  final grintaIsHome = fixture?.grintaIsHome ?? true;
+  final ownIsHome = fixture?.ownIsHome ?? true;
   return CompositionPresentationData(
-    homeName: grintaIsHome ? ClubIdentity.name : opponent,
-    awayName: grintaIsHome ? opponent : ClubIdentity.name,
-    grintaIsHome: grintaIsHome,
+    homeName: ownIsHome ? ClubIdentity.name : opponent,
+    awayName: ownIsHome ? opponent : ClubIdentity.name,
+    ownIsHome: ownIsHome,
     field: alignFieldToFormation(formationCode, field),
     bench: bench,
     coach: coach,

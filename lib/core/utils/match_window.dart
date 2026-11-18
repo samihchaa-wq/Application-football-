@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/club/club_rules.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
 
 /// Règles temporelles communes aux écrans liés à un match.
 ///

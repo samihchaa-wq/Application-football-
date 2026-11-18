@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/club/club_kits.dart';
+import 'package:petit_filet/core/club/club_kits.dart';
 
 /// Identifiant stable d'une tenue. Les trois identifiants historiques restent
 /// lisibles, mais les clubs peuvent désormais ajouter des tenues libres.

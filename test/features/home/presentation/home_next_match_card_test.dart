@@ -1,9 +1,9 @@
-import 'package:as_grinta/core/widgets/match_date_column.dart';
-import 'package:as_grinta/core/widgets/calendar_scoreline.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
-import 'package:as_grinta/features/home/presentation/home_next_match_card.dart';
-import 'package:as_grinta/features/match_live/data/match_live_notification_repository.dart';
-import 'package:as_grinta/features/matches/domain/match_model.dart';
+import 'package:petit_filet/core/widgets/match_date_column.dart';
+import 'package:petit_filet/core/widgets/calendar_scoreline.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
+import 'package:petit_filet/features/home/presentation/home_next_match_card.dart';
+import 'package:petit_filet/features/match_live/data/match_live_notification_repository.dart';
+import 'package:petit_filet/features/matches/domain/match_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -24,7 +24,7 @@ void main() {
     isHome: false,
     plannedDurationMinutes: 90,
     status: 'a_venir',
-    grintaScore: null,
+    ownScore: null,
     opponentScore: null,
     opponentName: 'Adversaire Fictif A',
     matchType: 'amical',
@@ -160,7 +160,7 @@ void main() {
       find.byType(CalendarScoreline),
     );
     expect(fixture.homeName, 'Adversaire Fictif A');
-    expect(fixture.grintaIsHome, isFalse);
+    expect(fixture.ownIsHome, isFalse);
     expect(find.text('VS'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

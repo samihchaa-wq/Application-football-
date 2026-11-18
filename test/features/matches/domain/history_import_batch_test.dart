@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:as_grinta/features/matches/domain/history_import_batch.dart';
+import 'package:petit_filet/features/matches/domain/history_import_batch.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

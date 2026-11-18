@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/matches/data/calendar_history_repository.dart';
-import 'package:as_grinta/features/matches/domain/match_model.dart';
+import 'package:petit_filet/features/matches/data/calendar_history_repository.dart';
+import 'package:petit_filet/features/matches/domain/match_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -12,7 +12,7 @@ void main() {
       isHome: true,
       plannedDurationMinutes: 90,
       status: 'a_venir',
-      grintaScore: null,
+      ownScore: null,
       opponentScore: null,
       opponentName: 'Adversaire',
       matchType: 'championnat',
@@ -32,7 +32,7 @@ void main() {
       isHome: true,
       plannedDurationMinutes: 90,
       status: 'a_venir',
-      grintaScore: null,
+      ownScore: null,
       opponentScore: null,
       matchType: 'amical',
     );
@@ -44,7 +44,7 @@ void main() {
       isHome: true,
       plannedDurationMinutes: 90,
       status: 'a_venir',
-      grintaScore: null,
+      ownScore: null,
       opponentScore: null,
       matchType: 'entre_nous',
     );
@@ -61,7 +61,7 @@ void main() {
         date: DateTime(2025, 10, 6, 20, 30),
         hasTime: true,
         opponentName: 'Ancien adversaire',
-        grintaScore: 3,
+        ownScore: 3,
         opponentScore: 1,
         isHome: false,
         matchType: 'championnat',

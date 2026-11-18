@@ -1,11 +1,11 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/features/badges/data/badge_repository.dart';
-import 'package:as_grinta/features/badges/data/statistics_badge_emblems_provider.dart';
-import 'package:as_grinta/features/players/data/player_card_repository.dart';
-import 'package:as_grinta/features/players/presentation/player_card_link.dart';
-import 'package:as_grinta/features/players/presentation/player_card_page.dart';
-import 'package:as_grinta/features/statistics/data/statistics_repository.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/features/badges/data/badge_repository.dart';
+import 'package:petit_filet/features/badges/data/statistics_badge_emblems_provider.dart';
+import 'package:petit_filet/features/players/data/player_card_repository.dart';
+import 'package:petit_filet/features/players/presentation/player_card_link.dart';
+import 'package:petit_filet/features/players/presentation/player_card_page.dart';
+import 'package:petit_filet/features/statistics/data/statistics_repository.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -894,7 +894,7 @@ BadgeDef _badge(
 
 PlayerMatchLine _match(
   String opponent,
-  int grinta,
+  int own,
   int adverse, {
   int goals = 0,
   bool motm = false,
@@ -904,7 +904,7 @@ PlayerMatchLine _match(
       matchId: opponent,
       date: DateTime(2026, 10, 4),
       opponentName: opponent,
-      grintaScore: grinta,
+      ownScore: own,
       opponentScore: adverse,
       isHome: isHome,
       matchType: 'championnat',

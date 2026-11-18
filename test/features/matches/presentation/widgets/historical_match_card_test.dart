@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/matches/data/calendar_history_repository.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/historical_match_card.dart';
+import 'package:petit_filet/features/matches/data/calendar_history_repository.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/historical_match_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -9,7 +9,7 @@ void main() {
         date: DateTime(2025, 10, 6, 20, 30),
         hasTime: true,
         opponentName: 'Ancien adversaire',
-        grintaScore: 3,
+        ownScore: 3,
         opponentScore: 1,
         isHome: false,
         matchType: 'championnat',

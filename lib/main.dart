@@ -2,17 +2,17 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui';
 
-import 'package:as_grinta/app/app.dart';
-import 'package:as_grinta/app/router/initial_app_location.dart';
-import 'package:as_grinta/core/config/app_config.dart';
-import 'package:as_grinta/core/l10n/french_localizations.dart';
-import 'package:as_grinta/core/logging/app_logger.dart';
-import 'package:as_grinta/core/network/request_burst_guard.dart';
-import 'package:as_grinta/core/storage/profile_photo_urls.dart';
-import 'package:as_grinta/core/widgets/grinta_animated_crest.dart';
-import 'package:as_grinta/core/widgets/grinta_background.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/core/widgets/incident_error_view.dart';
+import 'package:petit_filet/app/app.dart';
+import 'package:petit_filet/app/router/initial_app_location.dart';
+import 'package:petit_filet/core/config/app_config.dart';
+import 'package:petit_filet/core/l10n/french_localizations.dart';
+import 'package:petit_filet/core/logging/app_logger.dart';
+import 'package:petit_filet/core/network/request_burst_guard.dart';
+import 'package:petit_filet/core/storage/profile_photo_urls.dart';
+import 'package:petit_filet/core/widgets/pf_animated_crest.dart';
+import 'package:petit_filet/core/widgets/pf_background.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/core/widgets/incident_error_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -140,7 +140,7 @@ class _BootstrapAppState extends State<_BootstrapApp> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done &&
             !snapshot.hasError) {
-          return const ProviderScope(child: AsGrintaApp());
+          return const ProviderScope(child: PetitFiletApp());
         }
         return _BootstrapShell(
           home: snapshot.hasError
@@ -176,7 +176,7 @@ class _BootstrapShell extends StatelessWidget {
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Colors.transparent,
       ),
-      builder: (context, child) => GrintaBackground(
+      builder: (context, child) => PfBackground(
         child: child ?? const SizedBox.shrink(),
       ),
       home: home,
@@ -204,9 +204,9 @@ class _BootstrapSplash extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                GrintaAnimatedCrest(width: crestWidth.toDouble()),
+                PfAnimatedCrest(width: crestWidth.toDouble()),
                 const SizedBox(height: 28),
-                const GrintaStartupProgressBar(),
+                const PfStartupProgressBar(),
               ],
             ),
           ),

@@ -2,17 +2,17 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:as_grinta/core/storage/avatar_image_codec.dart'
+import 'package:petit_filet/core/storage/avatar_image_codec.dart'
     deferred as avatar_codec;
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/features/badges/data/badge_admin_repository.dart';
-import 'package:as_grinta/features/badges/data/badge_repository.dart';
-import 'package:as_grinta/features/badges/data/featured_badges_repository.dart';
-import 'package:as_grinta/features/badges/data/statistics_badge_emblems_provider.dart';
-import 'package:as_grinta/features/badges/presentation/badge_emblem.dart';
-import 'package:as_grinta/features/badges/presentation/badge_emblem_body.dart';
-import 'package:as_grinta/features/badges/presentation/badge_image_picker.dart';
-import 'package:as_grinta/features/badges/presentation/badge_premium_skins.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/features/badges/data/badge_admin_repository.dart';
+import 'package:petit_filet/features/badges/data/badge_repository.dart';
+import 'package:petit_filet/features/badges/data/featured_badges_repository.dart';
+import 'package:petit_filet/features/badges/data/statistics_badge_emblems_provider.dart';
+import 'package:petit_filet/features/badges/presentation/badge_emblem.dart';
+import 'package:petit_filet/features/badges/presentation/badge_emblem_body.dart';
+import 'package:petit_filet/features/badges/presentation/badge_image_picker.dart';
+import 'package:petit_filet/features/badges/presentation/badge_premium_skins.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

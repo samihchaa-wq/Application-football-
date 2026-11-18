@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:as_grinta/features/matches/domain/match_model.dart';
+import 'package:petit_filet/features/matches/domain/match_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -67,7 +67,7 @@ class CalendarMatchesLocalCache {
       'location': match.isHome ? 'domicile' : 'exterieur',
       'planned_duration_minutes': match.plannedDurationMinutes,
       'status': match.status,
-      'score_as_grinta': match.grintaScore,
+      'score_as_grinta': match.ownScore,
       'score_adverse': match.opponentScore,
       'predictions_closed_at':
           match.predictionsClosedAt?.toUtc().toIso8601String(),

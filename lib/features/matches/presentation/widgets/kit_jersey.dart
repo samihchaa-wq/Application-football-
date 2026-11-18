@@ -1,5 +1,5 @@
-import 'package:as_grinta/core/club/club_kits.dart';
-import 'package:as_grinta/core/widgets/kit_pattern_paint.dart';
+import 'package:petit_filet/core/club/club_kits.dart';
+import 'package:petit_filet/core/widgets/kit_pattern_paint.dart';
 import 'package:flutter/material.dart';
 
 /// Pictogramme simple et lisible pour « Info maillots », le choix du match

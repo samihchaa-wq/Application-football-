@@ -1,8 +1,8 @@
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/match_live/domain/match_live_add_player_options.dart';
-import 'package:as_grinta/features/match_live/presentation/match_live_providers.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_add_player_options.dart';
+import 'package:petit_filet/features/match_live/presentation/match_live_providers.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -141,7 +141,7 @@ class _MatchLiveAddPlayerSheetState
                     return const Center(
                       child: Padding(
                         padding: EdgeInsets.all(24),
-                        child: GrintaLoader.inline(
+                        child: PfLoader.inline(
                           message: 'Chargement des joueurs…',
                         ),
                       ),

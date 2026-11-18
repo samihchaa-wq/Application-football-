@@ -1,6 +1,6 @@
-import 'package:as_grinta/core/theme/app_spacing.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/features/predictions/presentation/widgets/inline_match_prediction_card.dart';
+import 'package:petit_filet/core/theme/app_spacing.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/features/predictions/presentation/widgets/inline_match_prediction_card.dart';
 import 'package:flutter/material.dart';
 
 class UpcomingMatchPredictionPage extends StatelessWidget {
@@ -11,7 +11,7 @@ class UpcomingMatchPredictionPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: GrintaAppBar(title: const Text('Ton prono')),
+      appBar: PfAppBar(title: const Text('Ton prono')),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.screenGutter,

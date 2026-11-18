@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/storage/player_photo_mode.dart';
+import 'package:petit_filet/core/storage/player_photo_mode.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

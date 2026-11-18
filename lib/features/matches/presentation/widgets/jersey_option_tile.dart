@@ -1,6 +1,6 @@
-import 'package:as_grinta/core/club/club_kits.dart';
-import 'package:as_grinta/features/matches/domain/jersey_option.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/kit_jersey.dart';
+import 'package:petit_filet/core/club/club_kits.dart';
+import 'package:petit_filet/features/matches/domain/jersey_option.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/kit_jersey.dart';
 import 'package:flutter/material.dart';
 
 /// Vignette d'un maillot proposé pour un match, avec sa coche quand il est

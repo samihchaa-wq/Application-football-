@@ -1,15 +1,15 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:as_grinta/core/storage/player_photo_mode.dart';
-import 'package:as_grinta/core/config/app_config.dart';
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/core/security/password_policy.dart';
-import 'package:as_grinta/core/storage/account_local_data.dart';
-import 'package:as_grinta/core/storage/image_mime.dart';
-import 'package:as_grinta/core/storage/profile_photo_urls.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/features/auth/domain/auth_profile.dart';
+import 'package:petit_filet/core/storage/player_photo_mode.dart';
+import 'package:petit_filet/core/config/app_config.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/core/security/password_policy.dart';
+import 'package:petit_filet/core/storage/account_local_data.dart';
+import 'package:petit_filet/core/storage/image_mime.dart';
+import 'package:petit_filet/core/storage/profile_photo_urls.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/features/auth/domain/auth_profile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

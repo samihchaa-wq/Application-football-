@@ -1,9 +1,9 @@
-import 'package:as_grinta/core/widgets/sticky_header_table.dart';
-import 'package:as_grinta/features/badges/data/statistics_badge_emblems_provider.dart';
-import 'package:as_grinta/features/badges/presentation/badge_display_scope.dart';
-import 'package:as_grinta/features/badges/presentation/badge_emblem.dart';
-import 'package:as_grinta/features/badges/presentation/badge_emblem_body.dart';
-import 'package:as_grinta/features/badges/presentation/name_with_badges.dart';
+import 'package:petit_filet/core/widgets/sticky_header_table.dart';
+import 'package:petit_filet/features/badges/data/statistics_badge_emblems_provider.dart';
+import 'package:petit_filet/features/badges/presentation/badge_display_scope.dart';
+import 'package:petit_filet/features/badges/presentation/badge_emblem.dart';
+import 'package:petit_filet/features/badges/presentation/badge_emblem_body.dart';
+import 'package:petit_filet/features/badges/presentation/name_with_badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -121,10 +121,10 @@ void main() {
 
   testWidgets('un emblème de 48 tient dans la colonne figée', (tester) async {
     // Largeur réelle laissée au nom dans Statistiques.
-    final available = grintaTablePinnedWidth -
-        grintaTablePinnedRowPadding.horizontal -
-        grintaTableRankWidth -
-        grintaTableRankGap;
+    final available = pfTablePinnedWidth -
+        pfTablePinnedRowPadding.horizontal -
+        pfTableRankWidth -
+        pfTableRankGap;
     await tester.pumpWidget(
       harness(width: available, name: 'Milan', badgeSize: 48),
     );
@@ -172,7 +172,7 @@ void main() {
                     const names = ['Milan', longestName];
                     const badgeSize = 48.0;
                     final inheritedStyle = DefaultTextStyle.of(context).style;
-                    final cellStyle = grintaTableCellTextStyle(
+                    final cellStyle = pfTableCellTextStyle(
                       context,
                       fontWeight: FontWeight.w800,
                     );
@@ -185,14 +185,14 @@ void main() {
                       maxLines: 1,
                     )..layout();
                     intrinsicNameWidth = painter.width;
-                    exactRequiredWidth = grintaTablePinnedRowPadding.left +
-                        grintaTableRankWidth +
-                        grintaTableRankGap +
+                    exactRequiredWidth = pfTablePinnedRowPadding.left +
+                        pfTableRankWidth +
+                        pfTableRankGap +
                         painter.width +
                         nameWithBadgesGap +
                         badgeSize +
-                        grintaTablePinnedRowPadding.right;
-                    pinnedWidth = grintaTablePinnedWidthForNames(
+                        pfTablePinnedRowPadding.right;
+                    pinnedWidth = pfTablePinnedWidthForNames(
                       context,
                       names,
                       trailingWidth: badgeSize,
@@ -202,10 +202,10 @@ void main() {
                     return SizedBox(
                       width: pinnedWidth,
                       child: Padding(
-                        padding: grintaTablePinnedRowPadding,
+                        padding: pfTablePinnedRowPadding,
                         child: Row(
                           children: [
-                            const GrintaTableRankCell(rank: 1),
+                            const PfTableRankCell(rank: 1),
                             const Expanded(
                               child: NameWithBadges(
                                 profileId: 'p1',

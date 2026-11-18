@@ -1,11 +1,11 @@
 import 'dart:math' as math;
 
-import 'package:as_grinta/core/theme/app_spacing.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/features/statistics/data/statistics_repository.dart';
+import 'package:petit_filet/core/theme/app_spacing.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/features/statistics/data/statistics_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
 
 const _teamGreen = Color(0xFF3BD10D);
 const _teamYellow = Color(0xFFFFCA1A);
@@ -26,7 +26,7 @@ class TeamStatisticsPanel extends ConsumerWidget {
     }
 
     return dataAsync.when(
-      loading: () => const Center(child: GrintaProgressIndicator()),
+      loading: () => const Center(child: PfProgressIndicator()),
       error: (error, _) => _ScrollableMessage(
         message: humanizeError(error),
         onRefresh: refresh,

@@ -1,8 +1,8 @@
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/widgets/collapsible_section_card.dart';
-import 'package:as_grinta/features/matches/data/match_info_repository.dart';
-import 'package:as_grinta/features/sports_management/data/match_sport_report_repository.dart';
-import 'package:as_grinta/features/sports_management/domain/match_goal_action.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/widgets/collapsible_section_card.dart';
+import 'package:petit_filet/features/matches/data/match_info_repository.dart';
+import 'package:petit_filet/features/sports_management/data/match_sport_report_repository.dart';
+import 'package:petit_filet/features/sports_management/domain/match_goal_action.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -49,9 +49,9 @@ class MatchFaitsDuMatchCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final goals = ref.watch(matchGoalActionsProvider(matchId)).valueOrNull;
-    final grintaIsHome =
-        ref.watch(matchCoreProvider(matchId)).valueOrNull?.grintaIsHome ?? true;
-    final rows = _buildRows(goals ?? const [], grintaIsHome: grintaIsHome);
+    final ownIsHome =
+        ref.watch(matchCoreProvider(matchId)).valueOrNull?.ownIsHome ?? true;
+    final rows = _buildRows(goals ?? const [], ownIsHome: ownIsHome);
     if (rows.isEmpty) return const SizedBox.shrink();
 
     return CollapsibleSectionCard(
@@ -68,26 +68,26 @@ class MatchFaitsDuMatchCard extends ConsumerWidget {
   /// cumulé se reconstitue simplement en les parcourant.
   List<_FactRow> _buildRows(
     List<MatchGoalAction> goals, {
-    required bool grintaIsHome,
+    required bool ownIsHome,
   }) {
-    var scoreAsGrinta = 0;
+    var scoreOwn = 0;
     var scoreAdverse = 0;
     final rows = <_FactRow>[];
     for (final goal in goals) {
-      if (goal.isAsGrinta) {
-        scoreAsGrinta += 1;
+      if (goal.isOwnTeam) {
+        scoreOwn += 1;
       } else {
         scoreAdverse += 1;
       }
       rows.add(
         _FactRow(
           minuteLabel: goal.minute == null ? '—' : "${goal.minute}'",
-          scoreLabel: grintaIsHome
-              ? '$scoreAsGrinta - $scoreAdverse'
-              : '$scoreAdverse - $scoreAsGrinta',
-          isAwayGoal: goal.isAsGrinta != grintaIsHome,
+          scoreLabel: ownIsHome
+              ? '$scoreOwn - $scoreAdverse'
+              : '$scoreAdverse - $scoreOwn',
+          isAwayGoal: goal.isOwnTeam != ownIsHome,
           scorerLabel: _scorerLabel(goal),
-          assistLabel: goal.isAsGrinta &&
+          assistLabel: goal.isOwnTeam &&
                   !goal.isOwnGoal &&
                   goal.assistKind == MatchGoalAssistKind.player
               ? goal.assistName
@@ -99,7 +99,7 @@ class MatchFaitsDuMatchCard extends ConsumerWidget {
   }
 
   String _scorerLabel(MatchGoalAction goal) {
-    if (!goal.isAsGrinta) {
+    if (!goal.isOwnTeam) {
       return goal.isOwnGoal ? 'CSC ${ClubIdentity.name}' : 'But adverse';
     }
     if (goal.isOwnGoal) return 'CSC adverse';

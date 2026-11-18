@@ -1,11 +1,11 @@
-import 'package:as_grinta/features/sports_management/data/match_sport_report_repository.dart';
-import 'package:as_grinta/features/sports_management/domain/match_sport_report.dart';
+import 'package:petit_filet/features/sports_management/data/match_sport_report_repository.dart';
+import 'package:petit_filet/features/sports_management/domain/match_sport_report.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 MatchSportReport _report({
   required bool isValidated,
   required int version,
-  int scoreAsGrinta = 2,
+  int scoreOwn = 2,
   int scoreAdverse = 1,
 }) {
   return MatchSportReport.fromRpc({
@@ -17,7 +17,7 @@ MatchSportReport _report({
     'match_status': 'termine',
     'is_validated': isValidated,
     'version': version,
-    'score_as_grinta': scoreAsGrinta,
+    'score_as_grinta': scoreOwn,
     'score_adverse': scoreAdverse,
     'is_correction': version > 0,
     'is_editable': true,
@@ -38,7 +38,7 @@ void main() {
         matchSportReportWriteLanded(
           current: _report(isValidated: true, version: 1),
           knownVersion: 0,
-          scoreAsGrinta: 2,
+          scoreOwn: 2,
           scoreAdverse: 1,
         ),
         isTrue,
@@ -51,7 +51,7 @@ void main() {
         matchSportReportWriteLanded(
           current: _report(isValidated: true, version: 1),
           knownVersion: 1,
-          scoreAsGrinta: 2,
+          scoreOwn: 2,
           scoreAdverse: 1,
         ),
         isFalse,
@@ -63,7 +63,7 @@ void main() {
         matchSportReportWriteLanded(
           current: _report(isValidated: false, version: 1),
           knownVersion: 0,
-          scoreAsGrinta: 2,
+          scoreOwn: 2,
           scoreAdverse: 1,
         ),
         isFalse,
@@ -78,11 +78,11 @@ void main() {
           current: _report(
             isValidated: true,
             version: 1,
-            scoreAsGrinta: 5,
+            scoreOwn: 5,
             scoreAdverse: 0,
           ),
           knownVersion: 0,
-          scoreAsGrinta: 2,
+          scoreOwn: 2,
           scoreAdverse: 1,
         ),
         isFalse,
@@ -94,7 +94,7 @@ void main() {
         matchSportReportWriteLanded(
           current: _report(isValidated: true, version: 3),
           knownVersion: 2,
-          scoreAsGrinta: 2,
+          scoreOwn: 2,
           scoreAdverse: 1,
         ),
         isTrue,

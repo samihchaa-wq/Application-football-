@@ -1,16 +1,16 @@
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/features/sports_management/data/guest_players_repository.dart';
-import 'package:as_grinta/features/sports_management/data/sport_waitlist_repository.dart';
-import 'package:as_grinta/features/sports_management/domain/admin_match_selection.dart';
-import 'package:as_grinta/features/sports_management/domain/guest_player_models.dart';
-import 'package:as_grinta/features/sports_management/domain/sport_waitlist_models.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/features/sports_management/data/guest_players_repository.dart';
+import 'package:petit_filet/features/sports_management/data/sport_waitlist_repository.dart';
+import 'package:petit_filet/features/sports_management/domain/admin_match_selection.dart';
+import 'package:petit_filet/features/sports_management/domain/guest_player_models.dart';
+import 'package:petit_filet/features/sports_management/domain/sport_waitlist_models.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
 
 class AdminGuestsPage extends ConsumerStatefulWidget {
   const AdminGuestsPage({super.key, this.initialMatchId});
@@ -342,7 +342,7 @@ class _AdminGuestsPageState extends ConsumerState<AdminGuestsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: GrintaAppBar(
+      appBar: PfAppBar(
         title: const Text('Invités'),
         actions: [
           IconButton(
@@ -357,7 +357,7 @@ class _AdminGuestsPageState extends ConsumerState<AdminGuestsPage> {
   }
 
   Widget _buildBody() {
-    if (_loading) return const Center(child: GrintaProgressIndicator());
+    if (_loading) return const Center(child: PfProgressIndicator());
     if (_error != null && _matches.isEmpty) {
       return ListView(
         padding: const EdgeInsets.all(20),
@@ -411,7 +411,7 @@ class _AdminGuestsPageState extends ConsumerState<AdminGuestsPage> {
           ),
           if (_busy) ...[
             const SizedBox(height: 10),
-            const GrintaLinearProgressIndicator(),
+            const PfLinearProgressIndicator(),
           ],
           if (_error != null) ...[const SizedBox(height: 12), Text(_error!)],
           const SizedBox(height: 14),

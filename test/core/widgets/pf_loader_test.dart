@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/auth/data/auth_repository.dart';
-import 'package:as_grinta/features/auth/domain/auth_profile.dart';
-import 'package:as_grinta/features/auth/presentation/auth_loading_page.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/auth/data/auth_repository.dart';
+import 'package:petit_filet/features/auth/domain/auth_profile.dart';
+import 'package:petit_filet/features/auth/presentation/auth_loading_page.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -24,7 +24,7 @@ void main() {
       ),
     );
 
-    final loader = find.byType(GrintaLoader);
+    final loader = find.byType(PfLoader);
     expect(loader, findsOneWidget);
     expect(
       find.descendant(
@@ -48,9 +48,9 @@ void main() {
         home: Scaffold(
           body: Row(
             children: [
-              Expanded(child: GrintaProgressIndicator(value: 0)),
-              Expanded(child: GrintaProgressIndicator(value: .5)),
-              Expanded(child: GrintaProgressIndicator(value: 1)),
+              Expanded(child: PfProgressIndicator(value: 0)),
+              Expanded(child: PfProgressIndicator(value: .5)),
+              Expanded(child: PfProgressIndicator(value: 1)),
             ],
           ),
         ),
@@ -72,12 +72,12 @@ void main() {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
-          body: Center(child: GrintaProgressIndicator()),
+          body: Center(child: PfProgressIndicator()),
         ),
       ),
     );
 
-    final loader = find.byType(GrintaProgressIndicator);
+    final loader = find.byType(PfProgressIndicator);
     expect(loader, findsOneWidget);
     expect(
       find.descendant(
@@ -99,7 +99,7 @@ void main() {
       (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
-        home: Scaffold(body: GrintaStartupProgressBar()),
+        home: Scaffold(body: PfStartupProgressBar()),
       ),
     );
 

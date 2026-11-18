@@ -1,5 +1,5 @@
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/features/unavailability/domain/player_unavailability.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/features/unavailability/domain/player_unavailability.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

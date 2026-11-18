@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/players/data/roster_repository.dart';
+import 'package:petit_filet/features/players/data/roster_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 RosterPlayer _player({

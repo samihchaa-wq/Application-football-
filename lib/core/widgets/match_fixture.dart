@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 /// équipe à l'extérieur en dessous, chacune avec son score si le match est
 /// terminé.
 ///
-/// Les scores sont colorés selon le résultat d'AS Grinta : vert si elle gagne,
+/// Les scores sont colorés selon le résultat de l'équipe du club : vert si elle gagne,
 /// rouge si elle perd, orange en cas de nul.
 class MatchFixture extends StatelessWidget {
   const MatchFixture({
     super.key,
     required this.homeName,
     required this.awayName,
-    required this.grintaIsHome,
+    required this.ownIsHome,
     this.homeScore,
     this.awayScore,
     this.finished = false,
@@ -23,7 +23,7 @@ class MatchFixture extends StatelessWidget {
 
   final String homeName;
   final String awayName;
-  final bool grintaIsHome;
+  final bool ownIsHome;
   final int? homeScore;
   final int? awayScore;
   final bool finished;
@@ -36,9 +36,9 @@ class MatchFixture extends StatelessWidget {
   static const Color _lost = Color(0xFFFF3B4A);
   static const Color _draw = Color(0xFFE9963C);
 
-  static Color resultColor(int grintaScore, int opponentScore) {
-    if (grintaScore > opponentScore) return _won;
-    if (grintaScore < opponentScore) return _lost;
+  static Color resultColor(int ownScore, int opponentScore) {
+    if (ownScore > opponentScore) return _won;
+    if (ownScore < opponentScore) return _lost;
     return _draw;
   }
 
@@ -46,9 +46,9 @@ class MatchFixture extends StatelessWidget {
 
   Color? get _scoreColor {
     if (!_hasScores) return null;
-    final grinta = grintaIsHome ? homeScore! : awayScore!;
-    final opponent = grintaIsHome ? awayScore! : homeScore!;
-    return resultColor(grinta, opponent);
+    final own = ownIsHome ? homeScore! : awayScore!;
+    final opponent = ownIsHome ? awayScore! : homeScore!;
+    return resultColor(own, opponent);
   }
 
   @override

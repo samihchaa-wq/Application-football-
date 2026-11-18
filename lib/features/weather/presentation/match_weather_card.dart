@@ -1,7 +1,7 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/utils/match_window.dart';
-import 'package:as_grinta/features/weather/data/match_weather_repository.dart';
-import 'package:as_grinta/features/weather/domain/match_weather.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/utils/match_window.dart';
+import 'package:petit_filet/features/weather/data/match_weather_repository.dart';
+import 'package:petit_filet/features/weather/domain/match_weather.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

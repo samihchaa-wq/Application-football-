@@ -1,11 +1,11 @@
 import 'dart:typed_data';
-import 'package:as_grinta/core/storage/player_photo_mode.dart';
-import 'package:as_grinta/core/widgets/kit_portrait.dart';
-import 'package:as_grinta/core/widgets/match_contribution_icons.dart';
-import 'package:as_grinta/core/widgets/photo_crop_preview.dart';
-import 'package:as_grinta/core/widgets/player_photo_mode_picker.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:petit_filet/core/storage/player_photo_mode.dart';
+import 'package:petit_filet/core/widgets/kit_portrait.dart';
+import 'package:petit_filet/core/widgets/match_contribution_icons.dart';
+import 'package:petit_filet/core/widgets/photo_crop_preview.dart';
+import 'package:petit_filet/core/widgets/player_photo_mode_picker.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;

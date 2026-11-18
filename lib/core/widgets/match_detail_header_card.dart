@@ -1,7 +1,7 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/theme/calendar_card_palette.dart';
-import 'package:as_grinta/core/widgets/calendar_scoreline.dart';
-import 'package:as_grinta/core/widgets/match_address_sheet.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/theme/calendar_card_palette.dart';
+import 'package:petit_filet/core/widgets/calendar_scoreline.dart';
+import 'package:petit_filet/core/widgets/match_address_sheet.dart';
 import 'package:flutter/material.dart';
 
 /// Libellé court du type de match, identique à celui des cartes du
@@ -29,7 +29,7 @@ class MatchDetailHeaderCard extends StatelessWidget {
     super.key,
     required this.homeName,
     required this.awayName,
-    required this.grintaIsHome,
+    required this.ownIsHome,
     required this.kickoffAt,
     this.showTime = true,
     this.matchType,
@@ -46,7 +46,7 @@ class MatchDetailHeaderCard extends StatelessWidget {
 
   final String homeName;
   final String awayName;
-  final bool grintaIsHome;
+  final bool ownIsHome;
   final DateTime kickoffAt;
   final bool showTime;
 
@@ -71,7 +71,7 @@ class MatchDetailHeaderCard extends StatelessWidget {
   /// Taille des noms d'équipes et du score dans l'en-tête compact.
   static const double compactNameSize = 15;
 
-  /// Taille de l'écusson AS Grinta dans l'en-tête compact.
+  /// Taille de l'écusson du club dans l'en-tête compact.
   static const double compactCrestSize = 24;
 
   bool get _isInternal => matchType == 'entre_nous';
@@ -125,7 +125,7 @@ class MatchDetailHeaderCard extends StatelessWidget {
               CalendarScoreline(
                 homeName: homeName,
                 awayName: awayName,
-                grintaIsHome: grintaIsHome,
+                ownIsHome: ownIsHome,
                 homeScore: homeScore,
                 awayScore: awayScore,
                 finished: hasScores,

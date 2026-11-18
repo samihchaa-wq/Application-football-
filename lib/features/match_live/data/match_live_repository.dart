@@ -1,7 +1,7 @@
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/features/match_live/domain/match_live_add_player_options.dart';
-import 'package:as_grinta/features/match_live/domain/match_live_state_bundle.dart';
-import 'package:as_grinta/features/sports_management/domain/sport_match_finalization.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_add_player_options.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_state_bundle.dart';
+import 'package:petit_filet/features/sports_management/domain/sport_match_finalization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -106,7 +106,7 @@ abstract interface class MatchLiveRepository {
   });
   Future<SportMatchFinalization> publishRecap({
     required String matchId,
-    required int scoreAsGrinta,
+    required int scoreOwn,
     required int scoreAdverse,
     required List<SportFinalParticipant> participants,
     String? reason,
@@ -386,7 +386,7 @@ class SupabaseMatchLiveRepository implements MatchLiveRepository {
   @override
   Future<SportMatchFinalization> publishRecap({
     required String matchId,
-    required int scoreAsGrinta,
+    required int scoreOwn,
     required int scoreAdverse,
     required List<SportFinalParticipant> participants,
     String? reason,
@@ -395,7 +395,7 @@ class SupabaseMatchLiveRepository implements MatchLiveRepository {
       'coach_publish_match_live_recap',
       params: {
         'p_match_id': matchId,
-        'p_score_as_grinta': scoreAsGrinta,
+        'p_score_as_grinta': scoreOwn,
         'p_score_adverse': scoreAdverse,
         'p_participants': [for (final p in participants) p.toRpcJson()],
         'p_reason': _clean(reason),

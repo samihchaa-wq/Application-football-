@@ -1,11 +1,11 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
-import 'package:as_grinta/features/matches/data/match_info_repository.dart';
-import 'package:as_grinta/features/sports_management/data/match_availability_board_repository.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
-import 'package:as_grinta/features/sports_management/domain/match_availability_board.dart';
-import 'package:as_grinta/features/sports_management/domain/sport_waitlist_models.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/effectif_avatar_grid.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
+import 'package:petit_filet/features/matches/data/match_info_repository.dart';
+import 'package:petit_filet/features/sports_management/data/match_availability_board_repository.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_kit_scope.dart';
+import 'package:petit_filet/features/sports_management/domain/match_availability_board.dart';
+import 'package:petit_filet/features/sports_management/domain/sport_waitlist_models.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/effectif_avatar_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

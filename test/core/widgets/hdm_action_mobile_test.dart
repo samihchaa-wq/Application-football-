@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/widgets/match_detail_header_card.dart';
+import 'package:petit_filet/core/widgets/match_detail_header_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -17,7 +17,7 @@ void main() {
             child: MatchDetailHeaderCard(
               homeName: 'Équipe A',
               awayName: 'Équipe B',
-              grintaIsHome: true,
+              ownIsHome: true,
               kickoffAt: DateTime(2026, 11, 17, 20),
               compact: true,
               motmActionLabel: label,

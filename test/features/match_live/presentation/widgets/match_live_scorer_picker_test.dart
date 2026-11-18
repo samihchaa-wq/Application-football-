@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/match_live/presentation/widgets/match_live_scorer_picker_dialog.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/match_live/presentation/widgets/match_live_scorer_picker_dialog.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

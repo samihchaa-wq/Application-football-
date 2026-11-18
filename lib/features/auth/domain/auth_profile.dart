@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/utils/name_validation.dart';
+import 'package:petit_filet/core/utils/name_validation.dart';
 
 enum AuthRole { pronostiqueur, admin }
 

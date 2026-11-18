@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/sports_management/domain/composition_presentation_plan.dart';
-import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
+import 'package:petit_filet/features/sports_management/domain/composition_presentation_plan.dart';
+import 'package:petit_filet/features/sports_management/domain/football_formation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Un joueur par poste du dispositif, nommé d'après son poste.

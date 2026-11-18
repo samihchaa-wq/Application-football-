@@ -1,6 +1,6 @@
-import 'package:as_grinta/features/match_live/domain/match_live_event.dart';
-import 'package:as_grinta/features/match_live/domain/substitution_salvos.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_event.dart';
+import 'package:petit_filet/features/match_live/domain/substitution_salvos.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
 import 'package:flutter/painting.dart';
 
 /// Prénom d'un joueur qui sort à la prochaine salve.

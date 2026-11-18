@@ -1,8 +1,8 @@
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
-import 'package:as_grinta/features/matches/data/match_info_repository.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/upcoming_match_fixture_header.dart';
-import 'package:as_grinta/features/sports_management/presentation/match_lineup_page.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
+import 'package:petit_filet/features/matches/data/match_info_repository.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/upcoming_match_fixture_header.dart';
+import 'package:petit_filet/features/sports_management/presentation/match_lineup_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

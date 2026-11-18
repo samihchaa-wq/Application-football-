@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/security/password_policy.dart';
+import 'package:petit_filet/core/security/password_policy.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -44,18 +44,18 @@ class _LiveHeaderBar extends ConsumerWidget {
     final fixture =
         ref.watch(upcomingMatchFixtureProvider(matchId)).valueOrNull;
     final opponentName = fixture?.opponentName ?? 'Adversaire';
-    final grintaIsHome = fixture?.grintaIsHome ?? true;
+    final ownIsHome = fixture?.ownIsHome ?? true;
 
-    _LiveScore team(bool grinta, {bool wide = false}) => _LiveScore(
+    _LiveScore team(bool own, {bool wide = false}) => _LiveScore(
           wide: wide,
-          shortName: grinta ? ClubIdentity.shortName : _shortName(opponentName),
-          fullName: grinta ? ClubIdentity.name : opponentName,
-          score: grinta ? session.scoreAsGrinta : session.scoreAdverse,
+          shortName: own ? ClubIdentity.shortName : _shortName(opponentName),
+          fullName: own ? ClubIdentity.name : opponentName,
+          score: own ? session.scoreOwn : session.scoreAdverse,
           canEdit: canEdit,
           onIncrement: () =>
-              controller.adjustScore(team: grinta ? 'us' : 'them', delta: 1),
+              controller.adjustScore(team: own ? 'us' : 'them', delta: 1),
           onDecrement: () =>
-              controller.adjustScore(team: grinta ? 'us' : 'them', delta: -1),
+              controller.adjustScore(team: own ? 'us' : 'them', delta: -1),
         );
 
     final firstAction = switch (session.state) {
@@ -156,12 +156,12 @@ class _LiveHeaderBar extends ConsumerWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Expanded(child: team(grintaIsHome, wide: true)),
+                        Expanded(child: team(ownIsHome, wide: true)),
                         Padding(
                           padding: const EdgeInsets.only(bottom: 4),
                           child: _scoreDash(context),
                         ),
-                        Expanded(child: team(!grintaIsHome, wide: true)),
+                        Expanded(child: team(!ownIsHome, wide: true)),
                       ],
                     ),
                   ),
@@ -212,9 +212,9 @@ class _LiveHeaderBar extends ConsumerWidget {
                       ],
                       const SizedBox(width: 8),
                     ],
-                    team(grintaIsHome),
+                    team(ownIsHome),
                     _scoreDash(context),
-                    team(!grintaIsHome),
+                    team(!ownIsHome),
                   ],
                 ),
               ),
@@ -287,7 +287,7 @@ class _MatchModeAction extends StatelessWidget {
   }
 }
 
-/// Barre du bas du mode match : un but d'AS Grinta attend son buteur.
+/// Barre du bas du mode match : un but de l'équipe attend son buteur.
 class _GoalToAttributeBar extends StatelessWidget {
   const _GoalToAttributeBar({required this.event, required this.onChoose});
 
@@ -683,7 +683,7 @@ class _PendingSubstitutions extends StatelessWidget {
                         ? const SizedBox(
                             width: 18,
                             height: 18,
-                            child: GrintaProgressIndicator(strokeWidth: 2),
+                            child: PfProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.check_rounded),
                     label: Text(
@@ -747,13 +747,13 @@ class _MatchLiveSpectatorViewState
     final fixture =
         ref.watch(upcomingMatchFixtureProvider(session.matchId)).valueOrNull;
     final opponentName = fixture?.opponentName ?? 'Adversaire';
-    final grintaIsHome = fixture?.grintaIsHome ?? true;
+    final ownIsHome = fixture?.ownIsHome ?? true;
     final lineup = bundle.lineup;
 
-    _LiveScore team(bool grinta) => _LiveScore(
-          shortName: grinta ? ClubIdentity.shortName : _shortName(opponentName),
-          fullName: grinta ? ClubIdentity.name : opponentName,
-          score: grinta ? session.scoreAsGrinta : session.scoreAdverse,
+    _LiveScore team(bool own) => _LiveScore(
+          shortName: own ? ClubIdentity.shortName : _shortName(opponentName),
+          fullName: own ? ClubIdentity.name : opponentName,
+          score: own ? session.scoreOwn : session.scoreAdverse,
           canEdit: false,
           wide: true,
           onIncrement: () {},
@@ -818,12 +818,12 @@ class _MatchLiveSpectatorViewState
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Expanded(child: team(grintaIsHome)),
+                      Expanded(child: team(ownIsHome)),
                       Padding(
                         padding: const EdgeInsets.only(bottom: 4),
                         child: _scoreDash(context),
                       ),
-                      Expanded(child: team(!grintaIsHome)),
+                      Expanded(child: team(!ownIsHome)),
                     ],
                   ),
                 ),

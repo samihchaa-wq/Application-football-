@@ -1,9 +1,9 @@
-import 'package:as_grinta/features/auth/data/auth_repository.dart';
-import 'package:as_grinta/features/auth/domain/auth_profile.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/auth/presentation/choose_club_page.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
-import 'package:as_grinta/features/legal/domain/legal_documents.dart';
+import 'package:petit_filet/features/auth/data/auth_repository.dart';
+import 'package:petit_filet/features/auth/domain/auth_profile.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/auth/presentation/choose_club_page.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
+import 'package:petit_filet/features/legal/domain/legal_documents.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

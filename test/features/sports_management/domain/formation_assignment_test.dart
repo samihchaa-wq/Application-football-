@@ -1,7 +1,7 @@
-import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
-import 'package:as_grinta/features/sports_management/domain/formation_assignment.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/domain/match_squad_editing.dart';
+import 'package:petit_filet/features/sports_management/domain/football_formation.dart';
+import 'package:petit_filet/features/sports_management/domain/formation_assignment.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/domain/match_squad_editing.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

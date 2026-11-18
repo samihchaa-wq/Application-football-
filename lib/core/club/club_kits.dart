@@ -1,5 +1,5 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/features/matches/domain/jersey_option.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/features/matches/domain/jersey_option.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 

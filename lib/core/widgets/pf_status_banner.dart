@@ -1,21 +1,21 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
-enum GrintaStatusTone { info, success, warning, error }
+enum PfStatusTone { info, success, warning, error }
 
-class GrintaStatusBanner extends StatelessWidget {
-  const GrintaStatusBanner({
+class PfStatusBanner extends StatelessWidget {
+  const PfStatusBanner({
     super.key,
     required this.message,
     this.title,
-    this.tone = GrintaStatusTone.info,
+    this.tone = PfStatusTone.info,
     this.action,
     this.compact = false,
   });
 
   final String? title;
   final String message;
-  final GrintaStatusTone tone;
+  final PfStatusTone tone;
   final Widget? action;
   final bool compact;
 
@@ -23,19 +23,19 @@ class GrintaStatusBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final (accent, icon) = switch (tone) {
-      GrintaStatusTone.info => (
+      PfStatusTone.info => (
           AppTheme.primaryBright,
           Icons.info_outline_rounded,
         ),
-      GrintaStatusTone.success => (
+      PfStatusTone.success => (
           AppTheme.success,
           Icons.check_circle_outline_rounded,
         ),
-      GrintaStatusTone.warning => (
+      PfStatusTone.warning => (
           AppTheme.warning,
           Icons.warning_amber_rounded,
         ),
-      GrintaStatusTone.error => (
+      PfStatusTone.error => (
           theme.colorScheme.error,
           Icons.error_outline_rounded,
         ),
@@ -43,7 +43,7 @@ class GrintaStatusBanner extends StatelessWidget {
 
     return Semantics(
       container: true,
-      liveRegion: tone == GrintaStatusTone.error,
+      liveRegion: tone == PfStatusTone.error,
       label: [if (title != null) title!, message].join('. '),
       child: Container(
         width: double.infinity,

@@ -1,8 +1,8 @@
-import 'package:as_grinta/features/sports_management/data/match_sport_report_repository.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/domain/match_goal_action.dart';
-import 'package:as_grinta/features/sports_management/domain/match_sport_report.dart';
-import 'package:as_grinta/features/sports_management/presentation/match_report_page.dart';
+import 'package:petit_filet/features/sports_management/data/match_sport_report_repository.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/domain/match_goal_action.dart';
+import 'package:petit_filet/features/sports_management/domain/match_sport_report.dart';
+import 'package:petit_filet/features/sports_management/presentation/match_report_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -46,7 +46,7 @@ void main() {
   ) async {
     await _pump(
       tester,
-      _repository(_report(scoreAsGrinta: 3, scoreAdverse: 1)),
+      _repository(_report(scoreOwn: 3, scoreAdverse: 1)),
     );
 
     await tester.tap(find.widgetWithText(Tab, 'Faits du match'));
@@ -65,7 +65,7 @@ void main() {
       tester,
       _repository(
         _report(
-          scoreAsGrinta: 1,
+          scoreOwn: 1,
           scoreAdverse: 0,
           goalActions: [
             MatchGoalAction.fromJson({
@@ -93,7 +93,7 @@ void main() {
   });
 
   testWidgets('baisser le score demande quel but supprimer', (tester) async {
-    await _pump(tester, _repository(_report(scoreAsGrinta: 2)));
+    await _pump(tester, _repository(_report(scoreOwn: 2)));
 
     // Le « moins » de la ligne AS Grinta.
     await tester.tap(find.byIcon(Icons.remove).first);
@@ -136,7 +136,7 @@ void main() {
   testWidgets('la validation envoie effectif et faits du match ensemble', (
     tester,
   ) async {
-    final repository = _repository(_report(scoreAsGrinta: 1));
+    final repository = _repository(_report(scoreOwn: 1));
     await _pump(tester, repository);
 
     await tester.tap(find.text('Valider le compte rendu'));
@@ -145,7 +145,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repository.submitted, isNotNull);
-    expect(repository.submitted!.scoreAsGrinta, 1);
+    expect(repository.submitted!.scoreOwn, 1);
     expect(repository.submitted!.goalActions.length, 1);
     expect(repository.submitted!.lineup.entries.length, 3);
   });
@@ -174,7 +174,7 @@ void main() {
       // des buts serait coupée et le bouton de validation hors d'atteinte.
       await _pump(
         tester,
-        _repository(_report(scoreAsGrinta: 6)),
+        _repository(_report(scoreOwn: 6)),
         embedded: true,
       );
 
@@ -234,7 +234,7 @@ Future<void> _pump(
 }
 
 MatchSportReport _report({
-  int scoreAsGrinta = 0,
+  int scoreOwn = 0,
   int scoreAdverse = 0,
   bool isCorrection = false,
   bool isEditable = true,
@@ -249,7 +249,7 @@ MatchSportReport _report({
     'match_status': 'termine',
     'is_validated': isCorrection,
     'version': isCorrection ? 1 : 0,
-    'score_as_grinta': scoreAsGrinta,
+    'score_as_grinta': scoreOwn,
     'score_adverse': scoreAdverse,
     'is_correction': isCorrection,
     'is_editable': isEditable,
@@ -313,7 +313,7 @@ _FakeReportRepository _repository(MatchSportReport report) =>
     _FakeReportRepository(report);
 
 typedef _Submission = ({
-  int scoreAsGrinta,
+  int scoreOwn,
   int scoreAdverse,
   MatchComposition lineup,
   List<MatchGoalAction> goalActions,
@@ -337,7 +337,7 @@ class _FakeReportRepository implements MatchSportReportRepository {
   Future<MatchSportReport> submit({
     required String matchId,
     required int knownVersion,
-    required int scoreAsGrinta,
+    required int scoreOwn,
     required int scoreAdverse,
     required MatchComposition lineup,
     required List<MatchGoalAction> goalActions,
@@ -345,7 +345,7 @@ class _FakeReportRepository implements MatchSportReportRepository {
   }) async {
     submittedKnownVersion = knownVersion;
     submitted = (
-      scoreAsGrinta: scoreAsGrinta,
+      scoreOwn: scoreOwn,
       scoreAdverse: scoreAdverse,
       lineup: lineup,
       goalActions: goalActions,

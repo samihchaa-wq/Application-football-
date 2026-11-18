@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/predictions/data/predictions_repository.dart';
+import 'package:petit_filet/features/predictions/data/predictions_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -50,13 +50,13 @@ MatchPredictionItem _item({
     opponentName: 'Opponent',
     kickoffAt: kickoffAt,
     status: 'a_venir',
-    scoreGrinta: 0,
+    scoreOwn: 0,
     scoreOpponent: 0,
     isFilled: false,
     oddsWin: 2,
     oddsDraw: 3,
     oddsLoss: 4,
-    actualScoreGrinta: null,
+    actualScoreOwn: null,
     actualScoreOpponent: null,
   );
 }

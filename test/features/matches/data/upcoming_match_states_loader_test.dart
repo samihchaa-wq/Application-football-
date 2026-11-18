@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:as_grinta/features/match_live/data/match_live_notification_repository.dart';
-import 'package:as_grinta/features/matches/data/upcoming_match_states_loader.dart';
-import 'package:as_grinta/features/sports_management/data/match_availability_repository.dart';
+import 'package:petit_filet/features/match_live/data/match_live_notification_repository.dart';
+import 'package:petit_filet/features/matches/data/upcoming_match_states_loader.dart';
+import 'package:petit_filet/features/sports_management/data/match_availability_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

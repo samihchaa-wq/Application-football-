@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/season_wrapped/data/season_wrapped_repository.dart';
-import 'package:as_grinta/features/season_wrapped/presentation/wrapped_theme.dart';
+import 'package:petit_filet/features/season_wrapped/data/season_wrapped_repository.dart';
+import 'package:petit_filet/features/season_wrapped/presentation/wrapped_theme.dart';
 import 'package:flutter/material.dart';
 
 /// Un point du terrain pour représenter chaque poste.

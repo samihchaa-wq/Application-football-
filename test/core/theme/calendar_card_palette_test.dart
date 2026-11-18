@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/theme/calendar_card_palette.dart';
+import 'package:petit_filet/core/theme/calendar_card_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

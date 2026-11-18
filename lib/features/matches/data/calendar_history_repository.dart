@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:as_grinta/core/providers/supabase_provider.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -10,7 +10,7 @@ class HistoricalMatchResult {
     required this.id,
     required this.date,
     required this.opponentName,
-    required this.grintaScore,
+    required this.ownScore,
     required this.opponentScore,
     required this.isHome,
     this.hasKnownVenue = true,
@@ -26,7 +26,7 @@ class HistoricalMatchResult {
   final DateTime date;
   final bool hasTime;
   final String opponentName;
-  final int grintaScore;
+  final int ownScore;
   final int opponentScore;
   final bool isHome;
 
@@ -93,7 +93,7 @@ class CalendarHistoryRepository {
         date: parsedDate,
         hasTime: hasTime,
         opponentName: (row['opponent_name'] ?? 'Adversaire').toString(),
-        grintaScore: (row['score_as_grinta'] as num?)?.toInt() ?? 0,
+        ownScore: (row['score_as_grinta'] as num?)?.toInt() ?? 0,
         opponentScore: (row['score_adverse'] as num?)?.toInt() ?? 0,
         isHome: row['is_home'] as bool? ?? true,
         hasKnownVenue: row['is_home'] != null,
@@ -163,7 +163,7 @@ class CalendarHistoryRepository {
           a.date != b.date ||
           a.hasTime != b.hasTime ||
           a.opponentName != b.opponentName ||
-          a.grintaScore != b.grintaScore ||
+          a.ownScore != b.ownScore ||
           a.opponentScore != b.opponentScore ||
           a.isHome != b.isHome ||
           a.hasKnownVenue != b.hasKnownVenue ||
@@ -201,7 +201,7 @@ class CalendarHistoryRepository {
                   DateTime(1970),
               hasTime: row['has_time'] == true,
               opponentName: (row['opponent_name'] ?? 'Adversaire').toString(),
-              grintaScore: (row['grinta_score'] as num?)?.toInt() ?? 0,
+              ownScore: (row['grinta_score'] as num?)?.toInt() ?? 0,
               opponentScore: (row['opponent_score'] as num?)?.toInt() ?? 0,
               isHome: row['is_home'] as bool? ?? true,
               hasKnownVenue: row['has_known_venue'] != false,
@@ -229,7 +229,7 @@ class CalendarHistoryRepository {
                   'date': match.date.toIso8601String(),
                   'has_time': match.hasTime,
                   'opponent_name': match.opponentName,
-                  'grinta_score': match.grintaScore,
+                  'grinta_score': match.ownScore,
                   'opponent_score': match.opponentScore,
                   'is_home': match.isHome,
                   'has_known_venue': match.hasKnownVenue,

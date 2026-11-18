@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/features/admin/data/admin_repository.dart';
-import 'package:as_grinta/features/auth/data/auth_repository.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/features/admin/data/admin_repository.dart';
+import 'package:petit_filet/features/auth/data/auth_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

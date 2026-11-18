@@ -1,7 +1,7 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/features/sports_management/domain/formation_display.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/features/sports_management/domain/formation_display.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:flutter/material.dart';
 
 /// Un joueur et son nombre de buts, pour l'affichage « Joueurs (n) » de

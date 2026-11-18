@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/sports_management/domain/internal_player_grouping.dart';
-import 'package:as_grinta/features/sports_management/domain/player_position_profiles.dart';
+import 'package:petit_filet/features/sports_management/domain/internal_player_grouping.dart';
+import 'package:petit_filet/features/sports_management/domain/player_position_profiles.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 PlayerPositionProfile profile({

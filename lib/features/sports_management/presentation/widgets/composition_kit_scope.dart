@@ -1,7 +1,7 @@
-import 'package:as_grinta/core/club/club_kits.dart';
-import 'package:as_grinta/core/club/match_kit_snapshot.dart';
-import 'package:as_grinta/features/matches/data/match_info_repository.dart';
-import 'package:as_grinta/features/matches/domain/jersey_option.dart';
+import 'package:petit_filet/core/club/club_kits.dart';
+import 'package:petit_filet/core/club/match_kit_snapshot.dart';
+import 'package:petit_filet/features/matches/data/match_info_repository.dart';
+import 'package:petit_filet/features/matches/domain/jersey_option.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

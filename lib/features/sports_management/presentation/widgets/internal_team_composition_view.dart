@@ -1,26 +1,26 @@
-import 'package:as_grinta/core/club/club_kits.dart';
-import 'package:as_grinta/core/club/match_kit_snapshot.dart';
-import 'package:as_grinta/core/logging/app_logger.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/matches/domain/jersey_option.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/kit_jersey.dart';
-import 'package:as_grinta/features/sports_management/data/internal_match_composition_repository.dart';
-import 'package:as_grinta/features/sports_management/data/player_identity_repository.dart';
-import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
-import 'package:as_grinta/features/sports_management/domain/composition_publication_rules.dart';
-import 'package:as_grinta/features/sports_management/domain/internal_match_composition.dart';
-import 'package:as_grinta/features/sports_management/domain/internal_player_grouping.dart';
-import 'package:as_grinta/features/sports_management/domain/player_position_identity.dart';
-import 'package:as_grinta/features/sports_management/domain/player_position_profiles.dart';
-import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
-import 'package:as_grinta/features/sports_management/domain/internal_team_formation.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart'
+import 'package:petit_filet/core/club/club_kits.dart';
+import 'package:petit_filet/core/club/match_kit_snapshot.dart';
+import 'package:petit_filet/core/logging/app_logger.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/matches/domain/jersey_option.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/kit_jersey.dart';
+import 'package:petit_filet/features/sports_management/data/internal_match_composition_repository.dart';
+import 'package:petit_filet/features/sports_management/data/player_identity_repository.dart';
+import 'package:petit_filet/features/sports_management/data/match_composition_repository.dart';
+import 'package:petit_filet/features/sports_management/domain/composition_publication_rules.dart';
+import 'package:petit_filet/features/sports_management/domain/internal_match_composition.dart';
+import 'package:petit_filet/features/sports_management/domain/internal_player_grouping.dart';
+import 'package:petit_filet/features/sports_management/domain/player_position_identity.dart';
+import 'package:petit_filet/features/sports_management/domain/player_position_profiles.dart';
+import 'package:petit_filet/features/sports_management/domain/football_formation.dart';
+import 'package:petit_filet/features/sports_management/domain/internal_team_formation.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_kit_scope.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart'
     show CompositionPlayerTile, PlayerAvatar, SubstituteHistoryBadge;
-import 'package:as_grinta/features/sports_management/presentation/widgets/formation_pitch_editor.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/formation_pitch_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -570,7 +570,7 @@ class _InternalTeamCompositionViewState
         : const <String, PlayerPositionProfile>{};
 
     return async.when(
-      loading: () => const Center(child: GrintaProgressIndicator()),
+      loading: () => const Center(child: PfProgressIndicator()),
       error: (_, __) => const Card(
         child: Padding(
           padding: EdgeInsets.all(18),
@@ -817,7 +817,7 @@ class _InternalTeamCompositionViewState
                     ? const SizedBox(
                         width: 16,
                         height: 16,
-                        child: GrintaProgressIndicator(strokeWidth: 2),
+                        child: PfProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.save_outlined),
                 label: const Text('Enregistrer la composition'),

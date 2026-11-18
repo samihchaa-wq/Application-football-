@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 /// Affiche un score entouré en vert, orange ou rouge selon le résultat
-/// d’AS Grinta. La date éventuelle reste en blanc, lisible quelle que soit la
+/// de l'équipe du club. La date éventuelle reste en blanc, lisible quelle que soit la
 /// couleur du résultat.
 class MatchResultScoreChip extends StatelessWidget {
   const MatchResultScoreChip({
     super.key,
-    required this.scoreGrinta,
+    required this.scoreOwn,
     required this.scoreOpponent,
     this.textStyle,
     this.subtitle,
@@ -14,7 +14,7 @@ class MatchResultScoreChip extends StatelessWidget {
     this.semanticLabel,
   });
 
-  final int scoreGrinta;
+  final int scoreOwn;
   final int scoreOpponent;
   final TextStyle? textStyle;
   final String? subtitle;
@@ -22,8 +22,8 @@ class MatchResultScoreChip extends StatelessWidget {
   final String? semanticLabel;
 
   Color get _color {
-    if (scoreGrinta > scoreOpponent) return const Color(0xFF39E784);
-    if (scoreGrinta == scoreOpponent) return const Color(0xFFFFB43D);
+    if (scoreOwn > scoreOpponent) return const Color(0xFF39E784);
+    if (scoreOwn == scoreOpponent) return const Color(0xFFFFB43D);
     return const Color(0xFFFF5F6D);
   }
 
@@ -40,7 +40,7 @@ class MatchResultScoreChip extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            '$scoreGrinta–$scoreOpponent',
+            '$scoreOwn–$scoreOpponent',
             style:
                 (textStyle ?? Theme.of(context).textTheme.bodyMedium)?.copyWith(
               color: color,

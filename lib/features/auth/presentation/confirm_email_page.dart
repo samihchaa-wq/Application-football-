@@ -1,7 +1,7 @@
-import 'package:as_grinta/core/widgets/grinta_auth_surface.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/auth/data/account_email_repository.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/core/widgets/pf_auth_surface.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/auth/data/account_email_repository.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -86,7 +86,7 @@ class _ConfirmEmailPageState extends ConsumerState<ConfirmEmailPage> {
         ),
     };
 
-    return GrintaAuthSurface(
+    return PfAuthSurface(
       title: title,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -96,7 +96,7 @@ class _ConfirmEmailPageState extends ConsumerState<ConfirmEmailPage> {
           Text(message, textAlign: TextAlign.center),
           const SizedBox(height: 24),
           if (_state == _ConfirmState.checking)
-            const Center(child: GrintaProgressIndicator())
+            const Center(child: PfProgressIndicator())
           else if (_state == _ConfirmState.failed)
             FilledButton(onPressed: _confirm, child: const Text('Réessayer'))
           else

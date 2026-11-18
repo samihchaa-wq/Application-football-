@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/matches/domain/match_model.dart';
-import 'package:as_grinta/features/matches/presentation/calendar_matches_view.dart';
+import 'package:petit_filet/features/matches/domain/match_model.dart';
+import 'package:petit_filet/features/matches/presentation/calendar_matches_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,7 +14,7 @@ void main() {
         isHome: true,
         plannedDurationMinutes: 90,
         status: 'a_venir',
-        grintaScore: null,
+        ownScore: null,
         opponentScore: null,
         opponentName: matchType == 'entre_nous' ? null : 'FC Booster',
         matchType: matchType,

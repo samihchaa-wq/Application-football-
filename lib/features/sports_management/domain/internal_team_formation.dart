@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
+import 'package:petit_filet/features/sports_management/domain/football_formation.dart';
 import 'package:flutter/material.dart';
 
 /// Dispositif unique d'une équipe de match « entre nous ».

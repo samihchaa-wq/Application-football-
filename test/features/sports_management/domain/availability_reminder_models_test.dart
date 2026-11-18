@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/sports_management/domain/availability_reminder_models.dart';
+import 'package:petit_filet/features/sports_management/domain/availability_reminder_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

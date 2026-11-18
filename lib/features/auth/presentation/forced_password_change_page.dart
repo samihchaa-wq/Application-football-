@@ -1,8 +1,8 @@
-import 'package:as_grinta/core/security/password_policy.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/core/security/password_policy.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -217,7 +217,7 @@ class _ForcedPasswordChangePageState
                             ? const SizedBox(
                                 width: 18,
                                 height: 18,
-                                child: GrintaProgressIndicator(strokeWidth: 2),
+                                child: PfProgressIndicator(strokeWidth: 2),
                               )
                             : const Icon(Icons.check_circle_outline),
                         label: Text(

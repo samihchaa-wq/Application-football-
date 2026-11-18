@@ -1,7 +1,7 @@
-import 'package:as_grinta/core/theme/app_spacing.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/features/unavailability/data/player_unavailability_repository.dart';
-import 'package:as_grinta/features/unavailability/domain/player_unavailability.dart';
+import 'package:petit_filet/core/theme/app_spacing.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/features/unavailability/data/player_unavailability_repository.dart';
+import 'package:petit_filet/features/unavailability/domain/player_unavailability.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

@@ -1,5 +1,5 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
 import 'package:flutter/material.dart';
 
 /// Affiché à la place de l'appli quand l'éditeur a suspendu le club (par
@@ -12,7 +12,7 @@ class ClubSuspendedPage extends StatelessWidget {
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: GrintaAppBar(title: const Text('Accès suspendu')),
+      appBar: PfAppBar(title: const Text('Accès suspendu')),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(

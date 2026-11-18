@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:as_grinta/core/storage/avatar_image.dart';
+import 'package:petit_filet/core/storage/avatar_image.dart';
 import 'package:image/image.dart' as img;
 
 // Traitements d'image des envois de photos. Ce fichier est importé en

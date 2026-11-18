@@ -1,5 +1,5 @@
-import 'package:as_grinta/core/utils/match_window.dart';
-import 'package:as_grinta/features/matches/domain/match_meeting.dart';
+import 'package:petit_filet/core/utils/match_window.dart';
+import 'package:petit_filet/features/matches/domain/match_meeting.dart';
 
 class MatchModel {
   const MatchModel({
@@ -10,7 +10,7 @@ class MatchModel {
     required this.isHome,
     required this.plannedDurationMinutes,
     required this.status,
-    required this.grintaScore,
+    required this.ownScore,
     required this.opponentScore,
     this.predictionsClosedAt,
     this.resultValidatedAt,
@@ -39,7 +39,7 @@ class MatchModel {
   final bool isHome;
   final int plannedDurationMinutes;
   final String status;
-  final int? grintaScore;
+  final int? ownScore;
   final int? opponentScore;
   final DateTime? predictionsClosedAt;
   final DateTime? resultValidatedAt;
@@ -171,7 +171,7 @@ class MatchModel {
       plannedDurationMinutes:
           int.tryParse('${json['planned_duration_minutes']}') ?? 90,
       status: (json['status'] ?? 'a_venir').toString(),
-      grintaScore: json['score_as_grinta'] == null
+      ownScore: json['score_as_grinta'] == null
           ? null
           : int.tryParse('${json['score_as_grinta']}'),
       opponentScore: json['score_adverse'] == null

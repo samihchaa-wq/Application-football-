@@ -1,7 +1,7 @@
-import 'package:as_grinta/core/widgets/calendar_scoreline.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/widgets/match_detail_header_card.dart';
-import 'package:as_grinta/core/widgets/match_sheet_top_row.dart';
+import 'package:petit_filet/core/widgets/calendar_scoreline.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/widgets/match_detail_header_card.dart';
+import 'package:petit_filet/core/widgets/match_sheet_top_row.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -28,7 +28,7 @@ void main() {
           GoRoute(
             path: '/matches',
             builder: (_, __) => Scaffold(
-              appBar: GrintaAppBar(title: const Text('Calendrier')),
+              appBar: PfAppBar(title: const Text('Calendrier')),
               body: const SizedBox(key: ValueKey<String>('calendar')),
             ),
           ),
@@ -43,7 +43,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(AppBar), findsNothing);
-      expect(find.byKey(grintaClubHomeBadgeKey), findsNothing);
+      expect(find.byKey(pfClubHomeBadgeKey), findsNothing);
       final back = find.byType(BackButton);
       expect(back, findsOneWidget);
 
@@ -148,7 +148,7 @@ void main() {
                     'Association Sportive Rouffiac Tolosan Football Club Loisir '
                     'Vétérans du Dimanche Matin',
                 awayName: 'AS Grinta',
-                grintaIsHome: false,
+                ownIsHome: false,
                 kickoffAt: DateTime(2026, 11, 2, 20, 45),
                 typeLabel: 'Championnat · J12',
                 address: 'Complexe sportif municipal Jean Bouin - 12 avenue '
@@ -185,7 +185,7 @@ void main() {
       MatchDetailHeaderCard(
         homeName: 'AS Grinta',
         awayName: 'Positive Vibration',
-        grintaIsHome: true,
+        ownIsHome: true,
         homeScore: 2,
         awayScore: 1,
         finished: true,
@@ -197,7 +197,7 @@ void main() {
       MatchDetailHeaderCard(
         homeName: 'AS Grinta',
         awayName: 'Foot Ça-Me-Dit',
-        grintaIsHome: true,
+        ownIsHome: true,
         kickoffAt: kickoff,
         compact: true,
       ),

@@ -1,20 +1,20 @@
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/logging/app_logger.dart';
-import 'package:as_grinta/core/network/confirmed_write.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/matches/data/match_details_repository.dart';
-import 'package:as_grinta/features/sports_management/data/match_sport_report_repository.dart';
-import 'package:as_grinta/features/sports_management/data/sport_match_finalization_repository.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/domain/match_goal_action.dart';
-import 'package:as_grinta/features/sports_management/domain/match_report_score_sync.dart';
-import 'package:as_grinta/features/sports_management/domain/match_sport_report.dart';
-import 'package:as_grinta/features/sports_management/domain/match_squad_editing.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/match_goal_actions_editor.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/match_squad_editor.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/logging/app_logger.dart';
+import 'package:petit_filet/core/network/confirmed_write.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/matches/data/match_details_repository.dart';
+import 'package:petit_filet/features/sports_management/data/match_sport_report_repository.dart';
+import 'package:petit_filet/features/sports_management/data/sport_match_finalization_repository.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/domain/match_goal_action.dart';
+import 'package:petit_filet/features/sports_management/domain/match_report_score_sync.dart';
+import 'package:petit_filet/features/sports_management/domain/match_sport_report.dart';
+import 'package:petit_filet/features/sports_management/domain/match_squad_editing.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/match_goal_actions_editor.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/match_squad_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -32,7 +32,7 @@ class MatchReportPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: GrintaAppBar(
+      appBar: PfAppBar(
         title: const Text('Compte rendu'),
       ),
       body: MatchReportView(matchId: matchId),
@@ -70,7 +70,7 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
   MatchSportReport? _report;
   MatchComposition? _lineup;
   List<MatchGoalAction> _goals = const [];
-  int _scoreAsGrinta = 0;
+  int _scoreOwn = 0;
   int _scoreAdverse = 0;
   int _localKeySeed = 0;
 
@@ -114,15 +114,15 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
   void _adopt(MatchSportReport report) {
     _report = report;
     _lineup = report.lineup;
-    _scoreAsGrinta = report.finalization.scoreAsGrinta;
+    _scoreOwn = report.finalization.scoreOwn;
     _scoreAdverse = report.finalization.scoreAdverse;
     _goals = sortChronologically(report.goalActions);
     final plan = planScoreChange(
       goalActions: _goals,
-      scoreAsGrinta: _scoreAsGrinta,
+      scoreOwn: _scoreOwn,
       scoreAdverse: _scoreAdverse,
     );
-    if (plan.asGrintaToAdd > 0 || plan.opponentToAdd > 0) {
+    if (plan.ownToAdd > 0 || plan.opponentToAdd > 0) {
       _goals = addMissingGoals(
         goalActions: _goals,
         plan: plan,
@@ -131,8 +131,8 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
     }
     // Si les faits enregistrés dépassent le score (cas historique), le score
     // suit les faits : ils sont la référence.
-    if (plan.asGrintaToRemove > 0) {
-      _scoreAsGrinta = countGoals(_goals, MatchGoalTeamSide.asGrinta);
+    if (plan.ownToRemove > 0) {
+      _scoreOwn = countGoals(_goals, MatchGoalTeamSide.own);
     }
     if (plan.opponentToRemove > 0) {
       _scoreAdverse = countGoals(_goals, MatchGoalTeamSide.opponent);
@@ -219,18 +219,17 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
 
   // --------------------------------------------------------------- score
 
-  Future<void> _changeScore({required bool asGrinta, required int next}) async {
+  Future<void> _changeScore({required bool own, required int next}) async {
     if (!_editable || _saving) return;
-    final side =
-        asGrinta ? MatchGoalTeamSide.asGrinta : MatchGoalTeamSide.opponent;
+    final side = own ? MatchGoalTeamSide.own : MatchGoalTeamSide.opponent;
     final current = countGoals(_goals, side);
     if (next == current) return;
 
     if (next > current) {
       final plan = planScoreChange(
         goalActions: _goals,
-        scoreAsGrinta: asGrinta ? next : _scoreAsGrinta,
-        scoreAdverse: asGrinta ? _scoreAdverse : next,
+        scoreOwn: own ? next : _scoreOwn,
+        scoreAdverse: own ? _scoreAdverse : next,
       );
       setState(() {
         _goals = addMissingGoals(
@@ -238,8 +237,8 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
           plan: plan,
           nextLocalKey: () => _localKeySeed++,
         );
-        if (asGrinta) {
-          _scoreAsGrinta = next;
+        if (own) {
+          _scoreOwn = next;
         } else {
           _scoreAdverse = next;
         }
@@ -255,8 +254,8 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
     if (removed == null || !mounted) return;
     setState(() {
       _goals = removeGoals(goalActions: _goals, localKeys: removed);
-      if (asGrinta) {
-        _scoreAsGrinta = next;
+      if (own) {
+        _scoreOwn = next;
       } else {
         _scoreAdverse = next;
       }
@@ -319,7 +318,7 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
 
   String _goalLabel(MatchGoalAction goal) {
     final minute = goal.minute == null ? 'Minute inconnue' : "${goal.minute}'";
-    if (!goal.isAsGrinta) {
+    if (!goal.isOwnTeam) {
       return '$minute · ${goal.isOwnGoal ? 'CSC ${ClubIdentity.name}' : _opponentName}';
     }
     if (goal.isOwnGoal) return '$minute · CSC adverse';
@@ -366,7 +365,7 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
 
   String? get _factsIssue => validateGoalActions(
         goalActions: _goals,
-        scoreAsGrinta: _scoreAsGrinta,
+        scoreOwn: _scoreOwn,
         scoreAdverse: _scoreAdverse,
         squadParticipantIds: _squadIds,
       );
@@ -396,7 +395,7 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${ClubIdentity.name} $_scoreAsGrinta – $_scoreAdverse $_opponentName · '
+                    '${ClubIdentity.name} $_scoreOwn – $_scoreAdverse $_opponentName · '
                     '${lineup.entriesFor(MatchCompositionZone.field).length} '
                     'titulaires · '
                     '${lineup.entriesFor(MatchCompositionZone.bench).length} '
@@ -438,7 +437,7 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
       final saved = await ref.read(matchSportReportRepositoryProvider).submit(
             matchId: widget.matchId,
             knownVersion: report.finalization.version,
-            scoreAsGrinta: _scoreAsGrinta,
+            scoreOwn: _scoreOwn,
             scoreAdverse: _scoreAdverse,
             lineup: lineup,
             goalActions: _goals,
@@ -544,7 +543,7 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: GrintaProgressIndicator());
+    if (_loading) return const Center(child: PfProgressIndicator());
     if (_error != null && _report == null) {
       return Center(
         child: Padding(
@@ -571,13 +570,11 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
         if (!report.isEditable) const _ReadOnlyNotice(),
         _ReportScoreHeader(
           opponentName: report.opponentName,
-          scoreAsGrinta: _scoreAsGrinta,
+          scoreOwn: _scoreOwn,
           scoreAdverse: _scoreAdverse,
           enabled: _editable && !_saving,
-          onAsGrintaChanged: (value) =>
-              _changeScore(asGrinta: true, next: value),
-          onAdverseChanged: (value) =>
-              _changeScore(asGrinta: false, next: value),
+          onOwnChanged: (value) => _changeScore(own: true, next: value),
+          onAdverseChanged: (value) => _changeScore(own: false, next: value),
         ),
         TabBar(
           controller: _tabs,
@@ -637,7 +634,7 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
                   ? const SizedBox(
                       width: 18,
                       height: 18,
-                      child: GrintaProgressIndicator(strokeWidth: 2),
+                      child: PfProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.verified_rounded),
               label: const Text('Valider le compte rendu'),
@@ -722,18 +719,18 @@ class _ReadOnlyNotice extends StatelessWidget {
 class _ReportScoreHeader extends StatelessWidget {
   const _ReportScoreHeader({
     required this.opponentName,
-    required this.scoreAsGrinta,
+    required this.scoreOwn,
     required this.scoreAdverse,
     required this.enabled,
-    required this.onAsGrintaChanged,
+    required this.onOwnChanged,
     required this.onAdverseChanged,
   });
 
   final String opponentName;
-  final int scoreAsGrinta;
+  final int scoreOwn;
   final int scoreAdverse;
   final bool enabled;
-  final ValueChanged<int> onAsGrintaChanged;
+  final ValueChanged<int> onOwnChanged;
   final ValueChanged<int> onAdverseChanged;
 
   @override
@@ -746,9 +743,9 @@ class _ReportScoreHeader extends StatelessWidget {
           children: [
             _ScoreLine(
               name: ClubIdentity.name,
-              score: scoreAsGrinta,
+              score: scoreOwn,
               enabled: enabled,
-              onChanged: onAsGrintaChanged,
+              onChanged: onOwnChanged,
             ),
             const SizedBox(height: 6),
             _ScoreLine(

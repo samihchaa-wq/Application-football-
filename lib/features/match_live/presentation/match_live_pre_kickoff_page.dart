@@ -1,18 +1,18 @@
-import 'package:as_grinta/core/club/club_rules.dart';
-import 'package:as_grinta/core/logging/app_logger.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/match_live/domain/match_live_state_bundle.dart';
-import 'package:as_grinta/features/match_live/presentation/match_live_providers.dart';
-import 'package:as_grinta/features/match_live/presentation/widgets/match_live_add_player_sheet.dart';
-import 'package:as_grinta/features/match_live/presentation/widgets/match_live_remove_player_sheet.dart';
-import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
-import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/domain/match_squad_editing.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/match_squad_editor.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
+import 'package:petit_filet/core/logging/app_logger.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/match_live/domain/match_live_state_bundle.dart';
+import 'package:petit_filet/features/match_live/presentation/match_live_providers.dart';
+import 'package:petit_filet/features/match_live/presentation/widgets/match_live_add_player_sheet.dart';
+import 'package:petit_filet/features/match_live/presentation/widgets/match_live_remove_player_sheet.dart';
+import 'package:petit_filet/features/sports_management/data/match_composition_repository.dart';
+import 'package:petit_filet/features/sports_management/domain/football_formation.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/domain/match_squad_editing.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_kit_scope.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/match_squad_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -111,7 +111,7 @@ class _MatchLivePreKickoffPageState
       }
       if (_opening) {
         return const Center(
-          child: GrintaLoader.page(
+          child: PfLoader.page(
             message: 'Préparation du Tableau Blanc…',
             semanticLabel: 'Ouverture de l’espace de suivi en direct',
           ),
@@ -421,7 +421,7 @@ class MatchLivePreKickoffSpectatorView extends ConsumerWidget {
     if (lineup == null) {
       if (published?.isLoading == true) {
         return const Center(
-          child: GrintaLoader.page(message: 'Chargement de la composition…'),
+          child: PfLoader.page(message: 'Chargement de la composition…'),
         );
       }
       return Center(

@@ -1,9 +1,9 @@
 import 'dart:typed_data';
 
-import 'package:as_grinta/core/storage/player_photo_mode.dart';
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/core/utils/name_validation.dart';
-import 'package:as_grinta/core/storage/image_mime.dart';
+import 'package:petit_filet/core/storage/player_photo_mode.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/core/utils/name_validation.dart';
+import 'package:petit_filet/core/storage/image_mime.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -219,7 +219,7 @@ class RosterRepository {
     });
   }
 
-  /// Reprend l'action « Effectif » de l'administration AS Grinta, tout en
+  /// Reprend l'action « Effectif » de l'administration d'origine, tout en
   /// utilisant les opérations du club commercial courant.
   Future<void> addProfileToRoster({
     required String seasonId,

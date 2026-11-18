@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/matches/domain/match_model.dart';
+import 'package:petit_filet/features/matches/domain/match_model.dart';
 
 const matchDeletionWindow = Duration(hours: 24);
 

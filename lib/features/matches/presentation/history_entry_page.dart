@@ -1,13 +1,13 @@
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/matches/data/calendar_history_repository.dart';
-import 'package:as_grinta/features/matches/data/history_entry_repository.dart';
-import 'package:as_grinta/features/matches/presentation/history_import_page.dart';
-import 'package:as_grinta/features/matches/domain/history_match_draft.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/match_wheel_picker.dart';
-import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/matches/data/calendar_history_repository.dart';
+import 'package:petit_filet/features/matches/data/history_entry_repository.dart';
+import 'package:petit_filet/features/matches/presentation/history_import_page.dart';
+import 'package:petit_filet/features/matches/domain/history_match_draft.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/match_wheel_picker.dart';
+import 'package:petit_filet/features/sports_management/domain/football_formation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -206,13 +206,13 @@ class _HistoryEntryPageState extends ConsumerState<HistoryEntryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: GrintaAppBar(title: const Text('Ajouter un match passé')),
+      appBar: PfAppBar(title: const Text('Ajouter un match passé')),
       body: _body(context),
     );
   }
 
   Widget _body(BuildContext context) {
-    if (_loading) return const Center(child: GrintaProgressIndicator());
+    if (_loading) return const Center(child: PfProgressIndicator());
     final entryContext = _context;
     if (_loadError != null || entryContext == null) {
       return Center(

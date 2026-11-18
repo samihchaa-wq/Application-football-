@@ -306,7 +306,7 @@ class _HistoricalMonthView extends StatelessWidget {
       future: future,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Center(child: GrintaProgressIndicator());
+          return const Center(child: PfProgressIndicator());
         }
         if (snapshot.hasError) {
           return RefreshIndicator(
@@ -315,11 +315,11 @@ class _HistoricalMonthView extends StatelessWidget {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(AppSpacing.screenGutter),
               children: [
-                GrintaEmptyState(
+                PfEmptyState(
                   icon: Icons.history_toggle_off_rounded,
                   title: 'Historique indisponible',
                   message: humanizeError(snapshot.error!),
-                  tone: GrintaEmptyTone.alert,
+                  tone: PfEmptyTone.alert,
                 ),
               ],
             ),
@@ -536,7 +536,7 @@ class MonthlyMatchCard extends ConsumerWidget {
                   CalendarScoreline(
                     homeName: homeName,
                     awayName: awayName,
-                    grintaIsHome: match.isHome,
+                    ownIsHome: match.isHome,
                     foreground: match.isCancelled
                         ? AppTheme.textFaint
                         : AppTheme.textPrimary,
@@ -602,7 +602,7 @@ class _MonthEmptyState extends StatelessWidget {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.screenGutter),
-        child: GrintaEmptyState(
+        child: PfEmptyState(
           icon: Icons.event_busy_rounded,
           title: title,
           compact: true,

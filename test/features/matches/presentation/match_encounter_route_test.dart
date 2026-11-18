@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/matches/presentation/match_encounter_route.dart';
+import 'package:petit_filet/features/matches/presentation/match_encounter_route.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

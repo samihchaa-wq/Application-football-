@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/sports_management/presentation/widgets/stadium_poster.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/stadium_poster.dart';
 import 'package:flutter/widgets.dart';
 
 /// Hors navigateur, rien à débloquer.

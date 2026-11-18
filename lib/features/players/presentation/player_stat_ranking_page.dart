@@ -1,22 +1,22 @@
 import 'dart:math' as math;
 
-import 'package:as_grinta/core/theme/app_spacing.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/utils/name_validation.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/widgets/grinta_empty_state.dart';
-import 'package:as_grinta/core/widgets/grinta_secondary_tabs.dart';
-import 'package:as_grinta/core/widgets/grinta_skeleton.dart';
-import 'package:as_grinta/core/widgets/sticky_header_table.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/features/badges/presentation/badge_display_scope.dart';
-import 'package:as_grinta/features/badges/presentation/name_with_badges.dart';
-import 'package:as_grinta/features/players/data/player_card_repository.dart';
-import 'package:as_grinta/features/players/data/player_stat_ranking.dart';
-import 'package:as_grinta/features/players/presentation/player_card_link.dart';
-import 'package:as_grinta/features/players/presentation/player_card_page.dart';
-import 'package:as_grinta/features/statistics/data/statistics_repository.dart';
-import 'package:as_grinta/features/statistics/presentation/stats_hub_page.dart';
+import 'package:petit_filet/core/theme/app_spacing.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/utils/name_validation.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/widgets/pf_empty_state.dart';
+import 'package:petit_filet/core/widgets/pf_secondary_tabs.dart';
+import 'package:petit_filet/core/widgets/pf_skeleton.dart';
+import 'package:petit_filet/core/widgets/sticky_header_table.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/features/badges/presentation/badge_display_scope.dart';
+import 'package:petit_filet/features/badges/presentation/name_with_badges.dart';
+import 'package:petit_filet/features/players/data/player_card_repository.dart';
+import 'package:petit_filet/features/players/data/player_stat_ranking.dart';
+import 'package:petit_filet/features/players/presentation/player_card_link.dart';
+import 'package:petit_filet/features/players/presentation/player_card_page.dart';
+import 'package:petit_filet/features/statistics/data/statistics_repository.dart';
+import 'package:petit_filet/features/statistics/presentation/stats_hub_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -90,7 +90,7 @@ class _PlayerStatRankingPageState extends ConsumerState<PlayerStatRankingPage> {
   Widget build(BuildContext context) {
     final stat = widget.stat;
     return Scaffold(
-      appBar: GrintaAppBar(title: Text(stat?.label ?? 'Classement')),
+      appBar: PfAppBar(title: Text(stat?.label ?? 'Classement')),
       // Comme dans le module Statistiques : badges à côté des noms, et un nom
       // touché ouvre la fiche du joueur.
       body: BadgeDisplayScope(
@@ -105,7 +105,7 @@ class _PlayerStatRankingPageState extends ConsumerState<PlayerStatRankingPage> {
               : Column(
                   children: [
                     const SizedBox(height: AppSpacing.contentGap),
-                    GrintaSecondaryTabs<StatisticsPeriod>(
+                    PfSecondaryTabs<StatisticsPeriod>(
                       segments: const [
                         ButtonSegment(
                           value: StatisticsPeriod.current,
@@ -147,7 +147,7 @@ class _PlayerStatRankingPageState extends ConsumerState<PlayerStatRankingPage> {
     return async.when(
       loading: () => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-        child: GrintaSkeleton.rows(itemCount: 7),
+        child: PfSkeleton.rows(itemCount: 7),
       ),
       error: (error, _) => _Message(
         title: 'Classement indisponible',
@@ -190,7 +190,7 @@ class _PlayerStatRankingPageState extends ConsumerState<PlayerStatRankingPage> {
         final showsMatches = stat != PlayerStat.matches;
         final columns = showsMatches ? 2 : 1;
 
-        final pinnedWidth = grintaTablePinnedWidthForNames(
+        final pinnedWidth = pfTablePinnedWidthForNames(
           context,
           entries.map((e) => capitalizePersonName(e.player.playerName)),
           trailingWidth: statisticsBadgeSize,
@@ -211,7 +211,7 @@ class _PlayerStatRankingPageState extends ConsumerState<PlayerStatRankingPage> {
             minWidth: pinnedWidth + columns * _columnWidth,
             pinnedHeader: const SizedBox.shrink(),
             scrollableHeader: Padding(
-              padding: grintaTableScrollableHeaderPadding,
+              padding: pfTableScrollableHeaderPadding,
               child: Row(
                 children: [
                   _HeaderCell(stat.columnLabel, active: true),
@@ -249,7 +249,7 @@ class _HeaderCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = grintaTableHeaderTextStyle(
+    final style = pfTableHeaderTextStyle(
       context,
       color: active ? AppTheme.accent : null,
     );
@@ -270,7 +270,7 @@ StickyTableRow _unrankedSeparator(BuildContext context, int minMatches) {
       padding: const EdgeInsets.fromLTRB(8, 10, 4, 10),
       child: Text(
         'Moins de $minMatches matchs',
-        style: grintaTableHeaderTextStyle(context, color: AppTheme.textFaint),
+        style: pfTableHeaderTextStyle(context, color: AppTheme.textFaint),
       ),
     ),
     scrollable: const SizedBox.shrink(),
@@ -285,7 +285,7 @@ StickyTableRow _row(
   required GlobalKey? highlightKey,
 }) {
   final player = entry.player;
-  final valueStyle = grintaTableCellTextStyle(context);
+  final valueStyle = pfTableCellTextStyle(context);
 
   Widget value(String text) => Expanded(
         child: Text(text, textAlign: TextAlign.center, style: valueStyle),
@@ -298,11 +298,11 @@ StickyTableRow _row(
       isGoalkeeper: player.isGoalkeeper,
     ),
     child: Padding(
-      padding: grintaTablePinnedRowPadding,
+      padding: pfTablePinnedRowPadding,
       child: Row(
         children: [
           if (entry.rank case final rank?)
-            GrintaTableRankCell(rank: rank)
+            PfTableRankCell(rank: rank)
           else
             const _UnrankedCell(),
           Expanded(
@@ -319,7 +319,7 @@ StickyTableRow _row(
   );
 
   Widget scrollable = Padding(
-    padding: grintaTableScrollableRowPadding,
+    padding: pfTableScrollableRowPadding,
     child: Row(
       children: [
         value(stat.display(player)),
@@ -356,13 +356,13 @@ class _UnrankedCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(right: grintaTableRankGap),
+      padding: const EdgeInsets.only(right: pfTableRankGap),
       child: SizedBox(
-        width: grintaTableRankWidth,
+        width: pfTableRankWidth,
         child: Text(
           '–',
           textAlign: TextAlign.end,
-          style: grintaTableRankTextStyle(context),
+          style: pfTableRankTextStyle(context),
         ),
       ),
     );
@@ -392,7 +392,7 @@ class _Message extends StatelessWidget {
       ),
       children: [
         Card(
-          child: GrintaEmptyState(
+          child: PfEmptyState(
             icon: Icons.bar_chart_rounded,
             title: title,
             message: message,

@@ -1,14 +1,14 @@
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/utils/match_window.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/widgets/grinta_empty_state.dart';
-import 'package:as_grinta/core/widgets/grinta_skeleton.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/matches/domain/match_model.dart';
-import 'package:as_grinta/features/matches/presentation/match_form_page.dart';
-import 'package:as_grinta/features/matches/presentation/matches_controller.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/admin_match_options_button.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/utils/match_window.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/widgets/pf_empty_state.dart';
+import 'package:petit_filet/core/widgets/pf_skeleton.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/matches/domain/match_model.dart';
+import 'package:petit_filet/features/matches/presentation/match_form_page.dart';
+import 'package:petit_filet/features/matches/presentation/matches_controller.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/admin_match_options_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -79,7 +79,7 @@ class _MatchesPageState extends ConsumerState<MatchesPage> {
     }
 
     return Scaffold(
-      appBar: GrintaAppBar(
+      appBar: PfAppBar(
         title: const Text('Calendrier'),
         actions: [
           if (isAdmin)
@@ -137,7 +137,7 @@ class _MatchesPageState extends ConsumerState<MatchesPage> {
                 ),
               const SizedBox(height: 16),
               if (state.isLoading)
-                GrintaSkeleton.list(itemCount: 4, itemHeight: 108)
+                PfSkeleton.list(itemCount: 4, itemHeight: 108)
               else if (state.error != null)
                 Card(
                   child: Padding(
@@ -147,7 +147,7 @@ class _MatchesPageState extends ConsumerState<MatchesPage> {
                 )
               else if (matches.isEmpty)
                 const Card(
-                  child: GrintaEmptyState(
+                  child: PfEmptyState(
                     icon: Icons.stadium_rounded,
                     title: 'Aucun match cette saison',
                     message: 'Les matchs de la saison apparaîtront ici dès '
@@ -400,10 +400,10 @@ class _MatchCard extends StatelessWidget {
 
   Color _resultColor() {
     if (!match.isFinished) return AppTheme.textFaint;
-    final grinta = match.grintaScore ?? 0;
+    final own = match.ownScore ?? 0;
     final adverse = match.opponentScore ?? 0;
-    if (grinta > adverse) return AppTheme.success;
-    if (grinta < adverse) return AppTheme.error;
+    if (own > adverse) return AppTheme.success;
+    if (own < adverse) return AppTheme.error;
     return AppTheme.reward;
   }
 
@@ -426,15 +426,15 @@ String adminMatchTitle(MatchModel match) {
   String block(String value) =>
       value.trim().replaceAll(RegExp(r'\s+'), '\u00A0');
   final opponent = block(match.opponentName ?? 'Adversaire');
-  final grinta = block(ClubIdentity.name);
+  final own = block(ClubIdentity.name);
   if (!match.isFinished) {
-    return match.isHome ? '$grinta – $opponent' : '$opponent – $grinta';
+    return match.isHome ? '$own – $opponent' : '$opponent – $own';
   }
-  final grintaScore = match.grintaScore ?? 0;
+  final ownScore = match.ownScore ?? 0;
   final opponentScore = match.opponentScore ?? 0;
-  final home = block('$grinta $grintaScore');
+  final home = block('$own $ownScore');
   final away = block('$opponentScore $opponent');
   final homeAway = block('$opponent $opponentScore');
-  final awayGrinta = block('$grintaScore $grinta');
-  return match.isHome ? '$home - $away' : '$homeAway - $awayGrinta';
+  final awayOwn = block('$ownScore $own');
+  return match.isHome ? '$home - $away' : '$homeAway - $awayOwn';
 }

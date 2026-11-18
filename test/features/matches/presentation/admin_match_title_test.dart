@@ -1,12 +1,12 @@
-import 'package:as_grinta/features/matches/domain/match_model.dart';
-import 'package:as_grinta/features/matches/presentation/matches_page.dart';
+import 'package:petit_filet/features/matches/domain/match_model.dart';
+import 'package:petit_filet/features/matches/presentation/matches_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 MatchModel _match({
   required String status,
   required bool isHome,
-  int? grinta,
+  int? own,
   int? opponent,
 }) =>
     MatchModel(
@@ -17,7 +17,7 @@ MatchModel _match({
       isHome: isHome,
       plannedDurationMinutes: 90,
       status: status,
-      grintaScore: grinta,
+      ownScore: own,
       opponentScore: opponent,
       opponentName: 'AS Pantin',
     );
@@ -25,7 +25,7 @@ MatchModel _match({
 void main() {
   test('un nom d’équipe et son score ne se séparent jamais', () {
     final title = adminMatchTitle(
-      _match(status: 'termine', isHome: false, grinta: 2, opponent: 2),
+      _match(status: 'termine', isHome: false, own: 2, opponent: 2),
     );
 
     expect(title, 'AS Pantin 2 - 2 AS Grinta');
@@ -42,7 +42,7 @@ void main() {
   testWidgets('sur une ligne trop courte, la coupure tombe sur le tiret',
       (tester) async {
     final title = adminMatchTitle(
-      _match(status: 'termine', isHome: false, grinta: 2, opponent: 2),
+      _match(status: 'termine', isHome: false, own: 2, opponent: 2),
     );
     final painter = TextPainter(
       text: TextSpan(text: title, style: const TextStyle(fontSize: 18)),

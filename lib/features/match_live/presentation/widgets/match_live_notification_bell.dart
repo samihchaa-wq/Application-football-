@@ -1,8 +1,8 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
-import 'package:as_grinta/features/match_live/data/match_live_notification_repository.dart';
-import 'package:as_grinta/features/preferences/data/push_subscriptions_repository.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
+import 'package:petit_filet/features/match_live/data/match_live_notification_repository.dart';
+import 'package:petit_filet/features/preferences/data/push_subscriptions_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

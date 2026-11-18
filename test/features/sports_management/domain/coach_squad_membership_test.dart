@@ -1,6 +1,6 @@
-import 'package:as_grinta/features/sports_management/domain/match_availability_board.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
-import 'package:as_grinta/features/sports_management/domain/sport_waitlist_models.dart';
+import 'package:petit_filet/features/sports_management/domain/match_availability_board.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/domain/sport_waitlist_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Le coach entre dans l'effectif du match dès qu'il se dit présent, mais il

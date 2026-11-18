@@ -94,7 +94,7 @@ class _LeaderboardCardState extends ConsumerState<_LeaderboardCard> {
         ? [for (var index = 0; index < sorted.length; index++) index + 1]
         : competitionRanks(sorted, _sortedColumnValue);
 
-    final style = grintaTableHeaderTextStyle(
+    final style = pfTableHeaderTextStyle(
       context,
       color: AppTheme.textSecondary,
     );
@@ -104,20 +104,20 @@ class _LeaderboardCardState extends ConsumerState<_LeaderboardCard> {
         ? nameWithBadgesMinimumSize
         : requestedBadgeSize;
     final pinnedWidth = inStatistics
-        ? grintaTablePinnedWidthForNames(
+        ? pfTablePinnedWidthForNames(
             context,
             sorted.map((entry) => capitalizePersonName(entry.name)),
             trailingWidth: effectiveBadgeSize,
             trailingGap: nameWithBadgesGap,
           )
-        : grintaTablePinnedWidth;
+        : pfTablePinnedWidth;
 
     return StickyHeaderTableCard(
       minWidth: 0,
       onRefresh: widget.onRefresh,
       pinnedWidth: pinnedWidth,
       pinnedHeader: Padding(
-        padding: grintaTablePinnedHeaderPadding,
+        padding: pfTablePinnedHeaderPadding,
         child: SortableHeaderCell(
           label: '',
           align: TextAlign.center,
@@ -128,7 +128,7 @@ class _LeaderboardCardState extends ConsumerState<_LeaderboardCard> {
         ),
       ),
       scrollableHeader: Padding(
-        padding: grintaTableScrollableHeaderPadding,
+        padding: pfTableScrollableHeaderPadding,
         child: Row(
           children: [
             SortableHeaderCell(
@@ -198,13 +198,13 @@ StickyTableRow _leaderboardRow(
   required bool isCurrentUser,
   double? badgeSize,
 }) {
-  final valueStyle = grintaTableCellTextStyle(context);
+  final valueStyle = pfTableCellTextStyle(context);
 
   Widget pinned = Padding(
-    padding: grintaTablePinnedRowPadding,
+    padding: pfTablePinnedRowPadding,
     child: Row(
       children: [
-        GrintaTableRankCell(rank: rank, color: AppTheme.textSecondary),
+        PfTableRankCell(rank: rank, color: AppTheme.textSecondary),
         Expanded(
           child: NameWithBadges(
             profileId: profileId,
@@ -226,7 +226,7 @@ StickyTableRow _leaderboardRow(
   }
 
   Widget scrollable = Padding(
-    padding: grintaTableScrollableRowPadding,
+    padding: pfTableScrollableRowPadding,
     child: Row(
       children: [
         Expanded(
@@ -287,7 +287,7 @@ class _LoadingCard extends StatelessWidget {
     return const Card(
       child: Padding(
         padding: EdgeInsets.all(28),
-        child: Center(child: GrintaProgressIndicator()),
+        child: Center(child: PfProgressIndicator()),
       ),
     );
   }
@@ -298,18 +298,18 @@ class _MessageCard extends StatelessWidget {
     required this.title,
     this.icon = Icons.scoreboard_rounded,
     this.message,
-    this.tone = GrintaEmptyTone.neutral,
+    this.tone = PfEmptyTone.neutral,
   });
 
   final String title;
   final IconData icon;
   final String? message;
-  final GrintaEmptyTone tone;
+  final PfEmptyTone tone;
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: GrintaEmptyState(
+      child: PfEmptyState(
         icon: icon,
         title: title,
         message: message,

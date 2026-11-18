@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/badges/presentation/badge_image_delivery.dart';
+import 'package:petit_filet/features/badges/presentation/badge_image_delivery.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

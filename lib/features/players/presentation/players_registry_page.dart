@@ -1,15 +1,15 @@
-import 'package:as_grinta/core/widgets/player_photo_mode_picker.dart';
-import 'package:as_grinta/core/storage/player_photo_mode.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/features/players/data/roster_repository.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/widgets/grinta_empty_state.dart';
-import 'package:as_grinta/core/widgets/photo_crop_preview.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:petit_filet/core/widgets/player_photo_mode_picker.dart';
+import 'package:petit_filet/core/storage/player_photo_mode.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/features/players/data/roster_repository.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/widgets/pf_empty_state.dart';
+import 'package:petit_filet/core/widgets/photo_crop_preview.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
 
 /// Effectif de la saison. Les membres du club y arrivent d'eux-mêmes quand
 /// leur compte est validé ; on n'ajoute ici à la main que les joueurs qui n'ont
@@ -22,14 +22,14 @@ class PlayersRegistryPage extends ConsumerWidget {
     final seasonAsync = ref.watch(openSeasonIdProvider);
 
     return Scaffold(
-      appBar: GrintaAppBar(title: const Text('Effectif')),
+      appBar: PfAppBar(title: const Text('Effectif')),
       body: seasonAsync.when(
-        loading: () => const Center(child: GrintaProgressIndicator()),
+        loading: () => const Center(child: PfProgressIndicator()),
         error: (error, _) => Center(child: Text(humanizeError(error))),
         data: (seasonId) {
           if (seasonId == null) {
             return const Center(
-              child: GrintaEmptyState(
+              child: PfEmptyState(
                 icon: Icons.calendar_month_rounded,
                 title: 'Aucune saison ouverte',
                 message: 'Crée une saison dans Administration pour définir '
@@ -54,7 +54,7 @@ class _RosterList extends ConsumerWidget {
     final rosterAsync = ref.watch(rosterProvider(seasonId));
 
     return rosterAsync.when(
-      loading: () => const Center(child: GrintaProgressIndicator()),
+      loading: () => const Center(child: PfProgressIndicator()),
       error: (error, _) => Center(child: Text(humanizeError(error))),
       data: (players) => RefreshIndicator(
         onRefresh: () async {
@@ -77,7 +77,7 @@ class _RosterList extends ConsumerWidget {
             const SizedBox(height: 12),
             if (players.isEmpty)
               const Card(
-                child: GrintaEmptyState(
+                child: PfEmptyState(
                   icon: Icons.groups_rounded,
                   title: 'Effectif vide',
                   compact: true,
@@ -411,7 +411,7 @@ Future<void> _showProfileLinkDialog(
                 ? const SizedBox(
                     width: 18,
                     height: 18,
-                    child: GrintaProgressIndicator(strokeWidth: 2),
+                    child: PfProgressIndicator(strokeWidth: 2),
                   )
                 : const Text('Enregistrer'),
           ),
@@ -579,7 +579,7 @@ Future<void> _showPlayerDialog(
                 ? const SizedBox(
                     width: 18,
                     height: 18,
-                    child: GrintaProgressIndicator(strokeWidth: 2),
+                    child: PfProgressIndicator(strokeWidth: 2),
                   )
                 : const Text('Enregistrer'),
           ),
@@ -708,7 +708,7 @@ class RosterPlayerMenu extends ConsumerWidget {
   }
 }
 
-/// Expose les actions d'origine depuis l'Administration reprise d'AS Grinta.
+/// Expose les actions d'origine depuis l'Administration reprise de l'application d'origine.
 /// Elles réutilisent les mêmes dialogues et contrôles du dépôt commercial.
 Future<void> showRosterPlayerDialog(
   BuildContext context,

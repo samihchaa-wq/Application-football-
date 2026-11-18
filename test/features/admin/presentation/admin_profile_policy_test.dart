@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/admin/data/admin_repository.dart';
-import 'package:as_grinta/features/admin/presentation/admin_profile_policy.dart';
+import 'package:petit_filet/features/admin/data/admin_repository.dart';
+import 'package:petit_filet/features/admin/presentation/admin_profile_policy.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -1,18 +1,18 @@
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/widgets/equal_height_column.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/widgets/grinta_empty_state.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/badges/data/badge_repository.dart';
-import 'package:as_grinta/features/badges/domain/badge_admin_access.dart';
-import 'package:as_grinta/features/badges/data/featured_badges_repository.dart';
-import 'package:as_grinta/features/badges/data/statistics_badge_emblems_provider.dart';
-import 'package:as_grinta/features/badges/presentation/badge_detail_sheet.dart';
-import 'package:as_grinta/features/badges/presentation/badge_emblem.dart';
-import 'package:as_grinta/features/badges/presentation/badge_emblem_body.dart';
-import 'package:as_grinta/features/badges/presentation/locked_badge_emblem.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/widgets/equal_height_column.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/widgets/pf_empty_state.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/badges/data/badge_repository.dart';
+import 'package:petit_filet/features/badges/domain/badge_admin_access.dart';
+import 'package:petit_filet/features/badges/data/featured_badges_repository.dart';
+import 'package:petit_filet/features/badges/data/statistics_badge_emblems_provider.dart';
+import 'package:petit_filet/features/badges/presentation/badge_detail_sheet.dart';
+import 'package:petit_filet/features/badges/presentation/badge_emblem.dart';
+import 'package:petit_filet/features/badges/presentation/badge_emblem_body.dart';
+import 'package:petit_filet/features/badges/presentation/locked_badge_emblem.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -52,7 +52,7 @@ class ArmoirePage extends ConsumerWidget {
     final hasBadgeAdminAccess = ref.watch(canManageBadgesProvider);
 
     return Scaffold(
-      appBar: GrintaAppBar(
+      appBar: PfAppBar(
         title: const Text('Armoire à badges'),
         actions: [
           if (hasBadgeAdminAccess)
@@ -71,12 +71,12 @@ class ArmoirePage extends ConsumerWidget {
           await ref.read(myArmoireProvider.future);
         },
         child: armoireAsync.when(
-          loading: () => const Center(child: GrintaProgressIndicator()),
+          loading: () => const Center(child: PfProgressIndicator()),
           error: (e, _) => ListView(
             padding: const EdgeInsets.all(16),
             children: [
               Card(
-                child: GrintaEmptyState(
+                child: PfEmptyState(
                   icon: Icons.error_outline_rounded,
                   title: 'Collection indisponible',
                   message: humanizeError(e),
@@ -94,7 +94,7 @@ class ArmoirePage extends ConsumerWidget {
                     armoire.inProgress.isEmpty &&
                     armoire.locked.isEmpty)
                   const Card(
-                    child: GrintaEmptyState(
+                    child: PfEmptyState(
                       icon: Icons.emoji_events_outlined,
                       title: 'Ta collection est vide',
                       message: 'Joue, pronostique et gagne des matchs pour '
@@ -605,7 +605,7 @@ class _InProgressTile extends StatelessWidget {
                         Expanded(
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(999),
-                            child: GrintaLinearProgressIndicator(
+                            child: PfLinearProgressIndicator(
                               value: badge.progress ?? 0,
                               minHeight: 6,
                               backgroundColor: AppTheme.surfaceHigh,

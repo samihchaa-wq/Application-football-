@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'package:as_grinta/core/club/match_kit_snapshot.dart';
+import 'package:petit_filet/core/club/match_kit_snapshot.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:as_grinta/core/club/club_kits.dart';
-import 'package:as_grinta/features/matches/domain/jersey_option.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_kit_scope.dart';
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:petit_filet/core/club/club_kits.dart';
+import 'package:petit_filet/features/matches/domain/jersey_option.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_kit_scope.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

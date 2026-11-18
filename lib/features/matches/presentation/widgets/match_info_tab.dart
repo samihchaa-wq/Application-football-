@@ -1,16 +1,16 @@
-import 'package:as_grinta/core/theme/app_spacing.dart';
-import 'package:as_grinta/core/utils/app_formats.dart';
-import 'package:as_grinta/core/widgets/match_fixture.dart';
-import 'package:as_grinta/features/club/data/club_repository.dart';
-import 'package:as_grinta/features/matches/data/match_info_repository.dart';
-import 'package:as_grinta/features/matches/domain/jersey_option.dart';
-import 'package:as_grinta/features/matches/presentation/match_encounter_route.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/kit_jersey.dart';
-import 'package:as_grinta/features/weather/presentation/match_weather_card.dart';
+import 'package:petit_filet/core/theme/app_spacing.dart';
+import 'package:petit_filet/core/utils/app_formats.dart';
+import 'package:petit_filet/core/widgets/match_fixture.dart';
+import 'package:petit_filet/features/club/data/club_repository.dart';
+import 'package:petit_filet/features/matches/data/match_info_repository.dart';
+import 'package:petit_filet/features/matches/domain/jersey_option.dart';
+import 'package:petit_filet/features/matches/presentation/match_encounter_route.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/kit_jersey.dart';
+import 'package:petit_filet/features/weather/presentation/match_weather_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
 
 /// Onglet « Info » d'une fiche de match : rendez-vous, maillot, météo et les
 /// dernières rencontres contre l'adversaire. Date, heure, type et adresse sont
@@ -24,7 +24,7 @@ class MatchInfoTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final infoAsync = ref.watch(matchDetailedInfoProvider(matchId));
     return infoAsync.when(
-      loading: () => const Center(child: GrintaProgressIndicator()),
+      loading: () => const Center(child: PfProgressIndicator()),
       error: (_, __) => const Card(
         child: Padding(
           padding: EdgeInsets.all(AppSpacing.cardPadding),
@@ -208,7 +208,7 @@ class _EncounterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = MatchFixture.resultColor(
-      encounter.grintaScore,
+      encounter.ownScore,
       encounter.opponentScore,
     );
     final route = matchEncounterRoute(

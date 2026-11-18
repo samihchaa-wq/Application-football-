@@ -1,6 +1,6 @@
-import 'package:as_grinta/features/auth/domain/auth_profile.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/badges/domain/badge_admin_access.dart';
+import 'package:petit_filet/features/auth/domain/auth_profile.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/badges/domain/badge_admin_access.dart';
 
 /// [sportsManagementEnabled] vaut `null` tant que les réglages du club
 /// chargent : une page sportive attend alors sur l'écran de chargement, avec

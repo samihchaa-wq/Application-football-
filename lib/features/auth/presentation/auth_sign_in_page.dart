@@ -1,8 +1,8 @@
-import 'package:as_grinta/core/widgets/grinta_auth_surface.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/core/widgets/grinta_status_banner.dart';
-import 'package:as_grinta/features/auth/data/account_email_repository.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/core/widgets/pf_auth_surface.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/core/widgets/pf_status_banner.dart';
+import 'package:petit_filet/features/auth/data/account_email_repository.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -56,7 +56,7 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
     final authState = ref.watch(authControllerProvider);
     final error = authState.error;
 
-    return GrintaAuthSurface(
+    return PfAuthSurface(
       subtitle: widget.managerAccess
           ? 'Accès réservé au gestionnaire Petit Filet.'
           : 'L’application de gestion sportive de ton équipe.',
@@ -64,10 +64,10 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (error != null && error.isNotEmpty) ...[
-            GrintaStatusBanner(
+            PfStatusBanner(
               title: signInErrorTitle(error),
               message: signInErrorDetail(error),
-              tone: GrintaStatusTone.error,
+              tone: PfStatusTone.error,
               compact: true,
             ),
             const SizedBox(height: 16),
@@ -120,7 +120,7 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
             icon: authState.isLoading
                 ? const SizedBox.square(
                     dimension: 18,
-                    child: GrintaProgressIndicator(strokeWidth: 2),
+                    child: PfProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.login_rounded),
             label: Text(authState.isLoading ? 'Connexion…' : 'Se connecter'),

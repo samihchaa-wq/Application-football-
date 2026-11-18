@@ -1,13 +1,13 @@
-import 'package:as_grinta/features/auth/data/auth_repository.dart';
-import 'package:as_grinta/features/auth/domain/auth_profile.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
-import 'package:as_grinta/features/matches/data/match_details_repository.dart';
-import 'package:as_grinta/features/matches/presentation/match_details_page.dart';
-import 'package:as_grinta/features/sports_management/data/match_availability_board_repository.dart';
-import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
-import 'package:as_grinta/features/sports_management/data/match_sport_report_repository.dart';
-import 'package:as_grinta/features/sports_management/domain/match_availability_board.dart';
+import 'package:petit_filet/features/auth/data/auth_repository.dart';
+import 'package:petit_filet/features/auth/domain/auth_profile.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
+import 'package:petit_filet/features/matches/data/match_details_repository.dart';
+import 'package:petit_filet/features/matches/presentation/match_details_page.dart';
+import 'package:petit_filet/features/sports_management/data/match_availability_board_repository.dart';
+import 'package:petit_filet/features/sports_management/data/match_composition_repository.dart';
+import 'package:petit_filet/features/sports_management/data/match_sport_report_repository.dart';
+import 'package:petit_filet/features/sports_management/domain/match_availability_board.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -27,7 +27,7 @@ MatchDetailsData _upcoming() => MatchDetailsData(
       address: null,
       matchType: 'championnat',
       championshipRound: 3,
-      scoreGrinta: null,
+      scoreOwn: null,
       scoreOpponent: null,
       oddsWin: null,
       oddsDraw: null,

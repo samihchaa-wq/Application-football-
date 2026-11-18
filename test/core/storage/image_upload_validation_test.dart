@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:as_grinta/core/storage/image_mime.dart';
+import 'package:petit_filet/core/storage/image_mime.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

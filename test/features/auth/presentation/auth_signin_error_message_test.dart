@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 

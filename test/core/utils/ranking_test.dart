@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/utils/ranking.dart';
+import 'package:petit_filet/core/utils/ranking.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

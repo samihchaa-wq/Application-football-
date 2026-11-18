@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:as_grinta/core/config/app_config.dart';
-import 'package:as_grinta/core/providers/supabase_provider.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
+import 'package:petit_filet/core/config/app_config.dart';
+import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

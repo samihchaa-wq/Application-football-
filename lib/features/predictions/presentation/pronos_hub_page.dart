@@ -1,27 +1,27 @@
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/theme/app_spacing.dart';
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/core/utils/name_validation.dart';
-import 'package:as_grinta/core/utils/ranking.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/widgets/grinta_empty_state.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/core/widgets/match_date_column.dart';
-import 'package:as_grinta/core/widgets/match_fixture.dart';
-import 'package:as_grinta/core/widgets/sticky_header_table.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/badges/presentation/badge_display_scope.dart';
-import 'package:as_grinta/features/badges/presentation/name_with_badges.dart';
-import 'package:as_grinta/features/matches/data/match_details_repository.dart';
-import 'package:as_grinta/features/matches/domain/match_model.dart';
-import 'package:as_grinta/features/matches/presentation/calendar_matches_view.dart';
-import 'package:as_grinta/features/matches/presentation/match_form_page.dart';
-import 'package:as_grinta/features/matches/presentation/matches_controller.dart';
-import 'package:as_grinta/features/players/presentation/player_card_link.dart';
-import 'package:as_grinta/features/predictions/data/leaderboard_repository.dart';
-import 'package:as_grinta/features/predictions/data/predictions_repository.dart';
-import 'package:as_grinta/features/predictions/presentation/widgets/inline_match_prediction_card.dart';
-import 'package:as_grinta/features/statistics/data/statistics_repository.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/theme/app_spacing.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/utils/name_validation.dart';
+import 'package:petit_filet/core/utils/ranking.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/widgets/pf_empty_state.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/core/widgets/match_date_column.dart';
+import 'package:petit_filet/core/widgets/match_fixture.dart';
+import 'package:petit_filet/core/widgets/sticky_header_table.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/badges/presentation/badge_display_scope.dart';
+import 'package:petit_filet/features/badges/presentation/name_with_badges.dart';
+import 'package:petit_filet/features/matches/data/match_details_repository.dart';
+import 'package:petit_filet/features/matches/domain/match_model.dart';
+import 'package:petit_filet/features/matches/presentation/calendar_matches_view.dart';
+import 'package:petit_filet/features/matches/presentation/match_form_page.dart';
+import 'package:petit_filet/features/matches/presentation/matches_controller.dart';
+import 'package:petit_filet/features/players/presentation/player_card_link.dart';
+import 'package:petit_filet/features/predictions/data/leaderboard_repository.dart';
+import 'package:petit_filet/features/predictions/data/predictions_repository.dart';
+import 'package:petit_filet/features/predictions/presentation/widgets/inline_match_prediction_card.dart';
+import 'package:petit_filet/features/statistics/data/statistics_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -80,12 +80,12 @@ class _PronosHubPageState extends ConsumerState<PronosHubPage> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: GrintaAppBar(
+      appBar: PfAppBar(
         title: Text(switch (_category) {
           _PronosCategory.matches => 'Calendrier',
           _PronosCategory.general => 'Classements',
         }),
-        actions: grintaHomeActions(context),
+        actions: pfHomeActions(context),
       ),
       body: Material(
         type: MaterialType.transparency,

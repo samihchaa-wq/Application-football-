@@ -215,7 +215,7 @@ class _JournalEventRow extends StatelessWidget {
         ),
     };
     final hasScore =
-        event.scoreAsGrintaAfter != null && event.scoreAdverseAfter != null;
+        event.scoreOwnAfter != null && event.scoreAdverseAfter != null;
     final canChooseScorer = canEditScorer &&
         ClubRules.enabled(ClubFeature.liveScorers) &&
         event.type == MatchLiveEventType.goalUs &&
@@ -367,7 +367,7 @@ class _JournalEventRow extends StatelessWidget {
                                   ),
                                   if (hasScore)
                                     Text(
-                                      '${event.scoreAsGrintaAfter}-'
+                                      '${event.scoreOwnAfter}-'
                                       '${event.scoreAdverseAfter}',
                                       textAlign: isOpponentGoal
                                           ? TextAlign.right

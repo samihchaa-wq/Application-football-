@@ -1,10 +1,10 @@
-import 'package:as_grinta/core/theme/app_theme.dart';
-import 'package:as_grinta/features/auth/data/auth_repository.dart';
-import 'package:as_grinta/features/auth/domain/auth_profile.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/platform/data/platform_repository.dart';
-import 'package:as_grinta/features/platform/domain/platform_snapshot.dart';
-import 'package:as_grinta/features/platform/presentation/platform_control_page.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/features/auth/data/auth_repository.dart';
+import 'package:petit_filet/features/auth/domain/auth_profile.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/platform/data/platform_repository.dart';
+import 'package:petit_filet/features/platform/domain/platform_snapshot.dart';
+import 'package:petit_filet/features/platform/presentation/platform_control_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -1,4 +1,4 @@
-/// Charte d'espacement commune à AS Grinta.
+/// Charte d'espacement commune à toute l'application.
 ///
 /// Principe : marges extérieures minimales pour préserver l'espace utile,
 /// avec des espacements internes compacts mais lisibles. Ces constantes sont

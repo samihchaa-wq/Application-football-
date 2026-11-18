@@ -1,4 +1,4 @@
-import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
+import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:flutter/material.dart';
 
 /// Briques d'affichage de l'effectif d'un match, partagées par la page de

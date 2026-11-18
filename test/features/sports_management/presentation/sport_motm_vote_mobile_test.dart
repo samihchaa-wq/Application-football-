@@ -1,6 +1,6 @@
-import 'package:as_grinta/features/sports_management/data/sport_motm_vote_repository.dart';
-import 'package:as_grinta/features/sports_management/domain/sport_motm_vote.dart';
-import 'package:as_grinta/features/sports_management/presentation/sport_motm_vote_page.dart';
+import 'package:petit_filet/features/sports_management/data/sport_motm_vote_repository.dart';
+import 'package:petit_filet/features/sports_management/domain/sport_motm_vote.dart';
+import 'package:petit_filet/features/sports_management/presentation/sport_motm_vote_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

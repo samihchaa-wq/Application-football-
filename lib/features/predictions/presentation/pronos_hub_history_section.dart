@@ -135,7 +135,7 @@ class _CalendarSectionState extends ConsumerState<_CalendarSection> {
                   title: 'Historique indisponible',
                   icon: Icons.wifi_off_rounded,
                   message: state.error!,
-                  tone: GrintaEmptyTone.alert,
+                  tone: PfEmptyTone.alert,
                 ),
               ),
             )
@@ -190,12 +190,12 @@ class _CalendarMatchCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final opponent = match.opponentName ?? 'Adversaire';
-    final grintaScore = match.grintaScore ?? 0;
+    final ownScore = match.ownScore ?? 0;
     final opponentScore = match.opponentScore ?? 0;
     final homeName = match.isHome ? ClubIdentity.name : opponent;
     final awayName = match.isHome ? opponent : ClubIdentity.name;
-    final homeScore = match.isHome ? grintaScore : opponentScore;
-    final awayScore = match.isHome ? opponentScore : grintaScore;
+    final homeScore = match.isHome ? ownScore : opponentScore;
+    final awayScore = match.isHome ? opponentScore : ownScore;
 
     final Color background;
     final Color outline;
@@ -238,7 +238,7 @@ class _CalendarMatchCard extends ConsumerWidget {
                   child: MatchFixture(
                     homeName: homeName,
                     awayName: awayName,
-                    grintaIsHome: match.isHome,
+                    ownIsHome: match.isHome,
                     homeScore: homeScore,
                     awayScore: awayScore,
                     finished: match.isFinished,

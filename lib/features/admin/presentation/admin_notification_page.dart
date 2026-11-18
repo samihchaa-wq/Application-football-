@@ -1,7 +1,7 @@
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/admin/data/admin_repository.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/admin/data/admin_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -124,9 +124,9 @@ class _AdminNotificationPageState extends ConsumerState<AdminNotificationPage> {
     final dashboard = ref.watch(adminDashboardProvider);
 
     return Scaffold(
-      appBar: GrintaAppBar(title: const Text('Notification')),
+      appBar: PfAppBar(title: const Text('Notification')),
       body: dashboard.when(
-        loading: () => const Center(child: GrintaProgressIndicator()),
+        loading: () => const Center(child: PfProgressIndicator()),
         error: (error, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -262,7 +262,7 @@ class _AdminNotificationPageState extends ConsumerState<AdminNotificationPage> {
                       ? const SizedBox(
                           width: 18,
                           height: 18,
-                          child: GrintaProgressIndicator(strokeWidth: 2),
+                          child: PfProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.send_rounded),
                   label: const Text('Envoyer'),

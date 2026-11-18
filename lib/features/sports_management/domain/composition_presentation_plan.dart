@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' show Offset;
 
-import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
+import 'package:petit_filet/features/sports_management/domain/football_formation.dart';
 
 /// Une personne présentée dans la vidéo de la composition : titulaire,
 /// remplaçant ou coach.

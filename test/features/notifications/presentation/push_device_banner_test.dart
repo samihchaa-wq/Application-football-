@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/notifications/presentation/push_device_banner.dart';
-import 'package:as_grinta/features/preferences/data/push_subscriptions_repository.dart';
+import 'package:petit_filet/features/notifications/presentation/push_device_banner.dart';
+import 'package:petit_filet/features/preferences/data/push_subscriptions_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

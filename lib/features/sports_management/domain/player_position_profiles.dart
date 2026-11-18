@@ -20,12 +20,6 @@ const int kPositionProfilesReferenceSeason = 2025;
 /// la moitié.
 const double kPositionProfilesHalfLifeSeasons = 2.0;
 
-/// Dernière composition couverte par l'archive.
-///
-/// Tout ce qui précède cette date est déjà compté ici : reprendre ces
-/// matchs depuis la base les compterait deux fois.
-final DateTime kPositionProfilesCoverageEnd = DateTime.utc(2026, 5, 21);
-
 /// Un poste occupé par un joueur, et le poids de ses passages à ce poste.
 class PlayerPositionSample {
   const PlayerPositionSample(this.slotLabel, this.weight);

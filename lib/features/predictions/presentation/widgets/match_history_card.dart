@@ -1,7 +1,7 @@
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/theme/calendar_card_palette.dart';
-import 'package:as_grinta/core/widgets/calendar_scoreline.dart';
-import 'package:as_grinta/features/matches/domain/match_model.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/theme/calendar_card_palette.dart';
+import 'package:petit_filet/core/widgets/calendar_scoreline.dart';
+import 'package:petit_filet/features/matches/domain/match_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -21,8 +21,8 @@ class MatchHistoryCard extends ConsumerWidget {
     final opponent = match.opponentName ?? 'Adversaire';
     final homeName = match.isHome ? ClubIdentity.name : opponent;
     final awayName = match.isHome ? opponent : ClubIdentity.name;
-    final homeScore = match.isHome ? match.grintaScore : match.opponentScore;
-    final awayScore = match.isHome ? match.opponentScore : match.grintaScore;
+    final homeScore = match.isHome ? match.ownScore : match.opponentScore;
+    final awayScore = match.isHome ? match.opponentScore : match.ownScore;
     final address = match.address?.trim();
     final surface = match.isCancelled
         ? CalendarCardPalette.cancelledSurface
@@ -32,12 +32,12 @@ class MatchHistoryCard extends ConsumerWidget {
         : CalendarCardPalette.matchBorder(match.matchType);
     final fixture = match.isInternal
         ? const CalendarCenteredTitle('Match entre nous')
-        // Scores colorés selon le résultat d'AS Grinta : vert victoire,
+        // Scores colorés selon le résultat de l'équipe du club : vert victoire,
         // orange nul, rouge défaite.
         : CalendarScoreline(
             homeName: homeName,
             awayName: awayName,
-            grintaIsHome: match.isHome,
+            ownIsHome: match.isHome,
             homeScore: homeScore,
             awayScore: awayScore,
             finished: match.isFinished,

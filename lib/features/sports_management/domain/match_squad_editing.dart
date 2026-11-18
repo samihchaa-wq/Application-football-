@@ -1,8 +1,8 @@
 import 'dart:ui' show Offset;
 
-import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
-import 'package:as_grinta/features/sports_management/domain/formation_assignment.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/features/sports_management/domain/football_formation.dart';
+import 'package:petit_filet/features/sports_management/domain/formation_assignment.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
 
 /// Règles de manipulation d'un effectif sur le terrain et le banc.
 ///

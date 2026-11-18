@@ -1,25 +1,25 @@
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/utils/match_window.dart';
-import 'package:as_grinta/core/widgets/grinta_app_bar.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/feature_flags/presentation/feature_flags_controller.dart';
-import 'package:as_grinta/features/matches/data/club_events_repository.dart';
-import 'package:as_grinta/features/matches/data/matches_repository.dart';
-import 'package:as_grinta/features/matches/data/scheduled_match_creation_repository.dart';
-import 'package:as_grinta/features/matches/domain/championship_round.dart';
-import 'package:as_grinta/features/matches/domain/club_event.dart';
-import 'package:as_grinta/features/matches/domain/convocation_launch.dart';
-import 'package:as_grinta/features/matches/domain/jersey_option.dart';
-import 'package:as_grinta/features/matches/domain/match_meeting.dart';
-import 'package:as_grinta/features/matches/domain/match_model.dart';
-import 'package:as_grinta/features/matches/presentation/matches_controller.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/championship_round_tile.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/convocation_launch_picker.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/jersey_option_tile.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/match_form_section.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/match_meeting_time_picker.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/match_wheel_picker.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/utils/match_window.dart';
+import 'package:petit_filet/core/widgets/pf_app_bar.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
+import 'package:petit_filet/features/matches/data/club_events_repository.dart';
+import 'package:petit_filet/features/matches/data/matches_repository.dart';
+import 'package:petit_filet/features/matches/data/scheduled_match_creation_repository.dart';
+import 'package:petit_filet/features/matches/domain/championship_round.dart';
+import 'package:petit_filet/features/matches/domain/club_event.dart';
+import 'package:petit_filet/features/matches/domain/convocation_launch.dart';
+import 'package:petit_filet/features/matches/domain/jersey_option.dart';
+import 'package:petit_filet/features/matches/domain/match_meeting.dart';
+import 'package:petit_filet/features/matches/domain/match_model.dart';
+import 'package:petit_filet/features/matches/presentation/matches_controller.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/championship_round_tile.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/convocation_launch_picker.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/jersey_option_tile.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/match_form_section.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/match_meeting_time_picker.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/match_wheel_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -222,7 +222,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
     final busy = _saving || state.isLoading;
 
     return Scaffold(
-      appBar: GrintaAppBar(
+      appBar: PfAppBar(
         title: Text(widget.event == null ? 'Ajouter' : 'Modifier l’événement'),
         actions: [
           if (widget.event != null && isAdmin)
@@ -292,7 +292,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
                   ? const SizedBox(
                       width: 18,
                       height: 18,
-                      child: GrintaProgressIndicator(strokeWidth: 2),
+                      child: PfProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.save_outlined),
               label: Text(widget.event == null ? 'Ajouter' : 'Enregistrer'),

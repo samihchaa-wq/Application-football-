@@ -1,5 +1,5 @@
-import 'package:as_grinta/core/club/club_rules.dart';
-import 'package:as_grinta/features/predictions/domain/prediction_scoring.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
+import 'package:petit_filet/features/predictions/domain/prediction_scoring.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

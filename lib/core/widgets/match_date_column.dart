@@ -1,4 +1,4 @@
-import 'package:as_grinta/core/utils/app_formats.dart';
+import 'package:petit_filet/core/utils/app_formats.dart';
 import 'package:flutter/material.dart';
 
 /// Colonne date/heure historique, conservée pour les écrans qui en auraient

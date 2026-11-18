@@ -1,14 +1,14 @@
-import 'package:as_grinta/core/club/club_identity.dart';
-import 'package:as_grinta/core/utils/app_errors.dart';
-import 'package:as_grinta/core/widgets/grinta_loader.dart';
-import 'package:as_grinta/core/widgets/match_detail_header_card.dart';
-import 'package:as_grinta/core/widgets/match_sheet_top_row.dart';
-import 'package:as_grinta/features/auth/presentation/auth_state.dart';
-import 'package:as_grinta/features/matches/data/calendar_history_repository.dart';
-import 'package:as_grinta/features/matches/data/history_entry_repository.dart';
-import 'package:as_grinta/features/matches/data/historical_match_detail_repository.dart';
-import 'package:as_grinta/features/matches/presentation/widgets/completed_match_composition_card.dart';
-import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/core/widgets/match_detail_header_card.dart';
+import 'package:petit_filet/core/widgets/match_sheet_top_row.dart';
+import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/matches/data/calendar_history_repository.dart';
+import 'package:petit_filet/features/matches/data/history_entry_repository.dart';
+import 'package:petit_filet/features/matches/data/historical_match_detail_repository.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/completed_match_composition_card.dart';
+import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -52,7 +52,7 @@ class HistoricalMatchDetailPage extends ConsumerWidget {
               detailAsync.when(
                 loading: () => const Padding(
                   padding: EdgeInsets.only(top: 40),
-                  child: Center(child: GrintaProgressIndicator()),
+                  child: Center(child: PfProgressIndicator()),
                 ),
                 error: (error, _) => Padding(
                   padding: const EdgeInsets.only(top: 16),
@@ -103,7 +103,7 @@ class _HistoricalMatchHeaderSection extends ConsumerWidget {
     return allAsync.when(
       loading: () => const Padding(
         padding: EdgeInsets.only(top: 40),
-        child: Center(child: GrintaProgressIndicator()),
+        child: Center(child: PfProgressIndicator()),
       ),
       error: (error, _) => Card(
         child: Padding(
@@ -132,9 +132,9 @@ class _HistoricalMatchHeaderSection extends ConsumerWidget {
         MatchDetailHeaderCard(
           homeName: match.isHome ? ClubIdentity.name : match.opponentName,
           awayName: match.isHome ? match.opponentName : ClubIdentity.name,
-          grintaIsHome: match.isHome,
-          homeScore: match.isHome ? match.grintaScore : match.opponentScore,
-          awayScore: match.isHome ? match.opponentScore : match.grintaScore,
+          ownIsHome: match.isHome,
+          homeScore: match.isHome ? match.ownScore : match.opponentScore,
+          awayScore: match.isHome ? match.opponentScore : match.ownScore,
           finished: true,
           kickoffAt: match.date,
           showTime: match.hasTime,

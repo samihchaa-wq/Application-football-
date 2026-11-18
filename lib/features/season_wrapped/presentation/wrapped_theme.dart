@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:as_grinta/core/theme/app_theme.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 /// Le motif de fond d'un écran. Il occupe la surface que le contenu laisse

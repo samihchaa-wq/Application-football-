@@ -1,5 +1,5 @@
-import 'package:as_grinta/features/matches/domain/match_deletion_window.dart';
-import 'package:as_grinta/features/matches/domain/match_model.dart';
+import 'package:petit_filet/features/matches/domain/match_deletion_window.dart';
+import 'package:petit_filet/features/matches/domain/match_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 MatchModel _matchAt(DateTime kickoffAt) {
@@ -11,7 +11,7 @@ MatchModel _matchAt(DateTime kickoffAt) {
     isHome: true,
     plannedDurationMinutes: 90,
     status: 'a_venir',
-    grintaScore: null,
+    ownScore: null,
     opponentScore: null,
     createdAt: DateTime.utc(2026, 8, 1),
   );
