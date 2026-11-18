@@ -151,7 +151,7 @@ class _PaperTeamColumn extends StatelessWidget {
               textCapitalization: TextCapitalization.sentences,
               textInputAction: TextInputAction.done,
               decoration: InputDecoration(
-                hintText: 'Équipe $teamNo',
+                labelText: 'Équipe $teamNo',
                 counterText: '',
                 isDense: true,
               ),
@@ -427,7 +427,7 @@ class _InternalTeamCard extends StatelessWidget {
                           maxLength: 40,
                           textCapitalization: TextCapitalization.sentences,
                           decoration: InputDecoration(
-                            hintText: 'Équipe $teamNo',
+                            labelText: 'Équipe $teamNo',
                             counterText: '',
                             isDense: true,
                           ),
