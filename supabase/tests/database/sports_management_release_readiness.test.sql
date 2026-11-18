@@ -4,7 +4,6 @@ begin;
 -- 20261125000000 (l'appli ne les appelle plus). Ce test exerce encore leur
 -- logique interne : le droit est rendu le temps du test, annulé au rollback.
 grant execute on function public.admin_close_match_motm_vote_early(uuid,text) to authenticated;
-grant execute on function public.admin_finalize_match_sport_postgame(uuid,integer,integer,jsonb,text) to authenticated;
 grant execute on function public.admin_get_match_motm_dashboard(uuid) to authenticated;
 grant execute on function public.admin_get_match_sport_statistics_integrity(uuid) to authenticated;
 grant execute on function public.admin_list_match_motm_votes() to authenticated;

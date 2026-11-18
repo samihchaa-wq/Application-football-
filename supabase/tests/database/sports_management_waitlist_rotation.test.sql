@@ -4,7 +4,6 @@ begin;
 -- 20261125000000 (l'appli ne les appelle plus). Ce test exerce encore leur
 -- logique interne : le droit est rendu le temps du test, annulé au rollback.
 grant execute on function public.admin_finalize_match_waitlist_turns(uuid) to authenticated;
-grant execute on function public.admin_publish_match_convocations(uuid,text) to authenticated;
 grant execute on function public.admin_recalculate_sport_waitlist(uuid) to authenticated;
 grant execute on function public.admin_recompute_match_convocations(uuid,boolean) to authenticated;
 grant execute on function public.admin_reorder_sport_waitlist(uuid,uuid[],text) to authenticated;

@@ -2,7 +2,7 @@
 -- n'appelle plus.
 --
 -- Pourquoi : chaque fonction appelable par un compte connecté est une porte à
--- surveiller. Ces 45 fonctions sont des versions remplacées (v1/v2 des
+-- surveiller. Ces 41 fonctions sont des versions remplacées (v1/v2 des
 -- créations de match, ancienne création avec cotes, ancien pronostic avec ×2,
 -- etc.) ou des outils jamais branchés à l'interface. Elles vérifient toutes
 -- leur appelant, mais elles restent une surface d'attaque inutile.
@@ -24,10 +24,14 @@
 --     d'accès), is_valid_person_name (appelée par un déclencheur qui tourne
 --     sous l'identité de l'appelant), accept_terms (parcours légal) et
 --     get_match_live_timeline (fait partie du contrat public du Live,
---     vérifié par live_private_boundary.test.sql).
---   * pour les deux fonctions à plusieurs versions, seule la version
---     inutilisée est visée : save_match_prediction à 4 arguments (×2 retiré)
---     et admin_save_match_composition sans version attendue.
+--     vérifié par live_private_boundary.test.sql), platform_update_club
+--     (paiement hors ligne de l'éditeur) et les quatre fonctions dont se
+--     sert le script du club de démonstration : admin_create_match_complete
+--     à 13 arguments, admin_publish_match_convocations,
+--     admin_finalize_match_sport_postgame et admin_save_match_composition
+--     à 5 arguments.
+--   * pour save_match_prediction, seule la version à 4 arguments (×2 retiré)
+--     est visée ; la version à 3 arguments reste ouverte.
 --
 -- Retour arrière : `grant execute on function … to authenticated;` sur la
 -- signature concernée.
@@ -37,15 +41,12 @@
 
 revoke execute on function public.admin_close_match_motm_vote_early(uuid,text) from authenticated;
 revoke execute on function public.admin_configure_match_sport_workflow(uuid,integer) from authenticated;
-revoke execute on function public.admin_create_match_complete(uuid,uuid,date,time without time zone,text,numeric,numeric,numeric,integer,text,boolean,text,text) from authenticated;
 revoke execute on function public.admin_create_match_complete_v2(uuid,uuid,date,time without time zone,text,numeric,numeric,numeric,integer,text,boolean,text,text,text,timestamp with time zone) from authenticated;
-revoke execute on function public.admin_finalize_match_sport_postgame(uuid,integer,integer,jsonb,text) from authenticated;
 revoke execute on function public.admin_finalize_match_waitlist_turns(uuid) from authenticated;
 revoke execute on function public.admin_get_internal_composition(uuid) from authenticated;
 revoke execute on function public.admin_get_match_motm_dashboard(uuid) from authenticated;
 revoke execute on function public.admin_get_match_sport_statistics_integrity(uuid) from authenticated;
 revoke execute on function public.admin_list_match_motm_votes() from authenticated;
-revoke execute on function public.admin_publish_match_convocations(uuid,text) from authenticated;
 revoke execute on function public.admin_recalculate_sport_waitlist(uuid) from authenticated;
 revoke execute on function public.admin_recent_client_incidents(integer) from authenticated;
 revoke execute on function public.admin_recompute_match_convocations(uuid,boolean) from authenticated;
@@ -54,7 +55,6 @@ revoke execute on function public.admin_require_password_change(uuid) from authe
 revoke execute on function public.admin_restart_match_motm_vote(uuid,text) from authenticated;
 revoke execute on function public.admin_save_internal_composition(uuid,text,text,jsonb) from authenticated;
 revoke execute on function public.admin_save_internal_composition_v3(uuid,text,text,text,text,text,text,jsonb) from authenticated;
-revoke execute on function public.admin_save_match_composition(uuid,text,jsonb,boolean,text) from authenticated;
 revoke execute on function public.admin_save_match_effectif(uuid,integer,jsonb,text) from authenticated;
 revoke execute on function public.admin_set_match_address(uuid,text,boolean) from authenticated;
 revoke execute on function public.admin_set_match_convocation(uuid,uuid,text,boolean,text) from authenticated;
