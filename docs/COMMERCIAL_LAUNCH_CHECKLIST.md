@@ -78,12 +78,16 @@ Créer deux clubs A et B avec administrateurs et joueurs distincts. Vérifier :
   **champs à compléter**. Voir `docs/legal/README.md`.
 - Modèle économique **décidé le 18/11/2026 : forfait de 79 € par club et
   par an**, quel que soit le nombre de joueurs (migration
-  `20261124000000_forfait_annuel_club.sql`, conditions d'abonnement en
+  `20261124010000_forfait_annuel_club.sql`, conditions d'abonnement en
   version `2026-11-18`).
-- Paiement **décidé le 18/11/2026 : hors ligne** (virement, chèque, lien de
-  paiement Stripe sans intégration). L'éditeur note chaque paiement dans le
-  poste de contrôle ; les impayés sont suspendus automatiquement 15 jours
-  après l'échéance. Intégration Stripe complète reportée (20 à 30 clubs).
+- Paiement **hors ligne** retenu le 18/11/2026 (virement, chèque, espèces) :
+  l'éditeur note chaque paiement reçu depuis la fiche équipe du poste de
+  contrôle, ce qui ouvre une année d'abonnement. Un club impayé est suspendu
+  automatiquement **15 jours après l'échéance** (tâche de nuit
+  `suspend-unpaid-clubs`) et rouvert dès qu'un paiement est noté. Migration
+  `20261124020000_paiement_hors_ligne_et_blocage_impayes.sql`. Le code Stripe
+  n'est pas opérationnel. Reste à fournir aux clubs un moyen de contact et
+  des coordonnées de paiement (l'appli dit seulement « contacte-nous »).
 - Choisir le nom définitif du produit ; des noms techniques historiques
   `as_grinta` peuvent rester dans les sources sans être visibles, mais les
   libellés montrés aux clubs doivent être neutres.

@@ -1,5 +1,10 @@
 begin;
 
+-- Ancienne(s) RPC retirée(s) aux comptes connectés par la migration
+-- 20261125000000 (l'appli ne les appelle plus). Ce test exerce encore leur
+-- logique interne : le droit est rendu le temps du test, annulé au rollback.
+grant execute on function public.admin_recent_client_incidents(integer) to authenticated;
+
 set local search_path = public, extensions, pg_catalog;
 select no_plan();
 
@@ -377,11 +382,9 @@ select is(
         'platform_list_clubs()',
         'platform_update_club(uuid,text,text,timestamp with time zone,timestamp with time zone,integer,integer,bigint,text)',
         'platform_health()',
-        'platform_record_payment(uuid)',
-        'platform_extend_trial(uuid,integer)',
+        'platform_record_offline_payment(uuid,integer,text,date,text)',
+        'platform_club_billing(uuid)',
         'private.is_platform_operator()',
-        -- Blocage nocturne des impayés : tous les clubs, jamais appelable par un compte.
-        'private.suspend_unpaid_clubs(timestamp with time zone)',
         -- Trigger interne sans argument : émet uniquement une révision pour
         -- la ligne déjà autorisée, y compris lors d'une opération éditeur.
         'private.signal_club_configuration_change()',

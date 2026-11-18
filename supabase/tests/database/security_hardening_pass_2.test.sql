@@ -70,28 +70,43 @@ select ok(
 );
 
 select ok(
-  has_function_privilege(
+  not has_function_privilege(
     'authenticated',
     'public.finalize_match_postgame_with_lineup(uuid,integer,jsonb,uuid,integer,uuid[],uuid)',
     'EXECUTE'
+  )
+  and has_function_privilege(
+    'service_role',
+    'public.finalize_match_postgame_with_lineup(uuid,integer,jsonb,uuid,integer,uuid[],uuid)',
+    'EXECUTE'
   ),
-  'la finalisation atomique reste disponible aux administrateurs connectés'
+  'ancienne RPC remplacée : retirée aux comptes connectés, gardée pour le service (20261125000000)'
 );
 select ok(
-  has_function_privilege(
+  not has_function_privilege(
     'authenticated',
     'public.create_match_with_odds(uuid,uuid,date,time without time zone,text,numeric,numeric,numeric)',
     'EXECUTE'
+  )
+  and has_function_privilege(
+    'service_role',
+    'public.create_match_with_odds(uuid,uuid,date,time without time zone,text,numeric,numeric,numeric)',
+    'EXECUTE'
   ),
-  'la création atomique match et cotes reste disponible'
+  'ancienne RPC remplacée : retirée aux comptes connectés, gardée pour le service (20261125000000)'
 );
 select ok(
-  has_function_privilege(
+  not has_function_privilege(
     'authenticated',
     'public.update_match_with_odds(uuid,uuid,uuid,date,time without time zone,text,text,numeric,numeric,numeric)',
     'EXECUTE'
+  )
+  and has_function_privilege(
+    'service_role',
+    'public.update_match_with_odds(uuid,uuid,uuid,date,time without time zone,text,text,numeric,numeric,numeric)',
+    'EXECUTE'
   ),
-  'la modification atomique match et cotes reste disponible'
+  'ancienne RPC remplacée : retirée aux comptes connectés, gardée pour le service (20261125000000)'
 );
 
 select is(

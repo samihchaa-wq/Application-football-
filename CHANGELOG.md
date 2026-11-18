@@ -9,18 +9,16 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 - inscription : l'adresse e-mail est obligatoire pour créer un club
   (facultative pour rejoindre un club). Elle est enregistrée en attente de
   confirmation même tant que l'envoi d'e-mails n'est pas configuré ;
-- encaissement : dans le poste de contrôle, bouton « Paiement reçu » (un an
-  d'abonnement, paiement journalisé) et « Prolonger l'essai de 30 jours ».
-  Chaque nuit, un club qui n'a pas payé 15 jours après la fin de son essai
-  ou de sa période payée est suspendu (données conservées) ; noter le
-  paiement le rouvre. Une suspension décidée à la main n'est jamais levée par
-  un paiement. L'administrateur du club voit la date de coupure ;
-- poste de contrôle : les équipes en essai s'affichaient « Abonnement non
-  renseigné » ;
 - abonnement : forfait de 79 € par club et par an, quel que soit le nombre
   de joueurs (au lieu de 10 € par joueur). Tous les clubs existants (clubs
   de test uniquement) passent au forfait.
   Conditions d'abonnement mises à jour (version 2026-11-18) ;
+- paiement hors ligne : depuis la fiche d'une équipe, le poste de contrôle
+  note un paiement reçu (virement, chèque, espèces) et ouvre une année
+  d'abonnement. Un club impayé 15 jours après la fin de son essai ou de son
+  année est suspendu automatiquement, sans perte de données, et rouvert dès
+  que son paiement est noté. L'administrateur du club voit la date de
+  suspension prévue et la date de fin de son abonnement ;
 - réglages du club : chaque fonctionnalité a maintenant ses sous-réglages,
   rangés sous elle dans « Réglages du club ». Douze notifications se coupent
   une par une pour tout le club (disponibilités, relances, convocation,
@@ -475,6 +473,12 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Maintenance
 
+- club de démonstration pour les prospects : `supabase/demo/club_demo.sql`
+  crée ou remet à zéro « FC Démo » (19 comptes dont `demoadmin` et
+  `demojoueur`, une saison terminée, une saison en cours, un match
+  dans 3 jours), notifications coupées et abonnement non facturé. Rejoué deux
+  fois par la CI (`demo_club_script.test.sql`). Jamais lancé sur la base en
+  ligne sans accord ;
 - rangement du dépôt, sans changement pour les joueurs : tests classés
   selon l'arborescence du code (un contrôle l'impose désormais), quatre
   gros écrans découpés, outil d'extraction de l'historique SportEasy

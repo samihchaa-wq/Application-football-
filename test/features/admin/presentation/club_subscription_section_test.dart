@@ -22,42 +22,83 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  ClubSubscription subscription(
-    ClubSubscriptionState state, {
-    DateTime? accessEndsAt,
+  ClubSubscription subscription({
+    required ClubSubscriptionState state,
+    DateTime? periodEnd,
+    DateTime? suspensionOn,
   }) =>
       ClubSubscription(
         state: state,
         trialEndsAt: null,
         trialDaysLeft: 0,
-        currentPeriodEnd: null,
-        accessEndsAt: accessEndsAt,
-        billablePlayers: 18,
+        currentPeriodEnd: periodEnd,
+        billablePlayers: 20,
         pricePerPlayerCents: 0,
         basePriceCents: 7900,
         yearlyAmountCents: 7900,
+        suspensionOn: suspensionOn,
       );
 
-  testWidgets('essai fini : l’admin voit la date de coupure', (tester) async {
+  testWidgets('essai terminé : l’admin voit la date de suspension', (
+    tester,
+  ) async {
     await pump(
       tester,
       subscription(
-        ClubSubscriptionState.toPay,
-        accessEndsAt: DateTime(2026, 12, 26, 10),
+        state: ClubSubscriptionState.toPay,
+        suspensionOn: DateTime(2026, 12, 3, 12),
       ),
     );
     expect(find.text('Essai gratuit terminé'), findsOneWidget);
     expect(
-      find.textContaining('l’accès du club sera coupé le 26/12/2026'),
+      find.text(
+        'Sans paiement, l’accès du club sera suspendu à partir du '
+        '03/12/2026. Les données sont conservées.',
+      ),
       findsOneWidget,
     );
-    expect(find.textContaining('garde l’accès pour l’instant'), findsNothing);
   });
 
-  testWidgets('abonnement actif : aucun avertissement', (tester) async {
-    await pump(tester, subscription(ClubSubscriptionState.active));
-    expect(find.text('Abonnement actif'), findsOneWidget);
-    expect(find.textContaining('sera coupé'), findsNothing);
-    expect(find.text('Total annuel : 79 €'), findsOneWidget);
+  testWidgets('abonnement payé loin de l’échéance : aucune alerte', (
+    tester,
+  ) async {
+    final end = DateTime.now().add(const Duration(days: 200));
+    await pump(
+      tester,
+      subscription(
+        state: ClubSubscriptionState.active,
+        periodEnd: end,
+        suspensionOn: end.add(const Duration(days: 15)),
+      ),
+    );
+    expect(find.textContaining('Payé jusqu’au'), findsOneWidget);
+    expect(
+      find.byKey(const Key('club-subscription-suspension-warning')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('échéance proche : rappel de renouvellement et de suspension', (
+    tester,
+  ) async {
+    final end = DateTime.now().add(const Duration(days: 10));
+    await pump(
+      tester,
+      subscription(
+        state: ClubSubscriptionState.active,
+        periodEnd: end,
+        suspensionOn: end.add(const Duration(days: 15)),
+      ),
+    );
+    expect(
+      find.text(
+        'L’abonnement arrive à échéance. Contacte-nous pour le renouveler.',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('club-subscription-suspension-warning')),
+      findsOneWidget,
+    );
   });
 }

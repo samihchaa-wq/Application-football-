@@ -20,7 +20,6 @@ void main() {
       'state': 'to_pay',
       'trial_ends_at': '2026-12-11T10:00:00Z',
       'trial_days_left': 0,
-      'access_ends_at': '2026-12-26T10:00:00Z',
       'billable_players': 18,
       'price_per_player_cents': 1000,
       'base_price_cents': 5000,
@@ -31,7 +30,6 @@ void main() {
     expect(subscription.billablePlayers, 18);
     expect(subscription.yearlyAmountCents, 23000);
     expect(subscription.trialEndsAt, isNotNull);
-    expect(subscription.accessEndsAt?.toUtc(), DateTime.utc(2026, 12, 26, 10));
   });
 
   test('un état inconnu est traité comme un essai', () {

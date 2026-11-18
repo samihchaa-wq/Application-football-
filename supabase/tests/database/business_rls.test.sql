@@ -1,5 +1,15 @@
 begin;
 
+-- Ancienne(s) RPC retirée(s) aux comptes connectés par la migration
+-- 20261125000000 (l'appli ne les appelle plus). Ce test exerce encore leur
+-- logique interne : le droit est rendu le temps du test, annulé au rollback.
+grant execute on function public.close_match_predictions(uuid) to authenticated;
+grant execute on function public.create_match_with_odds(uuid,uuid,date,time without time zone,text,numeric,numeric,numeric) to authenticated;
+grant execute on function public.finalize_match_postgame_with_lineup(uuid,integer,jsonb,uuid,integer,uuid[],uuid) to authenticated;
+grant execute on function public.save_match_prediction(uuid,integer,integer,boolean) to authenticated;
+grant execute on function public.staff_app_integrity_report() to authenticated;
+grant execute on function public.update_match_with_odds(uuid,uuid,uuid,date,time without time zone,text,text,numeric,numeric,numeric) to authenticated;
+
 set local search_path = public, extensions, pg_catalog;
 select no_plan();
 

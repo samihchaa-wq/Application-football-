@@ -173,7 +173,7 @@ select ok(
     'public.admin_save_match_effectif(uuid,integer,jsonb,text)',
     'EXECUTE'
   )
-  and has_function_privilege(
+  and not has_function_privilege(
     'authenticated',
     'public.admin_save_match_effectif(uuid,integer,jsonb,text)',
     'EXECUTE'
@@ -183,7 +183,7 @@ select ok(
     'public.admin_save_match_effectif(uuid,integer,jsonb,text)',
     'EXECUTE'
   ),
-  'la RPC effectif est accordée explicitement aux seuls rôles attendus'
+  'l''ancienne RPC effectif (remplacée par admin_publish_match_effectif) n''est plus exposée aux comptes connectés'
 );
 
 select ok(

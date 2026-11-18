@@ -14,7 +14,7 @@ enum ClubSubscriptionState {
   toPay,
   active,
 
-  /// Le dernier paiement a échoué.
+  /// Paiement à régulariser (noté par l'éditeur).
   pastDue,
   canceled;
 
@@ -39,11 +39,11 @@ class ClubSubscription {
     required this.trialEndsAt,
     required this.trialDaysLeft,
     required this.currentPeriodEnd,
-    this.accessEndsAt,
     required this.billablePlayers,
     required this.pricePerPlayerCents,
     required this.basePriceCents,
     required this.yearlyAmountCents,
+    this.suspensionOn,
   });
 
   factory ClubSubscription.fromJson(Map<String, dynamic> json) {
@@ -55,11 +55,11 @@ class ClubSubscription {
       trialEndsAt: date(json['trial_ends_at']),
       trialDaysLeft: number(json['trial_days_left']),
       currentPeriodEnd: date(json['current_period_end']),
-      accessEndsAt: date(json['access_ends_at']),
       billablePlayers: number(json['billable_players']),
       pricePerPlayerCents: number(json['price_per_player_cents']),
       basePriceCents: number(json['base_price_cents']),
       yearlyAmountCents: number(json['yearly_amount_cents']),
+      suspensionOn: date(json['suspension_on']),
     );
   }
 
@@ -67,14 +67,20 @@ class ClubSubscription {
   final DateTime? trialEndsAt;
   final int trialDaysLeft;
   final DateTime? currentPeriodEnd;
-
-  /// Sans paiement, date à laquelle l'accès du club sera coupé (15 jours
-  /// après la fin de l'essai ou de la période payée).
-  final DateTime? accessEndsAt;
   final int billablePlayers;
   final int pricePerPlayerCents;
   final int basePriceCents;
   final int yearlyAmountCents;
+
+  /// Date à partir de laquelle le club sera suspendu sans paiement (15 jours
+  /// après la fin de l'essai ou de l'année payée). Null si rien n'est dû.
+  final DateTime? suspensionOn;
+
+  /// Abonnement payé qui arrive à échéance dans moins de 30 jours.
+  bool renewalDueBy(DateTime now) =>
+      state == ClubSubscriptionState.active &&
+      currentPeriodEnd != null &&
+      currentPeriodEnd!.difference(now).inDays < 30;
 }
 
 /// Espace de fichiers occupé par le club et son quota.

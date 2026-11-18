@@ -26,10 +26,15 @@ select ok(
 );
 
 select ok(
-  has_function_privilege('authenticated', 'public.send_test_push()', 'execute')
+  not has_function_privilege('authenticated', 'public.send_test_push()', 'execute')
   and not has_function_privilege('anon', 'public.send_test_push()', 'execute'),
-  'la RPC reste réservée aux sessions authentifiées'
+  'la RPC, jamais appelée par l''appli, n''est plus exposée (20261125000000)'
 );
+
+-- Ancienne(s) RPC retirée(s) aux comptes connectés par la migration
+-- 20261125000000 (l'appli ne les appelle plus). Ce test exerce encore leur
+-- logique interne : le droit est rendu le temps du test, annulé au rollback.
+grant execute on function public.send_test_push() to authenticated;
 
 insert into auth.users (id, email, raw_user_meta_data)
 values
