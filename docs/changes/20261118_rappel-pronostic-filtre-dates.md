@@ -39,7 +39,24 @@ Preuves :
   cas dus avec les réglages par défaut, 41 376 cas sur 32 combinaisons
   extrêmes des réglages du club, **0 écarté à tort**.
 
-## Non fait
+## Mesure (test de charge de la CI, mêmes 200 clubs et 4 000 matchs)
 
-Le gain n'est pas mesuré sur la vraie base. Le test de charge de la PR donne le
-nouveau temps de passage de `prediction-j5-reminders` à comparer aux 6,5 s.
+| Tâche `prediction-j5-reminders`, un passage | Avant (PR #194) | Après (PR #197) |
+|---|---|---|
+| Durée | 6 500 ms | 436 ms |
+| Part de toutes les tâches planifiées | 94 % | 71 % |
+| Toutes les tâches, part d'un cœur par minute | 11,6 % | 1,1 % |
+
+Le serveur de CI de cette seconde exécution était environ deux fois plus
+rapide (lectures 1 224 par seconde contre 659, les autres tâches deux fois plus
+courtes). En corrigeant de ce facteur, le gain réel de cette tâche est d'environ
+**7 fois** (≈ 3 250 ms attendus sans correction sur cette machine) ; sans
+correction, il est de 15 fois. Lectures, saisies de score et cloisonnement :
+aucun échec, aucune fuite.
+
+## Reste à faire
+
+- Mesurer sur la vraie base après publication (durée de `prediction-j5-reminders`
+  dans `cron.job_run_details`).
+- La tâche reste la plus lourde (≈ 2 ms par club et par passage) ; les autres
+  tâches pèsent chacune moins de 65 ms pour 200 clubs.
