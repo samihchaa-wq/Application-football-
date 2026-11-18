@@ -2,6 +2,7 @@ import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/features/auth/data/auth_repository.dart';
 import 'package:petit_filet/features/auth/domain/auth_profile.dart';
 import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/platform/data/platform_billing_repository.dart';
 import 'package:petit_filet/features/platform/data/platform_repository.dart';
 import 'package:petit_filet/features/platform/domain/platform_snapshot.dart';
 import 'package:petit_filet/features/platform/presentation/platform_control_page.dart';
@@ -30,6 +31,7 @@ void main() {
     Future<PlatformSnapshot> Function()? fetch,
     _Controller? controller,
     double textScale = 1,
+    PlatformBillingRepository? billing,
   }) async {
     tester.view.physicalSize = Size(width, 1000);
     tester.view.devicePixelRatio = 1;
@@ -43,6 +45,9 @@ void main() {
           ),
           platformSnapshotProvider.overrideWith(
             (ref) => (fetch ?? () async => _snapshot)(),
+          ),
+          platformBillingRepositoryProvider.overrideWithValue(
+            billing ?? _FakeBilling().repository,
           ),
         ],
         child: MaterialApp(
@@ -103,6 +108,51 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
     },
   );
+
+  testWidgets('the operator records an offline payment from a team page', (
+    tester,
+  ) async {
+    final billing = _FakeBilling();
+    await open(tester, width: 1280, billing: billing.repository);
+    await tester.tap(find.byIcon(Icons.groups_outlined));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Équipe Beta'));
+    await tester.pumpAndSettle();
+    expect(find.text('Lecture seule'), findsNothing);
+    expect(find.text('Suspendue automatiquement pour impayé'), findsOneWidget);
+    expect(find.text('Aucun paiement noté pour cette équipe.'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('platform-record-payment')));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const Key('platform-payment-amount')))
+          .controller!
+          .text,
+      '79',
+    );
+    await tester.enterText(
+      find.byKey(const Key('platform-payment-amount')),
+      'abc',
+    );
+    await tester.tap(find.byKey(const Key('platform-payment-save')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Montant illisible'), findsOneWidget);
+    expect(billing.recorded, isEmpty);
+
+    await tester.enterText(
+      find.byKey(const Key('platform-payment-amount')),
+      '79,00',
+    );
+    await tester.tap(find.byKey(const Key('platform-payment-save')));
+    await tester.pumpAndSettle();
+    expect(billing.recorded.single['p_club_id'], 'b');
+    expect(billing.recorded.single['p_amount_cents'], 7900);
+    expect(billing.recorded.single['p_method'], 'virement');
+    expect(find.textContaining('L’équipe a retrouvé l’accès.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 
   testWidgets('refresh after revocation removes previously visible team data', (
     tester,
@@ -220,4 +270,32 @@ class _Repository implements AuthRepository {
       null;
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeBilling {
+  final recorded = <Map<String, dynamic>>[];
+
+  late final repository = PlatformBillingRepository((name, params) async {
+    if (name == 'platform_club_billing') {
+      return {
+        'base_price_cents': 7900,
+        'suspension_on': '2026-11-01T00:00:00Z',
+        'auto_suspended_at': recorded.isEmpty ? '2026-11-02T04:23:00Z' : null,
+        'payments': [
+          for (final payment in recorded)
+            {
+              'amount_cents': payment['p_amount_cents'],
+              'method': payment['p_method'],
+              'received_on': payment['p_received_on'],
+              'period_end': '2027-11-18T10:00:00Z',
+            },
+        ],
+      };
+    }
+    if (name == 'platform_record_offline_payment') {
+      recorded.add(params);
+      return {'period_end': '2027-11-18T10:00:00Z', 'reopened': true};
+    }
+    throw StateError('unexpected $name');
+  });
 }

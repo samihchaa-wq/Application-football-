@@ -76,10 +76,18 @@ Créer deux clubs A et B avec administrateurs et joueurs distincts. Vérifier :
   confidentialité, conditions d'abonnement, accord sur les données) :
   `lib/features/legal/domain/legal_documents.dart` contient encore des
   **champs à compléter**. Voir `docs/legal/README.md`.
-- Confirmer le modèle économique : le code prépare actuellement un prix
-  indicatif de **10 € par joueur et par an**, pas un tarif validé.
-- Choisir et intégrer les paiements, ou assumer explicitement un paiement
-  hors ligne. Le code Stripe n'est pas opérationnel.
+- Modèle économique **décidé le 18/11/2026 : forfait de 79 € par club et
+  par an**, quel que soit le nombre de joueurs (migration
+  `20261124010000_forfait_annuel_club.sql`, conditions d'abonnement en
+  version `2026-11-18`).
+- Paiement **hors ligne** retenu le 18/11/2026 (virement, chèque, espèces) :
+  l'éditeur note chaque paiement reçu depuis la fiche équipe du poste de
+  contrôle, ce qui ouvre une année d'abonnement. Un club impayé est suspendu
+  automatiquement **15 jours après l'échéance** (tâche de nuit
+  `suspend-unpaid-clubs`) et rouvert dès qu'un paiement est noté. Migration
+  `20261124020000_paiement_hors_ligne_et_blocage_impayes.sql`. Le code Stripe
+  n'est pas opérationnel. Reste à fournir aux clubs un moyen de contact et
+  des coordonnées de paiement (l'appli dit seulement « contacte-nous »).
 - Choisir le nom définitif du produit ; des noms techniques historiques
   `as_grinta` peuvent rester dans les sources sans être visibles, mais les
   libellés montrés aux clubs doivent être neutres.

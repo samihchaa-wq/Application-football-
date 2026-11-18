@@ -14,7 +14,7 @@ enum ClubSubscriptionState {
   toPay,
   active,
 
-  /// Le dernier paiement a échoué.
+  /// Paiement à régulariser (noté par l'éditeur).
   pastDue,
   canceled;
 
@@ -43,6 +43,7 @@ class ClubSubscription {
     required this.pricePerPlayerCents,
     required this.basePriceCents,
     required this.yearlyAmountCents,
+    this.suspensionOn,
   });
 
   factory ClubSubscription.fromJson(Map<String, dynamic> json) {
@@ -58,6 +59,7 @@ class ClubSubscription {
       pricePerPlayerCents: number(json['price_per_player_cents']),
       basePriceCents: number(json['base_price_cents']),
       yearlyAmountCents: number(json['yearly_amount_cents']),
+      suspensionOn: date(json['suspension_on']),
     );
   }
 
@@ -69,6 +71,16 @@ class ClubSubscription {
   final int pricePerPlayerCents;
   final int basePriceCents;
   final int yearlyAmountCents;
+
+  /// Date à partir de laquelle le club sera suspendu sans paiement (15 jours
+  /// après la fin de l'essai ou de l'année payée). Null si rien n'est dû.
+  final DateTime? suspensionOn;
+
+  /// Abonnement payé qui arrive à échéance dans moins de 30 jours.
+  bool renewalDueBy(DateTime now) =>
+      state == ClubSubscriptionState.active &&
+      currentPeriodEnd != null &&
+      currentPeriodEnd!.difference(now).inDays < 30;
 }
 
 /// Espace de fichiers occupé par le club et son quota.
