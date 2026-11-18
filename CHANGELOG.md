@@ -6,6 +6,16 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- abonnement : forfait de 79 € par club et par an, quel que soit le nombre
+  de joueurs (au lieu de 10 € par joueur). Tous les clubs existants (clubs
+  de test uniquement) passent au forfait.
+  Conditions d'abonnement mises à jour (version 2026-11-18) ;
+- paiement hors ligne : depuis la fiche d'une équipe, le poste de contrôle
+  note un paiement reçu (virement, chèque, espèces) et ouvre une année
+  d'abonnement. Un club impayé 15 jours après la fin de son essai ou de son
+  année est suspendu automatiquement, sans perte de données, et rouvert dès
+  que son paiement est noté. L'administrateur du club voit la date de
+  suspension prévue et la date de fin de son abonnement ;
 - réglages du club : chaque fonctionnalité a maintenant ses sous-réglages,
   rangés sous elle dans « Réglages du club ». Douze notifications se coupent
   une par une pour tout le club (disponibilités, relances, convocation,

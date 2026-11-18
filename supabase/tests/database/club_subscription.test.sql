@@ -73,8 +73,8 @@ select is(
   'seuls les joueurs actifs de la saison ouverte sont facturés'
 );
 select is(
-  (public.admin_get_club_subscription() ->> 'yearly_amount_cents')::integer, 3000,
-  'le montant annuel vaut 10 € par joueur facturé'
+  (public.admin_get_club_subscription() ->> 'yearly_amount_cents')::integer, 7900,
+  'le montant annuel est le forfait de 79 €, quel que soit l''effectif'
 );
 select is(
   public.admin_get_club_subscription() ->> 'state', 'trial',

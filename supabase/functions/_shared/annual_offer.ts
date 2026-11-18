@@ -3,7 +3,7 @@
  * Eligibility, operator authorization, coupon reservation and credit consumption
  * must be checked transactionally by the future billing adapter.
  */
-export const ANNUAL_TEAM_PRICE_CENTS = 10_000;
+export const ANNUAL_TEAM_PRICE_CENTS = 7_900;
 export const ANNUAL_OFFER_POLICY_VERSION = "161-v1";
 
 export type ReferralCredit = {

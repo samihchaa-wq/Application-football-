@@ -383,6 +383,8 @@ select is(
         'platform_list_clubs()',
         'platform_update_club(uuid,text,text,timestamp with time zone,timestamp with time zone,integer,integer,bigint,text)',
         'platform_health()',
+        'platform_record_offline_payment(uuid,integer,text,date,text)',
+        'platform_club_billing(uuid)',
         'private.is_platform_operator()',
         -- Trigger interne sans argument : émet uniquement une révision pour
         -- la ligne déjà autorisée, y compris lors d'une opération éditeur.
