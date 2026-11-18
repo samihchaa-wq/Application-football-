@@ -1,5 +1,6 @@
 import 'package:as_grinta/core/widgets/match_date_column.dart';
 import 'package:as_grinta/core/widgets/calendar_scoreline.dart';
+import 'package:as_grinta/core/widgets/calendar_scoreline.dart';
 import 'package:as_grinta/features/club/data/club_repository.dart';
 import 'package:as_grinta/features/home/presentation/home_next_match_card.dart';
 import 'package:as_grinta/features/match_live/data/match_live_notification_repository.dart';
@@ -83,6 +84,19 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  testWidgets('les deux équipes encadrent le VS dans le calendrier', (tester) async {
+    await pumpCard(tester, isAdmin: false, eligible: false);
+    expect(find.byType(CalendarScoreline), findsOneWidget);
+    final names = find.byType(CalendarTeamName);
+    expect(names, findsNWidgets(2));
+    final left = tester.getCenter(names.at(0)).dx;
+    final middle = tester.getCenter(find.text('VS')).dx;
+    final right = tester.getCenter(names.at(1)).dx;
+    expect(left, lessThan(middle));
+    expect(right, greaterThan(middle));
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('cloche et crayon au niveau de la date, pas des équipes', (
     tester,
