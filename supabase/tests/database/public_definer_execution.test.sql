@@ -12,12 +12,12 @@ select ok(
   'un visiteur anonyme ne peut pas modifier une adresse de match'
 );
 select ok(
-  has_function_privilege(
+  not has_function_privilege(
     'authenticated',
     'public.admin_set_match_address(uuid,text,boolean)',
     'EXECUTE'
   ),
-  'le client authentifié conserve la RPC, protégée par le contrôle admin interne'
+  'ancienne RPC jamais appelée par l''appli : retirée aux comptes connectés (20261125000000)'
 );
 select ok(
   has_function_privilege(

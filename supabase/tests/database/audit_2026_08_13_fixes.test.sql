@@ -74,11 +74,16 @@ select ok(
 );
 
 select ok(
-  has_function_privilege(
+  not has_function_privilege(
     'authenticated', 'public.profile_badge_metrics(uuid)', 'execute'
   ),
-  'le point d’entrée public gardé reste appelable'
+  'le point d’entrée public, jamais appelé par l’appli, n’est plus exposé (20261125000000)'
 );
+
+-- Ancienne(s) RPC retirée(s) aux comptes connectés par la migration
+-- 20261125000000 (l'appli ne les appelle plus). Ce test exerce encore leur
+-- logique interne : le droit est rendu le temps du test, annulé au rollback.
+grant execute on function public.profile_badge_metrics(uuid) to authenticated;
 
 set local role authenticated;
 set local request.jwt.claim.sub = '40000000-0000-0000-0000-000000000002';

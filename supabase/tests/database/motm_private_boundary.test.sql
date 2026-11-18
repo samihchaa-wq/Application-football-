@@ -1,4 +1,13 @@
 begin;
+
+-- Ancienne(s) RPC retirée(s) aux comptes connectés par la migration
+-- 20261125000000 (l'appli ne les appelle plus). Ce test exerce encore leur
+-- logique interne : le droit est rendu le temps du test, annulé au rollback.
+grant execute on function public.admin_close_match_motm_vote_early(uuid,text) to authenticated;
+grant execute on function public.admin_get_match_motm_dashboard(uuid) to authenticated;
+grant execute on function public.admin_list_match_motm_votes() to authenticated;
+grant execute on function public.admin_restart_match_motm_vote(uuid,text) to authenticated;
+
 set local search_path = public, extensions, pg_catalog;
 select no_plan();
 

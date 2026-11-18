@@ -1,5 +1,10 @@
 begin;
 
+-- Ancienne(s) RPC retirée(s) aux comptes connectés par la migration
+-- 20261125000000 (l'appli ne les appelle plus). Ce test exerce encore leur
+-- logique interne : le droit est rendu le temps du test, annulé au rollback.
+grant execute on function public.admin_save_match_composition(uuid,text,jsonb,boolean,text) to authenticated;
+
 select plan(7);
 
 select is(

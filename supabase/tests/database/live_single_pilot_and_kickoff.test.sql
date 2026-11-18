@@ -1,4 +1,11 @@
 begin;
+
+-- Ancienne(s) RPC retirée(s) aux comptes connectés par la migration
+-- 20261125000000 (l'appli ne les appelle plus). Ce test exerce encore leur
+-- logique interne : le droit est rendu le temps du test, annulé au rollback.
+grant execute on function public.admin_create_match_complete(uuid,uuid,date,time without time zone,text,numeric,numeric,numeric,integer,text,boolean,text,text) to authenticated;
+grant execute on function public.get_match_live_timeline(uuid) to authenticated;
+
 set local search_path = public, extensions, pg_catalog;
 select no_plan();
 
