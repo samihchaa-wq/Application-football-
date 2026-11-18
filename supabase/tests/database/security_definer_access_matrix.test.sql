@@ -81,8 +81,6 @@ insert into reviewed_open_definers (fonction, motif) values
    'ne compte que les notifications du demandeur, zéro si son profil n’est pas actif'),
   ('get_or_create_calendar_subscription_token()',
    'ne crée et ne lit que le jeton du demandeur, profil actif exigé'),
-  ('is_moderator()',
-   'garde elle-meme : lit le role du demandeur et ne renvoie qu’un booléen'),
   ('log_client_incident(text,text,text,text)',
    'ignore un appelant anonyme, tronque ses entrées et se limite à 20 écritures par minute'),
   ('mark_my_notifications_read()',
@@ -93,8 +91,6 @@ insert into reviewed_open_definers (fonction, motif) values
    'n’écrit que l’abonnement et les accusés du demandeur, profil actif exigé'),
   ('set_badge_featured(text,boolean)',
    'ne modifie que les badges déjà détenus par le demandeur'),
-  ('update_my_app_preferences(boolean,boolean,boolean)',
-   'n’écrit que la ligne du demandeur, et seulement si son profil est actif'),
   ('update_my_notification_preferences(boolean,boolean,boolean,boolean)',
    'n’écrit que la ligne du demandeur, et seulement si son profil est actif'),
   ('update_my_badge_notifications(boolean)',
@@ -216,8 +212,10 @@ select is(
   'les fonctions internes recevant une délégation sont gardées et non exposées'
 );
 
+-- Depuis 20261125000000, l'appli n'appelle plus public.profile_badge_metrics :
+-- elle passe par profile_badge_display_metrics et profile_badge_stars.
 select ok(
-  has_function_privilege(
+  not has_function_privilege(
     'authenticated',
     'public.profile_badge_metrics(uuid)',
     'EXECUTE'
@@ -226,8 +224,13 @@ select ok(
     'anon',
     'public.profile_badge_metrics(uuid)',
     'EXECUTE'
+  )
+  and has_function_privilege(
+    'service_role',
+    'public.profile_badge_metrics(uuid)',
+    'EXECUTE'
   ),
-  'l’exception de lecture des métriques de badge est authentifiée uniquement'
+  'les métriques brutes de badge ne sont plus exposées aux comptes connectés'
 );
 
 select is(
