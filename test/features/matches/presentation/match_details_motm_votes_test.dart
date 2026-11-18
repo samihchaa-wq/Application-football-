@@ -224,7 +224,6 @@ void main() {
               scoreGrinta: 2,
               scoreOpponent: 1,
               points: 3,
-              usedX2: false,
             ),
         ],
       ),
@@ -265,7 +264,6 @@ void main() {
           scoreGrinta: g,
           scoreOpponent: o,
           points: points,
-          usedX2: false,
         );
     final base = _details();
     await _pump(

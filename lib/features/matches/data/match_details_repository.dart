@@ -65,7 +65,6 @@ class MatchPredictionResult {
     required this.scoreGrinta,
     required this.scoreOpponent,
     required this.points,
-    required this.usedX2,
   });
 
   final String profileId;
@@ -75,7 +74,6 @@ class MatchPredictionResult {
 
   /// Points déjà convertis en base 100 pour l'affichage.
   final double points;
-  final bool usedX2;
 }
 
 class MatchDetailsData {
@@ -344,7 +342,6 @@ class MatchDetailsRepository {
           scoreGrinta: (map['predicted_score_as_grinta'] as num?)?.toInt() ?? 0,
           scoreOpponent: (map['predicted_score_adverse'] as num?)?.toInt() ?? 0,
           points: pointsByProfile[profileId] ?? 0,
-          usedX2: false,
         );
       }).toList()
         ..sort((a, b) => b.points.compareTo(a.points));

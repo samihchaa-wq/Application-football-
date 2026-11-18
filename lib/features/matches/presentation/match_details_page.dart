@@ -755,15 +755,6 @@ class _PredictionsTable extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ),
-          SizedBox(
-            width: 30,
-            child: prediction.usedX2
-                ? const Align(
-                    alignment: Alignment.centerRight,
-                    child: _X2Badge(),
-                  )
-                : null,
-          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -796,32 +787,6 @@ class _PredictionsTable extends StatelessWidget {
         for (final prediction in sortedPredictions)
           _predictionRow(context, prediction),
       ],
-    );
-  }
-}
-
-/// Pastille « ×2 » indiquant qu'un joueur a utilisé son bonus double sur ce
-/// pronostic (ses points sont doublés).
-class _X2Badge extends StatelessWidget {
-  const _X2Badge();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: AppTheme.accent.withValues(alpha: .18),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTheme.accent.withValues(alpha: .55)),
-      ),
-      child: Text(
-        '×2',
-        style: TextStyle(
-          color: AppTheme.accent,
-          fontWeight: FontWeight.w400,
-          fontSize: 11,
-        ),
-      ),
     );
   }
 }

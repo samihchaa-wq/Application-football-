@@ -13,7 +13,6 @@ MatchPredictionResult _prediction({
     scoreGrinta: 1,
     scoreOpponent: 0,
     points: points,
-    usedX2: false,
   );
 }
 
