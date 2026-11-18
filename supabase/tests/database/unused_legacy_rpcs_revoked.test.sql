@@ -42,7 +42,6 @@ insert into revoked_rpcs (signature) values
   ('public.create_match_with_odds(uuid,uuid,date,time without time zone,text,numeric,numeric,numeric)'),
   ('public.create_match_with_odds_and_sport_limit(uuid,uuid,date,time without time zone,text,numeric,numeric,numeric,integer)'),
   ('public.finalize_match_postgame_with_lineup(uuid,integer,jsonb,uuid,integer,uuid[],uuid)'),
-  ('public.get_match_live_timeline(uuid)'),
   ('public.is_moderator()'),
   ('public.platform_update_club(uuid,text,text,timestamp with time zone,timestamp with time zone,integer,integer,bigint,text)'),
   ('public.profile_badge_metrics(uuid)'),

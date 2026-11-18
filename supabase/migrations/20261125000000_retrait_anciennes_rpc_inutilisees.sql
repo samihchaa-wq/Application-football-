@@ -2,7 +2,7 @@
 -- n'appelle plus.
 --
 -- Pourquoi : chaque fonction appelable par un compte connecté est une porte à
--- surveiller. Ces 47 fonctions sont des versions remplacées (v1/v2 des
+-- surveiller. Ces 46 fonctions sont des versions remplacées (v1/v2 des
 -- créations de match, ancienne création avec cotes, ancien pronostic avec ×2,
 -- etc.) ou des outils jamais branchés à l'interface. Elles vérifient toutes
 -- leur appelant, mais elles restent une surface d'attaque inutile.
@@ -22,7 +22,9 @@
 --     tournent sous club_scope et continuent donc de marcher ;
 --   * gardées volontairement : is_match_staff (utilisée par des règles
 --     d'accès), is_valid_person_name (appelée par un déclencheur qui tourne
---     sous l'identité de l'appelant) et accept_terms (parcours légal).
+--     sous l'identité de l'appelant), accept_terms (parcours légal) et
+--     get_match_live_timeline (fait partie du contrat public du Live,
+--     vérifié par live_private_boundary.test.sql).
 --   * pour les deux fonctions à plusieurs versions, seule la version
 --     inutilisée est visée : save_match_prediction à 4 arguments (×2 retiré)
 --     et admin_save_match_composition sans version attendue.
@@ -66,7 +68,6 @@ revoke execute on function public.create_internal_match_v2(uuid,date,time withou
 revoke execute on function public.create_match_with_odds(uuid,uuid,date,time without time zone,text,numeric,numeric,numeric) from authenticated;
 revoke execute on function public.create_match_with_odds_and_sport_limit(uuid,uuid,date,time without time zone,text,numeric,numeric,numeric,integer) from authenticated;
 revoke execute on function public.finalize_match_postgame_with_lineup(uuid,integer,jsonb,uuid,integer,uuid[],uuid) from authenticated;
-revoke execute on function public.get_match_live_timeline(uuid) from authenticated;
 revoke execute on function public.is_moderator() from authenticated;
 revoke execute on function public.platform_update_club(uuid,text,text,timestamp with time zone,timestamp with time zone,integer,integer,bigint,text) from authenticated;
 revoke execute on function public.profile_badge_metrics(uuid) from authenticated;
