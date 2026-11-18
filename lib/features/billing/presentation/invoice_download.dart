@@ -2,7 +2,10 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:petit_filet/features/billing/domain/invoice.dart';
-import 'package:petit_filet/features/billing/domain/invoice_pdf.dart';
+// Chargé à la demande : la bibliothèque PDF reste hors du bundle principal
+// (budget de téléchargement de l'appli web).
+import 'package:petit_filet/features/billing/domain/invoice_pdf.dart'
+    deferred as invoice_pdf;
 import 'package:share_plus/share_plus.dart';
 
 /// Propose le fichier à l'utilisateur : téléchargement sur le web, feuille de
@@ -24,7 +27,8 @@ Future<void> downloadInvoicePdf(
   Invoice invoice, {
   FileSaver save = shareFile,
 }) async {
-  final bytes = await buildInvoicePdf(invoice);
+  await invoice_pdf.loadLibrary();
+  final bytes = await invoice_pdf.buildInvoicePdf(invoice);
   await save(bytes, invoice.fileName, 'application/pdf');
 }
 
