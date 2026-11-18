@@ -83,6 +83,8 @@ insert into reviewed_open_definers (fonction, motif) values
    'ne crée et ne lit que le jeton du demandeur, profil actif exigé'),
   ('log_client_incident(text,text,text,text)',
    'ignore un appelant anonyme, tronque ses entrées et se limite à 20 écritures par minute'),
+  ('log_app_visit()',
+   'n’écrit qu’une ligne « visite du jour » pour le demandeur, dans son club, profil actif exigé'),
   ('mark_my_notifications_read()',
    'ne marque comme lues que les notifications du demandeur, profil actif exigé'),
   ('register_push_subscription(text,text,text,text)',

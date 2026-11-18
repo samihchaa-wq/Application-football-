@@ -1,5 +1,6 @@
 import 'package:petit_filet/app/shell/module_navigation.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/features/club/data/app_visit_logger.dart';
 import 'package:petit_filet/features/club/data/club_repository.dart';
 import 'package:petit_filet/features/club/data/club_subscription.dart';
 import 'package:petit_filet/features/club/presentation/club_suspended_page.dart';
@@ -65,6 +66,17 @@ class _AppShellState extends ConsumerState<AppShell>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _logVisit());
+  }
+
+  // Compte la visite du jour pour le poste de contrôle de l'éditeur.
+  void _logVisit() {
+    if (!mounted) return;
+    try {
+      ref.read(appVisitLoggerProvider).log();
+    } catch (_) {
+      // Client indisponible (tests, démarrage incomplet) : rien à compter.
+    }
   }
 
   @override
@@ -82,6 +94,7 @@ class _AppShellState extends ConsumerState<AppShell>
     }
     if (state != AppLifecycleState.resumed || !_wasBackgrounded) return;
     _wasBackgrounded = false;
+    _logVisit();
     if (_selectedIndex != 0 || _uri.path != '/matches') return;
 
     Future<void>.delayed(const Duration(milliseconds: 300), () {

@@ -92,4 +92,88 @@ void main() {
     expect(health.failedPush, isNull);
     expect(health.checkedAt.isUtc, isTrue);
   });
+
+  test('club list: filters, sorts, missing values last', () {
+    final now = DateTime.utc(2026, 11, 18);
+    final teams = [
+      PlatformTeam(
+        id: 'trial',
+        name: 'B Essai',
+        status: 'active',
+        subscriptionStatus: 'trialing',
+        nextDueAt: now.add(const Duration(days: 4)),
+        players: 10,
+        visitsPerDay: 3,
+        amountDueCents: 7505,
+        createdAt: now.subtract(const Duration(days: 26)),
+      ),
+      PlatformTeam(
+        id: 'paid',
+        name: 'A Abonné',
+        status: 'active',
+        subscriptionStatus: 'active',
+        nextDueAt: now.add(const Duration(days: 300)),
+        players: 20,
+        visitsPerDay: 1,
+        amountDueCents: 7900,
+        createdAt: now.subtract(const Duration(days: 65)),
+      ),
+      const PlatformTeam(
+        id: 'off',
+        name: 'C Suspendu',
+        status: 'suspended',
+        subscriptionStatus: 'active',
+      ),
+    ];
+    List<String> ids({
+      PlatformClubFilter filter = PlatformClubFilter.all,
+      PlatformClubSort sort = PlatformClubSort.nextDue,
+      String query = '',
+    }) =>
+        selectPlatformClubs(
+          teams,
+          now: now,
+          filter: filter,
+          sort: sort,
+          query: query,
+        ).map((team) => team.id).toList();
+
+    expect(ids(), ['trial', 'paid', 'off']);
+    expect(ids(sort: PlatformClubSort.squad), ['paid', 'trial', 'off']);
+    expect(ids(sort: PlatformClubSort.visits), ['trial', 'paid', 'off']);
+    expect(ids(sort: PlatformClubSort.seniority), ['paid', 'trial', 'off']);
+    expect(ids(sort: PlatformClubSort.amountDue), ['paid', 'trial', 'off']);
+    expect(ids(sort: PlatformClubSort.name), ['paid', 'trial', 'off']);
+    expect(ids(filter: PlatformClubFilter.trial), ['trial']);
+    expect(ids(filter: PlatformClubFilter.paying), ['paid']);
+    expect(ids(filter: PlatformClubFilter.dueSoon), ['trial']);
+    expect(ids(filter: PlatformClubFilter.suspended), ['off']);
+    expect(ids(query: ' essai '), ['trial']);
+  });
+
+  test('seniority and due date read naturally', () {
+    final now = DateTime.utc(2026, 11, 18, 12);
+    expect(formatSeniority(null, now), 'Non renseigné');
+    expect(formatSeniority(now.subtract(const Duration(hours: 3)), now),
+        'Aujourd’hui');
+    expect(
+        formatSeniority(now.subtract(const Duration(days: 12)), now), '12 j');
+    expect(
+        formatSeniority(now.subtract(const Duration(days: 95)), now), '3 mois');
+    expect(
+        formatSeniority(now.subtract(const Duration(days: 366)), now), '1 an');
+    expect(formatSeniority(now.subtract(const Duration(days: 800)), now),
+        '2 ans et 2 mois');
+    expect(formatDueIn(null), 'Aucune');
+    expect(formatDueIn(0), 'aujourd’hui');
+    expect(formatDueIn(9), 'dans 9 j');
+    expect(formatDueIn(-2), 'dépassée de 2 j');
+    final team = PlatformTeam(
+      id: 'a',
+      name: 'A',
+      status: 'active',
+      nextDueAt: now.add(const Duration(days: 10, hours: 1)),
+    );
+    expect(team.daysUntilDue(now), 11);
+  });
 }

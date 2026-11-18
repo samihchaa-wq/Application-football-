@@ -141,6 +141,65 @@ void main() {
     expect(find.textContaining('Connecte-toi, puis'), findsOneWidget);
   });
 
+  testWidgets('code parrain : refusé s’il est mal formé, transmis sinon', (
+    tester,
+  ) async {
+    await pumpPage(tester);
+    await tester.tap(find.text('Créer un club'));
+    await tester.pumpAndSettle();
+    await fillIdentity(tester);
+    await tester.enterText(
+      find.byKey(const Key('register-club-name')),
+      'FC Villeneuve',
+    );
+    await tester.enterText(
+      find.byKey(const Key('register-email')),
+      'karim@example.com',
+    );
+
+    await tester.enterText(
+      find.byKey(const Key('register-referral-code')),
+      'ABC',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Créer mon club'));
+    await tester.pump();
+    expect(find.textContaining('Code parrain invalide'), findsOneWidget);
+    expect(repository.created, isNull);
+    ScaffoldMessenger.of(tester.element(find.byType(AuthRegisterPage)))
+        .clearSnackBars();
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('register-referral-code')),
+      'pf ab-cd23',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Créer mon club'));
+    await tester.pumpAndSettle();
+    expect(repository.created, 'FC Villeneuve');
+    expect(repository.lastReferralCode, 'PFABCD23');
+  });
+
+  testWidgets('sans code parrain, la création du club marche pareil', (
+    tester,
+  ) async {
+    await pumpPage(tester);
+    await tester.tap(find.text('Créer un club'));
+    await tester.pumpAndSettle();
+    await fillIdentity(tester);
+    await tester.enterText(
+      find.byKey(const Key('register-club-name')),
+      'FC Villeneuve',
+    );
+    await tester.enterText(
+      find.byKey(const Key('register-email')),
+      'karim@example.com',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Créer mon club'));
+    await tester.pumpAndSettle();
+    expect(repository.created, 'FC Villeneuve');
+    expect(repository.lastReferralCode, '');
+  });
+
   testWidgets('l’adresse e-mail facultative est transmise ou refusée', (
     tester,
   ) async {
@@ -273,6 +332,7 @@ class _FakeClubRepository implements ClubRepository {
   String? joined;
   String? created;
   String? lastEmail;
+  String? lastReferralCode;
   (String, AgeConfirmation)? lastConsent;
   String? createdContract;
   StateError? failure;
@@ -309,9 +369,11 @@ class _FakeClubRepository implements ClubRepository {
     required String acceptedClubContractVersion,
     required AgeConfirmation ageConfirmation,
     String? email,
+    String? referralCode,
   }) async {
     if (failure != null) throw failure!;
     created = clubName;
+    lastReferralCode = referralCode;
     createdContract = acceptedClubContractVersion;
     lastEmail = email;
     return ClubRegistration(

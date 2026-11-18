@@ -1,11 +1,13 @@
 // E-mails de compte : confirmer une adresse, et retrouver son compte par
 // e-mail quand on a perdu son mot de passe.
 //
-// Trois actions :
+// Quatre actions :
 // - request-confirmation (compte connecté) : envoie un lien de confirmation ;
 // - confirm (sans compte) : valide le lien reçu ;
 // - request-reset (sans compte) : envoie, à l'adresse confirmée d'un compte, un
-//   lien pour choisir un nouveau mot de passe.
+//   lien pour choisir un nouveau mot de passe ;
+// - subscription-reminder (base seulement, jeton interne x-push-token) :
+//   prévient les administrateurs d'un club que l'abonnement arrive à échéance.
 //
 // La réponse à request-reset est toujours la même : elle ne révèle pas si
 // l'adresse existe.
@@ -22,6 +24,10 @@ import {
   sendMail,
   sha256Hex,
 } from "./account_email.ts";
+import {
+  parseSubscriptionReminder,
+  subscriptionReminderMail,
+} from "./subscription_reminder.ts";
 
 const MAX_BODY_BYTES = 2_048;
 
@@ -86,6 +92,16 @@ async function readBoundedJson<T>(req: Request, maxBytes: number): Promise<T> {
   return JSON.parse(json) as T;
 }
 
+/** Comparaison en temps constant de deux secrets. */
+async function secretsEqual(a: string, b: string): Promise<boolean> {
+  const [left, right] = await Promise.all([sha256Hex(a), sha256Hex(b)]);
+  let diff = left.length ^ right.length;
+  for (let i = 0; i < Math.min(left.length, right.length); i++) {
+    diff |= left.charCodeAt(i) ^ right.charCodeAt(i);
+  }
+  return diff === 0 && a.length > 0;
+}
+
 function requestOrigin(req: Request): string {
   const forwarded = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
   return (
@@ -136,7 +152,10 @@ Deno.serve(async (req: Request) => {
   }
 
   const action = String(body.action ?? "");
-  if (!["request-confirmation", "confirm", "request-reset"].includes(action)) {
+  if (
+    !["request-confirmation", "confirm", "request-reset", "subscription-reminder"]
+      .includes(action)
+  ) {
     return jsonResponse({ error: "Action inconnue." }, 400);
   }
 
@@ -173,6 +192,37 @@ Deno.serve(async (req: Request) => {
         { error: "L’envoi d’e-mails n’est pas encore configuré." },
         503,
       );
+    }
+
+    if (action === "subscription-reminder") {
+      // Seule la base connaît le jeton interne : personne d'autre ne peut
+      // faire envoyer cet e-mail.
+      const { data: config, error: configError } = await admin.rpc(
+        "internal_push_config",
+      );
+      if (configError || !config?.token) {
+        throw configError ?? new Error("Missing internal token");
+      }
+      const token = req.headers.get("x-push-token") ?? "";
+      if (!(await secretsEqual(token, String(config.token)))) {
+        return jsonResponse({ error: "Non autorisé." }, 401);
+      }
+      const reminder = parseSubscriptionReminder(body);
+      if (!reminder) {
+        return jsonResponse({ error: "Requête invalide." }, 400);
+      }
+      const contact = Deno.env.get("SUPPORT_EMAIL")?.trim() || mail.fromEmail;
+      const message = subscriptionReminderMail(reminder, contact);
+      let sent = 0;
+      for (const recipient of reminder.recipients) {
+        try {
+          await sendMail(mail, recipient, message.subject, message.text);
+          sent += 1;
+        } catch (error) {
+          console.error("account-email reminder delivery failure", error);
+        }
+      }
+      return jsonResponse({ sent });
     }
 
     if (action === "request-confirmation") {

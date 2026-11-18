@@ -1,3 +1,5 @@
+import 'package:petit_filet/core/widgets/support_contact.dart';
+import 'package:petit_filet/features/admin/presentation/club_referral_section.dart';
 import 'package:petit_filet/features/club/data/club_subscription.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,6 +27,8 @@ class ClubSubscriptionSection extends ConsumerWidget {
               ? const SizedBox.shrink()
               : _SubscriptionCard(subscription: value),
         ),
+        const SizedBox(height: 12),
+        const ClubReferralSection(),
         const SizedBox(height: 20),
         Text('Espace photos', style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
@@ -120,43 +124,65 @@ class _SubscriptionCard extends StatelessWidget {
             'saison × ${formatEuros(perPlayer)} par an'
             '${base > 0 ? ' + forfait de ${formatEuros(base)}' : ''}';
 
+    final alert = subscription.state.needsAttention || _renewalDue;
     return Card(
       key: const Key('club-subscription-card'),
       margin: EdgeInsets.zero,
-      color: subscription.state.needsAttention || _renewalDue
-          ? theme.colorScheme.errorContainer
-          : null,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(_headline, style: theme.textTheme.titleSmall),
-            const SizedBox(height: 8),
-            Text(pricing),
-            const SizedBox(height: 4),
-            Text(
-              'Total annuel : ${formatEuros(subscription.yearlyAmountCents)}',
-              key: const Key('club-subscription-total'),
-              style: theme.textTheme.titleMedium,
-            ),
-            if (subscription.state == ClubSubscriptionState.active &&
-                periodEnd != null) ...[
-              const SizedBox(height: 4),
-              Text('Payé jusqu’au ${_day(periodEnd)}'),
-            ],
-            if (advice != null) ...[
-              const SizedBox(height: 8),
-              Text(advice),
-            ],
-            if (warning != null) ...[
-              const SizedBox(height: 8),
+      color: alert ? theme.colorScheme.errorContainer : null,
+      // Texte foncé sur le fond d'alerte : le texte clair par défaut y était
+      // presque illisible.
+      child: DefaultTextStyle.merge(
+        style:
+            alert ? TextStyle(color: theme.colorScheme.onErrorContainer) : null,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                warning,
-                key: const Key('club-subscription-suspension-warning'),
+                _headline,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: alert ? theme.colorScheme.onErrorContainer : null,
+                ),
               ),
+              const SizedBox(height: 8),
+              Text(pricing),
+              const SizedBox(height: 4),
+              Text(
+                'Total annuel : ${formatEuros(subscription.yearlyAmountCents)}',
+                key: const Key('club-subscription-total'),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: alert ? theme.colorScheme.onErrorContainer : null,
+                ),
+              ),
+              if (subscription.referralDiscountPercent > 0) ...[
+                const SizedBox(height: 4),
+                Text(
+                  'Parrainage : −${subscription.referralDiscountPercent} %, '
+                  'reste à payer ${formatEuros(subscription.amountDueCents)}',
+                  key: const Key('club-subscription-amount-due'),
+                ),
+              ],
+              if (subscription.state == ClubSubscriptionState.active &&
+                  periodEnd != null) ...[
+                const SizedBox(height: 4),
+                Text('Payé jusqu’au ${_day(periodEnd)}'),
+              ],
+              if (advice != null) ...[
+                const SizedBox(height: 8),
+                Text(advice),
+                const SizedBox(height: 4),
+                const SupportContact(),
+              ],
+              if (warning != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  warning,
+                  key: const Key('club-subscription-suspension-warning'),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
