@@ -6,6 +6,7 @@ import 'package:as_grinta/features/match_live/domain/match_live_state_bundle.dar
 import 'package:as_grinta/features/match_live/presentation/match_live_providers.dart';
 import 'package:as_grinta/features/match_live/presentation/widgets/match_live_add_player_sheet.dart';
 import 'package:as_grinta/features/match_live/presentation/widgets/match_live_remove_player_sheet.dart';
+import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
 import 'package:as_grinta/features/sports_management/domain/football_formation.dart';
 import 'package:as_grinta/features/sports_management/domain/match_composition.dart';
 import 'package:as_grinta/features/sports_management/domain/match_squad_editing.dart';
@@ -404,20 +405,32 @@ class _MatchLivePreKickoffPageState
 
 /// Avant le coup d'envoi, pour ceux qui ne pilotent pas : la composition
 /// prévue, en lecture seule.
-class MatchLivePreKickoffSpectatorView extends StatelessWidget {
+class MatchLivePreKickoffSpectatorView extends ConsumerWidget {
   const MatchLivePreKickoffSpectatorView({super.key, required this.bundle});
 
   final MatchLiveStateBundle bundle;
 
   @override
-  Widget build(BuildContext context) {
-    final lineup = bundle.lineup;
+  Widget build(BuildContext context, WidgetRef ref) {
+    // La session Live n'a pas encore d'effectif avant l'ouverture de son
+    // espace de travail. Afficher la composition publiée dans ce cas.
+    final published = bundle.lineup == null
+        ? ref.watch(publishedMatchCompositionProvider(bundle.session.matchId))
+        : null;
+    final lineup = bundle.lineup ?? published?.valueOrNull;
     if (lineup == null) {
-      return const Center(
+      if (published?.isLoading == true) {
+        return const Center(
+          child: GrintaLoader.page(message: 'Chargement de la composition…'),
+        );
+      }
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
           child: Text(
-            'La composition n’est pas encore prête.',
+            published?.hasError == true
+                ? 'Impossible de charger la composition.'
+                : 'Composition non publiée.',
             textAlign: TextAlign.center,
           ),
         ),
