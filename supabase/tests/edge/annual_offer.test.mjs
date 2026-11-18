@@ -5,7 +5,7 @@ import { quoteAnnualOffer } from '../../functions/_shared/annual_offer.ts';
 // Entirely synthetic identifiers. No customer, code, payment or credentials.
 const credit = (n, overrides = {}) => ({
   id: `credit-${n}`, sponsorTeamId: 'team-a', referredTeamId: `team-${n}`,
-  status: 'validated', annualPaymentSucceeded: true, paidAmountCents: 10000,
+  status: 'validated', annualPaymentSucceeded: true, paidAmountCents: 7900,
   targetRenewalId: 'renewal-1', consumedRenewalId: null, ...overrides,
 });
 const promo = (overrides = {}) => ({
@@ -18,8 +18,8 @@ const input = (overrides = {}) => ({
 });
 
 for (const [count, percent, amount] of [
-  [0, 0, 10000], [1, 5, 9500], [2, 10, 9000],
-  [9, 45, 5500], [10, 50, 5000], [11, 50, 5000],
+  [0, 0, 7900], [1, 5, 7505], [2, 10, 7110],
+  [9, 45, 4345], [10, 50, 3950], [11, 50, 3950],
 ]) {
   test(`${count} distinct paid teams: ${percent}% and ${amount} cents`, () => {
     const result = quoteAnnualOffer(input({
@@ -35,7 +35,7 @@ for (const [count, percent, amount] of [
 
 test('initial subscription never spends referral rewards', () => {
   const result = quoteAnnualOffer(input({ periodKind: 'initial', referralCredits: [credit(1)] }));
-  assert.equal(result.amountDueCents, 10000);
+  assert.equal(result.amountDueCents, 7900);
   assert.deepEqual(result.referralCreditsToConsume, []);
 });
 
@@ -45,7 +45,7 @@ for (const overrides of [
   { targetRenewalId: 'renewal-2' }, { consumedRenewalId: 'renewal-1' },
 ]) {
   test(`ineligible referral: ${JSON.stringify(overrides)}`, () => {
-    assert.equal(quoteAnnualOffer(input({ referralCredits: [credit(1, overrides)] })).amountDueCents, 10000);
+    assert.equal(quoteAnnualOffer(input({ referralCredits: [credit(1, overrides)] })).amountDueCents, 7900);
   });
 }
 
@@ -58,7 +58,7 @@ test('half-price wins over 45%; no stacking or referral consumption', () => {
   const result = quoteAnnualOffer(input({
     promotion: promo(), referralCredits: Array.from({ length: 9 }, (_, n) => credit(n)),
   }));
-  assert.equal(result.amountDueCents, 5000);
+  assert.equal(result.amountDueCents, 3950);
   assert.equal(result.source, 'promotion');
   assert.equal(result.promotionToConsume, 'promo-synthetic');
   assert.deepEqual(result.referralCreditsToConsume, []);
@@ -69,7 +69,7 @@ test('equal offers preserve the single-use promo', () => {
     promotion: promo(), referralCredits: Array.from({ length: 10 }, (_, n) => credit(n)),
   }));
   assert.equal(result.source, 'referral');
-  assert.equal(result.amountDueCents, 5000);
+  assert.equal(result.amountDueCents, 3950);
   assert.equal(result.promotionToConsume, null);
   assert.equal(result.referralCreditsToConsume.length, 10);
 });
@@ -114,7 +114,7 @@ test('reject malformed ledger money and states', () => {
   for (const overrides of [
     { paidAmountCents: -1 }, { paidAmountCents: 0.5 }, { paidAmountCents: NaN },
     { paidAmountCents: Infinity }, { paidAmountCents: Number.MAX_SAFE_INTEGER + 1 },
-    { paidAmountCents: '10000' }, { annualPaymentSucceeded: 'true' },
+    { paidAmountCents: '7900' }, { annualPaymentSucceeded: 'true' },
     { status: 'paid' }, { id: '' }, { consumedRenewalId: '' },
   ]) assert.throws(() => quoteAnnualOffer(input({ referralCredits: [credit(1, overrides)] })), TypeError);
 });
@@ -145,9 +145,9 @@ test('all counts from 0 to 100 stay integral, nonnegative and capped', () => {
     for (const promotion of [null, promo(), promo({ kind: 'free_year' })]) {
       const result = quoteAnnualOffer({ ...data, promotion });
       assert(Number.isSafeInteger(result.amountDueCents));
-      assert(result.amountDueCents >= 0 && result.amountDueCents <= 10000);
+      assert(result.amountDueCents >= 0 && result.amountDueCents <= 7900);
       assert(result.referralDiscountPercent <= 50);
-      assert.equal(result.referenceAmountCents - result.amountDueCents, result.discountPercent * 100);
+      assert.equal(result.referenceAmountCents - result.amountDueCents, result.discountPercent * 79);
     }
   }
 });

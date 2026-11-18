@@ -13,7 +13,7 @@
 
 ## Produit — décisions validées
 
-Nom commercial **Petit Filet** (précédemment « Lucarne », changement intégré par PR #65). Application multiclub de football **à 11**, avec identité et maillots indépendants pour chaque club, « Homme du match » et emojis de badges préservés, objectif mai 2027. Le tarif, les paiements et les opérations commerciales restent à arbitrer.
+Nom commercial **Petit Filet** (précédemment « Lucarne », changement intégré par PR #65). Application multiclub de football **à 11**, avec identité et maillots indépendants pour chaque club, « Homme du match » et emojis de badges préservés, objectif mai 2027. Tarif décidé le 18/11/2026 : **forfait de 79 € par club et par an**. Les paiements et les opérations commerciales restent à arbitrer.
 
 **Décisions prioritaires nouvelles du 13/11 :**
 
