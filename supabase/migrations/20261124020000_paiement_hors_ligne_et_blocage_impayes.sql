@@ -41,8 +41,8 @@ as $$
   end + private.unpaid_grace_period()
 $$;
 
-revoke all on function private.unpaid_grace_period() from public;
-revoke all on function private.club_suspension_due_at(text, timestamptz, timestamptz) from public;
+revoke all on function private.unpaid_grace_period() from public, anon, authenticated;
+revoke all on function private.club_suspension_due_at(text, timestamptz, timestamptz) from public, anon, authenticated;
 grant execute on function private.unpaid_grace_period() to club_scope;
 grant execute on function private.club_suspension_due_at(text, timestamptz, timestamptz) to club_scope;
 
