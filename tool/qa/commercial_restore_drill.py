@@ -120,8 +120,12 @@ def _psql_files(environ: dict[str, str], args: list[str], timeout: int) -> None:
     if db.password:
         safe_env["PGPASSWORD"] = db.password
     result = subprocess.run(
+        # Import en super-utilisateur local : la structure contient des
+        # réglages (ex. log_min_messages sur une fonction) réservés au
+        # super-utilisateur. Les propriétaires d'origine sont rétablis par
+        # les ALTER … OWNER TO du dump. Pile jetable : mot de passe local.
         ["psql", "-X", "-q", "-v", "ON_ERROR_STOP=1", "-h", "127.0.0.1",
-         "-p", "54322", "-U", "postgres", "-d", "postgres", *args],
+         "-p", "54322", "-U", "supabase_admin", "-d", "postgres", *args],
         env=safe_env, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
         stderr=subprocess.PIPE, timeout=timeout, check=False,
     )
