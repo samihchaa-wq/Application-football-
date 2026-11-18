@@ -1,0 +1,229 @@
+name: "M09 - exercice de restauration de la sauvegarde commerciale (copie jetable isolée)"
+
+# Restaure la DERNIÈRE sauvegarde commerciale réussie (workflow Production
+# backup) dans une pile Supabase locale et jetable, à l'intérieur d'un espace
+# réseau sans aucune sortie vers Internet, puis vérifie :
+#   - les lignes de chaque table métier et Auth (identiques à la sauvegarde) ;
+#   - les octets de chaque fichier Storage (empreintes SHA-256) ;
+#   - une vraie connexion Auth d'un membre de chaque club et l'absence de toute
+#     fuite entre clubs par HTTP, l'accès anonyme fermé, les fichiers privés
+#     fermés ;
+#   - la durée totale (RTO mesuré) et l'âge de la sauvegarde (RPO constaté).
+#
+# Garanties :
+#   - aucune connexion à la base commerciale : seul l'artefact chiffré est lu ;
+#   - seul secret reçu : la phrase de déchiffrement, écrite dans un fichier
+#     0600, lue par gpg à l'intérieur de l'espace isolé puis détruite ;
+#   - la pile restaurée ne peut joindre ni e-mail, ni push, ni webhook : pas de
+#     route vers l'extérieur (vérifié avant et après le démarrage) ; les tâches
+#     planifiées sont désactivées dans la transaction d'import ;
+#   - les journaux GitHub sont publics : seuls des compteurs et des durées sont
+#     affichés, jamais une valeur de ligne ;
+#   - tout est détruit à la fin du job (runner éphémère).
+on:
+  workflow_dispatch:
+  schedule:
+    # Le lundi, une heure après la sauvegarde hebdomadaire (02:23 UTC).
+    - cron: '37 3 * * 1'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/commercial_restore_drill.yml'
+      - 'tool/qa/commercial_restore_drill.py'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: commercial-restore-drill
+  cancel-in-progress: false
+
+jobs:
+  restore-drill:
+    # Une PR venue d'une copie du dépôt ne reçoit pas le secret : ne pas lancer.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout commercial code only
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Run offline safety tests
+        run: |
+          python3 -m unittest discover -s tool/qa -p 'test_restore_isolation_gate.py' -v
+          python3 -m unittest discover -s tool/qa -p 'test_commercial_restore_drill.py' -v
+
+      - name: Setup pinned Supabase CLI
+        uses: supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf # v2
+        with:
+          version: 2.111.0
+
+      - name: Download latest encrypted commercial backup and check its checksum
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          run_json="$(gh run list -R "$GITHUB_REPOSITORY" --workflow production_backup.yml \
+            --status success --limit 1 --json databaseId,createdAt)"
+          run_id="$(jq -r '.[0].databaseId // empty' <<<"$run_json")"
+          created_at="$(jq -r '.[0].createdAt // empty' <<<"$run_json")"
+          if [ -z "$run_id" ]; then
+            echo '::error::Aucune sauvegarde commerciale réussie trouvée.'
+            exit 1
+          fi
+          mkdir -p "$RUNNER_TEMP/pf-backup"
+          gh run download "$run_id" -R "$GITHUB_REPOSITORY" \
+            -n "commercial-complete-backup-$run_id" -D "$RUNNER_TEMP/pf-backup"
+          cd "$RUNNER_TEMP/pf-backup"
+          test "$(ls -1 *.gpg | wc -l)" -eq 1
+          sha256sum -c --quiet ./*.gpg.sha256
+          echo "PF_BACKUP_RUN_ID=$run_id" >> "$GITHUB_ENV"
+          echo "PF_BACKUP_CREATED_AT=$created_at" >> "$GITHUB_ENV"
+          echo "Sauvegarde du $created_at (exécution $run_id) téléchargée ; empreinte conforme."
+
+      - name: Cache Supabase service images before cutting the network
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/pf-preload-stack"
+          cd "$RUNNER_TEMP/pf-preload-stack"
+          supabase init >/dev/null
+          supabase start -x studio,imgproxy,edge-runtime,logflare,vector,realtime >/dev/null
+          docker ps --format '{{.Image}}' | sort -u > "$RUNNER_TEMP/pf-images-list.txt"
+          test -s "$RUNNER_TEMP/pf-images-list.txt"
+          supabase stop --no-backup >/dev/null
+          xargs -a "$RUNNER_TEMP/pf-images-list.txt" docker save -o "$RUNNER_TEMP/pf-local-images.tar"
+          test -s "$RUNNER_TEMP/pf-local-images.tar"
+
+      - name: Hand the decryption passphrase to a private file
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          if [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo '::error::Phrase de déchiffrement absente.'
+            exit 1
+          fi
+          printf '%s' "$BACKUP_PASSPHRASE" > "$RUNNER_TEMP/pf-pass"
+
+      - name: Restore and verify inside an isolated network namespace
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo --preserve-env=RUNNER_TEMP,PATH,GITHUB_STEP_SUMMARY,PF_BACKUP_CREATED_AT,PF_BACKUP_RUN_ID \
+            unshare --net -- bash -euo pipefail <<'PF_RESTORE'
+          umask 077
+          workspace="$(pwd)"
+          root="$(mktemp -d)"
+          daemon_pid=""
+          cleanup() {
+            shred -u "$RUNNER_TEMP/pf-pass" 2>/dev/null || rm -f "$RUNNER_TEMP/pf-pass"
+            if [ -d "$root/local/supabase" ]; then
+              (cd "$root/local" && supabase stop --no-backup >/dev/null 2>&1) || true
+            fi
+            if [ -n "$daemon_pid" ]; then
+              kill "$daemon_pid" 2>/dev/null || true
+              wait "$daemon_pid" 2>/dev/null || true
+            fi
+            find "$root" -type f -path '*/clear/*' -exec shred -u {} + 2>/dev/null || true
+            rm -rf "$root"
+          }
+          trap cleanup EXIT
+          ip link set lo up
+
+          # 1. Prévol strict AVANT Docker : seule l'interface lo existe.
+          export RESTORE_LOCAL_DB_URL='postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+          export RESTORE_LOCAL_API_URL='http://127.0.0.1:54321'
+          python3 tool/qa/restore_isolation_gate.py preflight
+
+          # 2. Pile Supabase locale, images préchargées, sans registre.
+          dockerd --host="unix://$root/docker.sock" \
+            --data-root="$root/data" --exec-root="$root/exec" \
+            --pidfile="$root/docker.pid" --storage-driver=overlay2 \
+            --iptables=false --ip6tables=false --bridge=none \
+            --host-gateway-ip=172.19.0.1 \
+            --ip-forward=false --ip-masq=false \
+            >"$root/daemon.log" 2>&1 &
+          daemon_pid=$!
+          export DOCKER_HOST="unix://$root/docker.sock"
+          for count in $(seq 1 30); do docker info >/dev/null 2>&1 && break; sleep 1; done
+          docker info >/dev/null
+          docker load -i "$RUNNER_TEMP/pf-local-images.tar" >/dev/null
+          mkdir -p "$root/local" && cd "$root/local"
+          supabase init >/dev/null
+          if ! supabase start -x studio,imgproxy,edge-runtime,logflare,vector,realtime >"$root/stack.log" 2>&1; then
+            echo '::error::Pile Supabase isolée impossible à démarrer.'
+            tail -n 12 "$root/stack.log" | sed -E 's#https?://[^ ]+#(URL masquée)#g'
+            exit 1
+          fi
+          status_env="$(supabase status -o env 2>/dev/null)"
+          export LOCAL_ANON_KEY="$(sed -nE 's/^ANON_KEY="?([^"]*)"?$/\1/p' <<<"$status_env")"
+          export LOCAL_SERVICE_KEY="$(sed -nE 's/^SERVICE_ROLE_KEY="?([^"]*)"?$/\1/p' <<<"$status_env")"
+          test -n "$LOCAL_ANON_KEY" && test -n "$LOCAL_SERVICE_KEY"
+          cd "$workspace"
+
+          # 3. Chrono de reprise : du déchiffrement à la dernière vérification.
+          t0=$(date +%s)
+          clear="$root/clear"
+          mkdir -p "$clear"
+          gpg --batch --yes --quiet --pinentry-mode loopback \
+            --passphrase-file "$RUNNER_TEMP/pf-pass" \
+            --decrypt -o "$clear/backup.tar.gz" "$RUNNER_TEMP"/pf-backup/*.gpg
+          shred -u "$RUNNER_TEMP/pf-pass"
+          python3 tool/qa/verify_commercial_backup_tar.py "$clear/backup.tar.gz"
+          # Chemins déjà contrôlés un par un par le vérificateur ci-dessus.
+          tar -xzf "$clear/backup.tar.gz" -C "$clear" --no-same-owner --no-same-permissions
+          rm -f "$clear/backup.tar.gz"
+
+          python3 tool/qa/commercial_restore_drill.py import "$clear/payload" | tee "$root/import.json"
+          python3 tool/qa/commercial_restore_drill.py storage "$clear/payload" | tee "$root/storage.json"
+          python3 tool/qa/commercial_restore_drill.py access | tee "$root/access.json"
+          t1=$(date +%s)
+
+          python3 - "$root" "$t0" "$t1" <<'PY'
+          import json, os, sys
+          from datetime import datetime, timezone
+          root, t0, t1 = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
+          result = {}
+          for part in ("import", "storage", "access"):
+              with open(f"{root}/{part}.json") as stream:
+                  result.update(json.loads(stream.read().strip().splitlines()[-1]))
+          created = datetime.fromisoformat(os.environ["PF_BACKUP_CREATED_AT"].replace("Z", "+00:00"))
+          age_h = (datetime.now(timezone.utc) - created).total_seconds() / 3600
+          lines = [
+              "## Exercice de restauration : RÉUSSI",
+              "",
+              f"- Sauvegarde restaurée : {os.environ['PF_BACKUP_CREATED_AT']} (âge {age_h:.1f} h)",
+              f"- Durée de reprise mesurée (déchiffrement → dernière vérification) : {(t1 - t0) / 60:.1f} min",
+              f"- Tables Auth et métier comparées : {result['sql_tables_checked']}, "
+              f"{result['auth_and_business_rows_checked']} lignes identiques à la sauvegarde",
+              f"- Fichiers Storage relus : {result['storage_objects_verified']} "
+              f"({result['storage_bytes_verified']} octets, empreintes conformes)",
+              f"- Connexions Auth réelles : {result['auth_sessions_opened']} "
+              f"(un membre par club, {result['clubs_checked']} clubs)",
+              f"- Tables par club contrôlées par HTTP : {result['club_tables_checked']}, "
+              f"fuites entre clubs : {result['cross_club_leaks']}",
+              "- Accès anonyme et fichiers privés : fermés",
+              "- Tâches planifiées restaurées : désactivées ; aucune sortie réseau possible",
+              "",
+              "Non couvert : fonctions Edge, secrets hors base (coffre, clés push, SMTP),",
+              "réglages Auth hébergés. Ils se remettent en place à la main (voir docs).",
+          ]
+          text = "\n".join(lines)
+          print(text)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:
+              summary.write(text + "\n")
+          PY
+          PF_RESTORE
+
+      - name: Remove any leftover secret or backup file
+        if: always()
+        shell: bash
+        run: |
+          shred -u "$RUNNER_TEMP/pf-pass" 2>/dev/null || true
+          rm -rf "$RUNNER_TEMP/pf-backup"
