@@ -4,6 +4,8 @@ import 'package:as_grinta/features/match_live/data/match_live_repository.dart';
 import 'package:as_grinta/features/match_live/domain/match_live_add_player_options.dart';
 import 'package:as_grinta/features/match_live/domain/match_live_state_bundle.dart';
 import 'package:as_grinta/features/match_live/presentation/match_live_pre_kickoff_page.dart';
+import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:as_grinta/features/sports_management/domain/sport_match_finalization.dart';
 import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
 import 'package:flutter/material.dart';
@@ -104,6 +106,37 @@ void main() {
           find.textContaining('Aucun titulaire n’est encore placé'),
           findsNothing,
         );
+      },
+    );
+
+    testWidgets(
+      'un spectateur voit la composition publiée avant le coup d’envoi',
+      (tester) async {
+        final published = _bundle(fieldPlayers: 1);
+        final awaiting = MatchLiveStateBundle(
+          session: published.session,
+          lineup: null,
+          events: const [],
+          substituteCounts: const {},
+        );
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              publishedMatchCompositionProvider('match-1')
+                  .overrideWith((ref) async => published.lineup),
+            ],
+            child: MaterialApp(
+              home: Scaffold(
+                body: SingleChildScrollView(
+                  child: MatchLivePreKickoffSpectatorView(bundle: awaiting),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.byType(CompositionPitchWithBench), findsOneWidget);
+        expect(find.text('Composition non publiée.'), findsNothing);
       },
     );
 
