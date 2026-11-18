@@ -394,9 +394,6 @@ class _UpcomingModules extends ConsumerWidget {
         final effectif = _MatchModule(
           icon: Icons.groups_2_outlined,
           title: 'Effectif',
-          subtitle: isAdmin
-              ? 'Sélectionner puis enregistrer l’effectif.'
-              : 'Consulter les joueurs convoqués.',
           onTap: () => context.push(
             isAdmin
                 ? '/matches/$matchId/composition?step=effectif'
@@ -406,9 +403,6 @@ class _UpcomingModules extends ConsumerWidget {
         final composition = _MatchModule(
           icon: Icons.dashboard_customize_outlined,
           title: 'Composition',
-          subtitle: isAdmin
-              ? 'Créer, enregistrer et publier la composition.'
-              : 'Consulter la composition publiée.',
           onTap: () {
             // La vidéo de la compo peut se lancer à l'arrivée : l'appui la
             // débloque sur iPhone.
@@ -466,13 +460,11 @@ class _MatchModule extends StatelessWidget {
   const _MatchModule({
     required this.icon,
     required this.title,
-    required this.subtitle,
     required this.onTap,
   });
 
   final IconData icon;
   final String title;
-  final String subtitle;
   final VoidCallback onTap;
 
   @override
@@ -494,14 +486,6 @@ class _MatchModule extends StatelessWidget {
                     .textTheme
                     .titleLarge
                     ?.copyWith(fontWeight: FontWeight.w400),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                subtitle,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: AppTheme.textSecondary),
               ),
               const SizedBox(height: 12),
               const Align(

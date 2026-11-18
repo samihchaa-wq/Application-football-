@@ -220,7 +220,6 @@ class _CalendarMatchesViewState extends ConsumerState<CalendarMatchesView> {
         selectedSeasonId == null) {
       return const _MonthEmptyState(
         title: 'Aucune saison disponible',
-        message: 'Les saisons apparaîtront ici dès qu’elles seront créées.',
       );
     }
 

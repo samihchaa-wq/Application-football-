@@ -339,11 +339,9 @@ class _MinuteFieldState extends State<_MinuteField> {
           decoration: InputDecoration(
             isDense: true,
             labelText: 'Min',
-            hintText: '?',
             filled: true,
             fillColor: AppTheme.surface,
             labelStyle: const TextStyle(color: AppTheme.textFaint),
-            hintStyle: const TextStyle(color: AppTheme.textFaint),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 8,
               vertical: 10,

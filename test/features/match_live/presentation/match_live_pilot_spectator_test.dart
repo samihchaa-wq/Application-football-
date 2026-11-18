@@ -1,5 +1,6 @@
 import 'package:as_grinta/core/club/club_rules.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/formation_pitch_editor.dart';
+import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:as_grinta/features/match_live/presentation/widgets/live_bench_tile.dart';
 import 'package:as_grinta/features/match_live/data/match_live_repository.dart';
 import 'package:as_grinta/features/match_live/domain/match_live_add_player_options.dart';
@@ -182,7 +183,10 @@ void main() {
       'avant le coup d’envoi : spectateur voit la composition, coach prépare',
       (tester) async {
         await _pump(tester, state: 'not_started', coach: false);
-        expect(find.text('Le match n’a pas encore démarré'), findsOneWidget);
+        // La composition reste visible avant le coup d'envoi, sans bandeau
+        // explicatif redondant ni commande réservée au coach.
+        expect(find.byType(CompositionPitchWithBench), findsOneWidget);
+        expect(find.text('Le match n’a pas encore démarré'), findsNothing);
         expect(find.text('Démarrer le match'), findsNothing);
 
         await _pump(tester, state: 'not_started');

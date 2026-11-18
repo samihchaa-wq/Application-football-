@@ -80,9 +80,6 @@ class _RosterList extends ConsumerWidget {
                 child: GrintaEmptyState(
                   icon: Icons.groups_rounded,
                   title: 'Effectif vide',
-                  message: 'Les membres validés apparaissent ici tout seuls. '
-                      'Ajoute avec le bouton ci-dessus un joueur qui n’a pas '
-                      'encore de compte.',
                   compact: true,
                 ),
               )

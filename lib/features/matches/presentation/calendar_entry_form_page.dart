@@ -324,7 +324,6 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
         maxLength: 120,
         decoration: const InputDecoration(
           labelText: 'Nom de l’événement',
-          hintText: 'Ex. Soirée du club, repas, réunion…',
           prefixIcon: Icon(Icons.edit_calendar_outlined),
         ),
         validator: (raw) {
@@ -345,7 +344,6 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
         maxLength: 300,
         decoration: const InputDecoration(
           labelText: 'Lieu de rendez-vous',
-          hintText: 'Terrain, adresse, salle, restaurant…',
           prefixIcon: Icon(Icons.place_outlined),
           alignLabelWithHint: true,
         ),
@@ -467,7 +465,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
                           textCapitalization: TextCapitalization.words,
                           textInputAction: TextInputAction.done,
                           decoration: const InputDecoration(
-                            hintText: 'Rechercher...',
+                            labelText: 'Rechercher',
                             contentPadding: EdgeInsets.symmetric(
                               horizontal: 12,
                               vertical: 16,
@@ -583,7 +581,6 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
             maxLength: 300,
             decoration: const InputDecoration(
               labelText: 'Adresse (facultatif)',
-              hintText: 'Terrain, rue, ville…',
               alignLabelWithHint: true,
             ),
           ),

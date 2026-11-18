@@ -230,7 +230,6 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
               autocorrect: false,
               decoration: const InputDecoration(
                 labelText: 'Code d’invitation du club',
-                helperText: 'Donné par l’administrateur de ton club.',
                 prefixIcon: Icon(Icons.key_outlined),
               ),
             )
@@ -254,7 +253,6 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                   textCapitalization: TextCapitalization.characters,
                   decoration: const InputDecoration(
                     labelText: 'Nom court (facultatif)',
-                    helperText: 'Affiché sur les scores. Ex. : FCV',
                     prefixIcon: Icon(Icons.short_text),
                   ),
                 ),

@@ -191,7 +191,6 @@ class _OpponentStadiumLibraryPageState
               enabled: !_saving,
               decoration: const InputDecoration(
                 labelText: 'Rechercher',
-                hintText: 'Équipe, stade ou adresse',
                 prefixIcon: Icon(Icons.search_rounded),
               ),
             ),
@@ -366,7 +365,6 @@ class _OpponentStadiumEditorState extends State<_OpponentStadiumEditor> {
                 maxLength: 120,
                 decoration: const InputDecoration(
                   labelText: 'Équipe',
-                  hintText: 'Ex. FC Les Tilleuls',
                   prefixIcon: Icon(Icons.shield_outlined),
                 ),
                 validator: (raw) {
@@ -383,7 +381,6 @@ class _OpponentStadiumEditorState extends State<_OpponentStadiumEditor> {
                 maxLength: 120,
                 decoration: const InputDecoration(
                   labelText: 'Stade / terrain actuel',
-                  hintText: 'Ex. Stade municipal',
                   prefixIcon: Icon(Icons.stadium_outlined),
                 ),
               ),
@@ -397,7 +394,6 @@ class _OpponentStadiumEditorState extends State<_OpponentStadiumEditor> {
                 maxLength: 300,
                 decoration: const InputDecoration(
                   labelText: 'Adresse',
-                  hintText: 'Rue, code postal, ville…',
                   prefixIcon: Icon(Icons.place_outlined),
                   alignLabelWithHint: true,
                 ),

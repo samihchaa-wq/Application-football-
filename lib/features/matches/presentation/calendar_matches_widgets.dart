@@ -212,7 +212,6 @@ class _ModernMonthView extends ConsumerWidget {
               height: 360,
               child: _MonthEmptyState(
                 title: 'Aucun rendez-vous en ${_monthLabel(month)}',
-                message: 'Change de mois avec les flèches pour continuer.',
               ),
             ),
           ],
@@ -346,8 +345,6 @@ class _HistoricalMonthView extends StatelessWidget {
                   height: 360,
                   child: _MonthEmptyState(
                     title: 'Aucun rendez-vous en ${_monthLabel(month)}',
-                    message:
-                        'Historique $seasonName — change de mois avec les flèches.',
                   ),
                 ),
               ],
@@ -596,10 +593,9 @@ class MonthlyMatchCard extends ConsumerWidget {
 }
 
 class _MonthEmptyState extends StatelessWidget {
-  const _MonthEmptyState({required this.title, required this.message});
+  const _MonthEmptyState({required this.title});
 
   final String title;
-  final String message;
 
   @override
   Widget build(BuildContext context) {
@@ -609,7 +605,6 @@ class _MonthEmptyState extends StatelessWidget {
         child: GrintaEmptyState(
           icon: Icons.event_busy_rounded,
           title: title,
-          message: message,
           compact: true,
         ),
       ),

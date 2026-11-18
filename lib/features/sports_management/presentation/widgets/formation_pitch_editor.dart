@@ -652,7 +652,7 @@ class _FormationPitchEditorState extends State<FormationPitchEditor> {
                                 photoUrl: entry.photoUrl,
                                 name: entry.displayName,
                                 lastName: entry.lastInitial,
-                                isGoalkeeper: entry.wearsGoalkeeperKit,
+                                isGoalkeeper: slot.label == 'GB',
                                 size: avatarSize,
                               ),
                               if (finishedBenchCount > 0)

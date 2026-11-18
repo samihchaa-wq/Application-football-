@@ -618,9 +618,7 @@ class _AwardSheetState extends ConsumerState<_AwardSheet> {
           TextField(
             decoration: InputDecoration(
               prefixIcon: const Icon(Icons.search),
-              hintText: goalkeeperOnly
-                  ? 'Rechercher un gardien…'
-                  : 'Rechercher une personne…',
+              labelText: 'Rechercher',
             ),
             onChanged: (v) => setState(() => _query = v.trim().toLowerCase()),
           ),

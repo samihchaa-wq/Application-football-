@@ -137,14 +137,13 @@ class MatchAvailabilityBoardContent extends StatelessWidget {
                       ),
                   ],
                 ),
-                const SizedBox(height: 5),
-                Text(
-                  isInternal
-                      ? 'Mise à jour en direct'
-                      : 'Mise à jour en direct · limite indicative '
-                          '${board.squadSizeLimit}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+                if (!isInternal) ...[
+                  const SizedBox(height: 5),
+                  Text(
+                    'Limite indicative : ${board.squadSizeLimit}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
               ],
             ),
           ),
