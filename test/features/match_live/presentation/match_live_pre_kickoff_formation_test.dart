@@ -7,7 +7,6 @@ import 'package:as_grinta/features/match_live/presentation/match_live_pre_kickof
 import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
 import 'package:as_grinta/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:as_grinta/features/sports_management/domain/sport_match_finalization.dart';
-import 'package:as_grinta/features/sports_management/data/match_composition_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
