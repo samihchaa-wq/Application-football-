@@ -120,9 +120,22 @@ void main() {
       'FC Villeneuve',
     );
     await tester.tap(find.widgetWithText(FilledButton, 'Créer mon club'));
+    await tester.pump();
+    expect(find.textContaining('indique ton adresse e-mail'), findsOneWidget);
+    expect(repository.created, isNull);
+    ScaffoldMessenger.of(tester.element(find.byType(AuthRegisterPage)))
+        .clearSnackBars();
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('register-email')),
+      'karim@example.com',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Créer mon club'));
     await tester.pumpAndSettle();
 
     expect(repository.created, 'FC Villeneuve');
+    expect(repository.lastEmail, 'karim@example.com');
     expect(repository.createdContract, clubContractVersion);
     expect(find.text('Équipe créée : FC Villeneuve'), findsOneWidget);
     expect(find.textContaining('Connecte-toi, puis'), findsOneWidget);
@@ -225,6 +238,10 @@ void main() {
     await tester.ensureVisible(name);
     await tester.pumpAndSettle();
     await tester.enterText(name, 'Equipe Fictive');
+    final email = find.byKey(const Key('register-email'));
+    await tester.ensureVisible(email);
+    await tester.pumpAndSettle();
+    await tester.enterText(email, 'karim@example.com');
     await fillIdentity(tester);
 
     final submit = find.widgetWithText(FilledButton, 'Créer mon club');
@@ -296,6 +313,7 @@ class _FakeClubRepository implements ClubRepository {
     if (failure != null) throw failure!;
     created = clubName;
     createdContract = acceptedClubContractVersion;
+    lastEmail = email;
     return ClubRegistration(
       username: 'karimb',
       clubName: clubName,

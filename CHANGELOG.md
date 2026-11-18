@@ -6,6 +6,9 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- inscription : l'adresse e-mail est obligatoire pour créer un club
+  (facultative pour rejoindre un club). Elle est enregistrée en attente de
+  confirmation même tant que l'envoi d'e-mails n'est pas configuré ;
 - encaissement : dans le poste de contrôle, bouton « Paiement reçu » (un an
   d'abonnement, paiement journalisé) et « Prolonger l'essai de 30 jours ».
   Chaque nuit, un club qui n'a pas payé 15 jours après la fin de son essai
