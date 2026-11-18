@@ -6,6 +6,9 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- inscription : l'adresse e-mail est obligatoire pour créer un club
+  (facultative pour rejoindre un club). Elle est enregistrée en attente de
+  confirmation même tant que l'envoi d'e-mails n'est pas configuré ;
 - abonnement : forfait de 79 € par club et par an, quel que soit le nombre
   de joueurs (au lieu de 10 € par joueur). Tous les clubs existants (clubs
   de test uniquement) passent au forfait.

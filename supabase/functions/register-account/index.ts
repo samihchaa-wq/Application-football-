@@ -130,8 +130,8 @@ Deno.serve(async (req: Request) => {
     .replace(/[\s-]/g, "");
   const clubName = String(body.clubName ?? "").trim().replace(/\s+/g, " ");
   const clubShortName = String(body.clubShortName ?? "").trim();
-  // Facultative : sert à confirmer l'identité et à retrouver le compte par
-  // e-mail en cas de mot de passe perdu.
+  // Obligatoire pour créer un club (contact pour l'abonnement), facultative
+  // pour rejoindre un club. Sert aussi à retrouver le compte par e-mail.
   const contactEmail = normalizeEmail(body.email);
 
   // Les requêtes manifestement invalides ne consomment pas le quota partagé.
@@ -158,6 +158,12 @@ Deno.serve(async (req: Request) => {
       /[\u0000-\u001f\u007f]/.test(clubName + clubShortName))
   ) {
     return jsonResponse({ error: "Nom du club invalide." }, 400);
+  }
+  if (mode === "create" && !contactEmail) {
+    return jsonResponse(
+      { error: "Pour créer un club, indique ton adresse e-mail." },
+      400,
+    );
   }
   if (contactEmail && !isValidEmail(contactEmail)) {
     return jsonResponse({ error: "Adresse e-mail invalide." }, 400);
@@ -335,11 +341,12 @@ Deno.serve(async (req: Request) => {
 
     // Le compte est créé : l'envoi du lien de confirmation est un plus. S'il
     // échoue, l'inscription reste réussie et l'adresse pourra être confirmée
-    // plus tard depuis le profil.
+    // plus tard depuis le profil. L'adresse est enregistrée (en attente de
+    // confirmation) même quand l'envoi d'e-mails n'est pas encore configuré.
     let emailConfirmationSent = false;
     const publicAppUrl = Deno.env.get("PUBLIC_APP_URL")?.trim();
     const mail = readMailConfig();
-    if (contactEmail && mail && publicAppUrl) {
+    if (contactEmail) {
       try {
         const token = randomToken();
         const { data: shouldSend, error: emailError } = await admin.rpc(
@@ -351,7 +358,7 @@ Deno.serve(async (req: Request) => {
           },
         );
         if (emailError) throw emailError;
-        if (shouldSend === true) {
+        if (shouldSend === true && mail && publicAppUrl) {
           const message = confirmationMail(
             confirmationLink(publicAppUrl, token),
           );
