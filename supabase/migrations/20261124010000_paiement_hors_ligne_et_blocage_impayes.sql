@@ -32,6 +32,7 @@ create table private.club_payments (
 );
 
 create index club_payments_club_idx on private.club_payments (club_id, recorded_at desc);
+create index club_payments_recorded_by_idx on private.club_payments (recorded_by);
 
 alter table private.club_payments enable row level security;
 revoke all on private.club_payments from public, anon, authenticated;
