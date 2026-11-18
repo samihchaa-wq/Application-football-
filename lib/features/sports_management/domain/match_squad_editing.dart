@@ -62,7 +62,8 @@ MatchComposition placeEntryOnSlot(
                   MatchCompositionZone.field,
                   x: oldPosition.dx,
                   y: oldPosition.dy,
-                  slotLabel: moving.slotLabel,
+                  slotLabel: moving.slotLabel ??
+                      nearestMatchSheetSlotLabel(oldPosition),
                 )
         else
           entry,
