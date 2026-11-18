@@ -168,7 +168,6 @@ class _AdminNotificationPageState extends ConsumerState<AdminNotificationPage> {
                           textCapitalization: TextCapitalization.sentences,
                           decoration: const InputDecoration(
                             labelText: 'Titre',
-                            hintText: 'Entraînement déplacé',
                             border: OutlineInputBorder(),
                           ),
                         ),
@@ -181,7 +180,6 @@ class _AdminNotificationPageState extends ConsumerState<AdminNotificationPage> {
                           textCapitalization: TextCapitalization.sentences,
                           decoration: const InputDecoration(
                             labelText: 'Message',
-                            hintText: 'Rendez-vous à 19h au lieu de 18h30.',
                             border: OutlineInputBorder(),
                             alignLabelWithHint: true,
                           ),
