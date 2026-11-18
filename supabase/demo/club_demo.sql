@@ -107,26 +107,50 @@ from unnest(
 -- ---------------------------------------------------------------------------
 -- 1. Suppression de l'ancien club de démo et de ses comptes
 -- ---------------------------------------------------------------------------
--- Ordre imposé : le club d'abord (ses données partent en cascade), les
--- comptes de connexion ensuite. Sont aussi retirés les comptes qu'un prospect
--- aurait créés dans le club de démo avec son code d'invitation.
+-- Un simple « delete from public.clubs » échoue dès qu'un club a joué :
+-- le journal des badges refuse toute suppression, et des gardes protègent
+-- les matchs terminés et les saisons closes. On efface donc, gardes
+-- suspendues pour cette transaction seulement, chaque ligne portant le
+-- club dans toutes les tables qui ont une colonne club_id, puis le club.
+-- Les comptes de connexion sont supprimés ensuite, gardes rétablies. Sont
+-- aussi retirés les comptes qu'un prospect aurait créés dans le club de démo
+-- avec son code d'invitation. Les comptes éditeur ne sont jamais touchés.
 do $$
 declare
   v_old_clubs uuid[];
   v_users uuid[];
+  v_table record;
 begin
-  select array_agg(distinct profile.club_id) into v_old_clubs
+  select coalesce(array_agg(distinct profile.club_id), '{}') into v_old_clubs
   from public.profiles profile
   where profile.id::text like 'de000000-0000-4000-8000-%';
 
-  select array_agg(distinct profile.id) into v_users
+  select coalesce(array_agg(distinct profile.id), '{}') into v_users
   from public.profiles profile
-  where profile.club_id = any(coalesce(v_old_clubs, '{}'))
+  where profile.club_id = any(v_old_clubs)
     and profile.id not in (select operator.user_id from private.platform_operators operator);
 
-  delete from public.clubs where id = any(coalesce(v_old_clubs, '{}'));
+  if cardinality(v_old_clubs) > 0 then
+    set local session_replication_role = replica;
+    for v_table in
+      select namespace.nspname as schema_name, class.relname as table_name
+      from pg_attribute attribute
+      join pg_class class on class.oid = attribute.attrelid
+      join pg_namespace namespace on namespace.oid = class.relnamespace
+      where attribute.attname = 'club_id'
+        and not attribute.attisdropped
+        and class.relkind in ('r', 'p')
+        and namespace.nspname in ('public', 'private')
+    loop
+      execute format('delete from %I.%I where club_id = any($1)', v_table.schema_name, v_table.table_name)
+      using v_old_clubs;
+    end loop;
+    delete from public.clubs where id = any(v_old_clubs);
+    set local session_replication_role = origin;
+  end if;
+
   delete from auth.users
-  where id = any(coalesce(v_users, '{}'))
+  where id = any(v_users)
      or id::text like 'de000000-0000-4000-8000-%';
 end;
 $$;

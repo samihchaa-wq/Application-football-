@@ -36,6 +36,33 @@ select is(
   0::bigint,
   'l’ancien club de démo est supprimé avec ses données'
 );
+create function pg_temp.rows_left_for_club(p_club uuid) returns bigint
+language plpgsql as $$
+declare
+  v_table record;
+  v_count bigint;
+  v_total bigint := 0;
+begin
+  for v_table in
+    select namespace.nspname as schema_name, class.relname as table_name
+    from pg_attribute attribute
+    join pg_class class on class.oid = attribute.attrelid
+    join pg_namespace namespace on namespace.oid = class.relnamespace
+    where attribute.attname = 'club_id' and not attribute.attisdropped
+      and class.relkind in ('r', 'p') and namespace.nspname in ('public', 'private')
+  loop
+    execute format('select count(*) from %I.%I where club_id = $1', v_table.schema_name, v_table.table_name)
+    into v_count using p_club;
+    v_total := v_total + v_count;
+  end loop;
+  return v_total;
+end;
+$$;
+select is(
+  pg_temp.rows_left_for_club((select club_id from first_run)),
+  0::bigint,
+  'aucune ligne de l’ancien club ne reste, dans aucune table'
+);
 select is(
   (select count(*) from public.clubs where name = 'FC Démo'),
   1::bigint,
