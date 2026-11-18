@@ -96,7 +96,7 @@ create temporary table demo_players (
 grant select on demo_players to authenticated;
 
 insert into demo_players (number, profile_id, first_name, last_name)
-select n, pg_temp.demo_id(n), names.first_name, names.last_name
+select n::integer, pg_temp.demo_id(n::integer), names.first_name, names.last_name
 from unnest(
   array['Lucas','Hugo','Nathan','Théo','Maxime','Antoine','Julien','Romain','Kevin',
         'Yanis','Mehdi','Thomas','Sofiane','Baptiste','Alexis','Florian','Karim','Quentin'],
