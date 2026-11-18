@@ -57,6 +57,8 @@ void main() {
       final placed = next.entries.firstWhere((e) => e.participantId == 'a');
       expect(placed.zone, MatchCompositionZone.field);
       expect(placed.x, formation.slots.first.position.dx);
+      expect(placed.slotLabel, 'GB');
+      expect(placed.wearsGoalkeeperKit, isTrue);
       expect(placed.selectionStatus, 'starter');
     });
 
