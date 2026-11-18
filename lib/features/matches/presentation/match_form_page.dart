@@ -485,7 +485,6 @@ class _MatchFormPageState extends ConsumerState<MatchFormPage> {
                   maxLength: 300,
                   decoration: const InputDecoration(
                     labelText: 'Adresse (facultatif)',
-                    hintText: 'Terrain, rue, ville…',
                     prefixIcon: Icon(Icons.place_outlined),
                     alignLabelWithHint: true,
                   ),
