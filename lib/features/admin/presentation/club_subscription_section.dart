@@ -96,8 +96,14 @@ class _SubscriptionCard extends StatelessWidget {
     final theme = Theme.of(context);
     final advice = _advice;
     final players = subscription.billablePlayers;
-    final price = formatEuros(subscription.pricePerPlayerCents);
+    final perPlayer = subscription.pricePerPlayerCents;
     final base = subscription.basePriceCents;
+    // Forfait seul (tarif standard) : le nombre de joueurs ne change rien.
+    final pricing = perPlayer == 0
+        ? 'Forfait club, quel que soit le nombre de joueurs'
+        : '$players joueur${players > 1 ? 's' : ''} dans l’effectif de la '
+            'saison × ${formatEuros(perPlayer)} par an'
+            '${base > 0 ? ' + forfait de ${formatEuros(base)}' : ''}';
 
     return Card(
       key: const Key('club-subscription-card'),
@@ -112,11 +118,7 @@ class _SubscriptionCard extends StatelessWidget {
           children: [
             Text(_headline, style: theme.textTheme.titleSmall),
             const SizedBox(height: 8),
-            Text(
-              '$players joueur${players > 1 ? 's' : ''} dans l’effectif de la '
-              'saison × $price par an'
-              '${base > 0 ? ' + forfait de ${formatEuros(base)}' : ''}',
-            ),
+            Text(pricing),
             const SizedBox(height: 4),
             Text(
               'Total annuel : ${formatEuros(subscription.yearlyAmountCents)}',

@@ -76,8 +76,10 @@ Créer deux clubs A et B avec administrateurs et joueurs distincts. Vérifier :
   confidentialité, conditions d'abonnement, accord sur les données) :
   `lib/features/legal/domain/legal_documents.dart` contient encore des
   **champs à compléter**. Voir `docs/legal/README.md`.
-- Confirmer le modèle économique : le code prépare actuellement un prix
-  indicatif de **10 € par joueur et par an**, pas un tarif validé.
+- Modèle économique **décidé le 18/11/2026 : forfait de 79 € par club et
+  par an**, quel que soit le nombre de joueurs (migration
+  `20261124000000_forfait_annuel_club.sql`, conditions d'abonnement en
+  version `2026-11-18`).
 - Choisir et intégrer les paiements, ou assumer explicitement un paiement
   hors ligne. Le code Stripe n'est pas opérationnel.
 - Choisir le nom définitif du produit ; des noms techniques historiques
