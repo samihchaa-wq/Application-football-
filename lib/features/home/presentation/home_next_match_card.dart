@@ -5,7 +5,6 @@ import 'package:as_grinta/core/theme/calendar_card_palette.dart';
 import 'package:as_grinta/core/widgets/match_address_sheet.dart';
 import 'package:as_grinta/core/widgets/match_date_column.dart';
 import 'package:as_grinta/core/widgets/calendar_scoreline.dart';
-import 'package:as_grinta/core/widgets/match_fixture.dart';
 import 'package:as_grinta/features/match_live/data/match_live_notification_repository.dart';
 import 'package:as_grinta/features/match_live/presentation/widgets/match_live_notification_bell.dart';
 import 'package:as_grinta/features/matches/domain/match_model.dart';
@@ -86,17 +85,11 @@ class HomeNextMatchCard extends ConsumerWidget {
                         color: AppTheme.textPrimary,
                       ),
                 )
-              : MatchFixture(
+              : CalendarScoreline(
                   homeName: homeName,
                   awayName: awayName,
                   grintaIsHome: match.isHome,
-                  nameStyle: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontSize: 16,
-                        height: 1.1,
-                        fontWeight: FontWeight.w400,
-                      ),
                   foreground: AppTheme.textPrimary,
-                  textAlign: TextAlign.start,
                 ),
         ),
         const Icon(
