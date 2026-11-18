@@ -127,7 +127,7 @@ class _SeasonCard extends ConsumerWidget {
         title: const Text('Nouvelle saison'),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(hintText: '2026-2027'),
+          decoration: const InputDecoration(labelText: 'Nom de la saison'),
         ),
         actions: [
           TextButton(
