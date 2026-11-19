@@ -55,9 +55,11 @@ moins les conditions d'abonnement dès que possible.
   automatique à la suppression d'un compte, page « Anciens joueurs » pour les
   administrateurs. Limite connue : l'historique des notifications (gardé
   90 jours) peut encore contenir l'ancien nom jusqu'à son effacement.
-- Vérifier que le compte technique `00000000-0000-0000-0000-000000000001`
-  existe dans la base commerciale : sans lui, toute suppression de compte
-  échoue (déjà le cas avant cette branche).
+- Suppression de compte sans compte technique (migration `20261129020000`) :
+  les traces d'auteur d'un compte supprimé (match créé, compte rendu validé,
+  composition publiée…) deviennent vides au lieu d'être attribuées au plus
+  ancien administrateur du club. Avant, la suppression échouait quand le club
+  n'avait aucun autre administrateur actif.
 - ~~Brevo : suivi anonyme des e-mails~~ — activé par l'éditeur le 19/11/2026.
 - Accessibilité : les micro-entreprises qui fournissent des services sont
   exemptées par la directive européenne sur l'accessibilité ; vérifier la

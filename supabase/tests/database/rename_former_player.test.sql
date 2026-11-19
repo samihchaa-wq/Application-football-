@@ -177,12 +177,9 @@ reset role;
 
 -- Suppression d'un compte : le nom de joueur est raccourci automatiquement.
 select set_config('request.jwt.claims', '', true);
--- Compte technique qui reprend les références d'un compte supprimé (absent
--- d'une base reconstruite depuis les seules migrations).
-insert into auth.users (id, email, raw_user_meta_data)
-values ('00000000-0000-0000-0000-000000000001', 'rename-systeme@example.invalid',
-        '{"first_name":"Systeme","last_name":"Technique"}'::jsonb)
-on conflict (id) do nothing;
+-- Sans compte technique (comme dans la base commerciale), la préparation de
+-- la suppression doit réussir.
+delete from public.profiles where id = '00000000-0000-0000-0000-000000000001';
 insert into auth.users (id, email, raw_user_meta_data)
 values ('7a000000-0000-0000-0000-000000000003', 'rename-leaving@example.invalid',
         '{"first_name":"Lea","last_name":"Partante"}'::jsonb);
@@ -191,7 +188,17 @@ insert into public.season_players (id, season_id, first_name, last_name, is_goal
 values ('7a300000-0000-0000-0000-000000000004', '7a200000-0000-0000-0000-000000000001',
    'Lea', 'Partante', false, true, 4, '7a000000-0000-0000-0000-000000000003');
 
+insert into private.sport_admin_audit_log (actor_profile_id, action)
+values ('7a000000-0000-0000-0000-000000000003', 'test_trace_partante');
+
 select private.prepare_profile_for_hard_deletion('7a000000-0000-0000-0000-000000000003');
+delete from public.profiles where id = '7a000000-0000-0000-0000-000000000003';
+select is(
+  (select count(*)::int from public.profiles where id = '7a000000-0000-0000-0000-000000000003'),
+  0, 'le compte est effacé, même sans compte technique dans la base');
+select ok(
+  (select actor_profile_id is null from private.sport_admin_audit_log where action = 'test_trace_partante'),
+  'ses traces d''auteur restent, vides (« compte supprimé »)');
 select is(
   (select display_name from public.players
    where id = (select player_id from public.season_players where id = '7a300000-0000-0000-0000-000000000004')),

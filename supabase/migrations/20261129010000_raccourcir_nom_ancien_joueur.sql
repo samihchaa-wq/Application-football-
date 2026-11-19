@@ -163,7 +163,8 @@ grant execute on function public.admin_list_former_players() to authenticated;
 -- ---------------------------------------------------------------------------
 
 -- Cœur du traitement, sans contrôle d'accès : appelé par la fonction des
--- administrateurs (ci-dessous) et par la suppression d'un compte. Agit dans
+-- administrateurs (ci-dessous) et par la suppression d'un compte
+-- (migration 20261129020000). Agit dans
 -- le club courant. p_mode : 'short' (« Yves D. ») ou 'anonymous'
 -- (« Ancien joueur »). Renvoie le nouveau nom.
 create function private.rename_player_everywhere(p_player_id uuid, p_mode text)
@@ -408,7 +409,7 @@ begin
   -- Trace sans l'ancien nom.
   insert into private.sport_admin_audit_log (actor_profile_id, action, metadata)
   values (
-    coalesce((select private.uid()), '00000000-0000-0000-0000-000000000001'::uuid),
+    (select private.uid()),
     'rename_former_player',
     jsonb_build_object('player_id', p_player_id, 'mode', p_mode)
   );
@@ -454,120 +455,3 @@ $$;
 alter function public.admin_rename_former_player(uuid, text) owner to club_scope;
 revoke all on function public.admin_rename_former_player(uuid, text) from public, anon;
 grant execute on function public.admin_rename_former_player(uuid, text) to authenticated;
-
--- ---------------------------------------------------------------------------
--- 4. Suppression d'un compte : nom raccourci automatiquement
--- ---------------------------------------------------------------------------
-
--- Même fonction que dans 20261111000100_socle_structure.sql, avec en plus le
--- raccourcissement du nom de joueur avant l'effacement du compte. Appelée par
--- manage-user (suppression par le membre ou par un administrateur) et par la
--- suppression des comptes inactifs.
-CREATE OR REPLACE FUNCTION "private"."prepare_profile_for_hard_deletion"("p_profile_id" "uuid") RETURNS "void"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO ''
-    AS $$
-declare
-  v_system_actor constant uuid := '00000000-0000-0000-0000-000000000001'::uuid;
-  v_player_id uuid;
-begin
-  if p_profile_id is null then
-    raise exception 'Profile id is required' using errcode = '22023';
-  end if;
-  if p_profile_id = v_system_actor then
-    raise exception 'Technical profile cannot be deleted' using errcode = '22023';
-  end if;
-  if not exists (select 1 from public.profiles where id = v_system_actor) then
-    raise exception 'Technical replacement profile is missing' using errcode = '55000';
-  end if;
-
-  -- Le nom de joueur reste dans l'historique du club, raccourci : « Yves D. »
-  -- (politique de confidentialité). Sans nom de famille, rien à raccourcir.
-  for v_player_id in
-    select distinct linked.player_id
-    from (
-      select profile.player_id from public.profiles profile
-      where profile.id = p_profile_id and profile.player_id is not null
-      union
-      select season_player.player_id from public.season_players season_player
-      where season_player.profile_id = p_profile_id
-    ) linked
-  loop
-    -- Un échec ici ne doit jamais empêcher l'effacement du compte : le nom
-    -- reste alors entier, et peut être raccourci ensuite par un admin.
-    begin
-      perform private.rename_player_everywhere(v_player_id, 'short');
-    exception when others then
-      raise warning 'Nom du joueur % non raccourci : % (%)', v_player_id, sqlerrm, sqlstate;
-    end;
-  end loop;
-
-  delete from public.sport_availability_notification_events
-  where profile_id = p_profile_id;
-
-  delete from public.match_sport_motm_votes
-  where voter_profile_id = p_profile_id;
-
-  update private.sport_admin_audit_log
-  set actor_profile_id = v_system_actor
-  where actor_profile_id = p_profile_id;
-
-  update public.guest_players
-  set created_by = v_system_actor
-  where created_by = p_profile_id;
-  update public.guest_players
-  set updated_by = v_system_actor
-  where updated_by = p_profile_id;
-
-  perform set_config('as_grinta.allow_postmatch_composition_write', 'on', true);
-
-  update public.match_composition_publications
-  set published_by = v_system_actor
-  where published_by = p_profile_id;
-
-  update public.match_compositions
-  set last_modified_by = v_system_actor
-  where last_modified_by = p_profile_id;
-  update public.match_compositions
-  set published_by = v_system_actor
-  where published_by = p_profile_id;
-
-  update public.match_sport_finalization_versions
-  set created_by = v_system_actor
-  where created_by = p_profile_id;
-
-  update public.match_sport_finalizations
-  set validated_by = v_system_actor
-  where validated_by = p_profile_id;
-  update public.match_sport_finalizations
-  set corrected_by = null
-  where corrected_by = p_profile_id;
-
-  update public.match_sport_workflows
-  set created_by = v_system_actor
-  where created_by = p_profile_id;
-  update public.match_sport_workflows
-  set updated_by = v_system_actor
-  where updated_by = p_profile_id;
-
-  update public.sport_waitlist_entries
-  set created_by = v_system_actor
-  where created_by = p_profile_id;
-  update public.sport_waitlist_entries
-  set updated_by = v_system_actor
-  where updated_by = p_profile_id;
-
-  -- Les deux tables oubliees : elles se remplissent des le premier Live
-  -- reellement arbitre.
-  update public.match_live_events
-  set created_by = v_system_actor
-  where created_by = p_profile_id;
-
-  update public.match_live_sessions
-  set updated_by = v_system_actor
-  where updated_by = p_profile_id;
-end;
-$$;
-
-
-

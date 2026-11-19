@@ -6,6 +6,10 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- suppression d'un compte : elle aboutit toujours, même dans un club sans
+  autre administrateur actif. Les traces d'auteur du compte supprimé (match
+  créé, compte rendu validé…) restent sans auteur au lieu d'être attribuées au
+  plus ancien administrateur ;
 - anciens joueurs : à la suppression d'un compte, le nom de joueur est
   raccourci (« Yves D. ») dans tout l'historique du club, statistiques
   conservées. Page admin « Anciens joueurs » pour le remplacer par « Ancien
