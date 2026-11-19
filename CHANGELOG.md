@@ -6,6 +6,11 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- nouveau club : carte « Bien démarrer » en haut du Calendrier pour
+  l'administrateur, avec les 4 étapes dans l'ordre où elles marchent (logo et
+  couleurs, saison, premier match, invitation des joueurs), cochées toutes
+  seules et masquables. Sans saison, le formulaire de match dit désormais
+  « Crée d'abord la saison : Réglages du club › Saison » ;
 - notifications sur iPhone : quand l'appli est ouverte dans Safari, un
   bandeau explique qu'il faut l'ajouter à l'écran d'accueil pour être
   prévenu, avec un guide en 3 gestes (« Comment faire ») et un « Plus tard »
