@@ -16,3 +16,6 @@ Future<void> pushForgetDisplayReceipts(String sentJson) async {}
 Future<void> pushSetAppBadge(int count) async {}
 
 void pushListenReceived(void Function() callback) {}
+
+/// Hors navigateur, aucune installation n'est à proposer.
+bool pushNeedsHomeScreenInstall() => false;

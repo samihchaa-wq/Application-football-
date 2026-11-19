@@ -6,6 +6,13 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- notifications sur iPhone : quand l'appli est ouverte dans Safari, un
+  bandeau explique qu'il faut l'ajouter à l'écran d'accueil pour être
+  prévenu, avec un guide en 3 gestes (« Comment faire ») et un « Plus tard »
+  qui ne coupe pas les notifications ;
+- envoi des notifications : le journal garde la raison donnée par le service
+  du téléphone (par exemple Apple : `{"reason":"…"}`) au lieu du seul
+  « Received unexpected response code ». Fonction `send-push` à redéployer ;
 - inscription : un club qui inscrit ses joueurs depuis le même réseau
   (vestiaire, même box) n'est plus bloqué au sixième. Rejoindre un club :
   30 inscriptions par heure et 100 par jour depuis une même adresse ; créer

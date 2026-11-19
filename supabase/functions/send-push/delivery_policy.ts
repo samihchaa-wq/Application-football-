@@ -169,3 +169,21 @@ export async function executeValidatedPushDelivery<T>(
   }
   return executePushDelivery(operation);
 }
+
+/// Message d'erreur journalisé pour un envoi refusé, avec la raison donnée par
+/// le service du téléphone quand il en renvoie une. Apple répond par exemple
+/// `{"reason":"BadJwtToken"}` : sans ce corps, « Received unexpected response
+/// code » ne permettait pas de savoir pourquoi les iPhone refusaient.
+export function describePushError(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  const body = typeof error === "object" && error !== null
+    ? (error as { body?: unknown }).body
+    : undefined;
+  const reason = typeof body === "string"
+    ? body.replace(/\s+/g, " ").trim()
+    : "";
+  const text = reason && !message.includes(reason)
+    ? `${message} · réponse du service : ${reason}`
+    : message;
+  return text.slice(0, 500);
+}

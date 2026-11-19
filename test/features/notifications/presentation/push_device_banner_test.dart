@@ -143,4 +143,76 @@ void main() {
       expect(find.textContaining('Toujours bloquées'), findsOneWidget);
     },
   );
+
+  group('iPhone ouvert dans Safari', () {
+    Future<void> pumpUnsupported(WidgetTester tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            pushSubscriptionsRepositoryProvider
+                .overrideWithValue(_FakePushSubscriptions()),
+            pushStatusProvider.overrideWith(
+              (ref) async => (supported: false, subscribed: false),
+            ),
+            homeScreenInstallNeededProvider.overrideWithValue(true),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(body: Column(children: [PushDeviceBanner()])),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('le joueur apprend qu’il doit installer l’appli, et comment',
+        (tester) async {
+      await pumpUnsupported(tester);
+
+      expect(find.text('Installe l’appli pour être prévenu'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('install-guide-open')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Installer l’appli sur ton iPhone'), findsOneWidget);
+      expect(find.textContaining('Sur l’écran d’accueil'), findsOneWidget);
+
+      await tester.tap(find.text('J’ai compris'));
+      await tester.pumpAndSettle();
+      expect(find.text('Installer l’appli sur ton iPhone'), findsNothing);
+    });
+
+    testWidgets('« Plus tard » est retenu, sans couper les notifications',
+        (tester) async {
+      await pumpUnsupported(tester);
+
+      await tester.tap(find.byKey(const Key('install-guide-later')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Installe l’appli pour être prévenu'), findsNothing);
+      expect(await readInstallHintDismissed(), isTrue);
+      expect(await readPushOptOut(), isFalse);
+    });
+
+    testWidgets('un ordinateur qui ne sait pas recevoir n’affiche rien',
+        (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            pushSubscriptionsRepositoryProvider
+                .overrideWithValue(_FakePushSubscriptions()),
+            pushStatusProvider.overrideWith(
+              (ref) async => (supported: false, subscribed: false),
+            ),
+            homeScreenInstallNeededProvider.overrideWithValue(false),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(body: Column(children: [PushDeviceBanner()])),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TextButton), findsNothing);
+    });
+  });
 }

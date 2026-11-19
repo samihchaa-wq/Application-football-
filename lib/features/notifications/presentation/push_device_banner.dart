@@ -58,11 +58,22 @@ class _PushDeviceBannerState extends ConsumerState<PushDeviceBanner> {
     ref.invalidate(pushStatusProvider);
   }
 
+  Future<void> _laterInstall() async {
+    await writeInstallHintDismissed(true);
+    ref.invalidate(pushDeviceAlertProvider);
+  }
+
   @override
   Widget build(BuildContext context) {
     final alert = ref.watch(pushDeviceAlertProvider).valueOrNull;
     if (alert == null || alert == PushDeviceAlert.none) {
       return const SizedBox.shrink();
+    }
+    if (alert == PushDeviceAlert.needsInstall) {
+      return _InstallBanner(
+        onHowTo: () => showHomeScreenInstallGuide(context),
+        onLater: _laterInstall,
+      );
     }
 
     final blocked = alert == PushDeviceAlert.blocked;
@@ -103,4 +114,135 @@ class _PushDeviceBannerState extends ConsumerState<PushDeviceBanner> {
       ),
     );
   }
+}
+
+/// Conseil affiché sur iPhone et iPad quand l'application est ouverte dans
+/// Safari : sans ajout à l'écran d'accueil, aucune notification n'arrive.
+class _InstallBanner extends StatelessWidget {
+  const _InstallBanner({required this.onHowTo, required this.onLater});
+
+  final VoidCallback onHowTo;
+  final VoidCallback onLater;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Theme.of(context).colorScheme.surface,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+          child: PfStatusBanner(
+            title: 'Installe l’appli pour être prévenu',
+            message: 'Sur iPhone, les notifications du club n’arrivent que si '
+                'l’appli est sur l’écran d’accueil.',
+            tone: PfStatusTone.info,
+            compact: true,
+            action: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                TextButton(
+                  key: const Key('install-guide-open'),
+                  onPressed: onHowTo,
+                  child: const Text('Comment faire'),
+                ),
+                TextButton(
+                  key: const Key('install-guide-later'),
+                  onPressed: onLater,
+                  child: const Text('Plus tard'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Les trois gestes pour ajouter l'application à l'écran d'accueil depuis
+/// Safari, puis la rouvrir depuis son icône.
+Future<void> showHomeScreenInstallGuide(BuildContext context) {
+  return showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    isScrollControlled: true,
+    builder: (context) {
+      final theme = Theme.of(context);
+      Widget step(int number, IconData icon, String text) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 14,
+                backgroundColor: theme.colorScheme.primaryContainer,
+                child: Text(
+                  '$number',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: theme.colorScheme.onPrimaryContainer,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Icon(icon, size: 22),
+              const SizedBox(width: 10),
+              Expanded(child: Text(text, style: theme.textTheme.bodyLarge)),
+            ],
+          ),
+        );
+      }
+
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Installer l’appli sur ton iPhone',
+                style: theme.textTheme.titleLarge,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Trente secondes, une seule fois.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 12),
+              step(
+                1,
+                Icons.ios_share,
+                'Dans Safari, touche le bouton Partager, en bas de l’écran.',
+              ),
+              step(
+                2,
+                Icons.add_box_outlined,
+                'Fais défiler et choisis « Sur l’écran d’accueil », puis '
+                '« Ajouter ».',
+              ),
+              step(
+                3,
+                Icons.touch_app_outlined,
+                'Ouvre l’appli depuis sa nouvelle icône, puis accepte les '
+                'notifications.',
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('J’ai compris'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }

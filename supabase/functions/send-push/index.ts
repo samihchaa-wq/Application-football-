@@ -9,6 +9,7 @@ import {
 } from "./club_notification_policy.ts";
 import { optionalMatchId, targetedDeliveryLogKind } from "./delivery_log.ts";
 import {
+  describePushError,
   executeValidatedPushDelivery,
   PUSH_DELIVERY_TTL_SECONDS,
 } from "./delivery_policy.ts";
@@ -90,8 +91,7 @@ function endpointHost(endpoint: string): string | null {
 }
 
 function errorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message.slice(0, 500);
-  return String(error).slice(0, 500);
+  return describePushError(error);
 }
 
 // Range l'envoi dans l'historique de chaque destinataire et rend leur nombre

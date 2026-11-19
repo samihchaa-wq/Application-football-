@@ -1,6 +1,9 @@
 // Pont vers window.asGrintaPush défini dans web/app_shell.js.
 import 'dart:js_interop';
 
+import 'package:petit_filet/core/push/home_screen_install.dart';
+import 'package:web/web.dart' as web;
+
 @JS('asGrintaPush.support')
 external JSBoolean _support();
 
@@ -102,4 +105,24 @@ void pushListenReceived(void Function() callback) {
   try {
     _onReceived(callback.toJS);
   } catch (_) {}
+}
+
+@JS('navigator.standalone')
+external JSBoolean? get _iosStandalone;
+
+/// Vrai sur iPhone ou iPad quand l'application est ouverte dans Safari et non
+/// depuis l'écran d'accueil : les notifications n'y arrivent pas.
+bool pushNeedsHomeScreenInstall() {
+  try {
+    final navigator = web.window.navigator;
+    final standalone = (_iosStandalone?.toDart ?? false) ||
+        web.window.matchMedia('(display-mode: standalone)').matches;
+    return needsHomeScreenInstall(
+      userAgent: navigator.userAgent,
+      maxTouchPoints: navigator.maxTouchPoints,
+      standalone: standalone,
+    );
+  } catch (_) {
+    return false;
+  }
 }

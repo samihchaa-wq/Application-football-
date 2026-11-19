@@ -171,6 +171,39 @@ enum PushDeviceAlert {
   /// L'appareil n'est pas abonné alors que le joueur ne l'a pas choisi :
   /// après une déconnexion, ou un abonnement perdu par le navigateur.
   notEnabled,
+
+  /// iPhone ou iPad, application ouverte dans Safari : les notifications
+  /// n'arrivent qu'une fois l'application ajoutée à l'écran d'accueil.
+  needsInstall,
+}
+
+/// Vrai quand cet appareil doit ajouter l'application à l'écran d'accueil
+/// pour recevoir les notifications (iPhone ou iPad, hors écran d'accueil).
+/// Fournisseur séparé pour que les tests puissent le fixer.
+final homeScreenInstallNeededProvider =
+    Provider<bool>((ref) => pushNeedsHomeScreenInstall());
+
+const _installHintDismissedKey = 'pf-install-hint-dismissed';
+
+/// Le joueur a répondu « Plus tard » au conseil d'installation. Distinct du
+/// refus des notifications : une fois l'application installée, le bandeau
+/// d'activation peut encore apparaître.
+Future<bool> readInstallHintDismissed() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_installHintDismissedKey) ?? false;
+  } catch (_) {
+    return false;
+  }
+}
+
+Future<void> writeInstallHintDismissed(bool value) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_installHintDismissedKey, value);
+  } catch (_) {
+    // Au pire, le conseil réapparaît à la prochaine ouverture.
+  }
 }
 
 const _pushOptOutKey = 'asg-push-opted-out';
@@ -199,7 +232,16 @@ Future<void> writePushOptOut(bool value) async {
 /// Recalculé à chaque relecture de l'état de la cloche.
 final pushDeviceAlertProvider = FutureProvider<PushDeviceAlert>((ref) async {
   final status = await ref.watch(pushStatusProvider.future);
-  if (!status.supported || status.subscribed) return PushDeviceAlert.none;
+  if (!status.supported) {
+    // Seul cas où l'on peut aider : un iPhone ou un iPad hors écran
+    // d'accueil. Ailleurs, l'appareil ne sait vraiment pas recevoir.
+    if (ref.watch(homeScreenInstallNeededProvider) &&
+        !await readInstallHintDismissed()) {
+      return PushDeviceAlert.needsInstall;
+    }
+    return PushDeviceAlert.none;
+  }
+  if (status.subscribed) return PushDeviceAlert.none;
   if (await readPushOptOut()) return PushDeviceAlert.none;
 
   // Refus : seul le joueur peut le lever, dans les réglages. Sinon, un appui
