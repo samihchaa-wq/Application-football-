@@ -6,6 +6,11 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- nouvelles conditions : quand les CGU ou la politique de confidentialité
+  changent de version, chaque membre doit accepter la nouvelle version à sa
+  prochaine connexion (écran « Les conditions ont changé »), ou se
+  déconnecter, ou supprimer son compte. Les comptes qui n'avaient jamais
+  donné leur accord (créés par un administrateur) le donnent aussi ;
 - textes légaux (version 2026-11-19, ajustés le même jour avant publication) :
   suppression des comptes sans connexion pendant 3 ans, information des
   joueurs invités enregistrés sans compte, rôle de modération des

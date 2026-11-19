@@ -6,6 +6,7 @@ import 'package:petit_filet/features/auth/data/auth_profile_cache.dart';
 import 'package:petit_filet/features/auth/data/auth_repository.dart';
 import 'package:petit_filet/features/auth/domain/auth_profile.dart';
 import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/legal/domain/legal_documents.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
@@ -88,6 +89,24 @@ void main() {
     expect(await cacheFor('user-1').read(), isNull);
   });
 
+  test('un compte qui doit accepter les nouvelles conditions n’est pas gardé',
+      () async {
+    await cacheFor('user-1').remember(_makeProfile(termsVersion: '2000-01-01'));
+    expect(await cacheFor('user-1').read(), isNull);
+    await cacheFor('user-1').remember(_makeProfile(termsVersion: null));
+    expect(await cacheFor('user-1').read(), isNull);
+  });
+
+  test('la copie garde la version acceptée et la déclaration d’âge', () async {
+    await cacheFor('user-1').remember(
+      _makeProfile(ageConfirmation: 'parental_consent'),
+    );
+    final read = await cacheFor('user-1').read();
+    expect(read?.termsVersion, legalVersion);
+    expect(read?.ageConfirmation, 'parental_consent');
+    expect(read?.needsTermsAcceptance, isFalse);
+  });
+
   test('la déconnexion efface la copie', () async {
     await cacheFor('user-1').remember(_makeProfile());
     final repository = _Repository(Future.value(_makeProfile()));
@@ -115,6 +134,8 @@ AuthProfile _makeProfile({
   String status = 'active',
   bool mustChangePassword = false,
   AuthRole role = AuthRole.pronostiqueur,
+  String? termsVersion = legalVersion,
+  String? ageConfirmation,
 }) {
   return AuthProfile(
     id: 'user-1',
@@ -126,6 +147,8 @@ AuthProfile _makeProfile({
     isActive: status == 'active',
     status: status,
     mustChangePassword: mustChangePassword,
+    termsVersion: termsVersion,
+    ageConfirmation: ageConfirmation,
   );
 }
 

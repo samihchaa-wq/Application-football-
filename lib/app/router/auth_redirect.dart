@@ -128,6 +128,18 @@ String? resolveAuthRedirect({
     return '/matches';
   }
 
+  // Les conditions ont changé depuis l'accord de ce compte : il doit accepter
+  // la nouvelle version (ou supprimer son compte) avant de continuer. Les
+  // textes eux-mêmes restent lisibles (plus haut).
+  final isTermsRoute = location == '/auth/accept-terms';
+  final needsTerms = authState.profile?.needsTermsAcceptance == true;
+  if (authState.isAuthenticated && needsTerms && !isRecoveryRoute) {
+    return isTermsRoute ? null : '/auth/accept-terms';
+  }
+  if (isTermsRoute && !needsTerms) {
+    return authState.isAuthenticated ? '/matches' : '/auth/sign-in';
+  }
+
   final isAuthRoute = location.startsWith('/auth');
   if (!authState.isAuthenticated && !isAuthRoute && location != '/') {
     return '/auth/sign-in?redirect=${Uri.encodeComponent(uri.toString())}';

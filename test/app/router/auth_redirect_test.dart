@@ -534,6 +534,103 @@ void main() {
         );
       }
     });
+
+    test('asks for the new terms before anything else in the app', () {
+      const state = AuthState(
+        isLoading: false,
+        isAuthenticated: true,
+        hasSession: true,
+        profile: _outdatedTermsProfile,
+      );
+
+      for (final route in <String>['/matches', '/stats', '/admin', '/']) {
+        expect(
+          resolveAuthRedirect(
+            authState: state,
+            uri: Uri.parse(route),
+            matchedLocation: route,
+          ),
+          '/auth/accept-terms',
+          reason: route,
+        );
+      }
+      expect(
+        resolveAuthRedirect(
+          authState: state,
+          uri: Uri.parse('/auth/accept-terms'),
+          matchedLocation: '/auth/accept-terms',
+        ),
+        isNull,
+      );
+      // Les textes restent lisibles pour pouvoir les accepter.
+      expect(
+        resolveAuthRedirect(
+          authState: state,
+          uri: Uri.parse('/legal/cgu'),
+          matchedLocation: '/legal/cgu',
+        ),
+        isNull,
+      );
+    });
+
+    test('an account that never accepted the terms is asked too', () {
+      const state = AuthState(
+        isLoading: false,
+        isAuthenticated: true,
+        hasSession: true,
+        profile: _noTermsProfile,
+      );
+      expect(
+        resolveAuthRedirect(
+          authState: state,
+          uri: Uri.parse('/matches'),
+          matchedLocation: '/matches',
+        ),
+        '/auth/accept-terms',
+      );
+    });
+
+    test('a temporary password is changed before the new terms', () {
+      const state = AuthState(
+        isLoading: false,
+        isAuthenticated: true,
+        hasSession: true,
+        profile: _passwordAndTermsProfile,
+      );
+      expect(
+        resolveAuthRedirect(
+          authState: state,
+          uri: Uri.parse('/matches'),
+          matchedLocation: '/matches',
+        ),
+        '/auth/new-password',
+      );
+    });
+
+    test('leaves the terms page once the current version is accepted', () {
+      const state = AuthState(
+        isLoading: false,
+        isAuthenticated: true,
+        hasSession: true,
+        profile: _userProfile,
+      );
+      expect(
+        resolveAuthRedirect(
+          authState: state,
+          uri: Uri.parse('/auth/accept-terms'),
+          matchedLocation: '/auth/accept-terms',
+        ),
+        '/matches',
+      );
+      expect(
+        resolveAuthRedirect(
+          authState: const AuthState(isLoading: false),
+          uri: Uri.parse('/auth/accept-terms'),
+          matchedLocation: '/auth/accept-terms',
+        ),
+        '/auth/sign-in',
+      );
+    });
   });
 }
 
@@ -565,4 +662,37 @@ const _passwordChangeProfile = AuthProfile(
   isGoalkeeper: false,
   isActive: true,
   mustChangePassword: true,
+);
+
+const _outdatedTermsProfile = AuthProfile(
+  id: 'outdated-terms',
+  firstName: 'Old',
+  lastName: 'Terms',
+  role: AuthRole.pronostiqueur,
+  isGoalkeeper: false,
+  isActive: true,
+  mustChangePassword: false,
+  termsVersion: '2000-01-01',
+);
+
+const _noTermsProfile = AuthProfile(
+  id: 'no-terms',
+  firstName: 'No',
+  lastName: 'Terms',
+  role: AuthRole.pronostiqueur,
+  isGoalkeeper: false,
+  isActive: true,
+  mustChangePassword: false,
+  termsVersion: null,
+);
+
+const _passwordAndTermsProfile = AuthProfile(
+  id: 'password-and-terms',
+  firstName: 'Both',
+  lastName: 'Pending',
+  role: AuthRole.pronostiqueur,
+  isGoalkeeper: false,
+  isActive: true,
+  mustChangePassword: true,
+  termsVersion: null,
 );

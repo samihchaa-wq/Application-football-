@@ -40,9 +40,12 @@ professionnel du droit obligatoire avant de faire payer un club.**
   vérifie pas le pouvoir de représentation. Pour un club payant, faire signer
   ou confirmer le bon de commande par le président ou le trésorier.
 - Changer la version à chaque modification de fond, **dans les trois
-  fichiers**. **Limite connue :**
-  l'appli ne redemande pas encore l'accord après un changement de version ;
-  écran à construire avant la première modification des textes.
+  fichiers**. À la connexion suivante, tout membre dont la version acceptée
+  est plus ancienne (ou absente : compte créé par un administrateur, compte
+  antérieur à l'enregistrement de l'accord) voit l'écran « Les conditions ont
+  changé » (`/auth/accept-terms`). Il accepte (nouvelle version, date et
+  déclaration d'âge enregistrées par `accept_terms`), se déconnecte ou
+  supprime son compte. Rien d'autre de l'appli n'est accessible avant.
 
 ## Promesses des textes pas encore tenues par l'appli (19/11/2026)
 
