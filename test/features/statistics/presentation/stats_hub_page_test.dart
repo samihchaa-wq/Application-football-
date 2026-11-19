@@ -83,6 +83,7 @@ void main() {
     expect(find.text('Maxime'), findsOneWidget);
     expect(find.text('12'), findsOneWidget);
     expect(find.text('7'), findsOneWidget);
+    expect(find.text('HDM'), findsOneWidget);
     // La saison en cours montre toujours la colonne des passes décisives.
     expect(find.text('PD'), findsOneWidget);
   });

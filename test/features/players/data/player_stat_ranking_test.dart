@@ -147,6 +147,13 @@ void main() {
       expect(tester.getCenter(find.text('8')).dy, closeTo(paul.dy, 4));
     });
 
+    testWidgets('titre et colonne du classement HDM', (tester) async {
+      await pumpRanking(tester, PlayerStat.manOfTheMatch);
+
+      expect(find.text('Homme du match'), findsOneWidget);
+      expect(find.text('HDM'), findsOneWidget);
+    });
+
     testWidgets('le classement des matchs n’a que trois colonnes',
         (tester) async {
       await pumpRanking(tester, PlayerStat.matches);

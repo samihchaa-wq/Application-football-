@@ -604,7 +604,7 @@ void main() {
         expect(find.text('7'), findsOneWidget);
         expect(find.text('Saison 2026-2027 en cours.'), findsOneWidget);
 
-        await tester.tap(find.text('ÉTM'));
+        await tester.tap(find.text('HDM'));
         await tester.pumpAndSettle();
         expect(colorOf(tester, '12'), const Color(0xFFFFD84A));
         expect(find.text('53'), findsNothing);
@@ -765,7 +765,7 @@ void main() {
         );
         await tester.tap(find.text('Carrière'));
         await tester.pumpAndSettle();
-        await tester.tap(find.text('ÉTM'));
+        await tester.tap(find.text('HDM'));
         await tester.pumpAndSettle();
         expect(find.text('12'), findsOneWidget);
 
