@@ -49,6 +49,11 @@ const _destinations = [
   '/admin/stadiums',
   '/admin/club',
   '/admin/history',
+  '/admin/abonnement',
+  '/effectif',
+  '/legal/confidentialite',
+  '/legal/cgu',
+  '/legal/mentions',
 ];
 
 Future<_FakeAuthRepository> _pumpMorePage(
@@ -126,13 +131,19 @@ void main() {
       'Équipes & stades',
       'Réglages du club',
       'Ajouter des matchs passés',
-      'Finir la saison',
+      'Abonnement',
+      'Confidentialité',
+      'Conditions d’utilisation',
+      'Mentions légales',
     ]) {
       expect(find.text(title), findsOneWidget, reason: title);
     }
 
     expect(find.text('Administration'), findsNothing);
     expect(find.text('Saisons'), findsNothing);
+    // Finir la saison est rangé dans les Réglages du club.
+    expect(find.text('Finir la saison'), findsNothing);
+    expect(find.text('INFORMATIONS LÉGALES'), findsOneWidget);
     // Le bouton de déconnexion reste présent, après un défilement sur
     // téléphone.
     await tester.scrollUntilVisible(
@@ -177,60 +188,44 @@ void main() {
     expect(find.text('page /admin/stadiums'), findsOneWidget);
   });
 
-  testWidgets('finir la saison demande confirmation depuis Paramètres',
-      (tester) async {
+  testWidgets('an admin opens the subscription from Paramètres', (
+    tester,
+  ) async {
     tester.view
       ..physicalSize = const Size(1170, 3000)
       ..devicePixelRatio = 3;
     addTearDown(tester.view.reset);
-    final club = _FakeClubAdminRepository();
-    await _pumpMorePage(
-      tester,
-      profile: _admin,
-      sportsEnabled: true,
-      clubRepository: club,
-    );
-    await tester.ensureVisible(find.text('Finir la saison'));
-    await tester.tap(find.text('Finir la saison'));
-    await tester.pumpAndSettle();
-    expect(find.text('Finir la saison ?'), findsOneWidget);
-    await tester.tap(find.text('Annuler'));
-    await tester.pumpAndSettle();
-    expect(club.seasonStatusChanges, isEmpty);
+    await _pumpMorePage(tester, profile: _admin, sportsEnabled: true);
 
-    await tester.tap(find.text('Finir la saison'));
+    await tester.ensureVisible(find.text('Abonnement'));
+    await tester.tap(find.text('Abonnement'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Confirmer'));
-    await tester.pumpAndSettle();
-    expect(club.seasonStatusChanges, [('s-1', 'archived')]);
-    expect(find.text('Créer une saison'), findsOneWidget);
+    expect(find.text('page /admin/abonnement'), findsOneWidget);
   });
 
-  testWidgets(
-      'après avoir fini la saison, on peut en créer une depuis Paramètres',
-      (tester) async {
+  testWidgets('a player opens the read-only roster from Paramètres', (
+    tester,
+  ) async {
+    await _pumpMorePage(tester, profile: _player, sportsEnabled: false);
+
+    await tester.tap(find.text('Effectif'));
+    await tester.pumpAndSettle();
+    expect(find.text('page /effectif'), findsOneWidget);
+  });
+
+  testWidgets('a player opens the legal texts from Paramètres', (
+    tester,
+  ) async {
     tester.view
       ..physicalSize = const Size(1170, 3000)
       ..devicePixelRatio = 3;
     addTearDown(tester.view.reset);
-    final club = _FakeClubAdminRepository()..seasons = const [];
-    await _pumpMorePage(
-      tester,
-      profile: _admin,
-      sportsEnabled: true,
-      clubRepository: club,
-    );
-    await tester.ensureVisible(find.text('Créer une saison'));
-    await tester.tap(find.text('Créer une saison'));
-    await tester.pumpAndSettle();
-    expect(find.text('Nouvelle saison'), findsOneWidget);
+    await _pumpMorePage(tester, profile: _player, sportsEnabled: false);
 
-    await tester.enterText(find.byType(TextField).last, '2027-2028');
-    await tester.tap(find.widgetWithText(FilledButton, 'Créer'));
+    await tester.ensureVisible(find.text('Mentions légales'));
+    await tester.tap(find.text('Mentions légales'));
     await tester.pumpAndSettle();
-
-    expect(club.createdSeasons, ['2027-2028']);
-    expect(find.text('Finir la saison'), findsOneWidget);
+    expect(find.text('page /legal/mentions'), findsOneWidget);
   });
 
   testWidgets('a player without sports management only sees their account', (
@@ -247,10 +242,12 @@ void main() {
     expect(find.text('Se déconnecter'), findsOneWidget);
 
     expect(find.text('CLUB · ADMIN'), findsNothing);
-    expect(find.text('Effectif'), findsNothing);
+    // Effectif en lecture seule, ouvert à tous les membres.
+    expect(find.text('Effectif'), findsOneWidget);
     expect(find.text('Réglages du club'), findsNothing);
     expect(find.text('Équipes & stades'), findsNothing);
     expect(find.text('Finir la saison'), findsNothing);
+    expect(find.text('Abonnement'), findsNothing);
     expect(find.text('Indisponibilité'), findsNothing);
     expect(find.text('Liste d’attente'), findsNothing);
   });
@@ -328,6 +325,12 @@ void main() {
       sportsEnabled: true,
     );
 
+    // Les informations légales poussent le bouton sous le bas de l'écran.
+    await tester.scrollUntilVisible(
+      find.text('Se déconnecter'),
+      160,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(find.text('Se déconnecter'));
     await tester.pumpAndSettle();
     expect(find.text('Se déconnecter ?'), findsOneWidget);

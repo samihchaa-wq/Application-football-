@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:petit_filet/features/auth/data/auth_repository.dart';
 import 'package:petit_filet/features/auth/domain/auth_profile.dart';
 import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/profile/data/personal_data_repository.dart';
 import 'package:petit_filet/features/profile/presentation/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,7 +17,10 @@ void main() {
 
   setUp(() => repository = _FakeAuthRepository());
 
-  Future<void> pumpProfile(WidgetTester tester) async {
+  Future<void> pumpProfile(
+    WidgetTester tester, {
+    _FakePersonalData? personalData,
+  }) async {
     await tester.binding.setSurfaceSize(const Size(800, 1200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
@@ -25,6 +29,8 @@ void main() {
           authControllerProvider.overrideWith(
             (ref) => _SignedInAuthController(repository),
           ),
+          if (personalData != null)
+            personalDataRepositoryProvider.overrideWithValue(personalData),
         ],
         child: const MaterialApp(home: ProfilePage()),
       ),
@@ -85,6 +91,48 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Ce champ est obligatoire.'), findsOneWidget);
+  });
+
+  testWidgets('pré-remplit et enregistre le téléphone', (tester) async {
+    final personalData = _FakePersonalData(
+      PrivateDetails(phone: '0611223344', birthDate: DateTime(1990, 5, 12)),
+    );
+    await pumpProfile(tester, personalData: personalData);
+    await tester.pump();
+
+    expect(
+      tester.widget<TextField>(field('Téléphone (optionnel)')).controller!.text,
+      '0611223344',
+    );
+    expect(find.text('12/05/1990'), findsOneWidget);
+
+    await tester.enterText(
+        field('Téléphone (optionnel)'), ' +33 6 99 88 77 66 ');
+    await save(tester);
+    await tester.pump();
+
+    expect(personalData.saved, hasLength(1));
+    expect(personalData.saved.single.phone, '+33 6 99 88 77 66');
+    expect(personalData.saved.single.birthDate, DateTime(1990, 5, 12));
+    expect(find.text('Profil enregistré.'), findsOneWidget);
+  });
+
+  testWidgets('refuse un téléphone invalide sans rien envoyer', (
+    tester,
+  ) async {
+    final personalData = _FakePersonalData(const PrivateDetails());
+    await pumpProfile(tester, personalData: personalData);
+    await tester.pump();
+
+    await tester.enterText(field('Téléphone (optionnel)'), 'abc');
+    await save(tester);
+
+    expect(repository.savedProfiles, isEmpty);
+    expect(personalData.saved, isEmpty);
+    expect(
+      find.text('Numéro invalide : chiffres, espaces et « + » uniquement.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('un refus du serveur se voit', (tester) async {
@@ -207,6 +255,26 @@ class _FakeAuthRepository implements AuthRepository {
   @override
   Future<void> updatePassword(String password) async {
     updatedPasswords.add(password);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakePersonalData implements PersonalDataRepository {
+  _FakePersonalData(this.details);
+
+  PrivateDetails details;
+  final saved = <PrivateDetails>[];
+
+  @override
+  Future<PrivateDetails> fetchPrivateDetails() async => details;
+
+  @override
+  Future<PrivateDetails> savePrivateDetails(PrivateDetails value) async {
+    saved.add(value);
+    details = value;
+    return value;
   }
 
   @override

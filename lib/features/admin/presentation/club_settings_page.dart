@@ -3,8 +3,7 @@ import 'package:petit_filet/core/club/club_rules.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/widgets/pf_app_bar.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
-import 'package:petit_filet/features/billing/presentation/club_invoices_list.dart';
-import 'package:petit_filet/features/admin/presentation/club_subscription_section.dart';
+import 'package:petit_filet/features/admin/presentation/club_season_tile.dart';
 import 'package:petit_filet/features/club/data/club_repository.dart';
 import 'package:petit_filet/features/club/presentation/club_identity_sync.dart';
 import 'package:petit_filet/features/club/presentation/club_rules_sync.dart';
@@ -29,6 +28,12 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   final _nameController = TextEditingController();
   final _shortNameController = TextEditingController();
   final _homeAddressController = TextEditingController();
+  final _contactNameController = TextEditingController();
+  final _contactEmailController = TextEditingController();
+  final _contactPhoneController = TextEditingController();
+  final _postalAddressController = TextEditingController();
+  final _websiteController = TextEditingController();
+  final _registrationNumberController = TextEditingController();
   final _settingsSearchController = TextEditingController();
   String _settingsSearch = '';
 
@@ -41,6 +46,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   bool _loading = true;
   bool _savingIdentity = false;
   bool _savingHomeAddress = false;
+  bool _savingContact = false;
   bool _savingUsualSquadSize = false;
   bool _renewingCode = false;
   bool _savingColors = false;
@@ -77,6 +83,12 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     _nameController.dispose();
     _shortNameController.dispose();
     _homeAddressController.dispose();
+    _contactNameController.dispose();
+    _contactEmailController.dispose();
+    _contactPhoneController.dispose();
+    _postalAddressController.dispose();
+    _websiteController.dispose();
+    _registrationNumberController.dispose();
     _settingsSearchController.dispose();
     super.dispose();
   }
@@ -93,7 +105,9 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       final rules = await repository.fetchRules();
       final homeAddress = await repository.fetchHomeAddress();
       final usualSquadSize = await repository.fetchUsualSquadSize();
+      final contact = await repository.fetchContact();
       if (!mounted) return;
+      _fillContact(contact);
       setState(() {
         _club = club;
         _modules = modules;
@@ -185,6 +199,81 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       }
     } finally {
       if (mounted) setState(() => _savingHomeAddress = false);
+    }
+  }
+
+  void _fillContact(ClubContact contact) {
+    _contactNameController.text = contact.contactName ?? '';
+    _contactEmailController.text = contact.email ?? '';
+    _contactPhoneController.text = contact.phone ?? '';
+    _postalAddressController.text = contact.postalAddress ?? '';
+    _websiteController.text = contact.website ?? '';
+    _registrationNumberController.text = contact.registrationNumber ?? '';
+  }
+
+  static String? _clean(TextEditingController controller) {
+    final value = controller.text.trim();
+    return value.isEmpty ? null : value;
+  }
+
+  /// Premier problème de saisie trouvé, ou null si tout est correct. Le
+  /// serveur refait les mêmes contrôles.
+  String? _contactProblem(ClubContact contact) {
+    final email = contact.email;
+    if (email != null &&
+        !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
+      return 'L’adresse e-mail du club n’est pas valide.';
+    }
+    final phone = contact.phone;
+    if (phone != null &&
+        !RegExp(r'^\+?[0-9][0-9 .()-]{5,24}$').hasMatch(phone)) {
+      return 'Le numéro de téléphone n’est pas valide.';
+    }
+    final address = contact.postalAddress;
+    if (address != null && (address.length < 5 || address.length > 300)) {
+      return 'L’adresse postale doit compter entre 5 et 300 caractères.';
+    }
+    final website = contact.website;
+    if (website != null && (website.length > 200 || website.contains(' '))) {
+      return 'L’adresse du site n’est pas valide.';
+    }
+    final number = contact.registrationNumber?.replaceAll(' ', '');
+    if (number != null &&
+        !RegExp(r'^(W[0-9]{9}|[0-9]{9}|[0-9]{14})$')
+            .hasMatch(number.toUpperCase())) {
+      return 'Numéro attendu : RNA (W + 9 chiffres), SIREN (9 chiffres) '
+          'ou SIRET (14 chiffres).';
+    }
+    return null;
+  }
+
+  Future<void> _saveContact() async {
+    final contact = ClubContact(
+      contactName: _clean(_contactNameController),
+      email: _clean(_contactEmailController),
+      phone: _clean(_contactPhoneController),
+      postalAddress: _clean(_postalAddressController),
+      website: _clean(_websiteController),
+      registrationNumber: _clean(_registrationNumberController),
+    );
+    final problem = _contactProblem(contact);
+    if (problem != null) {
+      _showMessage(problem);
+      return;
+    }
+    setState(() => _savingContact = true);
+    try {
+      final saved =
+          await ref.read(clubRepositoryProvider).updateContact(contact);
+      if (!mounted) return;
+      _fillContact(saved);
+      _showMessage('Coordonnées du club enregistrées.');
+    } catch (_) {
+      if (mounted) {
+        _showMessage('Les coordonnées n’ont pas pu être enregistrées.');
+      }
+    } finally {
+      if (mounted) setState(() => _savingContact = false);
     }
   }
 
@@ -467,6 +556,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
 
   static const Map<String, String> _sectionTitles = {
     'identity': 'Identité et maillots',
+    'contact': 'Coordonnées du club',
     'squad': 'Effectif et convocations',
     'matches': 'Matchs et direct',
     'composition': 'Composition et vidéo',
@@ -475,7 +565,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     'rewards': 'Statistiques et récompenses',
     'other': 'Autres réglages',
     'members': 'Membres et invitations',
-    'subscription': 'Abonnement',
+    'season': 'Saison',
   };
 
   static const Map<String, String> _searchHints = {
@@ -484,7 +574,9 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     'matches': 'terrain adresse domicile',
     'rewards': 'catalogue seuils badges bilan de fin de saison stats affichées',
     'members': 'code invitation inscrire membres',
-    'subscription': 'essai gratuit joueurs tarif abonnement paiement',
+    'contact':
+        'adresse postale e-mail mail téléphone responsable président site rna siret',
+    'season': 'finir terminer clôturer archiver créer nouvelle saison',
   };
 
   bool _sectionMatches(String category, String title) {
@@ -1082,6 +1174,103 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
               ),
             ],
             expanded: false),
+        _section(
+          'contact',
+          'Coordonnées du club',
+          Icons.contact_mail_outlined,
+          [
+            const SizedBox(height: 4),
+            const Text(
+              'Visibles par les membres du club. L’adresse postale sert aussi '
+              'aux factures.',
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              key: const Key('club-contact-name'),
+              controller: _contactNameController,
+              textCapitalization: TextCapitalization.words,
+              decoration: const InputDecoration(
+                labelText: 'Personne à contacter (président, secrétaire…)',
+                prefixIcon: Icon(Icons.person_outline_rounded),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              key: const Key('club-contact-email'),
+              controller: _contactEmailController,
+              keyboardType: TextInputType.emailAddress,
+              autocorrect: false,
+              decoration: const InputDecoration(
+                labelText: 'E-mail du club',
+                prefixIcon: Icon(Icons.mail_outline_rounded),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              key: const Key('club-contact-phone'),
+              controller: _contactPhoneController,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(
+                labelText: 'Téléphone',
+                prefixIcon: Icon(Icons.phone_outlined),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              key: const Key('club-contact-address'),
+              controller: _postalAddressController,
+              keyboardType: TextInputType.streetAddress,
+              textCapitalization: TextCapitalization.sentences,
+              maxLength: 300,
+              decoration: const InputDecoration(
+                labelText: 'Adresse postale du club (siège)',
+                prefixIcon: Icon(Icons.markunread_mailbox_outlined),
+              ),
+            ),
+            const SizedBox(height: 4),
+            TextField(
+              key: const Key('club-contact-website'),
+              controller: _websiteController,
+              keyboardType: TextInputType.url,
+              autocorrect: false,
+              decoration: const InputDecoration(
+                labelText: 'Site internet ou page du club',
+                prefixIcon: Icon(Icons.language_rounded),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              key: const Key('club-contact-registration'),
+              controller: _registrationNumberController,
+              textCapitalization: TextCapitalization.characters,
+              autocorrect: false,
+              decoration: InputDecoration(
+                labelText: 'N° RNA ou SIRET de l’association',
+                prefixIcon: const Icon(Icons.badge_outlined),
+                suffixIcon: _infoButton(
+                  'registration',
+                  'Numéro de l’association',
+                  'Facultatif. Numéro RNA (W suivi de 9 chiffres), SIREN '
+                      '(9 chiffres) ou SIRET (14 chiffres). Il apparaît sur '
+                      'les factures.',
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: FilledButton(
+                key: const Key('club-contact-save'),
+                onPressed: _savingContact ? null : _saveContact,
+                child: Text(
+                  _savingContact
+                      ? 'Enregistrement…'
+                      : 'Enregistrer les coordonnées',
+                ),
+              ),
+            ),
+          ],
+        ),
         _section('squad', 'Effectif et convocations', Icons.groups_outlined, [
           const SizedBox(height: 8),
           ListTile(
@@ -1236,10 +1425,14 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
             ..._rulesFor('members'),
           ],
         ),
-        _section('subscription', 'Abonnement', Icons.credit_card_outlined, [
-          const ClubSubscriptionSection(),
-          const SizedBox(height: 20),
-          const ClubInvoicesList(),
+        // L'abonnement a son propre écran, ouvert depuis Paramètres.
+        _section('season', 'Saison', Icons.flag_outlined, [
+          const Text(
+            'Finir la saison archive le classement final. Tu pourras ensuite '
+            'en créer une nouvelle.',
+          ),
+          const SizedBox(height: 8),
+          const ClubSeasonTile(),
         ]),
       ],
     );
