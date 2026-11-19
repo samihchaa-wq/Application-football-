@@ -49,11 +49,16 @@ professionnel du droit obligatoire avant de faire payer un club.**
 À construire ou régler **avant l'ouverture au public**, sinon les textes
 annoncent quelque chose de faux :
 
-- **Comptes inactifs** : la politique de confidentialité et les CGU disent
-  qu'un compte sans connexion pendant 3 ans est supprimé, avec un
-  avertissement au moins un mois avant. Rien ne le fait encore : il faut une
-  tâche planifiée (avertissement puis suppression) et le message affiché à
-  la connexion.
+- **Comptes inactifs** : construit le 19/11/2026, **pas encore déployé ni
+  testé en conditions réelles**. Chaque nuit, la base repère les comptes
+  inutilisés depuis 3 ans moins un mois (une session restée ouverte compte
+  comme une utilisation) ; la fonction `account-email` envoie l'e-mail
+  d'avertissement, puis supprime un mois plus tard, avec les mêmes étapes
+  qu'une suppression demandée par le membre. Rien ne se passe tant que
+  l'envoi d'e-mails n'est pas configuré. Le dernier administrateur d'un club
+  qui a d'autres membres n'est pas supprimé (il reste signalé dans les
+  journaux de la fonction). Les comptes sans adresse e-mail sont supprimés
+  sans avertissement possible : les textes le disent.
 - **Traceur d'ouverture des e-mails** : Brevo peut suivre l'ouverture des
   e-mails envoyés. Les textes n'en parlent pas : désactiver ce suivi dans le
   compte Brevo (sinon il faudrait un consentement et une mention).

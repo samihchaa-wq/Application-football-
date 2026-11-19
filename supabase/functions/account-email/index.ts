@@ -1,13 +1,16 @@
 // E-mails de compte : confirmer une adresse, et retrouver son compte par
 // e-mail quand on a perdu son mot de passe.
 //
-// Quatre actions :
+// Cinq actions :
 // - request-confirmation (compte connecté) : envoie un lien de confirmation ;
 // - confirm (sans compte) : valide le lien reçu ;
 // - request-reset (sans compte) : envoie, à l'adresse confirmée d'un compte, un
 //   lien pour choisir un nouveau mot de passe ;
 // - subscription-reminder (base seulement, jeton interne x-push-token) :
-//   prévient les administrateurs d'un club que l'abonnement arrive à échéance.
+//   prévient les administrateurs d'un club que l'abonnement arrive à échéance ;
+// - inactive-accounts (base seulement, jeton interne x-push-token) : prévient
+//   les comptes inutilisés depuis près de 3 ans et supprime ceux qui ont été
+//   prévenus depuis au moins un mois (voir inactive_accounts.ts).
 //
 // La réponse à request-reset est toujours la même : elle ne révèle pas si
 // l'adresse existe.
@@ -24,6 +27,13 @@ import {
   sendMail,
   sha256Hex,
 } from "./account_email.ts";
+import {
+  type DeleteOutcome,
+  type InactiveAccount,
+  inactiveAccountWarningMail,
+  parseInactiveAccount,
+  runInactiveAccounts,
+} from "./inactive_accounts.ts";
 import {
   parseSubscriptionReminder,
   subscriptionReminderMail,
@@ -133,6 +143,81 @@ function scannerSafeRecoveryLink(
   return `${base}#/auth/new-password?${appRoute.toString()}`;
 }
 
+// Mêmes étapes qu'une suppression demandée par le membre lui-même
+// (manage-user, action delete-self).
+async function deleteInactiveAccount(
+  supabaseUrl: string,
+  serviceRoleKey: string,
+  account: InactiveAccount,
+): Promise<DeleteOutcome> {
+  const headers: Record<string, string> = account.clubId
+    ? { "x-club-id": account.clubId }
+    : {};
+  const scoped = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers },
+  });
+  const profileId = account.profileId;
+
+  // Le dernier administrateur d'un club qui a d'autres membres n'est pas
+  // supprimé : plus personne ne pourrait gérer le club. Il reste dans la
+  // liste et l'éditeur le voit dans les journaux.
+  if (account.clubId) {
+    const { data: profile, error: profileError } = await scoped
+      .from("profiles")
+      .select("role,status")
+      .eq("id", profileId)
+      .maybeSingle();
+    if (profileError) throw profileError;
+    if (!profile) return "deleted";
+    if (profile.role === "admin" && profile.status === "active") {
+      const { count: adminCount, error: adminError } = await scoped
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .eq("role", "admin")
+        .eq("status", "active")
+        .eq("club_id", account.clubId);
+      if (adminError) throw adminError;
+      const { count: memberCount, error: memberError } = await scoped
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .eq("club_id", account.clubId)
+        .neq("id", profileId);
+      if (memberError) throw memberError;
+      if ((adminCount ?? 0) <= 1 && (memberCount ?? 0) > 0) {
+        console.warn(
+          "inactive-accounts: dernier administrateur conservé",
+          account.clubId,
+        );
+        return "skipped";
+      }
+    }
+  }
+
+  const { error: prepareError } = await scoped.rpc(
+    "prepare_profile_for_hard_deletion",
+    { p_profile_id: profileId },
+  );
+  if (prepareError) throw prepareError;
+  const { error: authDeleteError } = await scoped.auth.admin.deleteUser(
+    profileId,
+    false,
+  );
+  if (
+    authDeleteError &&
+    !(authDeleteError.status === 404 ||
+      /not.?found/i.test(authDeleteError.message ?? ""))
+  ) {
+    throw authDeleteError;
+  }
+  const { error: profileDeleteError } = await scoped
+    .from("profiles")
+    .delete()
+    .eq("id", profileId);
+  if (profileDeleteError) throw profileDeleteError;
+  return "deleted";
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -153,8 +238,13 @@ Deno.serve(async (req: Request) => {
 
   const action = String(body.action ?? "");
   if (
-    !["request-confirmation", "confirm", "request-reset", "subscription-reminder"]
-      .includes(action)
+    ![
+      "request-confirmation",
+      "confirm",
+      "request-reset",
+      "subscription-reminder",
+      "inactive-accounts",
+    ].includes(action)
   ) {
     return jsonResponse({ error: "Action inconnue." }, 400);
   }
@@ -223,6 +313,52 @@ Deno.serve(async (req: Request) => {
         }
       }
       return jsonResponse({ sent });
+    }
+
+    if (action === "inactive-accounts") {
+      const { data: config, error: configError } = await admin.rpc(
+        "internal_push_config",
+      );
+      if (configError || !config?.token) {
+        throw configError ?? new Error("Missing internal token");
+      }
+      const token = req.headers.get("x-push-token") ?? "";
+      if (!(await secretsEqual(token, String(config.token)))) {
+        return jsonResponse({ error: "Non autorisé." }, 401);
+      }
+
+      const { data: rows, error: listError } = await admin.rpc(
+        "internal_inactive_accounts",
+      );
+      if (listError) throw listError;
+      const accounts = ((rows ?? []) as Record<string, unknown>[])
+        .map(parseInactiveAccount)
+        .filter((account): account is InactiveAccount => account !== null);
+
+      const contact = Deno.env.get("SUPPORT_EMAIL")?.trim() || mail.fromEmail;
+      const report = await runInactiveAccounts(accounts, {
+        sendWarning: async (account, email) => {
+          const message = inactiveAccountWarningMail(
+            account,
+            publicAppUrl,
+            contact,
+          );
+          await sendMail(mail, email, message.subject, message.text);
+        },
+        recordNotice: async (account, emailed) => {
+          const { error } = await admin.rpc("internal_record_inactive_notice", {
+            p_profile_id: account.profileId,
+            p_activity_at: account.lastActivityAt,
+            p_emailed: emailed,
+          });
+          if (error) throw error;
+        },
+        deleteAccount: (account) =>
+          deleteInactiveAccount(supabaseUrl, serviceRoleKey, account),
+        log: (message, error) => console.error(message, error),
+      });
+      console.log("inactive-accounts", JSON.stringify(report));
+      return jsonResponse(report);
     }
 
     if (action === "request-confirmation") {

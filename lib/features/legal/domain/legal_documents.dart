@@ -179,7 +179,8 @@ const LegalDocument termsOfUse = LegalDocument(
       'Tu peux supprimer ton compte à tout moment depuis ton profil. Un '
           'administrateur du club peut aussi retirer un membre du club.',
       'Un compte sans aucune connexion pendant $_inactiveAccountDelay est '
-          'supprimé, après un avertissement envoyé au moins un mois avant.',
+          'supprimé. Si une adresse e-mail est renseignée, tu es prévenu au '
+          'moins un mois avant ; se connecter suffit à garder ton compte.',
       'Si le club arrête l’application, les comptes de ses membres sont '
           'supprimés dans les conditions décrites dans la politique de '
           'confidentialité.',
@@ -293,9 +294,10 @@ const LegalDocument privacyPolicy = LegalDocument(
     ]),
     LegalSection('Combien de temps ?', [
       'Tant que ton compte existe et que tu l’utilises : un compte sans '
-          'aucune connexion pendant $_inactiveAccountDelay est supprimé. Tu es '
-          'prévenu au moins un mois avant, par e-mail si tu en as renseigné '
-          'un, sinon à ta connexion suivante si elle a lieu avant. '
+          'aucune connexion pendant $_inactiveAccountDelay est supprimé. Si tu '
+          'as renseigné une adresse e-mail, tu es prévenu au moins un mois '
+          'avant ; se connecter suffit à garder ton compte. Rester connecté '
+          'sur ton appareil compte aussi comme une utilisation. '
           'Historique des notifications : 90 jours. '
           'Journaux techniques : 7 à 90 jours selon leur type. Sauvegardes '
           'chiffrées : effacées au bout de 90 jours.',
