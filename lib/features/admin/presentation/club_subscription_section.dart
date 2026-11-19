@@ -1,4 +1,5 @@
 import 'package:petit_filet/core/widgets/support_contact.dart';
+import 'package:petit_filet/features/admin/presentation/card_payment_button.dart';
 import 'package:petit_filet/features/admin/presentation/club_referral_section.dart';
 import 'package:petit_filet/features/club/data/club_subscription.dart';
 import 'package:flutter/material.dart';
@@ -84,16 +85,20 @@ class _SubscriptionCard extends StatelessWidget {
 
   String? get _advice => switch (subscription.state) {
         ClubSubscriptionState.trialEnding =>
-          'Pour continuer après l’essai, contacte-nous pour régler '
-              'l’abonnement du club (virement ou chèque).',
-        ClubSubscriptionState.toPay =>
-          'Contacte-nous pour régler l’abonnement du club (virement ou '
-              'chèque).',
-        ClubSubscriptionState.pastDue =>
-          'Un paiement reste à régulariser. Contacte-nous pour le régler.',
+          'Pour continuer après l’essai, règle l’abonnement du club.',
+        ClubSubscriptionState.toPay => 'Règle l’abonnement du club.',
+        ClubSubscriptionState.pastDue => 'Un paiement reste à régulariser.',
         ClubSubscriptionState.active when _renewalDue =>
-          'L’abonnement arrive à échéance. Contacte-nous pour le renouveler.',
+          'L’abonnement arrive à échéance : pense à le renouveler.',
         _ => null,
+      };
+
+  /// Paiement proposé pendant l'essai, à l'échéance ou en cas d'impayé ;
+  /// pas pour un abonnement déjà payé et loin de son échéance.
+  bool get _canPay => switch (subscription.state) {
+        ClubSubscriptionState.canceled => false,
+        ClubSubscriptionState.active => _renewalDue,
+        _ => true,
       };
 
   bool get _renewalDue => subscription.renewalDueBy(DateTime.now());
@@ -171,6 +176,18 @@ class _SubscriptionCard extends StatelessWidget {
               if (advice != null) ...[
                 const SizedBox(height: 8),
                 Text(advice),
+              ],
+              if (_canPay) ...[
+                const SizedBox(height: 12),
+                CardPaymentButton(amountDueCents: subscription.amountDueCents),
+                const SizedBox(height: 8),
+                const Text(
+                  'Paiement sécurisé par Stripe. Tu préfères un virement ou '
+                  'un chèque ? Écris-nous :',
+                ),
+                const SizedBox(height: 4),
+                const SupportContact(),
+              ] else if (advice != null) ...[
                 const SizedBox(height: 4),
                 const SupportContact(),
               ],

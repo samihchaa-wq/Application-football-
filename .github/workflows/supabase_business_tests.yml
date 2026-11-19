@@ -81,6 +81,8 @@ jobs:
             supabase/functions/register-account/username_test.ts \
             supabase/functions/send-push/weather_refresh_test.ts \
             supabase/functions/manage-user/handler_test.ts \
+            supabase/functions/stripe-checkout/handler_test.ts \
+            supabase/functions/stripe-webhook/handler_test.ts \
             supabase/functions/account-email/subscription_reminder_test.ts \
             supabase/functions/account-email/inactive_accounts_test.ts
 

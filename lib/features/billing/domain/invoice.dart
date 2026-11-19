@@ -163,6 +163,7 @@ const invoicePaymentMethods = <String, String>{
   'cheque': 'Chèque',
   'especes': 'Espèces',
   'autre': 'Autre',
+  'carte': 'Carte bancaire',
 };
 
 /// Montant à la française : « 79,00 € », « 1 234,50 € ».
