@@ -6,7 +6,10 @@ import 'package:petit_filet/features/admin/presentation/admin_profile_policy.dar
 import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:petit_filet/features/club/data/club_repository.dart';
 import 'package:go_router/go_router.dart';
+import 'package:petit_filet/features/players/data/member_contacts_repository.dart';
 import 'package:petit_filet/features/players/data/roster_repository.dart';
+import 'package:petit_filet/features/players/presentation/member_contact_dialog.dart';
+import 'package:petit_filet/features/profile/data/personal_data_repository.dart';
 import 'package:petit_filet/features/players/presentation/players_registry_page.dart';
 import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:flutter/material.dart';

@@ -7,6 +7,7 @@ import 'package:petit_filet/app/shell/app_shell.dart';
 import 'package:petit_filet/features/admin/presentation/club_kits_page.dart';
 import 'package:petit_filet/features/admin/presentation/club_settings_page.dart';
 import 'package:petit_filet/features/admin/presentation/club_subscription_page.dart';
+import 'package:petit_filet/features/players/presentation/club_roster_page.dart';
 import 'package:petit_filet/features/matches/presentation/history_entry_page.dart';
 import 'package:petit_filet/features/admin/presentation/admin_menu_page.dart'
     deferred as admin_menu;
@@ -285,6 +286,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 builder: (_, __) => const HistoryEntryPage(),
               ),
               GoRoute(path: '/more', builder: (_, __) => const MorePage()),
+              GoRoute(
+                path: '/effectif',
+                builder: (_, __) => const ClubRosterPage(),
+              ),
               GoRoute(
                 path: '/players',
                 builder: (_, __) => const PlayersRegistryPage(),

@@ -82,6 +82,18 @@ select throws_ok(
   '22023', null, 'un numéro RNA / SIRET invalide est refusé'
 );
 select is(
+  public.admin_set_member_private_details(
+    '1f000000-0000-0000-0000-00000000000c', '07 00 00 00 01', date '2001-03-04'
+  ) ->> 'phone',
+  '07 00 00 00 01',
+  'l’administrateur saisit le téléphone d’un membre de son club'
+);
+select throws_ok(
+  $$select public.admin_set_member_private_details(
+      '1f000000-0000-0000-0000-00000000000b', '0600000000', null)$$,
+  'P0002', null, 'un administrateur ne touche pas un membre d’un autre club'
+);
+select is(
   public.set_my_private_details('+33 6 11 22 33 44', date '1990-05-12'),
   jsonb_build_object('phone', '+33 6 11 22 33 44', 'birth_date', '1990-05-12'),
   'l’administrateur enregistre ses propres coordonnées'
@@ -101,8 +113,19 @@ select throws_ok(
 );
 select is(
   public.get_my_private_details(),
-  jsonb_build_object('phone', null, 'birth_date', null),
-  'un membre ne voit pas le téléphone ni la date de naissance d’un autre'
+  jsonb_build_object('phone', '07 00 00 00 01', 'birth_date', '2001-03-04'),
+  'le membre relit ses propres coordonnées, saisies par l’administrateur'
+);
+select is(
+  (select item ->> 'phone' from jsonb_array_elements(public.get_club_member_contacts()) item
+   where item ->> 'profile_id' = '1f000000-0000-0000-0000-00000000000a'),
+  '+33 6 11 22 33 44',
+  'un membre voit le téléphone d’un autre membre dans l’Effectif'
+);
+select throws_ok(
+  $$select public.admin_set_member_private_details(
+      '1f000000-0000-0000-0000-00000000000a', '0600000000', null)$$,
+  '42501', null, 'un simple membre ne modifie pas les coordonnées d’un autre'
 );
 select throws_ok(
   $$select public.set_my_private_details(null, current_date + 1)$$,
@@ -133,6 +156,10 @@ set local role authenticated;
 select is(
   (select contact_email from public.club_settings), null,
   'les coordonnées d’un club ne fuient pas vers un autre club'
+);
+select is(
+  public.get_club_member_contacts(), '[]'::jsonb,
+  'les téléphones des membres d’un club ne fuient pas vers un autre club'
 );
 reset role;
 

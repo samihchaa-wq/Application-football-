@@ -50,6 +50,7 @@ const _destinations = [
   '/admin/club',
   '/admin/history',
   '/admin/abonnement',
+  '/effectif',
   '/legal/confidentialite',
   '/legal/cgu',
   '/legal/mentions',
@@ -202,6 +203,16 @@ void main() {
     expect(find.text('page /admin/abonnement'), findsOneWidget);
   });
 
+  testWidgets('a player opens the read-only roster from Paramètres', (
+    tester,
+  ) async {
+    await _pumpMorePage(tester, profile: _player, sportsEnabled: false);
+
+    await tester.tap(find.text('Effectif'));
+    await tester.pumpAndSettle();
+    expect(find.text('page /effectif'), findsOneWidget);
+  });
+
   testWidgets('a player opens the legal texts from Paramètres', (
     tester,
   ) async {
@@ -231,7 +242,8 @@ void main() {
     expect(find.text('Se déconnecter'), findsOneWidget);
 
     expect(find.text('CLUB · ADMIN'), findsNothing);
-    expect(find.text('Effectif'), findsNothing);
+    // Effectif en lecture seule, ouvert à tous les membres.
+    expect(find.text('Effectif'), findsOneWidget);
     expect(find.text('Réglages du club'), findsNothing);
     expect(find.text('Équipes & stades'), findsNothing);
     expect(find.text('Finir la saison'), findsNothing);

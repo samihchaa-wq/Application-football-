@@ -85,10 +85,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     if (picked != null && mounted) setState(() => _birthDate = picked);
   }
 
-  static String _formatDay(DateTime date) =>
-      '${date.day.toString().padLeft(2, '0')}/'
-      '${date.month.toString().padLeft(2, '0')}/${date.year}';
-
   @override
   void dispose() {
     _firstNameController.dispose();
@@ -309,7 +305,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                               ? null
                               : _pickBirthDate,
                           child: Text(
-                            _birthDate == null ? '' : _formatDay(_birthDate!),
+                            _birthDate == null ? '' : formatDay(_birthDate!),
                           ),
                         ),
                       ),
@@ -319,7 +315,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                           _detailsFailed
                               ? 'Téléphone et date de naissance '
                                   'indisponibles pour le moment.'
-                              : 'Visibles par toi seul.',
+                              : 'Visibles par les membres du club dans '
+                                  'l’Effectif.',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ),

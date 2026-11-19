@@ -32,6 +32,31 @@ String isoDay(DateTime date) => '${date.year.toString().padLeft(4, '0')}-'
     '${date.month.toString().padLeft(2, '0')}-'
     '${date.day.toString().padLeft(2, '0')}';
 
+/// Date lisible à la française : « 12/05/1990 ».
+String formatDay(DateTime date) => '${date.day.toString().padLeft(2, '0')}/'
+    '${date.month.toString().padLeft(2, '0')}/${date.year}';
+
+/// Âge révolu à la date [today].
+int ageOn(DateTime birthDate, DateTime today) {
+  var age = today.year - birthDate.year;
+  final hadBirthday = today.month > birthDate.month ||
+      (today.month == birthDate.month && today.day >= birthDate.day);
+  if (!hadBirthday) age -= 1;
+  return age;
+}
+
+/// Une ligne « 06 12 34 56 78 · 12/05/1990 (35 ans) », ou null si rien.
+String? describeContact(PrivateDetails? details, {DateTime? today}) {
+  if (details == null) return null;
+  final parts = [
+    if (details.phone != null) details.phone!,
+    if (details.birthDate != null)
+      '${formatDay(details.birthDate!)} '
+          '(${ageOn(details.birthDate!, today ?? DateTime.now())} ans)',
+  ];
+  return parts.isEmpty ? null : parts.join(' · ');
+}
+
 /// Droits du membre sur ses données : les télécharger, supprimer son compte.
 class PersonalDataRepository {
   PersonalDataRepository(this._client);

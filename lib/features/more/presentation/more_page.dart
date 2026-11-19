@@ -39,6 +39,13 @@ class MorePage extends ConsumerWidget {
           _SettingsGroup(
             children: [
               const CalendarSubscriptionTile(),
+              // Les admins ont leur Effectif modifiable plus bas.
+              if (!isAdminView)
+                _SettingsTile(
+                  icon: Icons.groups_outlined,
+                  title: 'Effectif',
+                  onTap: () => context.push('/effectif'),
+                ),
               if (sportsEnabled) ...[
                 _SettingsTile(
                   icon: Icons.event_busy_outlined,

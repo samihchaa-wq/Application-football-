@@ -129,6 +129,8 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
       profile: profile,
       currentUserId: currentUserId,
     );
+    final contactsState = ref.watch(clubMemberContactsProvider);
+    final contact = contactsState.asData?.value[profile.id];
     final historicalPlayersState = ref.watch(_adminHistoricalPlayersProvider);
     final historicalPlayers = historicalPlayersState.asData?.value;
     AdminHistoricalPlayer? historicalPlayer;
@@ -273,6 +275,24 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
       ref.invalidate(_adminHistoricalPlayersProvider);
     }
 
+    Future<void> editContact() async {
+      final details = await showMemberContactDialog(
+        context,
+        memberName: profile.displayName,
+        initial: contact,
+      );
+      if (details == null) return;
+      await run(
+        () async {
+          await ref
+              .read(memberContactsRepositoryProvider)
+              .saveForMember(profile.id, details);
+          ref.invalidate(clubMemberContactsProvider);
+        },
+        success: 'Coordonnées de ${profile.displayName} enregistrées.',
+      );
+    }
+
     Future<void> archiveAccount() async {
       final nextStatus = policy.isArchived ? 'active' : 'archived';
       if (!policy.isArchived) {
@@ -394,6 +414,32 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
                   const SizedBox(width: 4),
                   if (!policy.isSelf)
                     _MemberEditButton(onPressed: modifyHistoricalLink),
+                ],
+              ),
+            ),
+            const Divider(height: 16),
+            _MemberDetailRow(
+              label: 'Coordonnées',
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      contactsState.isLoading
+                          ? 'Chargement…'
+                          : contactsState.hasError
+                              ? 'Indisponibles'
+                              : describeContact(contact) ?? 'Aucune',
+                      key: ValueKey<String>('member-contact-${profile.id}'),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  _MemberEditButton(
+                    onPressed: policy.isArchived || contactsState.hasError
+                        ? null
+                        : editContact,
+                  ),
                 ],
               ),
             ),
