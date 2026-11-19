@@ -195,8 +195,10 @@ void main() {
     expect(container.read(clubModuleEnabledProvider(ClubModule.predictions)),
         isTrue);
     refreshClubConfiguration(container.invalidate);
+    // Même compte : la dernière réponse reste valable pendant la relecture,
+    // sans faire disparaître puis réapparaître les fonctions du club.
     expect(container.read(clubModuleEnabledProvider(ClubModule.predictions)),
-        isFalse);
+        isTrue);
     await settle();
     clubs.complete('a', clubA, predictions: false, openDays: 12);
     await settle();

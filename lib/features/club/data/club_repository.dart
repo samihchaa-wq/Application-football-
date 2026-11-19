@@ -672,13 +672,20 @@ final clubRulesProvider = FutureProvider<List<ClubRule>>((ref) {
   return ref.watch(clubRepositoryProvider).fetchRules();
 });
 
-/// Un état inconnu ou périmé ne vaut jamais une autorisation d'affichage.
+/// Un état inconnu ou en erreur ne vaut jamais une autorisation d'affichage.
+///
+/// Une simple relecture des réglages du même compte (retour au premier plan,
+/// signal distant) garde la dernière réponse du serveur : sinon le trophée,
+/// l'onglet Statistiques et le mode live disparaissent puis reviennent, et
+/// l'application entière est redessinée deux fois. Un changement de compte
+/// reste bloqué jusqu'à la réponse du nouveau compte.
 final clubModuleEnabledProvider = Provider.family<bool, ClubModule>((
   ref,
   module,
 ) {
   final modules = ref.watch(clubModulesProvider);
-  if (modules.isLoading || modules.hasError) return false;
+  if (modules.hasError) return false;
+  if (modules.isLoading && !modules.isRefreshing) return false;
   return modules.valueOrNull?.isEnabled(module) ?? false;
 });
 
