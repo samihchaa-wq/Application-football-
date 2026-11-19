@@ -157,19 +157,25 @@ select is(
   (select buyer_address from public.club_invoices where club_id = pg_temp.club('a')),
   '3 rue du Stade, 31000 Toulouse', 'avec l''adresse saisie par le club');
 
+-- Identifiant du paiement lu hors session simulée (le cloisonnement entre
+-- clubs le cache à l'éditeur quand il interroge la table directement).
+create temporary table test_payment on commit drop as
+select id from public.club_payments where club_id = pg_temp.club('a');
+grant select on test_payment to authenticated;
+
 select pg_temp.act_as('8c000000-0000-0000-0000-0000000000e1');
 set local role authenticated;
 select throws_ok(
   format($$select public.platform_record_refund(%L, 9000, 'cheque', 'trop')$$,
-         (select id from public.club_payments where club_id = pg_temp.club('a'))),
+         (select id from test_payment)),
   '22023', null, 'on ne rembourse pas plus que le paiement');
 select throws_ok(
   format($$select public.platform_record_refund(%L, 100, 'carte', 'sans Stripe')$$,
-         (select id from public.club_payments where club_id = pg_temp.club('a'))),
+         (select id from test_payment)),
   '22023', null, 'une carte ne se rembourse pas à la main');
 select ok(
   public.platform_record_refund(
-    (select id from public.club_payments where club_id = pg_temp.club('a')),
+    (select id from test_payment),
     2900, 'cheque', 'Geste : 5 joueurs de moins') ->> 'credit_note_number' ~ '^AV-[0-9]{4}-[0-9]{4}$',
   'un remboursement partiel crée un avoir numéroté');
 reset role;
@@ -219,9 +225,13 @@ select is(
 select is(
   (public.platform_payment_alerts() #>> '{stripe,events_7d}')::int, 1,
   'l''éditeur voit que Stripe envoie bien ses confirmations');
+reset role;
+create temporary table test_alert on commit drop as
+select id from private.payment_alerts where stripe_object_id = 'dp_test_1';
+grant select on test_alert to authenticated;
+set local role authenticated;
 select lives_ok(
-  format($$select public.platform_resolve_alert(%L)$$,
-         (select id from private.payment_alerts where stripe_object_id = 'dp_test_1')),
+  format($$select public.platform_resolve_alert(%L)$$, (select id from test_alert)),
   'l''éditeur marque la contestation comme traitée');
 reset role;
 select pg_temp.as_server();
