@@ -45,12 +45,15 @@ class LegalDocument {
 // Coordonnées de l'éditeur : à compléter une fois l'entreprise créée.
 // ---------------------------------------------------------------------------
 
-const String _editorName =
-    '[Prénom NOM], entrepreneur individuel (micro-entreprise)';
+const String _editorName = '[Prénom NOM], entrepreneur individuel (EI)';
 const String _editorShortName = '[Prénom NOM]';
 const String _editorAddress = '[Adresse postale de l’éditeur]';
 const String _editorEmail = '[adresse e-mail de contact]';
-const String _editorSiret = 'SIRET : [numéro, une fois l’entreprise créée]';
+const String _editorPhone = '[numéro de téléphone]';
+const String _editorSiret =
+    'SIREN : [numéro], immatriculé au registre national des entreprises';
+const String _mediator =
+    '[nom du médiateur de la consommation, adresse postale et site internet]';
 const String _vatMention = 'TVA non applicable, article 293 B du CGI';
 const String _dataRetentionAfterEnd = '3 ans';
 const String _inactiveAccountDelay = '3 ans';
@@ -60,16 +63,18 @@ const LegalDocument legalNotice = LegalDocument(
   title: 'Mentions légales',
   sections: [
     LegalSection('Éditeur', [
-      '$_editorName\n$_editorAddress\nContact : $_editorEmail\n$_editorSiret\n'
-          '$_vatMention.',
+      '$_editorName\n$_editorAddress\nE-mail : $_editorEmail\n'
+          'Téléphone : $_editorPhone\n$_editorSiret\n$_vatMention.',
       'Directeur de la publication : $_editorShortName.',
     ]),
     LegalSection('Hébergement', [
-      'Données et comptes : Supabase Inc. [adresse postale à recopier depuis '
-          'supabase.com/privacy]. Les données sont stockées dans un centre de '
-          'données situé à Paris (Union européenne).',
-      'Site de l’application : GitHub Pages, GitHub Inc., 88 Colin P. Kelly '
-          'Jr. Street, San Francisco, CA 94107, États-Unis.',
+      'Données et comptes : Supabase Pte. Ltd., 65 Chulia Street '
+          '#38-02/03, OCBC Centre, Singapour 049513 (contact : '
+          'privacy@supabase.com, aucun numéro de téléphone publié). Les '
+          'données sont stockées dans un centre de données situé à Paris '
+          '(Union européenne).',
+      'Site de l’application : Cloudflare, Inc., 101 Townsend Street, San '
+          'Francisco, CA 94107, États-Unis, téléphone +1 650 319 8930.',
     ]),
     LegalSection('Propriété intellectuelle', [
       'L’application, son code, son nom, ses visuels et ses badges '
@@ -196,8 +201,12 @@ const LegalDocument termsOfUse = LegalDocument(
           'pour continuer à utiliser l’application ; il peut aussi supprimer '
           'son compte.',
       'Ces conditions sont soumises au droit français. En cas de difficulté, '
-          'écris d’abord à $_editorEmail pour trouver une solution amiable. À '
-          'défaut, le litige relève des tribunaux compétents selon la loi.',
+          'écris d’abord à $_editorEmail pour trouver une solution amiable.',
+      'Si tu n’es pas satisfait de la réponse, ou sans réponse sous deux '
+          'mois, tu peux saisir gratuitement le médiateur de la consommation : '
+          '$_mediator. Tu dois le faire dans l’année qui suit ta réclamation '
+          'écrite. À défaut d’accord, le litige relève des tribunaux '
+          'compétents selon la loi.',
     ]),
   ],
 );
@@ -270,7 +279,8 @@ const LegalDocument privacyPolicy = LegalDocument(
       'L’éditeur n’accède aux données d’un club que si c’est nécessaire : '
           'assistance demandée, sécurité, obligation légale.',
       'Prestataires techniques de l’éditeur : Supabase (hébergement des '
-          'données, à Paris), GitHub (mise en ligne du site et sauvegardes '
+          'données, à Paris), Cloudflare (mise en ligne du site : voit ton '
+          'adresse IP quand tu ouvres l’application), GitHub (sauvegardes '
           'chiffrées), Brevo (envoi des e-mails, France), Google (polices de '
           'caractères de secours), Meta (seulement si tu te connectes avec '
           'Facebook) et le service de notifications de ton navigateur '
@@ -285,12 +295,13 @@ const LegalDocument privacyPolicy = LegalDocument(
           'continuer.',
     ]),
     LegalSection('Transferts hors de l’Union européenne', [
-      'Tes données sont stockées à Paris. Certains prestataires sont des '
-          'sociétés américaines (Supabase, GitHub, Google, Meta) : quand une '
-          'donnée peut leur être accessible depuis les États-Unis, le '
-          'transfert est encadré par le cadre de protection des données '
-          'UE–États-Unis ou par les clauses contractuelles types de la '
-          'Commission européenne.',
+      'Tes données sont stockées à Paris. Certains prestataires y ont accès '
+          'depuis l’étranger : Supabase depuis Singapour et les États-Unis '
+          '(assistance technique), Cloudflare, GitHub, Google et Meta depuis '
+          'les États-Unis. Ces transferts sont encadrés par les clauses '
+          'contractuelles types de la Commission européenne ou, pour les '
+          'sociétés qui y adhèrent, par le cadre de protection des données '
+          'UE–États-Unis.',
     ]),
     LegalSection('Combien de temps ?', [
       'Tant que ton compte existe et que tu l’utilises : un compte sans '
@@ -301,10 +312,13 @@ const LegalDocument privacyPolicy = LegalDocument(
           'Historique des notifications : 90 jours. '
           'Journaux techniques : 7 à 90 jours selon leur type. Sauvegardes '
           'chiffrées : effacées au bout de 90 jours.',
-      'Quand ton compte est supprimé, tes données de compte sont effacées. '
-          'Les faits sportifs déjà validés (score, buteur d’un match passé) '
-          'peuvent rester dans l’historique du club, sans lien avec ton '
-          'compte. Tu peux demander qu’ils soient aussi anonymisés.',
+      'Quand ton compte est supprimé, tes données de compte sont effacées '
+          '(identifiant, e-mail, photo, pronostics, votes, préférences). Ton '
+          'nom de joueur reste en revanche dans l’historique des matchs déjà '
+          'joués (feuilles de match, buteurs, statistiques), dans l’intérêt '
+          'du club à garder son histoire sportive. Tu peux demander qu’il y '
+          'soit remplacé par « Ancien joueur », auprès d’un administrateur du '
+          'club ou en écrivant à $_editorEmail.',
       'Si ton club arrête l’application, ses données sont gardées '
           '$_dataRetentionAfterEnd après la fin de son abonnement, pour qu’il '
           'les retrouve intactes s’il revient, puis supprimées.',
@@ -389,10 +403,7 @@ const LegalDocument clubSalesTerms = LegalDocument(
           'paiement à l’échéance, l’accès du club est suspendu '
           'automatiquement ; ses '
           'données sont conservées et l’accès revient dès que le paiement est '
-          'enregistré. Lorsque le '
-          'club agit en qualité de professionnel, des pénalités de retard au '
-          'taux de trois fois l’intérêt légal et l’indemnité forfaitaire de '
-          '40 € pour frais de recouvrement sont dues.',
+          'enregistré.',
     ]),
     LegalSection('5. Durée, renouvellement et résiliation', [
       'L’abonnement couvre une période de 12 mois. Payé avant la fin de '
@@ -425,7 +436,6 @@ const LegalDocument clubSalesTerms = LegalDocument(
           'l’application, n’y enregistrer que des personnes qui l’acceptent, '
           'et respecter ses obligations de responsable du traitement, '
           'décrites dans l’accord sur les données.',
-      'Déclarer un effectif exact.',
     ]),
     LegalSection('8. Données du club et réversibilité', [
       'Le club reste propriétaire de ses données, de son nom et de son logo. '
@@ -438,21 +448,33 @@ const LegalDocument clubSalesTerms = LegalDocument(
           'accord.',
     ]),
     LegalSection('9. Responsabilité', [
-      'L’éditeur n’est responsable que des dommages directs causés par une '
-          'faute prouvée de sa part. Sa responsabilité totale est limitée aux '
-          'sommes payées par le club au cours des 12 derniers mois.',
-      'Cette limite ne s’applique pas en cas de faute lourde ou '
-          'intentionnelle, ni aux dommages corporels.',
+      'Chaque partie répond des dommages directs et prévisibles causés par '
+          'un manquement à ses obligations, dans les conditions du droit '
+          'commun.',
+      'L’éditeur n’est pas responsable des informations saisies par le club '
+          'et ses membres, ni d’une interruption due à l’hébergeur ou au '
+          'réseau quand il a fait le nécessaire pour la limiter.',
       'Aucune des parties n’est responsable d’un manquement dû à un cas de '
           'force majeure.',
     ]),
-    LegalSection('10. Modification', [
+    LegalSection('10. Parrainage', [
+      'Chaque club dispose d’un code parrain. Un nouveau club qui le saisit à '
+          'sa création devient son filleul.',
+      'Quand le filleul paie son premier abonnement, le parrain obtient une '
+          'réduction de 5 % sur son prochain renouvellement, cumulable jusqu’à '
+          '100 % (20 filleuls : une année offerte). La réduction s’applique '
+          'au paiement suivant du parrain ; elle n’est ni remboursable, ni '
+          'convertible en argent.',
+      'L’éditeur peut modifier ou arrêter le parrainage pour l’avenir ; les '
+          'réductions déjà acquises restent dues.',
+    ]),
+    LegalSection('11. Modification', [
       'L’éditeur peut faire évoluer ces conditions. Toute modification '
           'importante est annoncée au club au moins un mois avant son entrée '
           'en vigueur ; s’il la refuse, le club peut résilier et être '
           'remboursé de la part non utilisée.',
     ]),
-    LegalSection('11. Droit applicable et litiges', [
+    LegalSection('12. Droit applicable et litiges', [
       'Ces conditions sont soumises au droit français. Les parties cherchent '
           'd’abord une solution amiable. À défaut, le litige est porté devant '
           'les tribunaux compétents.',
@@ -517,10 +539,12 @@ const LegalDocument clubDataProcessingAgreement = LegalDocument(
     ]),
     LegalSection('4. Sous-traitants de l’éditeur', [
       'Le club autorise l’éditeur à faire appel aux prestataires suivants : '
-          'Supabase Inc. (hébergement des données, Paris), GitHub Inc. (mise '
-          'en ligne du site et sauvegardes chiffrées), Brevo / Sendinblue SAS '
-          '(e-mails, France), Google (polices de caractères de secours) et les '
-          'services de notification des navigateurs (Google, Apple, Mozilla).',
+          'Supabase Pte. Ltd. (hébergement des données, Paris ; assistance '
+          'depuis Singapour et les États-Unis), Cloudflare, Inc. (mise en '
+          'ligne du site), GitHub Inc. (sauvegardes chiffrées), Brevo / '
+          'Sendinblue SAS (e-mails, France), Google (polices de caractères de '
+          'secours) et les services de notification des navigateurs (Google, '
+          'Apple, Mozilla).',
       'L’éditeur leur impose des obligations de protection équivalentes. Il '
           'prévient le club au moins 30 jours avant d’en ajouter ou d’en '
           'changer ; le club peut s’y opposer et, à défaut d’accord, résilier '

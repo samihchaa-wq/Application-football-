@@ -17,9 +17,43 @@ affichés à `/legal/<slug>` sans connexion :
 | `cgv` | Conditions d'abonnement des clubs | la personne qui crée le club |
 | `donnees-club` | Accord sur le traitement des données (art. 28 RGPD) | la personne qui crée le club |
 
-Les passages `[ … ]` sont à compléter (identité de l'éditeur, SIRET, adresse
-de Supabase, prix). **Ces textes sont des projets : relecture par un
-professionnel du droit obligatoire avant de faire payer un club.**
+Les passages `[ … ]` sont à compléter : nom, adresse, e-mail, téléphone et
+SIREN de l'éditeur, médiateur de la consommation.
+
+**Pas de relecture par un juriste pour l'instant (décision de l'éditeur du
+19/11/2026, faute de budget).** Les choix ci-dessous ont été tranchés à partir
+des textes officiels et des conditions des prestataires. Ils réduisent le
+risque mais ne remplacent pas un avis professionnel : en faire relire au
+moins les conditions d'abonnement dès que possible.
+
+## Décisions prises le 19/11/2026
+
+| Sujet | Décision | Pourquoi |
+| --- | --- | --- |
+| Rôles RGPD | Le club est responsable des données de ses membres, l'éditeur est son sous-traitant ; l'éditeur reste responsable des comptes, de la sécurité, des journaux et de la facturation | Schéma habituel d'un logiciel en ligne vendu à une structure qui décide de l'utiliser et de qui elle inscrit |
+| Qualité du club | Une association est traitée comme un **non-professionnel** | Le code de la consommation (art. L212-2) étend la protection contre les clauses abusives aux non-professionnels |
+| Limite de responsabilité | **Supprimée** (droit commun : dommages directs et prévisibles) | Une clause qui réduit le droit à réparation est interdite face à un non-professionnel (art. R212-1, 6°) |
+| Pénalités de retard et indemnité de 40 € | **Supprimées** | Réservées aux dettes entre professionnels (code de commerce) |
+| Médiateur de la consommation | Clause ajoutée aux CGU, **médiateur à choisir** | Obligatoire envers les consommateurs (art. L612-1) ; les membres sont des consommateurs, même pour un service gratuit. Coût annoncé par les médiateurs : environ 40 à 85 € par an ou pour 3 ans, plus des frais par dossier (à vérifier sur leurs sites) |
+| Mentions légales | Ajout du téléphone et de l'e-mail de l'éditeur, du SIREN, et du téléphone des hébergeurs | Liste officielle (entreprendre.service-public.fr, fiche F37351) |
+| Hébergement du site | **Cloudflare Pages** (déjà utilisé par la publication commerciale), et non GitHub Pages | Les conditions de GitHub Pages interdisent un service commercial ; celles de Cloudflare interdisent seulement de collecter des numéros de carte bancaire sur un site gratuit (aucun ici) |
+| Transferts hors UE | Supabase : Singapour et États-Unis, clauses contractuelles types | Page « Data residency and transfers » de Supabase |
+| Historique après suppression | Le nom du joueur **reste** dans les matchs passés ; remplacement par « Ancien joueur » sur demande | C'est ce que fait réellement la base (table `players`) ; l'ancien texte laissait croire le contraire |
+| Parrainage | Clause ajoutée aux conditions d'abonnement | Le programme existait sans aucune règle écrite |
+| Mineurs | Déclaration cochée à l'inscription (15 ans ou plus, ou accord parental) | Pratique courante ; aucune vérification d'identité n'est exigée par la loi |
+| Retour sur les droits de rétractation | Aucun | Les clubs sont des personnes morales : pas de droit de rétractation pour un achat en ligne |
+
+## À faire avant d'ouvrir au public
+
+- Compléter les crochets (identité, téléphone, SIREN) et choisir un médiateur
+  (adhésion payante).
+- **Outil « Ancien joueur »** : le nom d'un joueur est recopié dans plusieurs
+  tables (`players`, `player_aliases`, buteurs, imports historiques). Tant
+  qu'aucun outil ne le remplace partout, traiter chaque demande à la main.
+- Désactiver le suivi d'ouverture des e-mails dans Brevo.
+- Accessibilité : les micro-entreprises qui fournissent des services sont
+  exemptées par la directive européenne sur l'accessibilité ; vérifier la
+  transposition française (loi n° 2023-171) si l'activité grandit.
 
 ## Versions et preuves
 

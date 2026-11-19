@@ -6,6 +6,13 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- textes légaux sans juriste (décisions tracées dans docs/legal/README.md) :
+  conditions d'abonnement sans limite de responsabilité ni pénalités de
+  retard (une association est protégée comme un non-professionnel), clause
+  de parrainage, médiateur de la consommation dans les CGU, mentions légales
+  complétées (téléphone, SIREN, hébergeurs Supabase et Cloudflare),
+  transferts vers Singapour déclarés, et politique de confidentialité
+  honnête sur le nom gardé dans l'historique des matchs ;
 - nouvelles conditions : quand les CGU ou la politique de confidentialité
   changent de version, chaque membre doit accepter la nouvelle version à sa
   prochaine connexion (écran « Les conditions ont changé »), ou se
