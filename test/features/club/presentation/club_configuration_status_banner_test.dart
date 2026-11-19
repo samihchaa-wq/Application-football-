@@ -10,7 +10,7 @@ void main() {
   const club =
       Club(id: 'a', name: 'Club A', shortName: 'A', inviteCode: 'ABCDEFGH');
 
-  testWidgets('chargement visible puis erreur et nouvelle tentative réussie',
+  testWidgets('chargement invisible puis erreur et nouvelle tentative réussie',
       (tester) async {
     final pending = Completer<ClubModules>();
     var calls = 0;
@@ -29,7 +29,8 @@ void main() {
         child: const MaterialApp(
             home: Scaffold(body: ClubConfigurationStatusBanner()))));
     await tester.pump();
-    expect(find.text('Chargement des réglages du club…'), findsOneWidget);
+    // Rien ne s'affiche pendant le chargement : l'écran ne saute pas.
+    expect(find.byType(Text), findsNothing);
     expect(container.read(clubModuleEnabledProvider(ClubModule.predictions)),
         isFalse);
 

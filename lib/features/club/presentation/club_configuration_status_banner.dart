@@ -16,11 +16,11 @@ class ClubConfigurationStatusBanner extends ConsumerWidget {
     final club = ref.watch(myClubProvider);
     final modules = ref.watch(clubModulesProvider);
     final rules = ref.watch(clubRulesProvider);
+    // Pendant le chargement, rien n'est affiché : un bandeau qui apparaît
+    // puis disparaît fait sauter tout l'écran à l'ouverture. Les fonctions
+    // du club restent masquées tant que leurs réglages ne sont pas connus.
     final failed = club.hasError || modules.hasError || rules.hasError;
-    final loading = isClubConfigurationLoading(club) ||
-        isClubConfigurationLoading(modules) ||
-        isClubConfigurationLoading(rules);
-    if (!failed && !loading) return const SizedBox.shrink();
+    if (!failed) return const SizedBox.shrink();
     return Material(
       color: AppTheme.surface,
       child: SafeArea(
@@ -30,20 +30,15 @@ class ClubConfigurationStatusBanner extends ConsumerWidget {
           child: Row(
             children: [
               Expanded(
-                child: Text(
-                  failed
-                      ? 'Les réglages du club sont indisponibles.'
-                      : 'Chargement des réglages du club…',
-                ),
+                child: const Text('Les réglages du club sont indisponibles.'),
               ),
-              if (failed)
-                TextButton(
-                  onPressed: () {
-                    refreshClubConfiguration(ref.invalidate);
-                    ref.invalidate(featureFlagsControllerProvider);
-                  },
-                  child: const Text('Réessayer'),
-                ),
+              TextButton(
+                onPressed: () {
+                  refreshClubConfiguration(ref.invalidate);
+                  ref.invalidate(featureFlagsControllerProvider);
+                },
+                child: const Text('Réessayer'),
+              ),
             ],
           ),
         ),

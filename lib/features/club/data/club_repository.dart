@@ -689,11 +689,6 @@ final clubModuleEnabledProvider = Provider.family<bool, ClubModule>((
   return modules.valueOrNull?.isEnabled(module) ?? false;
 });
 
-/// Vrai seulement quand rien n'est encore connu pour ce compte : une
-/// relecture qui garde la réponse précédente n'est pas un chargement.
-bool isClubConfigurationLoading(AsyncValue<Object?> value) =>
-    value.isLoading && !value.isRefreshing;
-
 /// Même invalidation après un signal distant, un retour au premier plan et
 /// une écriture locale. Les règles métiers restent autoritaires côté SQL.
 void refreshClubConfiguration(void Function(ProviderOrFamily) invalidate) {
