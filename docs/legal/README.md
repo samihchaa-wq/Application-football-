@@ -41,7 +41,7 @@ moins les conditions d'abonnement dès que possible.
 | Historique après suppression | Le nom du joueur **reste** dans les matchs passés ; remplacement par « Ancien joueur » sur demande | C'est ce que fait réellement la base (table `players`) ; l'ancien texte laissait croire le contraire |
 | Parrainage | Clause ajoutée aux conditions d'abonnement | Le programme existait sans aucune règle écrite |
 | Mineurs | Déclaration cochée à l'inscription (15 ans ou plus, ou accord parental) | Pratique courante ; aucune vérification d'identité n'est exigée par la loi |
-| Retour sur les droits de rétractation | Aucun | Les clubs sont des personnes morales : pas de droit de rétractation pour un achat en ligne |
+| Droit de rétractation | Aucun | Les clubs sont des personnes morales : pas de droit de rétractation pour un achat en ligne |
 
 ## À faire avant d'ouvrir au public
 
