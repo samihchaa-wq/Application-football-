@@ -49,6 +49,9 @@ const String _editorName = '[Prénom NOM], entrepreneur individuel (EI)';
 const String _editorShortName = '[Prénom NOM]';
 const String _editorAddress = '[Adresse postale de l’éditeur]';
 const String _editorEmail = '[adresse e-mail de contact]';
+
+/// Adresse de contact de l'appli (support), déjà affichée aux clubs.
+const String _contactEmail = 'contact@petitfilet.fr';
 const String _editorPhone = '[numéro de téléphone]';
 const String _editorSiret =
     'SIREN : [numéro], immatriculé au registre national des entreprises';
@@ -314,14 +317,14 @@ const LegalDocument privacyPolicy = LegalDocument(
           'Historique des notifications : 90 jours. '
           'Journaux techniques : 7 à 90 jours selon leur type. Sauvegardes '
           'chiffrées : effacées au bout de 90 jours.',
+      'Les noms des joueurs restent dans l’historique du club (matchs, '
+          'statistiques), y compris après leur départ. Si un joueur supprime '
+          'son compte, son nom est remplacé par « Ancien joueur ». Pour toute '
+          'autre demande, écrire à $_contactEmail.',
       'Quand ton compte est supprimé, tes données de compte sont effacées '
-          '(identifiant, e-mail, photo, pronostics, votes, préférences). Ton '
-          'nom de joueur reste dans l’historique des matchs déjà joués '
-          '(feuilles de match, buteurs, statistiques), raccourci (par exemple '
-          '« Yves D. »), dans l’intérêt du club à garder son histoire '
-          'sportive. Tu peux demander qu’il y soit remplacé par « Ancien '
-          'joueur », auprès d’un administrateur du club ou en écrivant à '
-          '$_editorEmail.',
+          '(identifiant, e-mail, téléphone, date de naissance, photo, '
+          'pronostics, votes, préférences). Seul ce qui sert aux statistiques '
+          'du club reste, sous le nom « Ancien joueur ».',
       'Si ton club arrête l’application, ses données sont gardées '
           '$_dataRetentionAfterEnd après la fin de son abonnement, pour qu’il '
           'les retrouve intactes s’il revient, puis supprimées.',

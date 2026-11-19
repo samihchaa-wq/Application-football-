@@ -107,11 +107,6 @@ class MorePage extends ConsumerWidget {
                   title: 'Abonnement',
                   onTap: () => context.push('/admin/abonnement'),
                 ),
-                _SettingsTile(
-                  icon: Icons.person_off_outlined,
-                  title: 'Anciens joueurs',
-                  onTap: () => context.push('/admin/anciens-joueurs'),
-                ),
               ],
             ),
           ],
