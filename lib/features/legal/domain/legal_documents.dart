@@ -15,11 +15,11 @@ library;
 
 /// Version des CGU et de la politique de confidentialité acceptée à
 /// l'inscription. Format AAAA-MM-JJ.
-const String legalVersion = '2026-11-19';
+const String legalVersion = '2026-11-20';
 
 /// Version des conditions d'abonnement et de l'accord sur les données,
 /// acceptée par la personne qui crée un club. Format AAAA-MM-JJ.
-const String clubContractVersion = '2026-11-19';
+const String clubContractVersion = '2026-11-20';
 
 class LegalSection {
   const LegalSection(this.title, this.paragraphs);
@@ -286,7 +286,9 @@ const LegalDocument privacyPolicy = LegalDocument(
       'Prestataires techniques de l’éditeur : Supabase (hébergement des '
           'données, à Paris), Cloudflare (mise en ligne du site : voit ton '
           'adresse IP quand tu ouvres l’application), GitHub (sauvegardes '
-          'chiffrées), Brevo (envoi des e-mails, France), Google (polices de '
+          'chiffrées), Brevo (envoi des e-mails, France), Stripe (paiement '
+          'par carte de l’abonnement d’un club : seulement pour la personne '
+          'qui paie), Google (polices de '
           'caractères de secours) et le service de notifications de ton '
           'navigateur '
           '(Google, Apple ou Mozilla), qui ne voit passer que des messages '
@@ -400,9 +402,10 @@ const LegalDocument clubSalesTerms = LegalDocument(
           'prévenu au moins un mois avant le renouvellement.',
     ]),
     LegalSection('4. Facturation et paiement', [
-      'L’éditeur adresse une facture au club. Elle est payable par virement '
-          'ou par chèque, ou par carte ou prélèvement quand ce moyen sera '
-          'proposé.',
+      'L’abonnement se paie par carte bancaire depuis l’application '
+          '(paiement sécurisé par Stripe, qui seul voit les données de la '
+          'carte), ou par virement ou chèque sur demande à l’éditeur. Une '
+          'facture acquittée est émise après chaque paiement.',
       'Le paiement est attendu à la fin de l’essai, puis à la fin de chaque '
           'période payée. L’administrateur du club est prévenu dans '
           'l’application et par e-mail 10 jours avant cette échéance. Sans '

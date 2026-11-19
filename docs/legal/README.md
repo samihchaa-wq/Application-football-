@@ -45,6 +45,8 @@ moins les conditions d'abonnement dès que possible.
 | Durées | 3 ans sans connexion pour un compte, 3 ans après la fin de l'abonnement pour un club | Couvre l'arrêt d'une ou deux saisons |
 | Parrainage | Clause ajoutée aux conditions d'abonnement | Le programme existait sans aucune règle écrite |
 | Mineurs | Déclaration cochée à l'inscription (15 ans ou plus, ou accord parental) | Pratique courante ; aucune vérification d'identité n'est exigée par la loi |
+| Paiement par carte (20/11/2026) | Stripe ajouté à la politique de confidentialité (pour la seule personne qui paie) et aux conditions d'abonnement ; versions `2026-11-20` des deux textes | Le paiement par carte est en service ; Stripe ne traite pas les données des membres, il n'entre donc pas dans l'accord sur les données |
+| Facture (20/11/2026) | Plus de pénalités de retard ni d'indemnité de 40 € | Réservées aux dettes entre professionnels, déjà retirées des conditions d'abonnement ; la facture est émise après paiement |
 | Droit de rétractation | Aucun | Les clubs sont des personnes morales : pas de droit de rétractation pour un achat en ligne |
 
 ## À faire avant d'ouvrir au public

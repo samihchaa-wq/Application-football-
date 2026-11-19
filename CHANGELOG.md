@@ -6,6 +6,14 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- textes légaux, version `2026-11-20` (nouvel accord demandé aux
+  membres) : Stripe ajouté à la politique de confidentialité et aux
+  conditions d'abonnement (paiement par carte en service). Facture : plus de
+  pénalités de retard ni d'indemnité de 40 €, comme dans les conditions.
+  E-mail de rappel d'échéance : paiement par carte avec le lien direct vers
+  l'écran Abonnement, virement ou chèque sur demande. Fonctions
+  `register-account`, `claim-club` et `account-email` à publier en même temps
+  que l'appli, sinon les inscriptions sont refusées ;
 - démo en ligne : les comptes partagés `demoadmin` et `demojoueur` ne
   peuvent plus être supprimés ni changer de mot de passe (refus de la base et
   de la fonction `manage-user`). Nouveau workflow « Démo : remise à zéro »

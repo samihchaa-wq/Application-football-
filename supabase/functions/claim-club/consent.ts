@@ -11,10 +11,10 @@
 // Ce fichier est recopié à l'identique dans supabase/functions/claim-club/.
 
 /** Version publiée des CGU et de la politique de confidentialité. */
-export const CURRENT_TERMS_VERSION = "2026-11-19";
+export const CURRENT_TERMS_VERSION = "2026-11-20";
 
 /** Version publiée des conditions d'abonnement et de l'accord sur les données. */
-export const CURRENT_CLUB_CONTRACT_VERSION = "2026-11-19";
+export const CURRENT_CLUB_CONTRACT_VERSION = "2026-11-20";
 
 export type AgeConfirmation = "15_or_more" | "parental_consent";
 

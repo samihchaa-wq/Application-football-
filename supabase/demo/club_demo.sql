@@ -242,7 +242,7 @@ begin
         -- Compte fictif de l'éditeur : conditions du jour acceptées, pour que
         -- le prospect arrive directement sur l'appli. Même valeur que
         -- legalVersion (tool/tests/test_commercial_legal_versions.py).
-        terms_version = '2026-11-19',
+        terms_version = '2026-11-20',
         terms_accepted_at = now(),
         age_confirmation = '15_or_more'
     where id = v_player.profile_id;

@@ -66,3 +66,16 @@ Deno.test("e-mail de fin d'essai : parle de l'essai gratuit", () => {
   const mail = subscriptionReminderMail(reminder, "contact@petitfilet.fr");
   assertStringIncludes(mail.text, "L'essai gratuit de FC Démo sur Petit Filet se termine le 30/11/2026");
 });
+
+Deno.test("e-mail de rappel : paiement par carte avec le lien de l'écran Abonnement", () => {
+  const reminder = parseSubscriptionReminder(valid)!;
+  const mail = subscriptionReminderMail(
+    reminder,
+    "contact@petitfilet.fr",
+    "https://app.petitfilet.fr/",
+  );
+  assertStringIncludes(mail.text, "payer par carte");
+  assertStringIncludes(mail.text, "https://app.petitfilet.fr/#/admin/abonnement");
+  assertStringIncludes(mail.text, "virement ou un chèque");
+  assert(!mail.text.includes("pour recevoir la facture"));
+});

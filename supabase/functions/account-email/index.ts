@@ -302,7 +302,7 @@ Deno.serve(async (req: Request) => {
         return jsonResponse({ error: "Requête invalide." }, 400);
       }
       const contact = Deno.env.get("SUPPORT_EMAIL")?.trim() || mail.fromEmail;
-      const message = subscriptionReminderMail(reminder, contact);
+      const message = subscriptionReminderMail(reminder, contact, publicAppUrl);
       let sent = 0;
       for (const recipient of reminder.recipients) {
         try {
