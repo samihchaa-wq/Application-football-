@@ -136,16 +136,16 @@ select ok(
   'Every mystery template still offered to new clubs has its intended illustration or custom art'
 );
 
+-- Depuis 20261203010000, les nouveaux clubs ne reçoivent plus les blagues,
+-- doublons et badges moqueurs : seuls les badges qu'un club possède sont
+-- vérifiés.
 select ok(
   not exists (
-    select 1 from public.clubs c
-    cross join expected_mystery_icons e
-    where not exists (
-      select 1 from public.badges b where b.club_id=c.id and b.code=e.code
-        and (b.emoji <> '🏅' or b.image_url is not null)
-    )
+    select 1 from public.badges b
+    join expected_mystery_icons e on e.code = b.code
+    where b.emoji = '🏅' and b.image_url is null
   ),
-  'Every club has its contextual mystery illustrations or custom artwork'
+  'Every mystery badge a club owns has its contextual illustration or custom artwork'
 );
 
 select * from finish();

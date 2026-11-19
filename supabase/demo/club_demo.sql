@@ -47,6 +47,9 @@
 select set_config('request.jwt.claims', '', true);
 select set_config('demo.password', :'demo_password', true);
 select set_config('demo.username_domain', :'username_domain', true);
+-- Lève, pour cette transaction seulement, le verrou des comptes de démo
+-- (20261203020000_protection_comptes_demo.sql) : suppression et mot de passe.
+select set_config('pf.demo_reset', 'on', true);
 
 do $$
 begin
@@ -235,7 +238,13 @@ begin
         status = 'active',
         is_goalkeeper = (v_player.number = 1),
         username = v_username,
-        password_set = v_login
+        password_set = v_login,
+        -- Compte fictif de l'éditeur : conditions du jour acceptées, pour que
+        -- le prospect arrive directement sur l'appli. Même valeur que
+        -- legalVersion (tool/tests/test_commercial_legal_versions.py).
+        terms_version = '2026-11-19',
+        terms_accepted_at = now(),
+        age_confirmation = '15_or_more'
     where id = v_player.profile_id;
   end loop;
 end;
@@ -465,9 +474,17 @@ begin
     perform private.close_match_motm_election(v_match, false);
 
     -- Le match recule à sa vraie date, avec toutes ses dates.
-    v_target := (date_trunc('day', now() at time zone 'Europe/Paris')
-                 - make_interval(days => 7 * p_weeks_ago[v_number])
-                 + interval '15 hours') at time zone 'Europe/Paris';
+    -- Les matchs passés tombent le dimanche à 15 h, comme en amateur (et
+    -- non plus le jour de la semaine où le script tourne).
+    -- « Il y a 1 semaine » = le dernier dimanche passé (celui de la semaine
+    -- précédente quand le script tourne un dimanche, avant le coup d'envoi).
+    v_target := (
+      (
+        (now() at time zone 'Europe/Paris')::date
+        - extract(isodow from (now() at time zone 'Europe/Paris'))::integer
+        - 7 * (p_weeks_ago[v_number] - 1)
+      ) + time '15:00'
+    ) at time zone 'Europe/Paris';
     v_shift := v_target - v_kickoff;
     set local session_replication_role = replica;
     update public.matches
@@ -551,8 +568,29 @@ begin
   perform pg_temp.demo_as(v_admin);
   select id into v_season from public.seasons where status = 'open';
   select id into v_opponent from public.opponents where name = 'FC Rive Gauche';
-  v_kickoff := ((date_trunc('day', now() at time zone 'Europe/Paris') + interval '3 days 15 hours')
-                at time zone 'Europe/Paris');
+  -- Prochain match : le week-end qui vient s'il tombe dans 1 à 5 jours
+  -- (disponibilités déjà ouvertes, J-6 à 12 h), sinon un mercredi soir dans
+  -- 3 jours (remise à zéro du dimanche).
+  v_kickoff := (
+    with today as (
+      select (now() at time zone 'Europe/Paris')::date as day,
+             extract(isodow from (now() at time zone 'Europe/Paris'))::integer as dow
+    ), choice as (
+      select day,
+             case
+               when (7 - dow) % 7 between 1 and 5 then (7 - dow) % 7
+               when (13 - dow) % 7 between 1 and 5 then (13 - dow) % 7
+               else 3
+             end as days_ahead,
+             case
+               when (7 - dow) % 7 between 1 and 5
+                 or (13 - dow) % 7 between 1 and 5 then time '15:00'
+               else time '20:30'
+             end as kickoff_time
+      from today
+    )
+    select ((day + days_ahead) + kickoff_time) at time zone 'Europe/Paris' from choice
+  );
   v_match := public.admin_create_match_complete(
     v_season, v_opponent,
     (v_kickoff at time zone 'Europe/Paris')::date,

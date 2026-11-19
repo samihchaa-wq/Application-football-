@@ -1,0 +1,69 @@
+name: 'Démo : remise à zéro'
+
+# Remet à neuf le club de démonstration « FC Démo » chaque nuit, avec ses deux
+# comptes partagés (demoadmin, demojoueur). Un prospect peut modifier la démo
+# dans la journée ; le suivant la retrouve propre le lendemain.
+#
+# Ne touche QUE le club de démo et ses comptes (identifiants fixes
+# de000000-0000-4000-8000-…) : voir supabase/demo/club_demo.sql, rejoué en CI
+# par supabase/tests/database/demo_club_script.test.sql.
+#
+# Mise en service (une fois) : secret GitHub DEMO_PASSWORD (12 caractères ou
+# plus, le mot de passe donné aux prospects). Sans ce secret, le workflow
+# s'arrête en le disant, sans rien écrire.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: commercial-demo-reset
+  cancel-in-progress: false
+
+jobs:
+  reset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PRODUCTION_DB_URL: ${{ secrets.PRODUCTION_DB_URL }}
+      DEMO_PASSWORD: ${{ secrets.DEMO_PASSWORD }}
+    steps:
+      - name: Checkout commercial repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Require demo password and commercial database
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${DEMO_PASSWORD}" ]; then
+            echo '::error::Secret DEMO_PASSWORD absent : la démo n'"'"'est pas remise à zéro.'
+            exit 1
+          fi
+          if [ "${#DEMO_PASSWORD}" -lt 12 ]; then
+            echo '::error::DEMO_PASSWORD doit faire au moins 12 caractères.'
+            exit 1
+          fi
+          python3 - <<'PY'
+          import os, sys
+          sys.path.insert(0, 'tool/qa')
+          from commercial_backup_bundle import PROJECT_REF, normalize_database_url
+          url = normalize_database_url(os.environ.get('PRODUCTION_DB_URL', ''), PROJECT_REF)
+          print('::add-mask::' + url)
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as out:
+              print('PRODUCTION_DB_URL=' + url, file=out)
+          print('Base commerciale vérifiée.')
+          PY
+
+      - name: Reset the demo club in one transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          domain="$(jq -r .USERNAME_DOMAIN config/production.json)"
+          psql "$PRODUCTION_DB_URL" --single-transaction -X -q \
+            -v ON_ERROR_STOP=1 \
+            -v demo_password="$DEMO_PASSWORD" \
+            -v username_domain="$domain" \
+            -f supabase/demo/club_demo.sql

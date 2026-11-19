@@ -93,7 +93,9 @@ begin
 end;
 $$;
 
-alter function public.consume_registration_rate_limit(text, text) owner to postgres;
+-- Même propriétaire que l'ancienne version : le rôle qui ne contourne pas les
+-- règles d'accès (club_isolation.test.sql).
+alter function public.consume_registration_rate_limit(text, text) owner to club_scope;
 revoke all on function public.consume_registration_rate_limit(text, text) from public, anon, authenticated;
 grant execute on function public.consume_registration_rate_limit(text, text) to service_role;
 

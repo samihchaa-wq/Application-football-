@@ -6,6 +6,13 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- démo en ligne : les comptes partagés `demoadmin` et `demojoueur` ne
+  peuvent plus être supprimés ni changer de mot de passe (refus de la base et
+  de la fonction `manage-user`). Nouveau workflow « Démo : remise à zéro »
+  chaque nuit à 3 h 17 UTC (secret `DEMO_PASSWORD` à créer). Les comptes de
+  démo arrivent directement sur l'appli (conditions du jour acceptées), les
+  matchs passés tombent le dimanche à 15 h et le prochain match le week-end
+  qui vient. Migration `20261203020000_protection_comptes_demo.sql` ;
 - badges des nouveaux clubs : jeu neutre. Retirés des modèles : blagues
   internes d'AS Grinta (« Voy a marcar », « La línea amarilla ! », « C'est
   dans l'élan »), doublons (« Le Boucher », « Le Malchanceux », « Le
