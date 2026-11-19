@@ -90,7 +90,7 @@ Créer deux clubs A et B avec administrateurs et joueurs distincts. Vérifier :
   et `20261127020000_poste_controle_editeur.sql`. Le code Stripe
   n'est pas opérationnel. Reste à fournir aux clubs un moyen de contact et
   des coordonnées de paiement (l'appli dit seulement « contacte-nous »).
-- Comptes inactifs (migration `20261128000000_suppression_comptes_inactifs.sql`,
+- Comptes inactifs (migration `20261129000000_suppression_comptes_inactifs.sql`,
   action `inactive-accounts` de la fonction `account-email`) : avertissement
   par e-mail un mois avant les 3 ans sans utilisation, puis suppression.
   Testé sur une base locale ; à déployer, puis vérifier un premier passage

@@ -33,7 +33,7 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
   reçoit un e-mail d'avertissement (s'il a une adresse), puis est supprimé un
   mois plus tard s'il ne s'est pas reconnecté. Une session restée ouverte
   compte comme une utilisation. Le dernier administrateur d'un club n'est
-  jamais supprimé ainsi. Migration `20261128000000_suppression_comptes_inactifs.sql` ;
+  jamais supprimé ainsi. Migration `20261129000000_suppression_comptes_inactifs.sql` ;
 - factures : chaque paiement noté crée une facture PDF numérotée sans trou
   (PF-2027-0001…), avec la mention « TVA non applicable, art. 293 B du CGI ».
   L'administrateur du club la télécharge dans « Réglages du club >
