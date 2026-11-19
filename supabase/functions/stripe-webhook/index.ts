@@ -8,4 +8,5 @@ Deno.serve(createStripeWebhookHandler({
   createClient,
   getEnv: (name) => Deno.env.get(name),
   nowSeconds: () => Math.floor(Date.now() / 1000),
+  fetch,
 }));

@@ -37,7 +37,14 @@ select is((
       -- Paiement de l'abonnement par l'administrateur du club, y compris
       -- quand le club est suspendu pour impayé (is_admin() l'exclurait) :
       -- garde private.billing_admin_club_id(), montant calculé par le serveur.
-      'admin_prepare_card_payment', 'admin_claim_free_year'
+      'admin_prepare_card_payment', 'admin_claim_free_year',
+      -- Gestionnaire de l'éditeur : garde private.is_platform_operator().
+      'platform_record_manual_payment', 'platform_grant_free_period',
+      'platform_record_refund', 'platform_prepare_card_refund',
+      'platform_payment_alerts', 'platform_resolve_alert',
+      'platform_billing_settings', 'platform_save_billing_settings',
+      'platform_set_club_terms', 'platform_set_club_access',
+      'platform_ledger', 'platform_list_credit_notes'
     )
 ), 0::bigint, 'aucune nouvelle RPC exposee ne contourne les RLS');
 
