@@ -43,6 +43,8 @@ class PlatformBilling {
     this.basePriceCents,
     this.suspensionOn,
     this.autoSuspendedAt,
+    this.referralDiscountPercent = 0,
+    this.amountDueCents,
   });
 
   factory PlatformBilling.fromJson(Map<String, dynamic> json) {
@@ -51,6 +53,9 @@ class PlatformBilling {
       basePriceCents: measuredCount(json['base_price_cents']),
       suspensionOn: measuredDate(json['suspension_on']),
       autoSuspendedAt: measuredDate(json['auto_suspended_at']),
+      referralDiscountPercent:
+          measuredCount(json['referral_discount_percent']) ?? 0,
+      amountDueCents: measuredCount(json['amount_due_cents']),
       payments: rows is List
           ? rows
               .whereType<Map>()
@@ -69,6 +74,12 @@ class PlatformBilling {
 
   /// Renseignée quand le club a été suspendu automatiquement pour impayé.
   final DateTime? autoSuspendedAt;
+
+  /// Réduction de parrainage acquise par le club (0 à 100).
+  final int referralDiscountPercent;
+
+  /// Montant à demander pour la prochaine année, réduction déduite.
+  final int? amountDueCents;
   final List<PlatformPayment> payments;
 }
 

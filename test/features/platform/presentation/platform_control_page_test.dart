@@ -24,6 +24,77 @@ final _snapshot = PlatformSnapshot(
   ],
 );
 
+final _now = DateTime.now().toUtc();
+
+final _rich = PlatformSnapshot(
+  fetchedAt: _now,
+  teams: [
+    PlatformTeam(
+      id: 'trial',
+      name: 'FC Essai',
+      status: 'active',
+      subscriptionStatus: 'trialing',
+      createdAt: _now.subtract(const Duration(days: 25)),
+      trialEndsAt: _now.add(const Duration(days: 5)),
+      nextDueAt: _now.add(const Duration(days: 5)),
+      members: 22,
+      players: 18,
+      visitsPerDay: 6.5,
+      visits30d: 160,
+      people7d: 15,
+      lastVisitOn: _now,
+      referralsTotal: 0,
+      referralsPaid: 0,
+      referredBy: 'AS Abonnée',
+      basePriceCents: 7900,
+      discountPercent: 5,
+      amountDueCents: 7505,
+    ),
+    PlatformTeam(
+      id: 'paid',
+      name: 'AS Abonnée',
+      status: 'active',
+      subscriptionStatus: 'active',
+      createdAt: _now.subtract(const Duration(days: 400)),
+      currentPeriodEnd: _now.add(const Duration(days: 200)),
+      nextDueAt: _now.add(const Duration(days: 200)),
+      members: 30,
+      players: 25,
+      visitsPerDay: 2.1,
+      people7d: 9,
+      lastVisitOn: _now.subtract(const Duration(days: 20)),
+      referralsTotal: 3,
+      referralsPaid: 2,
+      basePriceCents: 7900,
+      discountPercent: 10,
+      amountDueCents: 7110,
+      paidCents: 7900,
+    ),
+  ],
+  totals: const PlatformTotals(
+    clubs: 2,
+    trialing: 1,
+    paying: 1,
+    suspended: 0,
+    new30d: 1,
+    trialsEnding7d: 1,
+    due30d: 1,
+    due30dCents: 7505,
+    expected12mCents: 14615,
+    members: 52,
+    players: 43,
+    visitsToday: 12,
+    people7d: 24,
+    collectedTotalCents: 7900,
+    collectedYearCents: 7900,
+    toDelete90d: 0,
+  ),
+  dailyVisits: [
+    for (var i = 29; i >= 0; i--)
+      PlatformDailyVisits(_now.subtract(Duration(days: i)), i % 7),
+  ],
+);
+
 void main() {
   Future<void> open(
     WidgetTester tester, {
@@ -88,22 +159,25 @@ void main() {
       await tester.tap(find.byIcon(Icons.groups_outlined));
       await tester.pumpAndSettle();
       expect(find.text('Équipe Alpha'), findsOneWidget);
-      await tester.enterText(find.byType(TextField), 'Beta');
+      await tester.enterText(
+        find.byKey(const Key('platform-club-search')),
+        'Beta',
+      );
       await tester.pump();
       expect(find.text('Équipe Alpha'), findsNothing);
-      await tester.tap(find.text('Actives'));
+      await tester.tap(find.byKey(const Key('platform-filter-paying')));
       await tester.pump();
       expect(
-        find.text('Aucune équipe ne correspond à cette recherche.'),
+        find.text('Aucun club ne correspond à cette recherche.'),
         findsOneWidget,
       );
-      await tester.tap(find.text('Toutes'));
+      await tester.tap(find.byKey(const Key('platform-filter-all')));
       await tester.pump();
       await tester.tap(find.text('Équipe Beta'));
       await tester.pumpAndSettle();
-      expect(find.text('Fiche équipe'), findsOneWidget);
+      expect(find.text('Fiche club'), findsOneWidget);
       expect(find.text('Suspendue'), findsOneWidget);
-      expect(find.text('Fin de période enregistrée'), findsOneWidget);
+      expect(find.text('Fin de l’année payée'), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
     },
@@ -122,6 +196,9 @@ void main() {
     expect(find.text('Suspendue automatiquement pour impayé'), findsOneWidget);
     expect(find.text('Aucun paiement noté pour cette équipe.'), findsOneWidget);
 
+    await tester
+        .ensureVisible(find.byKey(const Key('platform-record-payment')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('platform-record-payment')));
     await tester.pumpAndSettle();
     expect(
@@ -198,11 +275,11 @@ void main() {
     await open(tester);
     await tester.tap(find.byIcon(Icons.groups_outlined));
     await tester.pumpAndSettle();
-    expect(find.text('Répertoire des équipes'), findsOneWidget);
+    expect(find.byKey(const Key('platform-club-search')), findsOneWidget);
     await tester.tap(find.byKey(const Key('platform-home-button')));
     await tester.pumpAndSettle();
-    expect(find.text('À examiner'), findsOneWidget);
-    expect(find.text('Répertoire des équipes'), findsNothing);
+    expect(find.text('À traiter'), findsOneWidget);
+    expect(find.byKey(const Key('platform-club-search')), findsNothing);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
@@ -242,6 +319,88 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Accès gestionnaire requis'), findsOneWidget);
     expect(find.text('Équipe Alpha'), findsNothing);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('dashboard shows money, clubs, visits and what to handle',
+      (tester) async {
+    await open(tester, width: 1280, fetch: () async => _rich);
+    expect(find.text('Encaissé cette année'), findsOneWidget);
+    expect(find.text('Prévu sur 12 mois'), findsOneWidget);
+    expect(
+        find.textContaining('1 en mois gratuit · 1 abonnés'), findsOneWidget);
+    expect(find.text('Visites des 30 derniers jours'), findsOneWidget);
+    expect(find.textContaining('par jour en moyenne'), findsOneWidget);
+    expect(find.byKey(const Key('platform-todo-trials')), findsOneWidget);
+    expect(find.byKey(const ValueKey('platform-due-trial')), findsOneWidget);
+    expect(find.byKey(const Key('platform-todo-quiet')), findsOneWidget,
+        reason: 'AS Abonnée has not visited for 20 days');
+    expect(find.text('Les clubs les plus actifs'), findsOneWidget);
+
+    // A to-do opens the matching filtered club list.
+    await tester.ensureVisible(find.byKey(const Key('platform-todo-trials')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('platform-todo-trials')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('platform-team-trial')), findsOneWidget);
+    expect(find.byKey(const ValueKey('platform-team-paid')), findsNothing);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  for (final width in [390.0, 1280.0]) {
+    testWidgets('club list shows every column at $width pixels',
+        (tester) async {
+      await open(tester, width: width, fetch: () async => _rich);
+      await tester.tap(find.byIcon(Icons.groups_outlined));
+      await tester.pumpAndSettle();
+      final row = find.byKey(const ValueKey('platform-team-trial'));
+      expect(row, findsOneWidget);
+      String rowText() => tester
+          .widgetList<Text>(
+              find.descendant(of: row, matching: find.byType(Text)))
+          .map((text) => text.data ?? '')
+          .join(' | ');
+      expect(rowText(), contains('18 joueurs'));
+      expect(rowText(), contains('6,5'));
+      expect(rowText(), contains('25 j'));
+      expect(rowText(), contains('dans 5 j'));
+      expect(rowText(), contains('75,05'));
+      expect(rowText(), contains('Mois gratuit'));
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
+
+  testWidgets('sorting by visits puts the most active club first',
+      (tester) async {
+    await open(tester, width: 1280, fetch: () async => _rich);
+    await tester.tap(find.byIcon(Icons.groups_outlined));
+    await tester.pumpAndSettle();
+    double top(String id) =>
+        tester.getTopLeft(find.byKey(ValueKey('platform-team-$id'))).dy;
+    expect(top('trial'), lessThan(top('paid')),
+        reason: 'nearest due date first');
+    await tester.tap(find.byKey(const Key('platform-club-sort')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Trier : Effectif').last);
+    await tester.pumpAndSettle();
+    expect(top('paid'), lessThan(top('trial')), reason: '25 players before 18');
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('club page details referral, amount due and seniority',
+      (tester) async {
+    await open(tester, width: 1280, fetch: () async => _rich);
+    await tester.tap(find.byIcon(Icons.groups_outlined));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('platform-team-paid')));
+    await tester.pumpAndSettle();
+    expect(find.text('Fiche club'), findsOneWidget);
+    expect(find.textContaining('parrainage −10 %'), findsOneWidget);
+    expect(find.text('3 · 2 payé(s)'), findsOneWidget);
+    expect(find.textContaining('1 an et 1 mois'), findsOneWidget);
+    expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 }

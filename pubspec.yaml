@@ -31,6 +31,7 @@ dependencies:
   supabase_flutter: ^2.8.4
   url_launcher: ^6.3.1
   web: ^1.1.1
+  pdf: ^3.13.1
 
 dev_dependencies:
   flutter_test:
@@ -47,6 +48,9 @@ flutter:
     - assets/images/badge_backgrounds/
     - assets/composition/
     - assets/audio/wrapped.mp3
+    # Police des factures PDF : les polices intégrées au PDF n'ont ni « € »
+    # ni « ’ ». Licence Apache 2.0 dans assets/fonts.
+    - assets/fonts/Roboto-Regular.ttf
 
   # La condensée de stade du bilan de saison : elle porte les chiffres et les
   # titres. Licence SIL OFL dans assets/fonts.

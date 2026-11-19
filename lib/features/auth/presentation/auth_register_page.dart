@@ -35,6 +35,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
   final _inviteCodeController = TextEditingController();
   final _clubNameController = TextEditingController();
   final _clubShortNameController = TextEditingController();
+  final _referralCodeController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -61,6 +62,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
     _inviteCodeController.dispose();
     _clubNameController.dispose();
     _clubShortNameController.dispose();
+    _referralCodeController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
@@ -81,6 +83,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
     final inviteCode = normalizeInviteCode(_inviteCodeController.text);
     final clubName = _clubNameController.text.trim();
     final clubShortName = _clubShortNameController.text.trim();
+    final referralCode = normalizeReferralCode(_referralCodeController.text);
 
     if (_mode == RegisterMode.join && !inviteCodePattern.hasMatch(inviteCode)) {
       _showError(
@@ -95,6 +98,12 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
       }
       if (clubShortName.length > 12) {
         _showError('Le nom court ne doit pas dépasser 12 caractères.');
+        return;
+      }
+      if (referralCode.isNotEmpty && !isValidReferralCode(referralCode)) {
+        _showError(
+          'Code parrain invalide : il commence par PF et compte 8 caractères.',
+        );
         return;
       }
     }
@@ -162,6 +171,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
               acceptedClubContractVersion: clubContractVersion,
               ageConfirmation: ageConfirmation,
               email: email,
+              referralCode: referralCode,
             )
           : await repository.joinClub(
               inviteCode: inviteCode,
@@ -261,6 +271,18 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                   decoration: const InputDecoration(
                     labelText: 'Nom court (facultatif)',
                     prefixIcon: Icon(Icons.short_text),
+                  ),
+                ),
+                TextField(
+                  key: const Key('register-referral-code'),
+                  controller: _referralCodeController,
+                  textInputAction: TextInputAction.next,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: const InputDecoration(
+                    labelText: 'Code parrain (facultatif)',
+                    helperText:
+                        'Donné par un club qui utilise déjà Petit Filet.',
+                    prefixIcon: Icon(Icons.card_giftcard_outlined),
                   ),
                 ),
               ],

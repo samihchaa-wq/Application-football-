@@ -3,6 +3,7 @@ import 'package:petit_filet/core/club/club_rules.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/widgets/pf_app_bar.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/features/billing/presentation/club_invoices_list.dart';
 import 'package:petit_filet/features/admin/presentation/club_subscription_section.dart';
 import 'package:petit_filet/features/club/data/club_repository.dart';
 import 'package:petit_filet/features/club/presentation/club_identity_sync.dart';
@@ -1237,6 +1238,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
         ),
         _section('subscription', 'Abonnement', Icons.credit_card_outlined, [
           const ClubSubscriptionSection(),
+          const SizedBox(height: 20),
+          const ClubInvoicesList(),
         ]),
       ],
     );

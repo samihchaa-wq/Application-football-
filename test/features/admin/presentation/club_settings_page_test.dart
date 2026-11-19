@@ -5,6 +5,7 @@ import 'package:petit_filet/features/admin/presentation/club_settings_page.dart'
 import 'package:petit_filet/features/badges/data/badge_inbox_repository.dart';
 import 'package:petit_filet/features/badges/presentation/badge_trophy_button.dart';
 import 'package:petit_filet/features/club/data/club_repository.dart';
+import 'package:petit_filet/features/billing/data/invoice_repository.dart';
 import 'package:petit_filet/features/club/data/club_subscription.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,6 +48,7 @@ void main() {
               yearlyAmountCents: 7900,
             ),
           ),
+          clubInvoicesProvider.overrideWith((ref) async => const []),
           clubStorageUsageProvider.overrideWith(
             (ref) async => const ClubStorageUsage(
               usedBytes: 50 * 1024 * 1024,

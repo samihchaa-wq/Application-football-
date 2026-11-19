@@ -11,6 +11,7 @@ void main() {
         overrides: [
           clubSubscriptionProvider.overrideWith((ref) async => subscription),
           clubStorageUsageProvider.overrideWith((ref) async => null),
+          clubReferralsProvider.overrideWith((ref) async => null),
         ],
         child: const MaterialApp(
           home: Scaffold(
@@ -100,5 +101,66 @@ void main() {
       find.byKey(const Key('club-subscription-suspension-warning')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('à régler : l’admin voit l’adresse où écrire pour payer', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      subscription(
+        state: ClubSubscriptionState.toPay,
+        suspensionOn: DateTime(2026, 12, 3, 12),
+      ),
+    );
+    expect(find.byKey(const Key('support-contact-email')), findsOneWidget);
+    expect(find.text('contact@petitfilet.fr'), findsOneWidget);
+    expect(find.byKey(const Key('support-contact-button')), findsOneWidget);
+  });
+
+  testWidgets('abonnement actif loin de l’échéance : pas d’adresse affichée', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      subscription(
+        state: ClubSubscriptionState.active,
+        periodEnd: DateTime.now().add(const Duration(days: 300)),
+        suspensionOn: DateTime.now().add(const Duration(days: 315)),
+      ),
+    );
+    expect(find.byKey(const Key('support-contact-email')), findsNothing);
+  });
+
+  testWidgets('réduction de parrainage : le montant restant est affiché', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      ClubSubscription(
+        state: ClubSubscriptionState.active,
+        trialEndsAt: null,
+        trialDaysLeft: 0,
+        currentPeriodEnd: DateTime.now().add(const Duration(days: 20)),
+        billablePlayers: 20,
+        pricePerPlayerCents: 0,
+        basePriceCents: 7900,
+        yearlyAmountCents: 7900,
+        referralDiscountPercent: 15,
+        amountDueCents: 6715,
+      ),
+    );
+    expect(
+      find.textContaining('Parrainage : −15 %, reste à payer 67,15'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('sans parrainage : pas de ligne de réduction', (tester) async {
+    await pump(
+      tester,
+      subscription(state: ClubSubscriptionState.toPay),
+    );
+    expect(find.byKey(const Key('club-subscription-amount-due')), findsNothing);
   });
 }
