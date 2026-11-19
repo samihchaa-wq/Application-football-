@@ -129,6 +129,8 @@ comment on table private.club_grants is
   'Périodes offertes par l''éditeur (mois gratuits, essai prolongé), avec leur motif.';
 
 create index club_grants_club_id_idx on private.club_grants (club_id, created_at desc);
+create index club_grants_granted_by_idx on private.club_grants (granted_by)
+  where granted_by is not null;
 
 alter table private.club_grants enable row level security;
 revoke all on private.club_grants from public, anon, authenticated;
@@ -176,6 +178,9 @@ comment on table private.club_refunds is
 
 create index club_refunds_club_id_idx on private.club_refunds (club_id, created_at desc);
 create index club_refunds_payment_id_idx on private.club_refunds (payment_id);
+create index club_refunds_invoice_id_idx on private.club_refunds (invoice_id);
+create index club_refunds_recorded_by_idx on private.club_refunds (recorded_by)
+  where recorded_by is not null;
 
 alter table private.club_refunds enable row level security;
 revoke all on private.club_refunds from public, anon, authenticated;
@@ -357,6 +362,9 @@ create table private.payment_alerts (
 
 comment on table private.payment_alerts is
   'Alertes de paiement à traiter par l''éditeur (contestation de carte…).';
+
+create index payment_alerts_resolved_by_idx on private.payment_alerts (resolved_by)
+  where resolved_by is not null;
 
 alter table private.payment_alerts enable row level security;
 revoke all on private.payment_alerts from public, anon, authenticated;
