@@ -288,6 +288,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         isEmpty: _birthDate == null,
                         decoration: InputDecoration(
                           labelText: 'Date de naissance (optionnel)',
+                          helperText: 'Téléphone et date de naissance sont '
+                              'visibles par les membres de ton club.',
+                          helperMaxLines: 2,
                           isDense: true,
                           enabled: _savedDetails != null,
                           suffixIcon: _birthDate == null

@@ -6,6 +6,42 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- suppression d'un compte : elle aboutit toujours, même dans un club sans
+  autre administrateur actif. Les traces d'auteur du compte supprimé (match
+  créé, compte rendu validé…) restent sans auteur au lieu d'être attribuées au
+  plus ancien administrateur ;
+- anciens joueurs : à la suppression d'un compte, le nom de joueur est
+  raccourci (« Yves D. ») dans tout l'historique du club, statistiques
+  conservées. Page admin « Anciens joueurs » pour le remplacer par « Ancien
+  joueur » à la demande de la personne ;
+- inscription : l'adresse e-mail est obligatoire aussi pour rejoindre un
+  club. E-mails envoyés avec un comptage d'ouverture anonyme uniquement.
+  Textes : sans médiateur de la consommation (décision de l'éditeur, risque
+  noté), sans connexion Facebook, nom raccourci ou remplacé sur demande dans
+  l'historique ;
+- textes légaux sans juriste (décisions tracées dans docs/legal/README.md) :
+  conditions d'abonnement sans limite de responsabilité ni pénalités de
+  retard (une association est protégée comme un non-professionnel), clause
+  de parrainage, médiateur de la consommation dans les CGU, mentions légales
+  complétées (téléphone, SIREN, hébergeurs Supabase et Cloudflare),
+  transferts vers Singapour déclarés, et politique de confidentialité
+  honnête sur le nom gardé dans l'historique des matchs ;
+- nouvelles conditions : quand les CGU ou la politique de confidentialité
+  changent de version, chaque membre doit accepter la nouvelle version à sa
+  prochaine connexion (écran « Les conditions ont changé »), ou se
+  déconnecter, ou supprimer son compte. Les comptes qui n'avaient jamais
+  donné leur accord (créés par un administrateur) le donnent aussi ;
+- textes légaux (version 2026-11-19, ajustés le même jour avant publication) :
+  suppression des comptes sans connexion pendant 3 ans, information des
+  joueurs invités enregistrés sans compte, rôle de modération des
+  administrateurs, transmission en cas de reprise de l'activité, demandes des
+  autorités, section « Modification de cette politique », listes de
+  prestataires identiques dans la politique et dans l'accord avec les clubs.
+- comptes inactifs : chaque nuit, un compte inutilisé depuis près de 3 ans
+  reçoit un e-mail d'avertissement (s'il a une adresse), puis est supprimé un
+  mois plus tard s'il ne s'est pas reconnecté. Une session restée ouverte
+  compte comme une utilisation. Le dernier administrateur d'un club n'est
+  jamais supprimé ainsi. Migration `20261129000000_suppression_comptes_inactifs.sql` ;
 - paramètres réorganisés : « Abonnement » a son propre écran, ouvert depuis
   Paramètres (section Club · admin) ; « Finir la saison » passe dans
   « Réglages du club > Saison » ; Confidentialité, Conditions d'utilisation

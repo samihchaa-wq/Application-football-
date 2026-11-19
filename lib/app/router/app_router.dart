@@ -25,6 +25,8 @@ import 'package:petit_filet/features/auth/presentation/legal_document_page.dart'
 import 'package:petit_filet/features/auth/presentation/auth_sign_in_page.dart';
 import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:petit_filet/features/auth/presentation/forced_password_change_page.dart';
+import 'package:petit_filet/features/auth/presentation/accept_updated_terms_page.dart';
+import 'package:petit_filet/features/admin/presentation/former_players_page.dart';
 import 'package:petit_filet/features/badges/presentation/armoire_page.dart';
 import 'package:petit_filet/features/badges/presentation/badge_admin_page.dart'
     deferred as badge_admin;
@@ -282,6 +284,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 builder: (_, __) => const ClubSubscriptionPage(),
               ),
               GoRoute(
+                path: '/admin/anciens-joueurs',
+                builder: (_, __) => const FormerPlayersPage(),
+              ),
+              GoRoute(
                 path: '/admin/history',
                 builder: (_, __) => const HistoryEntryPage(),
               ),
@@ -419,6 +425,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/auth/new-password',
         builder: (_, __) => const ForcedPasswordChangePage(),
+      ),
+      GoRoute(
+        path: '/auth/accept-terms',
+        builder: (_, __) => const AcceptUpdatedTermsPage(),
       ),
     ],
   );

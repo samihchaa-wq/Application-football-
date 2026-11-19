@@ -398,6 +398,10 @@ select is(
         'platform_control_overview()',
         -- Effacement planifié des clubs impayés depuis 3 ans (tâche de nuit).
         'private.purge_expired_clubs(timestamp with time zone)',
+        -- Comptes inactifs depuis 3 ans (tâche de nuit) : réservées à la
+        -- fonction serveur account-email (service_role).
+        'internal_inactive_accounts(timestamp with time zone)',
+        'internal_record_inactive_notice(uuid,timestamp with time zone,boolean,timestamp with time zone)',
         'platform_invoice_settings()',
         'platform_save_invoice_settings(text,text,text,text)',
         'platform_set_club_billing_details(uuid,text,text)',

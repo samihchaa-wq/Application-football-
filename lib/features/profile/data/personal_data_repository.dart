@@ -94,6 +94,18 @@ class PersonalDataRepository {
     return const JsonEncoder.withIndent('  ').convert(result);
   }
 
+  /// Enregistre l'accord du membre connecté à la version [version] des CGU et
+  /// de la politique de confidentialité.
+  Future<void> acceptTerms({
+    required String version,
+    required String ageConfirmation,
+  }) async {
+    await _client.rpc(
+      'accept_terms',
+      params: {'p_version': version, 'p_age_confirmation': ageConfirmation},
+    );
+  }
+
   /// Supprime définitivement le compte du membre connecté.
   Future<void> deleteMyAccount() async {
     final FunctionResponse response;

@@ -1,4 +1,5 @@
 import 'package:petit_filet/core/utils/name_validation.dart';
+import 'package:petit_filet/features/legal/domain/legal_documents.dart';
 
 enum AuthRole { pronostiqueur, admin }
 
@@ -34,6 +35,8 @@ class AuthProfile {
     this.updatedAt,
     this.contactEmail,
     this.pendingContactEmail,
+    this.termsVersion = legalVersion,
+    this.ageConfirmation,
   });
 
   final String? id;
@@ -56,7 +59,19 @@ class AuthProfile {
   /// Adresse saisie mais dont le lien de confirmation n'a pas encore été ouvert.
   final String? pendingContactEmail;
 
+  /// Version des CGU et de la politique de confidentialité acceptée par ce
+  /// compte. `null` : compte créé avant l'enregistrement de l'accord.
+  final String? termsVersion;
+
+  /// Déclaration d'âge faite avec l'accord (`15_or_more` ou
+  /// `parental_consent`), si elle existe.
+  final String? ageConfirmation;
+
   bool get isPending => status == 'pending';
+
+  /// Les textes ont changé depuis l'accord de ce compte : il doit accepter la
+  /// nouvelle version pour continuer.
+  bool get needsTermsAcceptance => termsVersion != legalVersion;
 
   String get fullName =>
       capitalizePersonName('${capitalizePersonName(firstName)} $lastName');
@@ -99,6 +114,8 @@ class AuthProfile {
       updatedAt: DateTime.tryParse('${json['updated_at'] ?? ''}'),
       contactEmail: _nonEmpty(json['contact_email']),
       pendingContactEmail: _nonEmpty(json['pending_contact_email']),
+      termsVersion: _nonEmpty(json['terms_version']),
+      ageConfirmation: _nonEmpty(json['age_confirmation']),
     );
   }
 }

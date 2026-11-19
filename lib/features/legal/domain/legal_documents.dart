@@ -45,30 +45,34 @@ class LegalDocument {
 // Coordonnées de l'éditeur : à compléter une fois l'entreprise créée.
 // ---------------------------------------------------------------------------
 
-const String _editorName =
-    '[Prénom NOM], entrepreneur individuel (micro-entreprise)';
+const String _editorName = '[Prénom NOM], entrepreneur individuel (EI)';
 const String _editorShortName = '[Prénom NOM]';
 const String _editorAddress = '[Adresse postale de l’éditeur]';
 const String _editorEmail = '[adresse e-mail de contact]';
-const String _editorSiret = 'SIRET : [numéro, une fois l’entreprise créée]';
+const String _editorPhone = '[numéro de téléphone]';
+const String _editorSiret =
+    'SIREN : [numéro], immatriculé au registre national des entreprises';
 const String _vatMention = 'TVA non applicable, article 293 B du CGI';
 const String _dataRetentionAfterEnd = '3 ans';
+const String _inactiveAccountDelay = '3 ans';
 
 const LegalDocument legalNotice = LegalDocument(
   slug: 'mentions',
   title: 'Mentions légales',
   sections: [
     LegalSection('Éditeur', [
-      '$_editorName\n$_editorAddress\nContact : $_editorEmail\n$_editorSiret\n'
-          '$_vatMention.',
+      '$_editorName\n$_editorAddress\nE-mail : $_editorEmail\n'
+          'Téléphone : $_editorPhone\n$_editorSiret\n$_vatMention.',
       'Directeur de la publication : $_editorShortName.',
     ]),
     LegalSection('Hébergement', [
-      'Données et comptes : Supabase Inc. [adresse postale à recopier depuis '
-          'supabase.com/privacy]. Les données sont stockées dans un centre de '
-          'données situé à Paris (Union européenne).',
-      'Site de l’application : GitHub Pages, GitHub Inc., 88 Colin P. Kelly '
-          'Jr. Street, San Francisco, CA 94107, États-Unis.',
+      'Données et comptes : Supabase Pte. Ltd., 65 Chulia Street '
+          '#38-02/03, OCBC Centre, Singapour 049513 (contact : '
+          'privacy@supabase.com, aucun numéro de téléphone publié). Les '
+          'données sont stockées dans un centre de données situé à Paris '
+          '(Union européenne).',
+      'Site de l’application : Cloudflare, Inc., 101 Townsend Street, San '
+          'Francisco, CA 94107, États-Unis, téléphone +1 650 319 8930.',
     ]),
     LegalSection('Propriété intellectuelle', [
       'L’application, son code, son nom, ses visuels et ses badges '
@@ -108,6 +112,10 @@ const LegalDocument termsOfUse = LegalDocument(
           'et décide des informations qu’il y enregistre sur ses membres.',
       'Les administrateurs du club valident les membres et gèrent l’effectif, '
           'les matchs et les réglages du club.',
+      'Ils veillent aussi au respect de ces conditions dans leur club : '
+          'quand ils voient un contenu interdit (photo, nom, motif d’absence…), '
+          'ils le retirent ou le signalent à l’éditeur dès qu’ils en ont '
+          'connaissance.',
     ]),
     LegalSection('3. Compte et accès', [
       'Un compte est rattaché à un seul club. On le crée avec le code '
@@ -173,6 +181,9 @@ const LegalDocument termsOfUse = LegalDocument(
     LegalSection('10. Fin du compte', [
       'Tu peux supprimer ton compte à tout moment depuis ton profil. Un '
           'administrateur du club peut aussi retirer un membre du club.',
+      'Un compte sans aucune connexion pendant $_inactiveAccountDelay est '
+          'supprimé. Si une adresse e-mail est renseignée, tu es prévenu au '
+          'moins un mois avant ; se connecter suffit à garder ton compte.',
       'Si le club arrête l’application, les comptes de ses membres sont '
           'supprimés dans les conditions décrites dans la politique de '
           'confidentialité.',
@@ -210,19 +221,44 @@ const LegalDocument privacyPolicy = LegalDocument(
           'des clubs.',
     ]),
     LegalSection('Quelles données ?', [
-      '• Compte : prénom, nom, identifiant de connexion, adresse e-mail si tu '
-          'en ajoutes une, photo si tu en ajoutes une, ta déclaration d’âge '
-          'et la date à laquelle tu as accepté les conditions.',
+      '• Compte : prénom, nom, identifiant de connexion, adresse e-mail '
+          '(demandée à l’inscription ; un compte créé par un administrateur '
+          'peut ne pas en avoir), photo si tu en ajoutes une, ta déclaration '
+          'd’âge et la date à laquelle tu as accepté les conditions.',
+      '• Coordonnées facultatives : téléphone et date de naissance, si toi '
+          'ou un administrateur du club les renseignez.',
       '• Vie du club : rôle, disponibilités et absences déclarées, '
           'participations aux matchs, statistiques, pronostics, votes, badges.',
+      '• Coordonnées du club : nom, e-mail et téléphone de la personne à '
+          'contacter, adresse et numéro d’immatriculation, saisis par les '
+          'administrateurs.',
       '• Le motif d’une absence n’est visible que par toi et les '
           'administrateurs du club. N’y écris pas de détail médical.',
       '• Notifications : l’adresse technique d’envoi de ton navigateur et '
           'l’historique des notifications reçues.',
       '• Journaux techniques : erreurs de l’application, adresse IP et dates '
           'de connexion, pour la sécurité et le dépannage.',
+      '• E-mails : ceux que l’application t’envoie contiennent une image '
+          'invisible qui compte les ouvertures de façon anonyme, en chiffre '
+          'global, pour vérifier qu’ils arrivent bien. Aucune ouverture '
+          'n’est rattachée à toi.',
       'Aucune donnée n’est vendue, ni utilisée pour de la publicité ou du '
           'profilage.',
+    ]),
+    LegalSection('Si ton club t’a enregistré sans compte', [
+      'Un administrateur peut enregistrer un joueur invité qui n’a pas de '
+          'compte, pour l’inscrire à un match. Il saisit alors son prénom, et '
+          's’il le souhaite son nom, une photo et s’il est gardien. Les matchs '
+          'joués, les buts et les statistiques de ce joueur sont ensuite '
+          'enregistrés comme pour les autres.',
+      'C’est le club qui décide de cet enregistrement et qui doit t’en '
+          'informer ; il ne met une photo qu’avec ton accord (celui de tes '
+          'parents si tu es mineur). Ces informations ne sont visibles que par '
+          'les membres du club.',
+      'Tu as les mêmes droits que les autres membres : tu peux demander à un '
+          'administrateur du club, ou en écrivant à $_editorEmail, de voir, '
+          'corriger ou supprimer ces informations. Elles sont supprimées avec '
+          'les autres données du club si celui-ci arrête l’application.',
     ]),
     LegalSection('Pourquoi, et sur quelle base légale ?', [
       '• Faire fonctionner ton compte et le service : exécution des '
@@ -237,35 +273,55 @@ const LegalDocument privacyPolicy = LegalDocument(
           'preuve de l’éditeur.',
     ]),
     LegalSection('Qui les voit ?', [
-      'Les membres de ton club voient ton nom, ta photo et ta vie sportive '
-          'dans le club. Les administrateurs voient en plus tes absences et '
-          'leur motif. Aucun autre club n’a accès à tes données. Les votes '
+      'Les membres actifs de ton club voient ton nom, ta photo, ta vie '
+          'sportive, et ton téléphone et ta date de naissance si tu les as '
+          'renseignés (effaçables à tout moment depuis ton profil). Les '
+          'administrateurs voient en plus tes absences et leur motif. Aucun autre club n’a accès à tes données. Les votes '
           'pour l’homme du match sont anonymes.',
       'L’éditeur n’accède aux données d’un club que si c’est nécessaire : '
           'assistance demandée, sécurité, obligation légale.',
       'Prestataires techniques de l’éditeur : Supabase (hébergement des '
-          'données, à Paris), GitHub (mise en ligne du site), Brevo (envoi '
-          'des e-mails, France), Google (polices de caractères de secours) et '
-          'le service '
-          'de notifications de ton navigateur (Google, Apple ou Mozilla), qui '
-          'ne voit passer que des messages chiffrés.',
+          'données, à Paris), Cloudflare (mise en ligne du site : voit ton '
+          'adresse IP quand tu ouvres l’application), GitHub (sauvegardes '
+          'chiffrées), Brevo (envoi des e-mails, France), Google (polices de '
+          'caractères de secours) et le service de notifications de ton '
+          'navigateur '
+          '(Google, Apple ou Mozilla), qui ne voit passer que des messages '
+          'chiffrés.',
+      'Tes données ne sont communiquées à une autorité (police, justice…) que '
+          'si la loi l’impose, sur une demande officielle.',
+      'Si l’activité de l’éditeur est un jour reprise par une autre personne '
+          'ou entreprise, tes données lui sont transmises pour que le service '
+          'continue. Le repreneur reste tenu par cette politique. Tu en es '
+          'prévenu avant, et tu peux supprimer ton compte si tu ne veux pas '
+          'continuer.',
     ]),
     LegalSection('Transferts hors de l’Union européenne', [
-      'Tes données sont stockées à Paris. Certains prestataires sont des '
-          'sociétés américaines (Supabase, GitHub, Google, Meta) : quand une '
-          'donnée peut leur être accessible depuis les États-Unis, le '
-          'transfert est encadré par le cadre de protection des données '
-          'UE–États-Unis ou par les clauses contractuelles types de la '
-          'Commission européenne.',
+      'Tes données sont stockées à Paris. Certains prestataires y ont accès '
+          'depuis l’étranger : Supabase depuis Singapour et les États-Unis '
+          '(assistance technique), Cloudflare, GitHub et Google depuis les '
+          'États-Unis. Ces transferts sont encadrés par les clauses '
+          'contractuelles types de la Commission européenne ou, pour les '
+          'sociétés qui y adhèrent, par le cadre de protection des données '
+          'UE–États-Unis.',
     ]),
     LegalSection('Combien de temps ?', [
-      'Tant que ton compte existe. Historique des notifications : 90 jours. '
+      'Tant que ton compte existe et que tu l’utilises : un compte sans '
+          'aucune connexion pendant $_inactiveAccountDelay est supprimé. Si tu '
+          'as renseigné une adresse e-mail, tu es prévenu au moins un mois '
+          'avant ; se connecter suffit à garder ton compte. Rester connecté '
+          'sur ton appareil compte aussi comme une utilisation. '
+          'Historique des notifications : 90 jours. '
           'Journaux techniques : 7 à 90 jours selon leur type. Sauvegardes '
           'chiffrées : effacées au bout de 90 jours.',
-      'Quand ton compte est supprimé, tes données de compte sont effacées. '
-          'Les faits sportifs déjà validés (score, buteur d’un match passé) '
-          'peuvent rester dans l’historique du club, sans lien avec ton '
-          'compte. Tu peux demander qu’ils soient aussi anonymisés.',
+      'Quand ton compte est supprimé, tes données de compte sont effacées '
+          '(identifiant, e-mail, photo, pronostics, votes, préférences). Ton '
+          'nom de joueur reste dans l’historique des matchs déjà joués '
+          '(feuilles de match, buteurs, statistiques), raccourci (par exemple '
+          '« Yves D. »), dans l’intérêt du club à garder son histoire '
+          'sportive. Tu peux demander qu’il y soit remplacé par « Ancien '
+          'joueur », auprès d’un administrateur du club ou en écrivant à '
+          '$_editorEmail.',
       'Si ton club arrête l’application, ses données sont gardées '
           '$_dataRetentionAfterEnd après la fin de son abonnement, pour qu’il '
           'les retrouve intactes s’il revient, puis supprimées.',
@@ -302,6 +358,13 @@ const LegalDocument privacyPolicy = LegalDocument(
           'nécessaire à son fonctionnement (session ouverte, préférences, '
           'copie locale du calendrier) : ce stockage ne demande pas de '
           'consentement.',
+    ]),
+    LegalSection('Modification de cette politique', [
+      'Cette politique peut évoluer, par exemple si un prestataire change ou '
+          'si une nouvelle fonction utilise d’autres données. La date de la '
+          'version en vigueur est indiquée en bas de cette page.',
+      'En cas de changement important, tu en es informé dans l’application '
+          '(et par e-mail si tu en as renseigné un) avant qu’il s’applique.',
     ]),
   ],
 );
@@ -343,10 +406,7 @@ const LegalDocument clubSalesTerms = LegalDocument(
           'paiement à l’échéance, l’accès du club est suspendu '
           'automatiquement ; ses '
           'données sont conservées et l’accès revient dès que le paiement est '
-          'enregistré. Lorsque le '
-          'club agit en qualité de professionnel, des pénalités de retard au '
-          'taux de trois fois l’intérêt légal et l’indemnité forfaitaire de '
-          '40 € pour frais de recouvrement sont dues.',
+          'enregistré.',
     ]),
     LegalSection('5. Durée, renouvellement et résiliation', [
       'L’abonnement couvre une période de 12 mois. Payé avant la fin de '
@@ -379,7 +439,6 @@ const LegalDocument clubSalesTerms = LegalDocument(
           'l’application, n’y enregistrer que des personnes qui l’acceptent, '
           'et respecter ses obligations de responsable du traitement, '
           'décrites dans l’accord sur les données.',
-      'Déclarer un effectif exact.',
     ]),
     LegalSection('8. Données du club et réversibilité', [
       'Le club reste propriétaire de ses données, de son nom et de son logo. '
@@ -392,21 +451,33 @@ const LegalDocument clubSalesTerms = LegalDocument(
           'accord.',
     ]),
     LegalSection('9. Responsabilité', [
-      'L’éditeur n’est responsable que des dommages directs causés par une '
-          'faute prouvée de sa part. Sa responsabilité totale est limitée aux '
-          'sommes payées par le club au cours des 12 derniers mois.',
-      'Cette limite ne s’applique pas en cas de faute lourde ou '
-          'intentionnelle, ni aux dommages corporels.',
+      'Chaque partie répond des dommages directs et prévisibles causés par '
+          'un manquement à ses obligations, dans les conditions du droit '
+          'commun.',
+      'L’éditeur n’est pas responsable des informations saisies par le club '
+          'et ses membres, ni d’une interruption due à l’hébergeur ou au '
+          'réseau quand il a fait le nécessaire pour la limiter.',
       'Aucune des parties n’est responsable d’un manquement dû à un cas de '
           'force majeure.',
     ]),
-    LegalSection('10. Modification', [
+    LegalSection('10. Parrainage', [
+      'Chaque club dispose d’un code parrain. Un nouveau club qui le saisit à '
+          'sa création devient son filleul.',
+      'Quand le filleul paie son premier abonnement, le parrain obtient une '
+          'réduction de 5 % sur son prochain renouvellement, cumulable jusqu’à '
+          '100 % (20 filleuls : une année offerte). La réduction s’applique '
+          'au paiement suivant du parrain ; elle n’est ni remboursable, ni '
+          'convertible en argent.',
+      'L’éditeur peut modifier ou arrêter le parrainage pour l’avenir ; les '
+          'réductions déjà acquises restent dues.',
+    ]),
+    LegalSection('11. Modification', [
       'L’éditeur peut faire évoluer ces conditions. Toute modification '
           'importante est annoncée au club au moins un mois avant son entrée '
           'en vigueur ; s’il la refuse, le club peut résilier et être '
           'remboursé de la part non utilisée.',
     ]),
-    LegalSection('11. Droit applicable et litiges', [
+    LegalSection('12. Droit applicable et litiges', [
       'Ces conditions sont soumises au droit français. Les parties cherchent '
           'd’abord une solution amiable. À défaut, le litige est porté devant '
           'les tribunaux compétents.',
@@ -436,7 +507,8 @@ const LegalDocument clubDataProcessingAgreement = LegalDocument(
           'envoi de notifications et d’e-mails, sauvegarde, suppression.',
       '• Personnes concernées : membres, joueurs (y compris mineurs), '
           'dirigeants, entraîneurs et invités du club.',
-      '• Données : identité, photo facultative, adresse e-mail facultative, '
+      '• Données : identité, photo facultative, adresse e-mail, téléphone '
+          'et date de naissance facultatifs, coordonnées du club, '
           'rôle, vie sportive, disponibilités et absences, votes et '
           'pronostics, données techniques de notification.',
       '• Durée : celle de l’abonnement, puis $_dataRetentionAfterEnd avant '
@@ -471,10 +543,12 @@ const LegalDocument clubDataProcessingAgreement = LegalDocument(
     ]),
     LegalSection('4. Sous-traitants de l’éditeur', [
       'Le club autorise l’éditeur à faire appel aux prestataires suivants : '
-          'Supabase Inc. (hébergement des données, Paris), GitHub Inc. (mise '
-          'en ligne du site et sauvegardes chiffrées), Brevo / Sendinblue SAS '
-          '(e-mails, France) et les services de notification des '
-          'navigateurs (Google, Apple, Mozilla).',
+          'Supabase Pte. Ltd. (hébergement des données, Paris ; assistance '
+          'depuis Singapour et les États-Unis), Cloudflare, Inc. (mise en '
+          'ligne du site), GitHub Inc. (sauvegardes chiffrées), Brevo / '
+          'Sendinblue SAS (e-mails, France), Google (polices de caractères de '
+          'secours) et les services de notification des navigateurs (Google, '
+          'Apple, Mozilla).',
       'L’éditeur leur impose des obligations de protection équivalentes. Il '
           'prévient le club au moins 30 jours avant d’en ajouter ou d’en '
           'changer ; le club peut s’y opposer et, à défaut d’accord, résilier '
@@ -487,6 +561,9 @@ const LegalDocument clubDataProcessingAgreement = LegalDocument(
       '• Disposer d’une base légale pour les données qu’il enregistre et en '
           'informer ses membres ; la politique de confidentialité de '
           'l’application peut l’y aider.',
+      '• Informer aussi les joueurs invités qu’il enregistre sans compte, '
+          'et n’ajouter leur photo qu’avec leur accord (celui de leurs parents '
+          'pour un mineur).',
       '• Pour un mineur de moins de 15 ans, s’assurer que ses parents ont '
           'donné leur accord.',
       '• Ne pas enregistrer de données sensibles (santé, opinions, '

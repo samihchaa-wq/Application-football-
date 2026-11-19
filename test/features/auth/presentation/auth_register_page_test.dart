@@ -46,8 +46,13 @@ void main() {
     await tester.pump();
   }
 
-  Future<void> fillIdentity(WidgetTester tester, {bool consent = true}) async {
+  Future<void> fillIdentity(
+    WidgetTester tester, {
+    bool consent = true,
+    String email = 'karim@example.com',
+  }) async {
     await tester.enterText(find.widgetWithText(TextField, 'Prénom'), 'Karim');
+    await tester.enterText(find.byKey(const Key('register-email')), email);
     await tester.enterText(find.widgetWithText(TextField, 'Nom'), 'Benali');
     await tester.enterText(
       find.widgetWithText(TextField, 'Mot de passe'),
@@ -105,7 +110,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('register-invite-code')), findsNothing);
-    await fillIdentity(tester);
+    await fillIdentity(tester, email: '');
 
     await tester.tap(find.widgetWithText(FilledButton, 'Créer mon club'));
     await tester.pump();
@@ -200,13 +205,20 @@ void main() {
     expect(repository.lastReferralCode, '');
   });
 
-  testWidgets('l’adresse e-mail facultative est transmise ou refusée', (
-    tester,
-  ) async {
+  testWidgets('rejoindre un club exige une adresse e-mail', (tester) async {
+    await pumpPage(tester, code: 'ABCDEFGH');
+    await fillIdentity(tester, email: '');
+    await tester.tap(find.widgetWithText(FilledButton, 'Créer mon compte'));
+    await tester.pump();
+    expect(find.textContaining('Indique ton adresse e-mail'), findsOneWidget);
+    expect(repository.joined, isNull);
+  });
+
+  testWidgets('l’adresse e-mail est transmise ou refusée', (tester) async {
     await pumpPage(tester, code: 'ABCDEFGH');
     await fillIdentity(tester);
     await tester.enterText(
-      find.widgetWithText(TextField, 'Adresse e-mail (facultatif)'),
+      find.byKey(const Key('register-email')),
       'pas-une-adresse',
     );
     await tester.tap(find.widgetWithText(FilledButton, 'Créer mon compte'));
@@ -221,7 +233,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(
-      find.widgetWithText(TextField, 'Adresse e-mail (facultatif)'),
+      find.byKey(const Key('register-email')),
       'karim@example.com',
     );
     await tester.tap(find.widgetWithText(FilledButton, 'Créer mon compte'));
@@ -268,7 +280,7 @@ void main() {
   ) async {
     await pumpPage(tester, code: 'abcd-efgh', size: const Size(390, 844));
     await fillIdentity(tester);
-    final email = find.widgetWithText(TextField, 'Adresse e-mail (facultatif)');
+    final email = find.byKey(const Key('register-email'));
     await tester.ensureVisible(email);
     await tester.pumpAndSettle();
     await tester.enterText(email, 'karim@example.com');

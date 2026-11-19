@@ -11,8 +11,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// connu et le serveur confirme juste après.
 ///
 /// Garde-fous :
-/// - seule une copie d'un compte actif, sans changement de mot de passe en
-///   attente, est gardée ; tout autre état efface la copie ;
+/// - seule une copie d'un compte actif, sans changement de mot de passe ni
+///   nouvel accord aux conditions en attente, est gardée ; tout autre état
+///   efface la copie ;
 /// - la copie est liée au compte de la session restaurée : un autre compte
 ///   connecté sur le même appareil ne la lit jamais ;
 /// - elle ne donne aucun droit : le serveur continue de vérifier chaque
@@ -82,7 +83,9 @@ class AuthProfileCache {
   }
 
   static bool _isKeepable(AuthProfile profile) =>
-      profile.isActive && !profile.mustChangePassword;
+      profile.isActive &&
+      !profile.mustChangePassword &&
+      !profile.needsTermsAcceptance;
 
   static Map<String, Object?> _toJson(AuthProfile profile) => {
         'id': profile.id,
@@ -95,6 +98,8 @@ class AuthProfileCache {
         'is_goalkeeper': profile.isGoalkeeper,
         'status': profile.status,
         'must_change_password': profile.mustChangePassword,
+        'terms_version': profile.termsVersion,
+        'age_confirmation': profile.ageConfirmation,
         'created_at': profile.createdAt?.toIso8601String(),
         'updated_at': profile.updatedAt?.toIso8601String(),
       };
