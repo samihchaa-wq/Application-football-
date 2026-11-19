@@ -6,6 +6,15 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- badges des nouveaux clubs : jeu neutre. Retirés des modèles : blagues
+  internes d'AS Grinta (« Voy a marcar », « La línea amarilla ! », « C'est
+  dans l'élan »), doublons (« Le Boucher », « Le Malchanceux », « Le
+  Plongeur », second « Gardien d'un soir ») et badges moqueurs (« La
+  glissade », « Mal échauffé »). « Tête de Boli » devient « Tête du
+  défenseur », « Sauvetage in extremis » reçoit une description, l'icône du
+  coach et celle des matchs joués (calendrier « JULY 17 ») sont neutres. Les
+  clubs existants gardent leurs badges. Migration
+  `20261203010000_badges_par_defaut_neutres.sql` ;
 - nouveau club : carte « Bien démarrer » en haut du Calendrier pour
   l'administrateur, avec les 4 étapes dans l'ordre où elles marchent (logo et
   couleurs, saison, premier match, invitation des joueurs), cochées toutes

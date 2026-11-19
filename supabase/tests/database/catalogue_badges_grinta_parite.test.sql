@@ -127,12 +127,13 @@ select is(
 select ok(
   not exists (
     select 1 from expected_mystery_icons e
-    where not exists (
+    where exists (select 1 from private.badge_templates t0 where t0.code = e.code)
+      and not exists (
       select 1 from private.badge_templates t
       where t.code=e.code and (t.emoji <> '🏅' or t.image_url is not null)
     )
   ),
-  'Every known mystery template has its intended illustration or custom art'
+  'Every mystery template still offered to new clubs has its intended illustration or custom art'
 );
 
 select ok(
