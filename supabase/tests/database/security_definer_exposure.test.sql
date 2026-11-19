@@ -33,7 +33,11 @@ select is((
       'platform_club_billing', 'platform_control_overview', 'platform_invoice_settings',
       'platform_save_invoice_settings', 'platform_set_club_billing_details',
       'platform_list_invoices', 'platform_issue_pending_invoices',
-      'platform_discard_pending_invoice'
+      'platform_discard_pending_invoice',
+      -- Paiement de l'abonnement par l'administrateur du club, y compris
+      -- quand le club est suspendu pour impayé (is_admin() l'exclurait) :
+      -- garde private.billing_admin_club_id(), montant calculé par le serveur.
+      'admin_prepare_card_payment', 'admin_claim_free_year'
     )
 ), 0::bigint, 'aucune nouvelle RPC exposee ne contourne les RLS');
 
