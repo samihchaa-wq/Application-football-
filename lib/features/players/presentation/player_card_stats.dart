@@ -272,11 +272,11 @@ class _RecordCard extends StatelessWidget {
 
 /// Les statistiques suivies saison par saison. Les passes décisives n'en
 /// font pas partie : elles ne sont comptées que depuis la saison 2026-2027.
-const _evolutionStats = [
+final _evolutionStats = [
   (stat: PlayerStat.matches, label: 'Matchs'),
   (stat: PlayerStat.winRate, label: '% Victoires'),
   (stat: PlayerStat.goals, label: 'Buts'),
-  (stat: PlayerStat.manOfTheMatch, label: 'ÉTM'),
+  (stat: PlayerStat.manOfTheMatch, label: PlayerStat.manOfTheMatch.columnLabel),
   (stat: PlayerStat.goalsPerMatch, label: 'Buts / match'),
 ];
 

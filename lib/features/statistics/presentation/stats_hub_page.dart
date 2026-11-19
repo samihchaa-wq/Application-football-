@@ -12,6 +12,7 @@ import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:petit_filet/features/badges/presentation/badge_display_scope.dart';
 import 'package:petit_filet/features/badges/presentation/name_with_badges.dart';
 import 'package:petit_filet/features/club/data/club_repository.dart';
+import 'package:petit_filet/features/players/data/player_stat_ranking.dart';
 import 'package:petit_filet/features/players/presentation/player_card_link.dart';
 import 'package:petit_filet/features/predictions/presentation/pronos_hub_page.dart';
 import 'package:petit_filet/features/statistics/data/statistics_repository.dart';
@@ -397,7 +398,7 @@ class _PlayersScrollableHeader extends StatelessWidget {
           valueCell('B', _PlayerStatCol.goals),
           if (showsAssists) valueCell('PD', _PlayerStatCol.assists),
           valueCell('CS', _PlayerStatCol.cleanSheets),
-          valueCell('ÉTM', _PlayerStatCol.hdm),
+          valueCell(PlayerStat.manOfTheMatch.columnLabel, _PlayerStatCol.hdm),
           valueCell('G', _PlayerStatCol.wins),
           valueCell('N', _PlayerStatCol.draws),
           valueCell('P', _PlayerStatCol.losses),
