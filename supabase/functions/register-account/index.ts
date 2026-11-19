@@ -164,9 +164,15 @@ Deno.serve(async (req: Request) => {
   ) {
     return jsonResponse({ error: "Nom du club invalide." }, 400);
   }
-  if (mode === "create" && !contactEmail) {
+  // Adresse obligatoire pour tous : retrouver son compte, être prévenu avant
+  // la suppression d'un compte inutilisé, et pour l'abonnement d'un club.
+  if (!contactEmail) {
     return jsonResponse(
-      { error: "Pour créer un club, indique ton adresse e-mail." },
+      {
+        error: mode === "create"
+          ? "Pour créer un club, indique ton adresse e-mail."
+          : "Indique ton adresse e-mail.",
+      },
       400,
     );
   }

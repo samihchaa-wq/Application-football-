@@ -71,7 +71,10 @@ export async function sendMail(
     },
     body: JSON.stringify({
       sender: { name: config.fromName, email: config.fromEmail },
-      to: [{ email: to }],
+      // Ouverture comptée seulement de façon anonyme, en chiffre global
+      // (recommandation CNIL sur les pixels : pas de suivi individuel sans
+      // consentement). Ignoré si l'option n'est pas activée sur le compte.
+      to: [{ email: to, contactPixelTrackingConsent: false }],
       subject,
       textContent: text,
     }),

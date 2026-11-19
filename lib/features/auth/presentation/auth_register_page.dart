@@ -116,14 +116,17 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
       return;
     }
     final email = _emailController.text.trim();
-    if (_mode == RegisterMode.create && email.isEmpty) {
+    if (email.isEmpty) {
       _showError(
-        'Pour créer un club, indique ton adresse e-mail : c’est par elle '
-        'qu’on te contacte pour l’abonnement.',
+        _mode == RegisterMode.create
+            ? 'Pour créer un club, indique ton adresse e-mail : c’est par '
+                'elle qu’on te contacte pour l’abonnement.'
+            : 'Indique ton adresse e-mail : elle sert à retrouver ton compte '
+                'si tu perds ton mot de passe.',
       );
       return;
     }
-    if (email.isNotEmpty && !looksLikeEmail(email)) {
+    if (!looksLikeEmail(email)) {
       _showError('Cette adresse e-mail n’est pas valide.');
       return;
     }
@@ -320,9 +323,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
             textInputAction: TextInputAction.next,
             autofillHints: const [AutofillHints.email],
             decoration: InputDecoration(
-              labelText: _mode == RegisterMode.create
-                  ? 'Adresse e-mail'
-                  : 'Adresse e-mail (facultatif)',
+              labelText: 'Adresse e-mail',
               helperText: _mode == RegisterMode.create
                   ? 'Obligatoire pour créer un club : abonnement et '
                       'récupération du compte.'

@@ -52,8 +52,6 @@ const String _editorEmail = '[adresse e-mail de contact]';
 const String _editorPhone = '[numéro de téléphone]';
 const String _editorSiret =
     'SIREN : [numéro], immatriculé au registre national des entreprises';
-const String _mediator =
-    '[nom du médiateur de la consommation, adresse postale et site internet]';
 const String _vatMention = 'TVA non applicable, article 293 B du CGI';
 const String _dataRetentionAfterEnd = '3 ans';
 const String _inactiveAccountDelay = '3 ans';
@@ -201,12 +199,8 @@ const LegalDocument termsOfUse = LegalDocument(
           'pour continuer à utiliser l’application ; il peut aussi supprimer '
           'son compte.',
       'Ces conditions sont soumises au droit français. En cas de difficulté, '
-          'écris d’abord à $_editorEmail pour trouver une solution amiable.',
-      'Si tu n’es pas satisfait de la réponse, ou sans réponse sous deux '
-          'mois, tu peux saisir gratuitement le médiateur de la consommation : '
-          '$_mediator. Tu dois le faire dans l’année qui suit ta réclamation '
-          'écrite. À défaut d’accord, le litige relève des tribunaux '
-          'compétents selon la loi.',
+          'écris d’abord à $_editorEmail pour trouver une solution amiable. À '
+          'défaut, le litige relève des tribunaux compétents selon la loi.',
     ]),
   ],
 );
@@ -227,12 +221,10 @@ const LegalDocument privacyPolicy = LegalDocument(
           'des clubs.',
     ]),
     LegalSection('Quelles données ?', [
-      '• Compte : prénom, nom, identifiant de connexion, adresse e-mail si tu '
-          'en ajoutes une, photo si tu en ajoutes une, ta déclaration d’âge '
-          'et la date à laquelle tu as accepté les conditions. Si tu te '
-          'connectes avec Facebook (quand cette option est proposée), Facebook '
-          'nous transmet seulement ton identifiant Facebook, ton nom et ton '
-          'adresse e-mail.',
+      '• Compte : prénom, nom, identifiant de connexion, adresse e-mail '
+          '(demandée à l’inscription ; un compte créé par un administrateur '
+          'peut ne pas en avoir), photo si tu en ajoutes une, ta déclaration '
+          'd’âge et la date à laquelle tu as accepté les conditions.',
       '• Vie du club : rôle, disponibilités et absences déclarées, '
           'participations aux matchs, statistiques, pronostics, votes, badges.',
       '• Le motif d’une absence n’est visible que par toi et les '
@@ -241,6 +233,10 @@ const LegalDocument privacyPolicy = LegalDocument(
           'l’historique des notifications reçues.',
       '• Journaux techniques : erreurs de l’application, adresse IP et dates '
           'de connexion, pour la sécurité et le dépannage.',
+      '• E-mails : ceux que l’application t’envoie contiennent une image '
+          'invisible qui compte les ouvertures de façon anonyme, en chiffre '
+          'global, pour vérifier qu’ils arrivent bien. Aucune ouverture '
+          'n’est rattachée à toi.',
       'Aucune donnée n’est vendue, ni utilisée pour de la publicité ou du '
           'profilage.',
     ]),
@@ -282,8 +278,8 @@ const LegalDocument privacyPolicy = LegalDocument(
           'données, à Paris), Cloudflare (mise en ligne du site : voit ton '
           'adresse IP quand tu ouvres l’application), GitHub (sauvegardes '
           'chiffrées), Brevo (envoi des e-mails, France), Google (polices de '
-          'caractères de secours), Meta (seulement si tu te connectes avec '
-          'Facebook) et le service de notifications de ton navigateur '
+          'caractères de secours) et le service de notifications de ton '
+          'navigateur '
           '(Google, Apple ou Mozilla), qui ne voit passer que des messages '
           'chiffrés.',
       'Tes données ne sont communiquées à une autorité (police, justice…) que '
@@ -297,8 +293,8 @@ const LegalDocument privacyPolicy = LegalDocument(
     LegalSection('Transferts hors de l’Union européenne', [
       'Tes données sont stockées à Paris. Certains prestataires y ont accès '
           'depuis l’étranger : Supabase depuis Singapour et les États-Unis '
-          '(assistance technique), Cloudflare, GitHub, Google et Meta depuis '
-          'les États-Unis. Ces transferts sont encadrés par les clauses '
+          '(assistance technique), Cloudflare, GitHub et Google depuis les '
+          'États-Unis. Ces transferts sont encadrés par les clauses '
           'contractuelles types de la Commission européenne ou, pour les '
           'sociétés qui y adhèrent, par le cadre de protection des données '
           'UE–États-Unis.',
@@ -317,8 +313,9 @@ const LegalDocument privacyPolicy = LegalDocument(
           'nom de joueur reste en revanche dans l’historique des matchs déjà '
           'joués (feuilles de match, buteurs, statistiques), dans l’intérêt '
           'du club à garder son histoire sportive. Tu peux demander qu’il y '
-          'soit remplacé par « Ancien joueur », auprès d’un administrateur du '
-          'club ou en écrivant à $_editorEmail.',
+          'soit raccourci (par exemple « Yves D. ») ou remplacé par « Ancien '
+          'joueur », auprès d’un administrateur du club ou en écrivant à '
+          '$_editorEmail.',
       'Si ton club arrête l’application, ses données sont gardées '
           '$_dataRetentionAfterEnd après la fin de son abonnement, pour qu’il '
           'les retrouve intactes s’il revient, puis supprimées.',
@@ -504,7 +501,7 @@ const LegalDocument clubDataProcessingAgreement = LegalDocument(
           'envoi de notifications et d’e-mails, sauvegarde, suppression.',
       '• Personnes concernées : membres, joueurs (y compris mineurs), '
           'dirigeants, entraîneurs et invités du club.',
-      '• Données : identité, photo facultative, adresse e-mail facultative, '
+      '• Données : identité, photo facultative, adresse e-mail, '
           'rôle, vie sportive, disponibilités et absences, votes et '
           'pronostics, données techniques de notification.',
       '• Durée : celle de l’abonnement, puis $_dataRetentionAfterEnd avant '

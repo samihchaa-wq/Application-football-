@@ -6,6 +6,11 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- inscription : l'adresse e-mail est obligatoire aussi pour rejoindre un
+  club. E-mails envoyés avec un comptage d'ouverture anonyme uniquement.
+  Textes : sans médiateur de la consommation (décision de l'éditeur, risque
+  noté), sans connexion Facebook, nom raccourci ou remplacé sur demande dans
+  l'historique ;
 - textes légaux sans juriste (décisions tracées dans docs/legal/README.md) :
   conditions d'abonnement sans limite de responsabilité ni pénalités de
   retard (une association est protégée comme un non-professionnel), clause
