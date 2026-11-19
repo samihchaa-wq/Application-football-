@@ -4,7 +4,7 @@ import 'package:petit_filet/features/club/data/club_subscription.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Abonnement et espace de fichiers du club, dans ses réglages.
+/// Abonnement et espace de fichiers du club (écran Abonnement).
 class ClubSubscriptionSection extends ConsumerWidget {
   const ClubSubscriptionSection({super.key});
 

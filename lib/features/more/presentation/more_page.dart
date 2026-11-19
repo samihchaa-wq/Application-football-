@@ -3,14 +3,12 @@ import 'package:petit_filet/core/config/app_config.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/widgets/pf_app_bar.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
-import 'package:petit_filet/features/admin/data/admin_repository.dart';
 import 'package:petit_filet/features/auth/domain/auth_profile.dart';
 import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:petit_filet/features/auth/presentation/sign_out_confirmation.dart';
 import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
 import 'package:petit_filet/features/matches/presentation/matches_controller.dart';
 import 'package:petit_filet/features/more/presentation/calendar_subscription_tile.dart';
-import 'package:petit_filet/features/players/data/roster_repository.dart';
 import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -97,10 +95,35 @@ class MorePage extends ConsumerWidget {
                   title: 'Ajouter des matchs passés',
                   onTap: () => context.push('/admin/history'),
                 ),
-                const _ClubSeasonTile(),
+                _SettingsTile(
+                  icon: Icons.credit_card_outlined,
+                  title: 'Abonnement',
+                  onTap: () => context.push('/admin/abonnement'),
+                ),
               ],
             ),
           ],
+          // Textes légaux : pour tout le monde, à un endroit qu'on retrouve.
+          const _SectionLabel('Informations légales'),
+          _SettingsGroup(
+            children: [
+              _SettingsTile(
+                icon: Icons.privacy_tip_outlined,
+                title: 'Confidentialité',
+                onTap: () => context.push('/legal/confidentialite'),
+              ),
+              _SettingsTile(
+                icon: Icons.description_outlined,
+                title: 'Conditions d’utilisation',
+                onTap: () => context.push('/legal/cgu'),
+              ),
+              _SettingsTile(
+                icon: Icons.gavel_outlined,
+                title: 'Mentions légales',
+                onTap: () => context.push('/legal/mentions'),
+              ),
+            ],
+          ),
           const SizedBox(height: 20),
           // Aussi proposé dans le Profil : c'est ici qu'on le cherche d'abord.
           Center(
@@ -123,139 +146,6 @@ class MorePage extends ConsumerWidget {
         ],
       ),
     );
-  }
-}
-
-/// Action de saison directement dans Paramètres, sans écran Réglages.
-class _ClubSeasonTile extends ConsumerWidget {
-  const _ClubSeasonTile();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final dashboard = ref.watch(adminDashboardProvider);
-    return dashboard.when(
-      loading: () => const ListTile(
-        leading: Icon(Icons.flag_outlined),
-        title: Text('Saison'),
-        subtitle: Text('Chargement…'),
-      ),
-      error: (_, __) => ListTile(
-        leading: const Icon(Icons.refresh),
-        title: const Text('Saison indisponible'),
-        subtitle: const Text('Appuyer pour réessayer'),
-        onTap: () => ref.invalidate(adminDashboardProvider),
-      ),
-      data: (data) {
-        AdminSeasonItem? current;
-        for (final season in data.seasons) {
-          if (season.status == 'open') {
-            current = season;
-            break;
-          }
-        }
-        final openSeason = current;
-        if (openSeason == null) {
-          return ListTile(
-            leading: const Icon(Icons.add_circle_outline),
-            title: const Text('Créer une saison'),
-            onTap: () => _createSeason(context, ref),
-          );
-        }
-        return ListTile(
-          leading: Icon(Icons.flag_outlined, color: AppTheme.error),
-          title: Text(
-            'Finir la saison',
-            style: TextStyle(color: AppTheme.error),
-          ),
-          subtitle: Text('Saison ${openSeason.name}'),
-          onTap: () => _finishSeason(context, ref, openSeason),
-        );
-      },
-    );
-  }
-
-  Future<void> _finishSeason(
-    BuildContext context,
-    WidgetRef ref,
-    AdminSeasonItem season,
-  ) async {
-    final confirmed = await showDialog<bool>(
-          context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: const Text('Finir la saison ?'),
-            content: Text(
-              'La saison « ${season.name} » sera archivée immédiatement '
-              'et le classement final figé. C’est définitif. '
-              'Tu pourras ensuite créer une nouvelle saison.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('Annuler'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(dialogContext, true),
-                child: const Text('Confirmer'),
-              ),
-            ],
-          ),
-        ) ??
-        false;
-    if (!confirmed || !context.mounted) return;
-    try {
-      await ref.read(adminRepositoryProvider).setSeasonStatus(
-            season.id,
-            'archived',
-          );
-      ref.invalidate(adminDashboardProvider);
-      ref.invalidate(openSeasonIdProvider);
-    } catch (error) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(humanizeError(error))),
-      );
-    }
-  }
-
-  Future<void> _createSeason(BuildContext context, WidgetRef ref) async {
-    final now = DateTime.now();
-    var enteredName = '${now.year}-${now.year + 1}';
-    final name = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Nouvelle saison'),
-        content: TextFormField(
-          initialValue: enteredName,
-          onChanged: (value) => enteredName = value,
-          decoration: const InputDecoration(labelText: 'Nom de la saison'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Annuler'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, enteredName),
-            child: const Text('Créer'),
-          ),
-        ],
-      ),
-    );
-    if (name == null || name.trim().isEmpty || !context.mounted) return;
-    try {
-      await ref.read(adminRepositoryProvider).createSeason(name);
-      ref.invalidate(adminDashboardProvider);
-      ref.invalidate(openSeasonIdProvider);
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Saison « ${name.trim()} » ouverte.')),
-      );
-    } catch (error) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(humanizeError(error))),
-      );
-    }
   }
 }
 

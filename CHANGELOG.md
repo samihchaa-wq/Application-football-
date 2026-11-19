@@ -6,6 +6,17 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- paramètres réorganisés : « Abonnement » a son propre écran, ouvert depuis
+  Paramètres (section Club · admin) ; « Finir la saison » passe dans
+  « Réglages du club > Saison » ; Confidentialité, Conditions d'utilisation
+  et Mentions légales sont dans Paramètres pour tout le monde (section
+  « Informations légales ») au lieu du bas du Profil ;
+- réglages du club : nouvelle section « Coordonnées du club » (personne à
+  contacter, e-mail, téléphone, adresse postale, site, n° RNA ou SIRET),
+  visibles par les membres du club (migration
+  `20261128000000_coordonnees_club_et_profil.sql`) ;
+- profil : téléphone et date de naissance facultatifs, visibles par le membre
+  seul, inclus dans « Télécharger mes données » et effacés avec le compte ;
 - factures : chaque paiement noté crée une facture PDF numérotée sans trou
   (PF-2027-0001…), avec la mention « TVA non applicable, art. 293 B du CGI ».
   L'administrateur du club la télécharge dans « Réglages du club >
