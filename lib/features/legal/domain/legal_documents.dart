@@ -53,6 +53,7 @@ const String _editorEmail = '[adresse e-mail de contact]';
 const String _editorSiret = 'SIRET : [numéro, une fois l’entreprise créée]';
 const String _vatMention = 'TVA non applicable, article 293 B du CGI';
 const String _dataRetentionAfterEnd = '3 ans';
+const String _inactiveAccountDelay = '3 ans';
 
 const LegalDocument legalNotice = LegalDocument(
   slug: 'mentions',
@@ -108,6 +109,10 @@ const LegalDocument termsOfUse = LegalDocument(
           'et décide des informations qu’il y enregistre sur ses membres.',
       'Les administrateurs du club valident les membres et gèrent l’effectif, '
           'les matchs et les réglages du club.',
+      'Ils veillent aussi au respect de ces conditions dans leur club : '
+          'quand ils voient un contenu interdit (photo, nom, motif d’absence…), '
+          'ils le retirent ou le signalent à l’éditeur dès qu’ils en ont '
+          'connaissance.',
     ]),
     LegalSection('3. Compte et accès', [
       'Un compte est rattaché à un seul club. On le crée avec le code '
@@ -173,6 +178,8 @@ const LegalDocument termsOfUse = LegalDocument(
     LegalSection('10. Fin du compte', [
       'Tu peux supprimer ton compte à tout moment depuis ton profil. Un '
           'administrateur du club peut aussi retirer un membre du club.',
+      'Un compte sans aucune connexion pendant $_inactiveAccountDelay est '
+          'supprimé, après un avertissement envoyé au moins un mois avant.',
       'Si le club arrête l’application, les comptes de ses membres sont '
           'supprimés dans les conditions décrites dans la politique de '
           'confidentialité.',
@@ -212,7 +219,10 @@ const LegalDocument privacyPolicy = LegalDocument(
     LegalSection('Quelles données ?', [
       '• Compte : prénom, nom, identifiant de connexion, adresse e-mail si tu '
           'en ajoutes une, photo si tu en ajoutes une, ta déclaration d’âge '
-          'et la date à laquelle tu as accepté les conditions.',
+          'et la date à laquelle tu as accepté les conditions. Si tu te '
+          'connectes avec Facebook (quand cette option est proposée), Facebook '
+          'nous transmet seulement ton identifiant Facebook, ton nom et ton '
+          'adresse e-mail.',
       '• Vie du club : rôle, disponibilités et absences déclarées, '
           'participations aux matchs, statistiques, pronostics, votes, badges.',
       '• Le motif d’une absence n’est visible que par toi et les '
@@ -223,6 +233,21 @@ const LegalDocument privacyPolicy = LegalDocument(
           'de connexion, pour la sécurité et le dépannage.',
       'Aucune donnée n’est vendue, ni utilisée pour de la publicité ou du '
           'profilage.',
+    ]),
+    LegalSection('Si ton club t’a enregistré sans compte', [
+      'Un administrateur peut enregistrer un joueur invité qui n’a pas de '
+          'compte, pour l’inscrire à un match. Il saisit alors son prénom, et '
+          's’il le souhaite son nom, une photo et s’il est gardien. Les matchs '
+          'joués, les buts et les statistiques de ce joueur sont ensuite '
+          'enregistrés comme pour les autres.',
+      'C’est le club qui décide de cet enregistrement et qui doit t’en '
+          'informer ; il ne met une photo qu’avec ton accord (celui de tes '
+          'parents si tu es mineur). Ces informations ne sont visibles que par '
+          'les membres du club.',
+      'Tu as les mêmes droits que les autres membres : tu peux demander à un '
+          'administrateur du club, ou en écrivant à $_editorEmail, de voir, '
+          'corriger ou supprimer ces informations. Elles sont supprimées avec '
+          'les autres données du club si celui-ci arrête l’application.',
     ]),
     LegalSection('Pourquoi, et sur quelle base légale ?', [
       '• Faire fonctionner ton compte et le service : exécution des '
@@ -244,11 +269,19 @@ const LegalDocument privacyPolicy = LegalDocument(
       'L’éditeur n’accède aux données d’un club que si c’est nécessaire : '
           'assistance demandée, sécurité, obligation légale.',
       'Prestataires techniques de l’éditeur : Supabase (hébergement des '
-          'données, à Paris), GitHub (mise en ligne du site), Brevo (envoi '
-          'des e-mails, France), Google (polices de caractères de secours) et '
-          'le service '
-          'de notifications de ton navigateur (Google, Apple ou Mozilla), qui '
-          'ne voit passer que des messages chiffrés.',
+          'données, à Paris), GitHub (mise en ligne du site et sauvegardes '
+          'chiffrées), Brevo (envoi des e-mails, France), Google (polices de '
+          'caractères de secours), Meta (seulement si tu te connectes avec '
+          'Facebook) et le service de notifications de ton navigateur '
+          '(Google, Apple ou Mozilla), qui ne voit passer que des messages '
+          'chiffrés.',
+      'Tes données ne sont communiquées à une autorité (police, justice…) que '
+          'si la loi l’impose, sur une demande officielle.',
+      'Si l’activité de l’éditeur est un jour reprise par une autre personne '
+          'ou entreprise, tes données lui sont transmises pour que le service '
+          'continue. Le repreneur reste tenu par cette politique. Tu en es '
+          'prévenu avant, et tu peux supprimer ton compte si tu ne veux pas '
+          'continuer.',
     ]),
     LegalSection('Transferts hors de l’Union européenne', [
       'Tes données sont stockées à Paris. Certains prestataires sont des '
@@ -259,7 +292,11 @@ const LegalDocument privacyPolicy = LegalDocument(
           'Commission européenne.',
     ]),
     LegalSection('Combien de temps ?', [
-      'Tant que ton compte existe. Historique des notifications : 90 jours. '
+      'Tant que ton compte existe et que tu l’utilises : un compte sans '
+          'aucune connexion pendant $_inactiveAccountDelay est supprimé. Tu es '
+          'prévenu au moins un mois avant, par e-mail si tu en as renseigné '
+          'un, sinon à ta connexion suivante si elle a lieu avant. '
+          'Historique des notifications : 90 jours. '
           'Journaux techniques : 7 à 90 jours selon leur type. Sauvegardes '
           'chiffrées : effacées au bout de 90 jours.',
       'Quand ton compte est supprimé, tes données de compte sont effacées. '
@@ -302,6 +339,13 @@ const LegalDocument privacyPolicy = LegalDocument(
           'nécessaire à son fonctionnement (session ouverte, préférences, '
           'copie locale du calendrier) : ce stockage ne demande pas de '
           'consentement.',
+    ]),
+    LegalSection('Modification de cette politique', [
+      'Cette politique peut évoluer, par exemple si un prestataire change ou '
+          'si une nouvelle fonction utilise d’autres données. La date de la '
+          'version en vigueur est indiquée en bas de cette page.',
+      'En cas de changement important, tu en es informé dans l’application '
+          '(et par e-mail si tu en as renseigné un) avant qu’il s’applique.',
     ]),
   ],
 );
@@ -473,8 +517,8 @@ const LegalDocument clubDataProcessingAgreement = LegalDocument(
       'Le club autorise l’éditeur à faire appel aux prestataires suivants : '
           'Supabase Inc. (hébergement des données, Paris), GitHub Inc. (mise '
           'en ligne du site et sauvegardes chiffrées), Brevo / Sendinblue SAS '
-          '(e-mails, France) et les services de notification des '
-          'navigateurs (Google, Apple, Mozilla).',
+          '(e-mails, France), Google (polices de caractères de secours) et les '
+          'services de notification des navigateurs (Google, Apple, Mozilla).',
       'L’éditeur leur impose des obligations de protection équivalentes. Il '
           'prévient le club au moins 30 jours avant d’en ajouter ou d’en '
           'changer ; le club peut s’y opposer et, à défaut d’accord, résilier '
@@ -487,6 +531,9 @@ const LegalDocument clubDataProcessingAgreement = LegalDocument(
       '• Disposer d’une base légale pour les données qu’il enregistre et en '
           'informer ses membres ; la politique de confidentialité de '
           'l’application peut l’y aider.',
+      '• Informer aussi les joueurs invités qu’il enregistre sans compte, '
+          'et n’ajouter leur photo qu’avec leur accord (celui de leurs parents '
+          'pour un mineur).',
       '• Pour un mineur de moins de 15 ans, s’assurer que ses parents ont '
           'donné leur accord.',
       '• Ne pas enregistrer de données sensibles (santé, opinions, '

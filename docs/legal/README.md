@@ -44,6 +44,25 @@ professionnel du droit obligatoire avant de faire payer un club.**
   l'appli ne redemande pas encore l'accord après un changement de version ;
   écran à construire avant la première modification des textes.
 
+## Promesses des textes pas encore tenues par l'appli (19/11/2026)
+
+À construire ou régler **avant l'ouverture au public**, sinon les textes
+annoncent quelque chose de faux :
+
+- **Comptes inactifs** : la politique de confidentialité et les CGU disent
+  qu'un compte sans connexion pendant 3 ans est supprimé, avec un
+  avertissement au moins un mois avant. Rien ne le fait encore : il faut une
+  tâche planifiée (avertissement puis suppression) et le message affiché à
+  la connexion.
+- **Traceur d'ouverture des e-mails** : Brevo peut suivre l'ouverture des
+  e-mails envoyés. Les textes n'en parlent pas : désactiver ce suivi dans le
+  compte Brevo (sinon il faudrait un consentement et une mention).
+- **Connexion Facebook** : désactivée aujourd'hui. Les textes la mentionnent
+  « quand cette option est proposée ». Vérifier, à l'activation, que Facebook
+  ne transmet que l'identifiant, le nom et l'e-mail.
+- **Médiateur de la consommation** : question au juriste. La loi l'impose
+  pour un contrat avec un consommateur, même gratuit ; il est payant.
+
 ## Règles de conception à garder
 
 - Ne pas stocker de données de santé. Le motif d'absence est libre :

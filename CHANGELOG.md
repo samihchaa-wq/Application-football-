@@ -6,6 +6,13 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- textes légaux (version 2026-11-19, ajustés le même jour avant publication) :
+  suppression des comptes sans connexion pendant 3 ans, information des
+  joueurs invités enregistrés sans compte, rôle de modération des
+  administrateurs, transmission en cas de reprise de l'activité, demandes des
+  autorités, section « Modification de cette politique », listes de
+  prestataires identiques dans la politique et dans l'accord avec les clubs.
+  La suppression automatique des comptes inactifs reste à construire ;
 - factures : chaque paiement noté crée une facture PDF numérotée sans trou
   (PF-2027-0001…), avec la mention « TVA non applicable, art. 293 B du CGI ».
   L'administrateur du club la télécharge dans « Réglages du club >
