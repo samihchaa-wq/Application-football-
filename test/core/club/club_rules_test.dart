@@ -50,8 +50,9 @@ void main() {
     expect(ClubRules.wrappedMusicEnabled, isFalse);
   });
 
-  test('pas des boutons +/− : 1 sauf pour les longues durées', () {
-    expect(ClubRules.stepFor(ClubRules.predictionCloseMinutesKey), 1);
+  test('pas des boutons +/− : 1 sauf pour les durées et le barème', () {
+    expect(ClubRules.stepFor(ClubRules.featuresOpenDaysKey), 1);
+    expect(ClubRules.stepFor(ClubRules.predictionCloseMinutesKey), 5);
     expect(ClubRules.stepFor('odds_form_memory_days'), 30);
     expect(ClubRules.stepFor('odds_h2h_memory_days'), 90);
     expect(ClubRules.stepFor('match_duration_minutes'), 5);
@@ -102,5 +103,27 @@ void main() {
     // Une valeur inconnue retombe sur la règle d'origine.
     ClubRules.set({ClubRules.waitlistModeKey: 9});
     expect(ClubRules.waitlistMode, WaitlistMode.lastSeasonAttendance);
+  });
+
+  test('les boutons +/− avancent par pas ronds sans sortir des bornes', () {
+    int step(String key, int value, bool up, int min, int max) =>
+        ClubRules.stepValue(key, value, up: up, min: min, max: max);
+
+    // Fermeture des pronostics : par 5 minutes.
+    expect(step('prediction_close_minutes', 15, true, 0, 240), 20);
+    expect(step('prediction_close_minutes', 15, false, 0, 240), 10);
+    // Une valeur non ronde se recale sur le multiple voisin.
+    expect(step('prediction_close_minutes', 17, true, 0, 240), 20);
+    expect(step('prediction_close_minutes', 17, false, 0, 240), 15);
+    expect(step('prediction_close_minutes', 240, true, 0, 240), 240);
+    expect(step('prediction_close_minutes', 0, false, 0, 240), 0);
+    // Délai de correction : par 6 heures, sans descendre sous 1 h.
+    expect(step('correction_window_hours', 24, true, 1, 168), 30);
+    expect(step('correction_window_hours', 6, false, 1, 168), 1);
+    expect(step('correction_window_hours', 1, true, 1, 168), 6);
+    // Barème : par × 0,5.
+    expect(step('prediction_points_exact', 20, true, 0, 50), 25);
+    // Les petites valeurs gardent un pas de 1.
+    expect(step('features_open_days', 6, true, 1, 21), 7);
   });
 }
