@@ -56,8 +56,7 @@ moins les conditions d'abonnement dès que possible.
   `guest_players`, tables historiques, et dans les instantanés JSON des
   compositions, des comptes rendus et des feuilles historiques). Tant
   qu'aucun outil ne le fait, traiter chaque demande à la main.
-- Brevo : Paramètres > Automations > E-mails transactionnels > Suivi,
-  « Anonymous email tracking » sur Oui, puis enregistrer.
+- ~~Brevo : suivi anonyme des e-mails~~ — activé par l'éditeur le 19/11/2026.
 - Accessibilité : les micro-entreprises qui fournissent des services sont
   exemptées par la directive européenne sur l'accessibilité ; vérifier la
   transposition française (loi n° 2023-171) si l'activité grandit.
