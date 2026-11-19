@@ -130,6 +130,9 @@ select is((select (payload ->> 'amount_cents')::int from checkouts where label =
 select is((select (payload ->> 'discount_percent')::int from checkouts where label = 'parrain'), 5,
   'la réduction figée est de 5 %');
 
+-- Création d'un club hors de toute session (comme en début de test) : la
+-- règle de cloisonnement suit sinon le club du dernier compte simulé.
+select set_config('request.jwt.claims', '', true);
 insert into test_clubs
 select 'filleul2', (public.create_club('Club Carte Filleul 2', 'CFI2', null, null, null, null)).id;
 select public.attach_club_referral(
