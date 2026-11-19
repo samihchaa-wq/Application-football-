@@ -142,7 +142,7 @@ export function inactiveAccountWarningMail(
       "",
       `Pour le garder, il suffit de te connecter avant cette date : ${appUrl}`,
       "",
-      "Si tu ne fais rien, ton compte sera supprimé. Ton nom restera dans l'historique des matchs déjà joués du club, raccourci (par exemple « Yves D. »).",
+      "Si tu ne fais rien, ton compte sera supprimé. Dans l'historique des matchs déjà joués du club, ton nom sera remplacé par « Ancien joueur ».",
       "",
       `Une question ? Écris-nous à ${contactEmail}.`,
     ].join("\n"),

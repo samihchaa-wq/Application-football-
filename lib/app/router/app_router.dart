@@ -26,7 +26,6 @@ import 'package:petit_filet/features/auth/presentation/auth_sign_in_page.dart';
 import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:petit_filet/features/auth/presentation/forced_password_change_page.dart';
 import 'package:petit_filet/features/auth/presentation/accept_updated_terms_page.dart';
-import 'package:petit_filet/features/admin/presentation/former_players_page.dart';
 import 'package:petit_filet/features/badges/presentation/armoire_page.dart';
 import 'package:petit_filet/features/badges/presentation/badge_admin_page.dart'
     deferred as badge_admin;
@@ -286,10 +285,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     state.uri.queryParameters['paiement'],
                   ),
                 ),
-              ),
-              GoRoute(
-                path: '/admin/anciens-joueurs',
-                builder: (_, __) => const FormerPlayersPage(),
               ),
               GoRoute(
                 path: '/admin/history',

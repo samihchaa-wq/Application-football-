@@ -3,8 +3,10 @@ begin;
 set local search_path = public, extensions, pg_catalog;
 select no_plan();
 
--- Raccourcir (« Yves D. ») ou remplacer (« Ancien joueur ») le nom d'un
--- ancien joueur partout, sans le détacher de ses statistiques.
+-- Anciens joueurs : le nom reste après un départ du club ; il devient
+-- « Ancien joueur » partout quand le compte est supprimé, ou sur demande
+-- (private.anonymize_player, éditeur SQL seulement), sans détacher le joueur
+-- de ses statistiques ; deux anciens joueurs restent distincts.
 
 insert into auth.users (id, email, raw_user_meta_data)
 values
@@ -66,50 +68,51 @@ select is(
   'avant : les statistiques historiques sont rattachées au joueur'
 );
 
-select set_config(
-  'request.jwt.claims',
-  '{"sub":"7a000000-0000-0000-0000-000000000001","role":"authenticated","aud":"authenticated"}',
-  true
-);
-set local role authenticated;
-
+-- Personne, depuis l'appli, ne peut renommer un ancien joueur.
 select ok(
-  (select yves from ids) in (select player_id from public.admin_list_former_players()),
-  'un ancien joueur apparaît dans la liste'
+  not has_function_privilege('authenticated', 'private.anonymize_player(uuid)', 'EXECUTE')
+  and not has_function_privilege('service_role', 'private.anonymize_player(uuid)', 'EXECUTE')
+  and not has_function_privilege('anon', 'private.anonymize_player(uuid)', 'EXECUTE'),
+  'l''anonymisation à la main n''est appelable ni depuis l''appli ni par la clé de service'
 );
 select ok(
-  (select active_player from ids) not in (select player_id from public.admin_list_former_players()),
-  'un membre actif n''apparaît pas dans la liste'
+  not has_function_privilege('authenticated', 'public.admin_rename_former_player(uuid,text)', 'EXECUTE')
+  and not has_function_privilege('authenticated', 'public.admin_list_former_players()', 'EXECUTE'),
+  'les fonctions de l''ancien écran « Anciens joueurs » sont fermées'
 );
 
-select is(
-  public.admin_rename_former_player((select yves from ids), 'short') ->> 'display_name',
-  'Yves D.',
-  'le nom est raccourci en « Yves D. »'
-);
+-- Règle 1 : un départ du club (fiche inactive, sans compte) ne change rien.
+select is((select display_name from public.players where id = (select yves from ids)), 'Yves Dujardin',
+  'un joueur parti du club garde son nom');
+select is((select player_name from public.historical_player_statistics where id = 987650000001), 'Yves Dujardin',
+  'y compris dans les statistiques historiques');
 
-reset role;
-
-select is((select display_name from public.players where id = (select yves from ids)), 'Yves D.',
+-- Anonymisation à la main (demande reçue par e-mail).
+select is(private.anonymize_player((select yves from ids)), 'Ancien joueur',
+  'le nom devient « Ancien joueur »');
+select is((select display_name from public.players where id = (select yves from ids)), 'Ancien joueur',
   'identité du joueur renommée');
 select is(
   (select first_name || ' ' || last_name from public.season_players where id = '7a300000-0000-0000-0000-000000000001'),
-  'Yves D.', 'effectif de saison renommé');
-select is((select player_name from public.historical_player_statistics where id = 987650000001), 'Yves D.',
+  'Ancien joueur', 'effectif de saison renommé');
+select is((select player_name from public.historical_player_statistics where id = 987650000001), 'Ancien joueur',
   'statistiques historiques renommées');
 select is((select player_id from public.historical_player_statistics where id = 987650000001), (select yves from ids),
   'et toujours rattachées au même joueur');
 select is(
+  (select matches_played || '/' || goals from public.historical_player_statistics where id = 987650000001),
+  '12/7', 'les chiffres des statistiques sont intacts');
+select is(
   (select present_names from public.historical_match_details where match_id = '7a700000-0000-0000-0000-000000000001'),
-  '["Yves D.", "Paul Martin"]'::jsonb,
+  '["Ancien joueur", "Paul Martin"]'::jsonb,
   'feuille de match : le nom est remplacé, les autres joueurs ne bougent pas');
 select is(
   (select motm_names from public.historical_match_details where match_id = '7a700000-0000-0000-0000-000000000001'),
-  '["Yves D."]'::jsonb,
+  '["Ancien joueur"]'::jsonb,
   'le nom est retrouvé même écrit sans majuscules');
 select is(
   (select scorers -> 0 ->> 'name' from public.historical_match_details where match_id = '7a700000-0000-0000-0000-000000000001'),
-  'Yves D.', 'liste des buteurs renommée');
+  'Ancien joueur', 'liste des buteurs renommée');
 select is(
   (select count(*)::int from public.historical_match_players
    where match_id = '7a700000-0000-0000-0000-000000000001' and player_id = (select yves from ids)),
@@ -122,23 +125,14 @@ select is(
   (select count(*)::int from public.historical_player_name_links
    where player_id = (select yves from ids) and normalized_name = private.normalize_player_name('Yves Dujardin')),
   0, 'ni dans les correspondances de noms historiques');
-select is(
-  (select metadata from private.sport_admin_audit_log
-   where action = 'rename_former_player' order by id desc limit 1) ->> 'mode',
-  'short', 'l''opération est tracée');
 select ok(
   (select metadata::text from private.sport_admin_audit_log
    where action = 'rename_former_player' order by id desc limit 1) not ilike '%dujardin%',
   'la trace ne contient pas l''ancien nom');
 
--- Ensuite « Ancien joueur », pour deux joueurs : les noms restent distincts.
-set local role authenticated;
-select is(public.admin_rename_former_player((select yves from ids), 'anonymous') ->> 'display_name',
-  'Ancien joueur', 'remplacement par « Ancien joueur »');
-select is(public.admin_rename_former_player((select paul from ids), 'anonymous') ->> 'display_name',
-  'Ancien joueur 2', 'un second ancien joueur reçoit un nom distinct');
-reset role;
-
+-- Règle 3 : un second ancien joueur reste distinct.
+select is(private.anonymize_player((select paul from ids)), 'Ancien joueur 2',
+  'un second ancien joueur reçoit un nom distinct');
 select is(
   (select present_names from public.historical_match_details where match_id = '7a700000-0000-0000-0000-000000000001'),
   '["Ancien joueur", "Ancien joueur 2"]'::jsonb,
@@ -147,35 +141,11 @@ select is(
   (select count(distinct player_id)::int from public.historical_match_players
    where match_id = '7a700000-0000-0000-0000-000000000001'),
   2, 'les deux joueurs restent distincts dans les statistiques du match');
-
--- Refus.
-set local role authenticated;
 select throws_ok(
-  format($$select public.admin_rename_former_player(%L, 'short')$$, (select active_player from ids)),
-  '22023',
-  'un membre encore actif ne peut pas être renommé par l''administrateur'
-);
-select throws_ok(
-  format($$select public.admin_rename_former_player(%L, 'n_importe')$$, (select yves from ids)),
-  '22023',
-  'un choix inconnu est refusé'
-);
-reset role;
+  $$select private.anonymize_player('00000000-0000-0000-0000-0000000000ff')$$,
+  'P0002', null, 'un identifiant inconnu est refusé');
 
-select set_config(
-  'request.jwt.claims',
-  '{"sub":"7a000000-0000-0000-0000-000000000002","role":"authenticated","aud":"authenticated"}',
-  true
-);
-set local role authenticated;
-select throws_ok(
-  format($$select public.admin_rename_former_player(%L, 'short')$$, (select yves from ids)),
-  '42501',
-  'un simple membre ne peut pas renommer un joueur'
-);
-reset role;
-
--- Suppression d'un compte : le nom de joueur est raccourci automatiquement.
+-- Règle 2 : suppression d'un compte.
 select set_config('request.jwt.claims', '', true);
 -- Sans compte technique (comme dans la base commerciale), la préparation de
 -- la suppression doit réussir.
@@ -187,6 +157,8 @@ update public.profiles set status = 'active' where id = '7a000000-0000-0000-0000
 insert into public.season_players (id, season_id, first_name, last_name, is_goalkeeper, is_active, position, profile_id)
 values ('7a300000-0000-0000-0000-000000000004', '7a200000-0000-0000-0000-000000000001',
    'Lea', 'Partante', false, true, 4, '7a000000-0000-0000-0000-000000000003');
+update public.season_players set photo_url = 'joueurs/lea-partante.png'
+where id = '7a300000-0000-0000-0000-000000000004';
 
 insert into private.sport_admin_audit_log (actor_profile_id, action)
 values ('7a000000-0000-0000-0000-000000000003', 'test_trace_partante');
@@ -202,9 +174,18 @@ select ok(
 select is(
   (select display_name from public.players
    where id = (select player_id from public.season_players where id = '7a300000-0000-0000-0000-000000000004')),
-  'Lea P.',
-  'à la suppression du compte, le nom de joueur devient « Lea P. »'
+  'Ancien joueur 3',
+  'à la suppression du compte, le nom de joueur devient « Ancien joueur » (distinct des autres)'
 );
+select is(
+  (select first_name || ' ' || last_name || coalesce(photo_url, '') from public.season_players
+   where id = '7a300000-0000-0000-0000-000000000004'),
+  'Ancien joueur 3', 'sa fiche d''effectif n''a plus ni son nom ni sa photo');
+
+-- Le membre actif n'a pas été touché.
+select is(
+  (select first_name || ' ' || last_name from public.season_players where id = '7a300000-0000-0000-0000-000000000003'),
+  'Actif Toujours', 'un membre actif garde son nom');
 
 -- Réécriture d'un instantané JSON : seuls les champs de l'objet du joueur
 -- (reconnu par son identifiant) changent.
