@@ -4,6 +4,17 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ## Non publié
 
+### Exploitation
+
+- la publication automatique publie aussi les fonctions serveur (via le
+  workflow de mise en route, fonctions seulement), juste avant l'appli :
+  l'appli et le serveur ne divergent plus ;
+- l'ancien site GitHub Pages (copie du 12/11 branchée sur la base
+  commerciale) est retiré : `deploy_pages.yml` passe dans
+  `workflows-disabled/`, et le nouveau workflow manuel « GitHub Pages :
+  redirection » le remplace par une page qui renvoie vers l'adresse
+  officielle et désinstalle l'ancien service worker.
+
 ### Produit
 
 - textes légaux, version `2026-11-20` (nouvel accord demandé aux

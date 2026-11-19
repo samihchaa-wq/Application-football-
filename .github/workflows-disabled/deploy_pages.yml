@@ -1,5 +1,11 @@
 name: Deploy Flutter Web to GitHub Pages
 
+# DÉSACTIVÉ le 20/11/2026 : ce site publiait l'appli branchée sur la base
+# COMMERCIALE (config/production.json) sur GitHub Pages, dont les conditions
+# interdisent un service commercial. Remplacé par le workflow
+# « GitHub Pages : redirection » (pages_redirect.yml), qui renvoie vers
+# l'adresse officielle.
+
 # Publication MANUELLE uniquement (onglet Actions > Run workflow) : aucune
 # fusion sur main ne publie automatiquement. Test à clubs fictifs seulement :
 # GitHub Pages n'autorise pas l'hébergement d'un SaaS commercial.
