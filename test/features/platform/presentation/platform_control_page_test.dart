@@ -2,6 +2,7 @@ import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/features/auth/data/auth_repository.dart';
 import 'package:petit_filet/features/auth/domain/auth_profile.dart';
 import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/billing/data/invoice_repository.dart';
 import 'package:petit_filet/features/platform/data/platform_billing_repository.dart';
 import 'package:petit_filet/features/platform/data/platform_repository.dart';
 import 'package:petit_filet/features/platform/domain/platform_snapshot.dart';
@@ -102,8 +103,9 @@ void main() {
     Future<PlatformSnapshot> Function()? fetch,
     _Controller? controller,
     double textScale = 1,
-    PlatformBillingRepository? billing,
+    _FakeBilling? fake,
   }) async {
+    final billing = fake ?? _FakeBilling();
     tester.view.physicalSize = Size(width, 1000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -118,8 +120,9 @@ void main() {
             (ref) => (fetch ?? () async => _snapshot)(),
           ),
           platformBillingRepositoryProvider.overrideWithValue(
-            billing ?? _FakeBilling().repository,
+            billing.repository,
           ),
+          invoiceRepositoryProvider.overrideWithValue(billing.invoices),
         ],
         child: MaterialApp(
           theme: AppTheme.dark,
@@ -142,7 +145,10 @@ void main() {
       await open(tester, width: width);
       expect(find.text('Poste de contrôle'), findsOneWidget);
       expect(find.text('Non mesuré'), findsWidgets);
-      expect(find.text('Lecture seule'), findsOneWidget);
+      // On agit depuis « À faire » (alertes) : plus de mention de lecture
+      // seule sur l'accueil.
+      expect(find.text('Lecture seule'), findsNothing);
+      expect(find.byKey(const Key('platform-alerts')), findsOneWidget);
       expect(
         width < 1000 ? find.byType(NavigationBar) : find.byType(NavigationRail),
         findsOneWidget,
@@ -187,7 +193,7 @@ void main() {
     tester,
   ) async {
     final billing = _FakeBilling();
-    await open(tester, width: 1280, billing: billing.repository);
+    await open(tester, width: 1280, fake: billing);
     await tester.tap(find.byIcon(Icons.groups_outlined));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Équipe Beta'));
@@ -227,6 +233,107 @@ void main() {
     expect(billing.recorded.single['p_amount_cents'], 7900);
     expect(billing.recorded.single['p_method'], 'virement');
     expect(find.textContaining('L’équipe a retrouvé l’accès.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('the operator gives free months with a reason', (tester) async {
+    final billing = _FakeBilling();
+    await open(tester, width: 1280, fake: billing);
+    await tester.tap(find.byIcon(Icons.groups_outlined));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Équipe Beta'));
+    await tester.pumpAndSettle();
+
+    final grant = find.byKey(const Key('platform-grant-period'));
+    await tester.ensureVisible(grant);
+    await tester.tap(grant);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('platform-grant-3-0')));
+    await tester.tap(find.byKey(const Key('platform-grant-save')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Indique un motif'), findsOneWidget);
+    expect(billing.calls, isEmpty);
+
+    await tester.enterText(
+      find.byKey(const Key('platform-grant-reason')),
+      'Club pilote',
+    );
+    await tester.tap(find.byKey(const Key('platform-grant-save')));
+    await tester.pumpAndSettle();
+    expect(billing.calls.single, {
+      'name': 'platform_grant_free_period',
+      'p_club_id': 'b',
+      'p_months': 3,
+      'p_days': 0,
+      'p_reason': 'Club pilote',
+    });
+    expect(find.textContaining('Période offerte jusqu’au'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('a payment alert is shown and can be marked as handled', (
+    tester,
+  ) async {
+    final billing = _FakeBilling();
+    await open(tester, width: 1280, fake: billing);
+    expect(find.textContaining('Contestation de carte · Équipe Beta'),
+        findsOneWidget);
+    await tester.tap(
+      find.byKey(const ValueKey('platform-alert-resolve-alert-1')),
+    );
+    await tester.pumpAndSettle();
+    expect(billing.alerts, isEmpty);
+    expect(find.text('Rien à traiter côté paiements'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('the cash tab shows totals, fees and the ledger', (
+    tester,
+  ) async {
+    final billing = _FakeBilling();
+    await open(tester, width: 1280, fake: billing);
+    await tester.tap(find.byIcon(Icons.point_of_sale_outlined));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('platform-cash')), findsOneWidget);
+    expect(find.text('79\u00a0€'), findsWidgets);
+    expect(find.text('Frais Stripe'), findsOneWidget);
+    expect(find.text('77,64\u00a0€'), findsOneWidget);
+    expect(find.textContaining('facture PF-2026-0001'), findsOneWidget);
+    expect(find.text('offert'), findsOneWidget);
+    expect(find.byKey(const Key('platform-cash-export')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('platform-cash-previous')));
+    await tester.pumpAndSettle();
+    expect(
+      billing.calls.where((call) => call['name'] == 'platform_ledger').length,
+      2,
+    );
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('settings change the offer and warn about published terms', (
+    tester,
+  ) async {
+    final billing = _FakeBilling();
+    await open(tester, width: 1280, fake: billing);
+    await tester.tap(find.byIcon(Icons.settings_outlined));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('platform-offer-terms-warning')), findsNothing);
+    expect(find.text('Supervision technique'.toUpperCase()), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('platform-offer-edit')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('platform-offer-trial')), '90');
+    await tester.tap(find.byKey(const Key('platform-offer-save')));
+    await tester.pumpAndSettle();
+    expect(
+      billing.calls.firstWhere((call) =>
+          call['name'] == 'platform_save_billing_settings')['p_trial_days'],
+      90,
+    );
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
   });
@@ -433,8 +540,16 @@ class _Repository implements AuthRepository {
 
 class _FakeBilling {
   final recorded = <Map<String, dynamic>>[];
+  final calls = <Map<String, dynamic>>[];
+  final alerts = <String>['alert-1'];
 
-  late final repository = PlatformBillingRepository((name, params) async {
+  late final repository = PlatformBillingRepository(rpc);
+  late final invoices = InvoiceRepository(
+    rpc: rpc,
+    selectClubInvoices: () async => const [],
+  );
+
+  Future<dynamic> rpc(String name, Map<String, dynamic> params) async {
     if (name == 'platform_club_billing') {
       return {
         'base_price_cents': 7900,
@@ -451,10 +566,97 @@ class _FakeBilling {
         ],
       };
     }
-    if (name == 'platform_record_offline_payment') {
+    if (name == 'platform_record_manual_payment') {
       recorded.add(params);
       return {'period_end': '2027-11-18T10:00:00Z', 'reopened': true};
     }
+    if (name == 'platform_payment_alerts') {
+      return {
+        'alerts': [
+          for (final id in alerts)
+            {
+              'id': id,
+              'kind': 'dispute',
+              'club_name': 'Équipe Beta',
+              'amount_cents': 7900,
+              'message': 'Contestation de carte (fraudulent) : needs_response.',
+            },
+        ],
+        'stripe': {'events_7d': 3, 'failures_7d': 0},
+        'card_payments_7d': const [],
+        'pending_invoices': 0,
+        'pending_credit_notes': 0,
+      };
+    }
+    if (name == 'platform_resolve_alert') {
+      alerts.remove(params['p_alert_id']);
+      return null;
+    }
+    calls.add({'name': name, ...params});
+    if (name == 'platform_grant_free_period') {
+      return {
+        'kind': 'gift',
+        'period_end': '2027-02-18T10:00:00Z',
+        'reopened': true,
+      };
+    }
+    if (name == 'platform_ledger') {
+      return {
+        'from': params['p_from'],
+        'to': params['p_to'],
+        'entries': [
+          {
+            'kind': 'payment',
+            'id': 'p1',
+            'day': '2026-11-10',
+            'club_id': 'b',
+            'club_name': 'Équipe Beta',
+            'amount_cents': 7900,
+            'method': 'carte',
+            'fee_cents': 136,
+            'refunded_cents': 0,
+            'document_number': 'PF-2026-0001',
+            'document_status': 'issued',
+          },
+          {
+            'kind': 'gift',
+            'id': 'g1',
+            'day': '2026-11-11',
+            'club_id': 'a',
+            'club_name': 'Équipe Alpha',
+            'amount_cents': 0,
+            'label': 'Club pilote',
+            'period_label': '3 mois offerts, jusqu’au 11/02/2027',
+          },
+        ],
+        'totals': {
+          'collected_cents': 7900,
+          'refunded_cents': 0,
+          'fees_cents': 136,
+          'net_cents': 7764,
+          'payments': 1,
+          'refunds': 0,
+          'gifts': 1,
+          'by_method': {'carte': 7900},
+        },
+      };
+    }
+    if (name == 'platform_billing_settings' ||
+        name == 'platform_save_billing_settings') {
+      return {
+        'base_price_cents': params['p_base_price_cents'] ?? 7900,
+        'referral_rate_percent': params['p_referral_rate_percent'] ?? 5,
+        'referral_cap_percent': params['p_referral_cap_percent'] ?? 100,
+        'trial_days': params['p_trial_days'] ?? 30,
+      };
+    }
+    if (name == 'platform_list_credit_notes' ||
+        name == 'platform_list_invoices') {
+      return const [];
+    }
+    if (name == 'platform_invoice_settings') {
+      return {'ready': false};
+    }
     throw StateError('unexpected $name');
-  });
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:petit_filet/features/billing/domain/invoice.dart';
 import 'package:petit_filet/features/billing/domain/invoice_pdf.dart';
+import 'package:petit_filet/features/platform/domain/platform_cash.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Map<String, dynamic> issuedRow({String number = 'PF-2027-0001'}) => {
@@ -80,5 +81,26 @@ void main() {
       expect(String.fromCharCodes(bytes.take(5)), '%PDF-');
       expect(bytes.length, greaterThan(1000));
     }
+  });
+
+  test('le PDF d’un avoir se construit et renvoie à sa facture', () async {
+    final note = CreditNote.fromJson({
+      'id': 'r1',
+      'number': 'AV-2027-0001',
+      'issued_on': '2027-02-01',
+      'refunded_on': '2027-02-01',
+      'amount_cents': 2900,
+      'method': 'carte',
+      'reason': 'Geste commercial',
+      'invoice_number': 'PF-2027-0001',
+      'buyer_name': 'Association Test',
+      'buyer_address': '2 place du Stade, 31150 Bruguières',
+      'seller': issuedRow()['seller'],
+    });
+    expect(note.fileName, 'avoir-AV-2027-0001.pdf');
+    expect(note.methodLabel, 'Carte bancaire');
+    final bytes = await buildCreditNotePdf(note);
+    expect(String.fromCharCodes(bytes.take(5)), '%PDF-');
+    expect(bytes.length, greaterThan(1000));
   });
 }

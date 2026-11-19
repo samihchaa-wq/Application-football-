@@ -6,6 +6,21 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- Gestionnaire refait en 4 onglets : « À faire » (alertes de paiement,
+  paiements par carte reçus, factures et avoirs en attente), « Clubs »
+  (fiche avec contacts, paiement avec référence, période offerte ou essai
+  prolongé avec motif, remboursement carte ou hors ligne, tarif propre et
+  note interne, adresse de facturation, suspension), « Caisse » (registre du
+  mois ou de l'année : encaissé, remboursé, frais Stripe, net, export
+  tableur, factures, avoirs PDF) et « Réglages » (offre : tarif des nouveaux
+  clubs, parrainage, durée d'essai ; coordonnées sur les factures ; état de
+  Stripe ; supervision). Migration `20261201000000_gestionnaire_caisse.sql`,
+  nouvelle fonction `stripe-refund` ;
+- factures : l'adresse postale saisie par le club sert d'adresse de
+  facturation quand l'éditeur n'en a pas saisi ;
+- correction : l'effacement automatique d'un club impayé depuis 3 ans
+  supprimait aussi ses factures ; elles sont désormais conservées (10 ans),
+  comme les avoirs ;
 - paiement par carte (Stripe) : l'admin du club paie l'abonnement depuis
   l'écran Abonnement, ou depuis l'écran « club suspendu » pour rouvrir. Le
   montant est calculé par le serveur, réduction de parrainage figée au clic ;
