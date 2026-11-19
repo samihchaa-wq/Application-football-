@@ -49,6 +49,50 @@ void main() {
         isTrue);
   });
 
+  testWidgets(
+      'une relecture du même compte ne remet ni bandeau ni fonctions masquées',
+      (tester) async {
+    var calls = 0;
+    Completer<ClubModules>? reload;
+    final container = ProviderContainer(overrides: [
+      clubSessionIdentityProvider.overrideWithValue('account-a'),
+      myClubProvider.overrideWith((ref) async => club),
+      clubRulesProvider.overrideWith((ref) async => const []),
+      clubModulesProvider.overrideWith((ref) {
+        calls += 1;
+        if (calls == 1) return const ClubModules.allEnabled();
+        return (reload = Completer<ClubModules>()).future;
+      }),
+    ]);
+    addTearDown(container.dispose);
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+            home: Scaffold(body: ClubConfigurationStatusBanner()))));
+    await tester.pumpAndSettle();
+    expect(find.text('Chargement des réglages du club…'), findsNothing);
+    expect(container.read(clubModuleEnabledProvider(ClubModule.statistics)),
+        isTrue);
+
+    // Retour au premier plan : les réglages sont relus.
+    refreshClubConfiguration(container.invalidate);
+    await tester.pump();
+    expect(container.read(clubModuleEnabledProvider(ClubModule.statistics)),
+        isTrue);
+    await tester.pump();
+    expect(calls, 2);
+    expect(reload!.isCompleted, isFalse);
+    expect(find.text('Chargement des réglages du club…'), findsNothing);
+
+    // Une panne pendant la relecture n'autorise plus rien.
+    reload!.completeError(StateError('réseau indisponible'));
+    await tester.pumpAndSettle();
+    expect(
+        find.text('Les réglages du club sont indisponibles.'), findsOneWidget);
+    expect(container.read(clubModuleEnabledProvider(ClubModule.statistics)),
+        isFalse);
+  });
+
   testWidgets('hors connexion aucun chargement de club n’est lancé',
       (tester) async {
     var calls = 0;

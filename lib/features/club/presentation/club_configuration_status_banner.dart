@@ -17,7 +17,9 @@ class ClubConfigurationStatusBanner extends ConsumerWidget {
     final modules = ref.watch(clubModulesProvider);
     final rules = ref.watch(clubRulesProvider);
     final failed = club.hasError || modules.hasError || rules.hasError;
-    final loading = club.isLoading || modules.isLoading || rules.isLoading;
+    final loading = isClubConfigurationLoading(club) ||
+        isClubConfigurationLoading(modules) ||
+        isClubConfigurationLoading(rules);
     if (!failed && !loading) return const SizedBox.shrink();
     return Material(
       color: AppTheme.surface,
