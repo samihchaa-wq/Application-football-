@@ -12,14 +12,31 @@ function assertEquals(actual: unknown, expected: unknown): void {
 const SECRET = "whsec_test_secret";
 const NOW = 1_800_000_000;
 
-function fixture(rpcError: unknown = null) {
+function fixture(
+  rpcError: unknown = null,
+  stripeApi: (url: string) => Response = () =>
+    new Response(
+      JSON.stringify({
+        latest_charge: {
+          receipt_url: "https://pay.stripe.com/receipts/r1",
+          balance_transaction: { fee: 136 },
+        },
+      }),
+    ),
+) {
   const calls: unknown[] = [];
   const handler = createStripeWebhookHandler({
+    fetch: ((url: string) => {
+      calls.push({ stripeApi: url });
+      return Promise.resolve(stripeApi(url));
+    }) as typeof fetch,
     // deno-lint-ignore no-explicit-any
     createClient: ((_url: string, key: string) => ({
       rpc: (name: string, args: unknown) => {
         calls.push({ key, name, args });
-        return Promise.resolve({ data: { already_recorded: false }, error: rpcError });
+        // Les traces d'événements ne sont jamais en erreur dans ces tests.
+        const error = name === "stripe_log_event" ? null : rpcError;
+        return Promise.resolve({ data: { already_recorded: false }, error });
       },
     })) as any,
     getEnv: (name) =>
@@ -27,6 +44,7 @@ function fixture(rpcError: unknown = null) {
         STRIPE_WEBHOOK_SECRET: SECRET,
         SUPABASE_URL: "https://example.supabase.co",
         SUPABASE_SERVICE_ROLE_KEY: "service-key",
+        STRIPE_SECRET_KEY: "sk_test_x",
       })[name],
     nowSeconds: () => NOW,
   });
@@ -47,6 +65,8 @@ async function signedRequest(
 }
 
 const paidEvent = {
+  id: "evt_1",
+  livemode: false,
   type: "checkout.session.completed",
   data: {
     object: {
@@ -55,15 +75,16 @@ const paidEvent = {
       payment_status: "paid",
       amount_total: 7505,
       currency: "eur",
+      payment_intent: "pi_1",
     },
   },
 };
 
-Deno.test("un paiement signé est enregistré avec la clé serveur", async () => {
+Deno.test("un paiement signé est enregistré, puis ses frais et son reçu", async () => {
   const { handler, calls } = fixture();
   const response = await handler(await signedRequest(paidEvent));
   assertEquals(response.status, 200);
-  assertEquals(calls, [{
+  assertEquals(calls[0], {
     key: "service-key",
     name: "stripe_record_card_payment",
     args: {
@@ -72,7 +93,108 @@ Deno.test("un paiement signé est enregistré avec la clé serveur", async () =>
       p_amount_cents: 7505,
       p_currency: "eur",
     },
-  }]);
+  });
+  assertEquals(
+    calls[1],
+    {
+      stripeApi:
+        "https://api.stripe.com/v1/payment_intents/pi_1?expand[]=latest_charge.balance_transaction",
+    },
+  );
+  assertEquals(calls[2], {
+    key: "service-key",
+    name: "stripe_attach_card_details",
+    args: {
+      p_session_id: "cs_test_1",
+      p_payment_intent_id: "pi_1",
+      p_fee_cents: 136,
+      p_receipt_url: "https://pay.stripe.com/receipts/r1",
+    },
+  });
+  assertEquals((calls[3] as { name: string }).name, "stripe_log_event");
+});
+
+Deno.test("frais indisponibles : le paiement reste enregistré", async () => {
+  const { handler, calls } = fixture(null, () => new Response("{}", { status: 500 }));
+  const response = await handler(await signedRequest(paidEvent));
+  assertEquals(response.status, 200);
+  assertEquals((calls[2] as { args: { p_fee_cents: unknown } }).args.p_fee_cents, null);
+});
+
+Deno.test("un remboursement Stripe est enregistré", async () => {
+  const { handler, calls } = fixture();
+  const response = await handler(
+    await signedRequest({
+      id: "evt_2",
+      type: "refund.created",
+      data: {
+        object: {
+          id: "re_1",
+          amount: 1000,
+          payment_intent: "pi_1",
+          reason: "requested_by_customer",
+          status: "succeeded",
+        },
+      },
+    }),
+  );
+  assertEquals(response.status, 200);
+  assertEquals(calls[0], {
+    key: "service-key",
+    name: "stripe_record_refund",
+    args: {
+      p_payment_intent_id: "pi_1",
+      p_refund_id: "re_1",
+      p_amount_cents: 1000,
+      p_reason: "requested_by_customer",
+    },
+  });
+});
+
+Deno.test("un remboursement échoué est ignoré", async () => {
+  const { handler, calls } = fixture();
+  await handler(
+    await signedRequest({
+      id: "evt_3",
+      type: "refund.updated",
+      data: { object: { id: "re_2", amount: 10, payment_intent: "pi_1", status: "failed" } },
+    }),
+  );
+  assertEquals(
+    calls.filter((call) => (call as { name?: string }).name === "stripe_record_refund"),
+    [],
+  );
+});
+
+Deno.test("une contestation devient une alerte", async () => {
+  const { handler, calls } = fixture();
+  const response = await handler(
+    await signedRequest({
+      id: "evt_4",
+      type: "charge.dispute.created",
+      data: {
+        object: {
+          id: "dp_1",
+          amount: 7505,
+          payment_intent: "pi_1",
+          reason: "fraudulent",
+          status: "needs_response",
+        },
+      },
+    }),
+  );
+  assertEquals(response.status, 200);
+  assertEquals((calls[0] as { name: string }).name, "stripe_record_dispute");
+});
+
+Deno.test("un échec est tracé pour le Gestionnaire", async () => {
+  const { handler, calls } = fixture({ code: "22023", message: "Montant différent" });
+  const response = await handler(await signedRequest(paidEvent));
+  assertEquals(response.status, 500);
+  const log = calls.find((call) => (call as { name?: string }).name === "stripe_log_event") as {
+    args: { p_ok: boolean; p_error: string };
+  };
+  assertEquals(log.args.p_ok, false);
 });
 
 Deno.test("une signature fausse ne déclenche rien", async () => {
@@ -111,7 +233,11 @@ Deno.test("un paiement pas encore réglé attend", async () => {
   event.data.object.payment_status = "unpaid";
   const response = await handler(await signedRequest(event));
   assertEquals(response.status, 200);
-  assertEquals(calls, []);
+  // Seule la trace de l'événement est écrite.
+  assertEquals(
+    calls.map((call) => (call as { name?: string }).name),
+    ["stripe_log_event"],
+  );
 });
 
 Deno.test("les autres événements sont ignorés", async () => {

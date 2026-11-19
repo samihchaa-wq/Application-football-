@@ -338,7 +338,13 @@ select is(
         -- Coordonnées de l'éditeur et compteur de numéros de facture :
         -- globaux, sans droit pour aucun compte.
         'private.invoice_settings',
-        'private.invoice_counters'
+        'private.invoice_counters',
+        -- Gestionnaire : réglages de l'offre, compteur d'avoirs, événements
+        -- et alertes Stripe ; globaux, sans droit pour aucun compte connecté.
+        'private.billing_settings',
+        'private.credit_note_counters',
+        'private.stripe_events',
+        'private.payment_alerts'
       )
       and not exists (
         select 1 from pg_policy p
@@ -402,6 +408,25 @@ select is(
         'admin_prepare_card_payment()',
         'admin_claim_free_year()',
         'stripe_record_card_payment(uuid,text,integer,text)',
+        -- Gestionnaire de l'éditeur (garde is_platform_operator) et suivi
+        -- Stripe (service_role seulement).
+        'private.apply_refund(uuid,integer,text,text,text,uuid)',
+        'platform_record_manual_payment(uuid,integer,text,date,text,text)',
+        'platform_grant_free_period(uuid,integer,integer,text)',
+        'platform_record_refund(uuid,integer,text,text,text)',
+        'platform_prepare_card_refund(uuid,integer)',
+        'platform_payment_alerts()',
+        'platform_resolve_alert(uuid)',
+        'platform_billing_settings()',
+        'platform_save_billing_settings(integer,integer,integer,integer)',
+        'platform_set_club_terms(uuid,integer,text)',
+        'platform_set_club_access(uuid,boolean)',
+        'platform_ledger(date,date)',
+        'platform_list_credit_notes()',
+        'stripe_log_event(text,text,boolean,boolean,text)',
+        'stripe_attach_card_details(text,text,integer,text)',
+        'stripe_record_refund(text,text,integer,text)',
+        'stripe_record_dispute(text,text,integer,text,text)',
         'platform_club_billing(uuid)',
         'platform_control_overview()',
         -- Effacement planifié des clubs impayés depuis 3 ans (tâche de nuit).

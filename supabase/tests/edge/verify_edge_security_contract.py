@@ -59,6 +59,7 @@ def main() -> int:
         "calendar-feed": False,
         "stripe-checkout": True,
         "stripe-webhook": False,
+        "stripe-refund": True,
     }
     versioned_functions = {
         path.name
@@ -99,6 +100,19 @@ def main() -> int:
         "await verifyStripeSignature(",
         'admin.rpc("stripe_record_card_payment"',
         "stripe-webhook doit vérifier la signature avant d’enregistrer",
+    )
+
+    refund = function_file("stripe-refund", "handler.ts")
+    require(
+        "SUPABASE_SERVICE_ROLE_KEY" not in refund
+        and "global: { headers: { Authorization: authHeader } }" in refund,
+        "stripe-refund doit agir au nom de l’éditeur, jamais avec la clé de service",
+    )
+    require_in_order(
+        refund,
+        'caller.rpc("platform_prepare_card_refund"',
+        'fetch("https://api.stripe.com/v1/refunds"',
+        "stripe-refund doit vérifier l’éditeur et le montant avant Stripe",
     )
 
     manage_entry = source("manage-user")
