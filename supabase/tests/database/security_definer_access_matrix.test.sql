@@ -128,7 +128,9 @@ insert into reviewed_open_definers (fonction, motif) values
   ('accept_terms(text,text)',
    'n’écrit que la ligne du demandeur : version des conditions acceptée et déclaration d’âge'),
   ('export_my_data()',
-   'ne lit que les lignes du demandeur dans son club, sans les secrets de notification');
+   'ne lit que les lignes du demandeur dans son club, sans les secrets de notification'),
+  ('get_my_private_details()',
+   'ne lit que le téléphone et la date de naissance du demandeur, dans son club');
 
 create temporary view open_definers as
   select p.oid::regprocedure::text as fonction
