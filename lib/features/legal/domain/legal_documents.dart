@@ -225,8 +225,13 @@ const LegalDocument privacyPolicy = LegalDocument(
           '(demandée à l’inscription ; un compte créé par un administrateur '
           'peut ne pas en avoir), photo si tu en ajoutes une, ta déclaration '
           'd’âge et la date à laquelle tu as accepté les conditions.',
+      '• Coordonnées facultatives : téléphone et date de naissance, si toi '
+          'ou un administrateur du club les renseignez.',
       '• Vie du club : rôle, disponibilités et absences déclarées, '
           'participations aux matchs, statistiques, pronostics, votes, badges.',
+      '• Coordonnées du club : nom, e-mail et téléphone de la personne à '
+          'contacter, adresse et numéro d’immatriculation, saisis par les '
+          'administrateurs.',
       '• Le motif d’une absence n’est visible que par toi et les '
           'administrateurs du club. N’y écris pas de détail médical.',
       '• Notifications : l’adresse technique d’envoi de ton navigateur et '
@@ -268,9 +273,10 @@ const LegalDocument privacyPolicy = LegalDocument(
           'preuve de l’éditeur.',
     ]),
     LegalSection('Qui les voit ?', [
-      'Les membres de ton club voient ton nom, ta photo et ta vie sportive '
-          'dans le club. Les administrateurs voient en plus tes absences et '
-          'leur motif. Aucun autre club n’a accès à tes données. Les votes '
+      'Les membres actifs de ton club voient ton nom, ta photo, ta vie '
+          'sportive, et ton téléphone et ta date de naissance si tu les as '
+          'renseignés (effaçables à tout moment depuis ton profil). Les '
+          'administrateurs voient en plus tes absences et leur motif. Aucun autre club n’a accès à tes données. Les votes '
           'pour l’homme du match sont anonymes.',
       'L’éditeur n’accède aux données d’un club que si c’est nécessaire : '
           'assistance demandée, sécurité, obligation légale.',
@@ -501,7 +507,8 @@ const LegalDocument clubDataProcessingAgreement = LegalDocument(
           'envoi de notifications et d’e-mails, sauvegarde, suppression.',
       '• Personnes concernées : membres, joueurs (y compris mineurs), '
           'dirigeants, entraîneurs et invités du club.',
-      '• Données : identité, photo facultative, adresse e-mail, '
+      '• Données : identité, photo facultative, adresse e-mail, téléphone '
+          'et date de naissance facultatifs, coordonnées du club, '
           'rôle, vie sportive, disponibilités et absences, votes et '
           'pronostics, données techniques de notification.',
       '• Durée : celle de l’abonnement, puis $_dataRetentionAfterEnd avant '
