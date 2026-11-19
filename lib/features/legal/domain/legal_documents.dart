@@ -316,10 +316,10 @@ const LegalDocument privacyPolicy = LegalDocument(
           'chiffrées : effacées au bout de 90 jours.',
       'Quand ton compte est supprimé, tes données de compte sont effacées '
           '(identifiant, e-mail, photo, pronostics, votes, préférences). Ton '
-          'nom de joueur reste en revanche dans l’historique des matchs déjà '
-          'joués (feuilles de match, buteurs, statistiques), dans l’intérêt '
-          'du club à garder son histoire sportive. Tu peux demander qu’il y '
-          'soit raccourci (par exemple « Yves D. ») ou remplacé par « Ancien '
+          'nom de joueur reste dans l’historique des matchs déjà joués '
+          '(feuilles de match, buteurs, statistiques), raccourci (par exemple '
+          '« Yves D. »), dans l’intérêt du club à garder son histoire '
+          'sportive. Tu peux demander qu’il y soit remplacé par « Ancien '
           'joueur », auprès d’un administrateur du club ou en écrivant à '
           '$_editorEmail.',
       'Si ton club arrête l’application, ses données sont gardées '

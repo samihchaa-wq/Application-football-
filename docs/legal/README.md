@@ -38,7 +38,7 @@ moins les conditions d'abonnement dès que possible.
 | Mentions légales | Ajout du téléphone et de l'e-mail de l'éditeur, du SIREN, et du téléphone des hébergeurs | Liste officielle (entreprendre.service-public.fr, fiche F37351) |
 | Hébergement du site | **Cloudflare Pages** (déjà utilisé par la publication commerciale), et non GitHub Pages | Les conditions de GitHub Pages interdisent un service commercial ; celles de Cloudflare interdisent seulement de collecter des numéros de carte bancaire sur un site gratuit (aucun ici) |
 | Transferts hors UE | Supabase : Singapour et États-Unis, clauses contractuelles types | Page « Data residency and transfers » de Supabase |
-| Historique après suppression | Le nom du joueur **reste** dans les matchs passés ; sur demande, raccourci (« Yves D. ») ou remplacé par « Ancien joueur » | C'est ce que fait réellement la base (table `players`) ; l'ancien texte laissait croire le contraire. « Yves D. » reste identifiable dans un club : « Ancien joueur » si la personne insiste |
+| Historique après suppression | Le nom du joueur **reste** dans les matchs passés, **raccourci automatiquement** (« Yves D. ») à la suppression du compte ; « Ancien joueur » sur demande (page admin « Anciens joueurs ») | C'est ce que fait réellement la base (table `players`) ; l'ancien texte laissait croire le contraire. « Yves D. » reste identifiable dans un club : « Ancien joueur » si la personne insiste |
 | E-mail | **Obligatoire** à l'inscription (rejoindre ou créer un club) | Récupération du compte et avertissement avant suppression pour inactivité. Les comptes créés par un administrateur peuvent ne pas en avoir |
 | Suivi des e-mails | Ouvertures comptées **anonymement** (`contactPixelTrackingConsent: false` à chaque envoi) + option « Anonymous email tracking » à activer dans Brevo | La CNIL dispense de consentement un comptage global servant à vérifier la délivrabilité |
 | Connexion Facebook | Retirée des textes | Désactivée ; à remettre dans la politique (et Meta dans les prestataires) le jour où elle est activée |
@@ -51,11 +51,13 @@ moins les conditions d'abonnement dès que possible.
 
 - Compléter les crochets : nom, adresse du domicile, numéro de téléphone
   personnel, SIREN (choix de l'éditeur : coordonnées personnelles).
-- **Outil pour raccourcir ou remplacer un nom** : le nom est recopié dans une
-  quinzaine d'endroits (`players`, `player_aliases`, `season_players`,
-  `guest_players`, tables historiques, et dans les instantanés JSON des
-  compositions, des comptes rendus et des feuilles historiques). Tant
-  qu'aucun outil ne le fait, traiter chaque demande à la main.
+- Outil des noms construit (migration `20261129010000`) : raccourci
+  automatique à la suppression d'un compte, page « Anciens joueurs » pour les
+  administrateurs. Limite connue : l'historique des notifications (gardé
+  90 jours) peut encore contenir l'ancien nom jusqu'à son effacement.
+- Vérifier que le compte technique `00000000-0000-0000-0000-000000000001`
+  existe dans la base commerciale : sans lui, toute suppression de compte
+  échoue (déjà le cas avant cette branche).
 - ~~Brevo : suivi anonyme des e-mails~~ — activé par l'éditeur le 19/11/2026.
 - Accessibilité : les micro-entreprises qui fournissent des services sont
   exemptées par la directive européenne sur l'accessibilité ; vérifier la

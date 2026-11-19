@@ -6,6 +6,10 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- anciens joueurs : à la suppression d'un compte, le nom de joueur est
+  raccourci (« Yves D. ») dans tout l'historique du club, statistiques
+  conservées. Page admin « Anciens joueurs » pour le remplacer par « Ancien
+  joueur » à la demande de la personne ;
 - inscription : l'adresse e-mail est obligatoire aussi pour rejoindre un
   club. E-mails envoyés avec un comptage d'ouverture anonyme uniquement.
   Textes : sans médiateur de la consommation (décision de l'éditeur, risque

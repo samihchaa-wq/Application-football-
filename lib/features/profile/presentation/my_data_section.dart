@@ -142,9 +142,8 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
         children: [
           const Text(
             'Ton compte, ta photo, tes pronostics et tes préférences seront '
-            'effacés. Ton nom reste dans l’historique des matchs déjà joués '
-            '(tu peux demander qu’il soit raccourci ou remplacé par « Ancien '
-            'joueur »). '
+            'effacés. Ton nom reste dans l’historique des matchs déjà joués, '
+            'raccourci (par exemple « Yves D. »). '
             'Cette action est définitive.',
           ),
           const SizedBox(height: 12),
