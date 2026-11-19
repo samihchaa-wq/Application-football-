@@ -6,7 +6,9 @@ import 'package:petit_filet/features/admin/presentation/admin_page.dart';
 import 'package:petit_filet/features/auth/data/auth_repository.dart';
 import 'package:petit_filet/features/auth/domain/auth_profile.dart';
 import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/players/data/member_contacts_repository.dart';
 import 'package:petit_filet/features/players/data/roster_repository.dart';
+import 'package:petit_filet/features/profile/data/personal_data_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,10 +20,12 @@ import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 void main() {
   late _FakeAdminRepository repository;
   late _FakeRosterRepository roster;
+  late _FakeMemberContacts contacts;
 
   setUp(() {
     repository = _FakeAdminRepository();
     roster = _FakeRosterRepository();
+    contacts = _FakeMemberContacts();
   });
 
   Future<void> pumpAdmin(
@@ -39,6 +43,7 @@ void main() {
           adminRepositoryProvider.overrideWithValue(repository),
           clubRepositoryProvider.overrideWithValue(_FakeClubRepository()),
           rosterRepositoryProvider.overrideWithValue(roster),
+          memberContactsRepositoryProvider.overrideWithValue(contacts),
         ],
         child: MaterialApp(home: home),
       ),
@@ -121,6 +126,42 @@ void main() {
     ]) {
       expect(find.byKey(ValueKey(role)), findsOneWidget);
     }
+  });
+
+  testWidgets('l’admin saisit le téléphone et la date de naissance d’un membre',
+      (tester) async {
+    repository.profiles = [_profile('p-1', 'Karim', status: 'active')];
+    roster.seasonId = 's-1';
+    contacts.byProfile['p-1'] = const PrivateDetails(phone: '0611223344');
+    await pumpAdmin(tester);
+
+    await tester.tap(find.text('Karim'));
+    await tester.pumpAndSettle();
+    expect(find.text('Coordonnées'), findsOneWidget);
+    expect(find.text('0611223344'), findsOneWidget);
+
+    final row = find.ancestor(
+      of: find.text('Coordonnées'),
+      matching: find.byType(Row),
+    );
+    final edit = find.descendant(
+      of: row.first,
+      matching: find.widgetWithText(FilledButton, 'Modifier'),
+    );
+    await tester.ensureVisible(edit);
+    await tester.tap(edit);
+    await tester.pumpAndSettle();
+    expect(find.text('Coordonnées de Karim'), findsOneWidget);
+
+    await tester.enterText(
+      find.byKey(const Key('member-contact-phone')),
+      '07 00 00 00 01',
+    );
+    await tester.tap(find.byKey(const Key('member-contact-save')));
+    await tester.pumpAndSettle();
+
+    expect(contacts.saved, [('p-1', '07 00 00 00 01')]);
+    expect(find.text('07 00 00 00 01'), findsOneWidget);
   });
 
   testWidgets('annonce l’absence de compte en attente', (tester) async {
@@ -394,6 +435,28 @@ class _FakeClubRepository implements ClubRepository {
         shortName: 'FCT',
         inviteCode: 'ABCDEFGH',
       );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeMemberContacts implements MemberContactsRepository {
+  final byProfile = <String, PrivateDetails>{};
+  final saved = <(String, String?)>[];
+
+  @override
+  Future<Map<String, PrivateDetails>> fetchClubContacts() async =>
+      Map.of(byProfile);
+
+  @override
+  Future<PrivateDetails> saveForMember(
+    String profileId,
+    PrivateDetails details,
+  ) async {
+    saved.add((profileId, details.phone));
+    byProfile[profileId] = details;
+    return details;
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

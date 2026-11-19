@@ -9,6 +9,7 @@ import 'package:petit_filet/core/widgets/photo_crop_preview.dart';
 import 'package:petit_filet/features/auth/data/account_email_repository.dart';
 import 'package:petit_filet/features/auth/domain/auth_profile.dart';
 import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/profile/data/personal_data_repository.dart';
 import 'package:petit_filet/features/profile/presentation/my_data_section.dart';
 import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +27,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   late final TextEditingController _firstNameController;
   late final TextEditingController _lastNameController;
   late final TextEditingController _surnomController;
+  final _phoneController = TextEditingController();
+  DateTime? _birthDate;
+  // Téléphone et date de naissance : chargés à part. Tant qu'ils ne sont pas
+  // lus, on ne les renvoie pas, pour ne jamais effacer une valeur existante.
+  PrivateDetails? _savedDetails;
+  bool _detailsFailed = false;
+  String? _phoneError;
   String? _localError;
   // Les erreurs de saisie sont portées par le champ concerné
   // (InputDecoration.errorText) : un texte voisin est bien lu par les lecteurs
@@ -43,6 +51,38 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
     _lastNameController = TextEditingController(text: profile?.lastName ?? '');
     _surnomController = TextEditingController(text: profile?.surnom ?? '');
+    _loadPrivateDetails();
+  }
+
+  Future<void> _loadPrivateDetails() async {
+    try {
+      final details =
+          await ref.read(personalDataRepositoryProvider).fetchPrivateDetails();
+      if (!mounted) return;
+      setState(() {
+        _savedDetails = details;
+        _detailsFailed = false;
+        _phoneController.text = details.phone ?? '';
+        _birthDate = details.birthDate;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _detailsFailed = true);
+    }
+  }
+
+  Future<void> _pickBirthDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _birthDate ?? DateTime(now.year - 25, 1, 1),
+      firstDate: DateTime(1900),
+      lastDate: now,
+      initialEntryMode: DatePickerEntryMode.input,
+      helpText: 'Date de naissance',
+      fieldLabelText: 'Date de naissance',
+      fieldHintText: 'jj/mm/aaaa',
+    );
+    if (picked != null && mounted) setState(() => _birthDate = picked);
   }
 
   @override
@@ -50,6 +90,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _surnomController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -220,12 +261,63 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       SizedBox(height: fieldGap),
                       TextField(
                         controller: _surnomController,
-                        textInputAction: TextInputAction.done,
+                        textInputAction: TextInputAction.next,
                         textCapitalization: TextCapitalization.words,
                         decoration: InputDecoration(
                           labelText: 'Surnom (optionnel)',
                           errorText: _surnomError,
                           isDense: true,
+                        ),
+                      ),
+                      SizedBox(height: fieldGap),
+                      TextField(
+                        key: const Key('profile-phone'),
+                        controller: _phoneController,
+                        enabled: _savedDetails != null,
+                        keyboardType: TextInputType.phone,
+                        textInputAction: TextInputAction.done,
+                        decoration: InputDecoration(
+                          labelText: 'Téléphone (optionnel)',
+                          errorText: _phoneError,
+                          isDense: true,
+                        ),
+                      ),
+                      SizedBox(height: fieldGap),
+                      InputDecorator(
+                        key: const Key('profile-birth-date'),
+                        isEmpty: _birthDate == null,
+                        decoration: InputDecoration(
+                          labelText: 'Date de naissance (optionnel)',
+                          isDense: true,
+                          enabled: _savedDetails != null,
+                          suffixIcon: _birthDate == null
+                              ? const Icon(Icons.calendar_today_outlined)
+                              : IconButton(
+                                  tooltip: 'Effacer la date de naissance',
+                                  icon: const Icon(Icons.close_rounded),
+                                  onPressed: _savedDetails == null || busy
+                                      ? null
+                                      : () => setState(() => _birthDate = null),
+                                ),
+                        ),
+                        child: InkWell(
+                          onTap: _savedDetails == null || busy
+                              ? null
+                              : _pickBirthDate,
+                          child: Text(
+                            _birthDate == null ? '' : formatDay(_birthDate!),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(top: fieldGap),
+                        child: Text(
+                          _detailsFailed
+                              ? 'Téléphone et date de naissance '
+                                  'indisponibles pour le moment.'
+                              : 'Visibles par les membres du club dans '
+                                  'l’Effectif.',
+                          style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ),
                     ],
@@ -348,16 +440,22 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final firstNameError = nameError(firstName, required: true);
     final lastNameError = nameError(lastName, required: true);
     final surnomError = nameError(surnom, required: false);
+    final phone = _phoneController.text.trim();
+    final phoneError = phone.isEmpty || phoneNumberPattern.hasMatch(phone)
+        ? null
+        : 'Numéro invalide : chiffres, espaces et « + » uniquement.';
 
     setState(() {
       _localError = null;
       _firstNameError = firstNameError;
       _lastNameError = lastNameError;
       _surnomError = surnomError;
+      _phoneError = phoneError;
     });
     if (firstNameError != null ||
         lastNameError != null ||
-        surnomError != null) {
+        surnomError != null ||
+        phoneError != null) {
       return;
     }
     await ref.read(authControllerProvider.notifier).updateProfile(
@@ -369,9 +467,36 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     // Un échec doit se voir : sans ce retour, un refus serveur était
     // indiscernable d'un enregistrement réussi. Le bandeau d'erreur du corps
     // de l'écran affiche déjà le détail, le SnackBar signale l'événement.
-    final error = ref.read(authControllerProvider).error;
+    var error = ref.read(authControllerProvider).error;
+    error ??= await _savePrivateDetails(phone);
+    if (!mounted) return;
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(error ?? 'Profil enregistré.')));
+  }
+
+  /// Enregistre le téléphone et la date de naissance s'ils ont changé.
+  /// Renvoie un message d'erreur, ou null si tout va bien.
+  Future<String?> _savePrivateDetails(String phone) async {
+    final saved = _savedDetails;
+    if (saved == null) return null;
+    final birthDate = _birthDate;
+    final unchanged = (saved.phone ?? '') == phone &&
+        saved.birthDate?.toIso8601String() == birthDate?.toIso8601String();
+    if (unchanged) return null;
+    try {
+      final updated =
+          await ref.read(personalDataRepositoryProvider).savePrivateDetails(
+                PrivateDetails(
+                  phone: phone.isEmpty ? null : phone,
+                  birthDate: birthDate,
+                ),
+              );
+      if (mounted) setState(() => _savedDetails = updated);
+      return null;
+    } catch (_) {
+      return 'Le téléphone et la date de naissance n’ont pas pu être '
+          'enregistrés.';
+    }
   }
 
   String _emailLabel(AuthProfile? profile) {

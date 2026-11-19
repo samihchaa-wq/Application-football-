@@ -62,6 +62,44 @@ String buildInviteLink(String inviteCode, {String? publicAppUrl}) {
 }
 
 /// Format d'un code d'invitation : 8 lettres ou chiffres, sans 0, 1, I ni O.
+/// Coordonnées du club, saisies par ses administrateurs et visibles par ses
+/// membres. Tous les champs sont facultatifs.
+class ClubContact {
+  const ClubContact({
+    this.contactName,
+    this.email,
+    this.phone,
+    this.postalAddress,
+    this.website,
+    this.registrationNumber,
+  });
+
+  factory ClubContact.fromJson(Map<String, dynamic> json) {
+    String? text(Object? value) {
+      final trimmed = value?.toString().trim() ?? '';
+      return trimmed.isEmpty ? null : trimmed;
+    }
+
+    return ClubContact(
+      contactName: text(json['contact_name']),
+      email: text(json['contact_email']),
+      phone: text(json['contact_phone']),
+      postalAddress: text(json['postal_address']),
+      website: text(json['website']),
+      registrationNumber: text(json['registration_number']),
+    );
+  }
+
+  final String? contactName;
+  final String? email;
+  final String? phone;
+  final String? postalAddress;
+  final String? website;
+
+  /// Numéro RNA, SIREN ou SIRET de l'association.
+  final String? registrationNumber;
+}
+
 final RegExp inviteCodePattern = RegExp(r'^[A-Z2-9]{8}$');
 
 /// Nettoie ce que la personne a tapé ou collé : espaces, tirets, minuscules.
@@ -358,6 +396,39 @@ class ClubRepository {
       throw StateError('L’adresse du terrain n’a pas pu être enregistrée.');
     }
     return result as String?;
+  }
+
+  /// Coordonnées du club (e-mail, téléphone, adresse…), lisibles par les
+  /// membres du club.
+  Future<ClubContact> fetchContact() async {
+    final row = await _client
+        .from('club_settings')
+        .select(
+          'contact_name, contact_email, contact_phone, postal_address, '
+          'website, registration_number',
+        )
+        .maybeSingle();
+    return row == null ? const ClubContact() : ClubContact.fromJson(row);
+  }
+
+  /// Enregistre les coordonnées du club. Admin uniquement ; le serveur
+  /// vérifie le rôle, le format de chaque champ et le club courant.
+  Future<ClubContact> updateContact(ClubContact contact) async {
+    final result = await _client.rpc(
+      'admin_set_club_contact',
+      params: {
+        'p_contact_name': contact.contactName,
+        'p_email': contact.email,
+        'p_phone': contact.phone,
+        'p_postal_address': contact.postalAddress,
+        'p_website': contact.website,
+        'p_registration_number': contact.registrationNumber,
+      },
+    );
+    if (result is! Map) {
+      throw StateError('Les coordonnées n’ont pas pu être enregistrées.');
+    }
+    return ClubContact.fromJson(Map<String, dynamic>.from(result));
   }
 
   /// Nombre habituel de convoqués (1 à 30) du club, lu côté serveur.

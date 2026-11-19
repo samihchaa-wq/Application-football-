@@ -5,7 +5,6 @@ import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:petit_filet/features/profile/data/personal_data_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
 /// Mot à recopier pour confirmer la suppression du compte.
@@ -95,18 +94,7 @@ class _MyDataSectionState extends ConsumerState<MyDataSection> {
                 _exporting ? 'Préparation…' : 'Télécharger mes données',
               ),
             ),
-            TextButton(
-              onPressed: () => context.push('/legal/confidentialite'),
-              child: const Text('Confidentialité'),
-            ),
-            TextButton(
-              onPressed: () => context.push('/legal/cgu'),
-              child: const Text('Conditions d’utilisation'),
-            ),
-            TextButton(
-              onPressed: () => context.push('/legal/mentions'),
-              child: const Text('Mentions légales'),
-            ),
+            // Confidentialité, CGU et mentions légales : dans Paramètres.
           ],
         ),
         const SizedBox(height: 8),

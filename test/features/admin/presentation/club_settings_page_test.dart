@@ -97,19 +97,66 @@ void main() {
     }
   });
 
-  testWidgets('l’admin voit son essai, son forfait annuel et son espace', (
+  testWidgets('l’abonnement n’est plus dans les réglages, la saison oui', (
     tester,
   ) async {
     await pumpPage(tester);
 
-    await openSection(tester, 'subscription');
-    expect(find.text('Essai gratuit : encore 5 jours'), findsOneWidget);
+    // L'abonnement a son propre écran, ouvert depuis Paramètres.
     expect(
-      find.text('Forfait club, quel que soit le nombre de joueurs'),
+        find.byKey(const ValueKey('club-section-subscription')), findsNothing);
+    expect(find.byKey(const ValueKey('club-section-season')), findsOneWidget);
+  });
+
+  testWidgets('l’admin enregistre les coordonnées du club', (tester) async {
+    repository.contact = const ClubContact(email: 'ancien@club.fr');
+    await pumpPage(tester);
+
+    await openSection(tester, 'contact');
+    expect(find.text('ancien@club.fr'), findsOneWidget);
+    await tester.enterText(
+      find.byKey(const Key('club-contact-email')),
+      '  contact@fc-tests.fr ',
+    );
+    await tester.enterText(
+      find.byKey(const Key('club-contact-phone')),
+      '05 61 00 00 00',
+    );
+    await tester.enterText(
+      find.byKey(const Key('club-contact-address')),
+      '3 rue du Stade, 31000 Toulouse',
+    );
+    final save = find.byKey(const Key('club-contact-save'));
+    await tester.ensureVisible(save);
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+
+    expect(repository.contact.email, 'contact@fc-tests.fr');
+    expect(repository.contact.phone, '05 61 00 00 00');
+    expect(repository.contact.postalAddress, '3 rue du Stade, 31000 Toulouse');
+    expect(find.text('Coordonnées du club enregistrées.'), findsOneWidget);
+  });
+
+  testWidgets('un e-mail de club invalide est refusé sans envoi', (
+    tester,
+  ) async {
+    await pumpPage(tester);
+
+    await openSection(tester, 'contact');
+    await tester.enterText(
+      find.byKey(const Key('club-contact-email')),
+      'pas-un-mail',
+    );
+    final save = find.byKey(const Key('club-contact-save'));
+    await tester.ensureVisible(save);
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+
+    expect(repository.contactUpdates, 0);
+    expect(
+      find.text('L’adresse e-mail du club n’est pas valide.'),
       findsOneWidget,
     );
-    expect(find.text('Total annuel : 79\u00a0€'), findsOneWidget);
-    expect(find.text('50\u00a0Mo utilisés sur 200\u00a0Mo.'), findsOneWidget);
   });
 
   testWidgets('désactiver une fonctionnalité l’enregistre côté serveur', (
@@ -773,6 +820,19 @@ class _FakeClubRepository implements ClubRepository {
 
   @override
   Future<String> regenerateInviteCode() async => 'NEWCODE2';
+
+  ClubContact contact = const ClubContact();
+  int contactUpdates = 0;
+
+  @override
+  Future<ClubContact> fetchContact() async => contact;
+
+  @override
+  Future<ClubContact> updateContact(ClubContact value) async {
+    contactUpdates += 1;
+    contact = value;
+    return value;
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
