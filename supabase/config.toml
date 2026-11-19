@@ -36,6 +36,11 @@ verify_jwt = true
 
 [functions.stripe-webhook]
 verify_jwt = false
+
+# Remboursement par carte demandé par l'éditeur (jeton vérifié, droit
+# d'éditeur vérifié par la base).
+[functions.stripe-refund]
+verify_jwt = true
 # Connexion par Facebook : désactivée tant que l'application Facebook n'est pas
 # créée. Sur une base en ligne, ce réglage se fait dans le tableau de bord
 # Supabase (Authentication > Providers > Facebook) avec l'identifiant et le

@@ -7,20 +7,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// Factures dans la console de l'éditeur : coordonnées imprimées, factures en
 /// attente à émettre, liste complète et export du livre des recettes.
 class PlatformInvoicesSection extends ConsumerWidget {
-  const PlatformInvoicesSection({super.key, this.save = shareFile});
+  const PlatformInvoicesSection({
+    super.key,
+    this.save = shareFile,
+    this.showSeller = true,
+  });
 
   final FileSaver save;
 
+  /// Les coordonnées de l'éditeur sont dans Réglages ; la Caisse les masque.
+  final bool showSeller;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(platformInvoiceSettingsProvider);
     final invoices = ref.watch(platformInvoicesProvider);
     return Column(
       key: const Key('platform-invoices'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _SellerCard(settings: settings),
-        const SizedBox(height: 16),
+        if (showSeller) ...[
+          const PlatformSellerCard(),
+          const SizedBox(height: 16),
+        ],
         invoices.when(
           loading: () => const LinearProgressIndicator(),
           error: (_, __) => ListTile(
@@ -44,13 +52,13 @@ void _refresh(WidgetRef ref) {
   ref.invalidate(platformInvoiceSettingsProvider);
 }
 
-class _SellerCard extends ConsumerWidget {
-  const _SellerCard({required this.settings});
-
-  final AsyncValue<InvoiceSettings> settings;
+/// Coordonnées de l'éditeur imprimées sur les factures (dont le SIRET).
+class PlatformSellerCard extends ConsumerWidget {
+  const PlatformSellerCard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(platformInvoiceSettingsProvider);
     final value = settings.valueOrNull;
     return Card(
       margin: EdgeInsets.zero,

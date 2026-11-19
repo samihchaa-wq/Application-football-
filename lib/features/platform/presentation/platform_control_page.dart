@@ -4,25 +4,28 @@ import 'dart:math' as math;
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:petit_filet/features/auth/presentation/sign_out_confirmation.dart';
-import 'package:petit_filet/features/billing/presentation/platform_invoices_section.dart';
 import 'package:petit_filet/features/club/data/club_subscription.dart';
+import 'package:petit_filet/features/platform/data/platform_billing_repository.dart';
 import 'package:petit_filet/features/platform/data/platform_repository.dart';
 import 'package:petit_filet/features/platform/domain/platform_snapshot.dart';
+import 'package:petit_filet/features/platform/presentation/platform_alerts_panel.dart';
 import 'package:petit_filet/features/platform/presentation/platform_billing_panel.dart';
+import 'package:petit_filet/features/platform/presentation/platform_cash_section.dart';
+import 'package:petit_filet/features/platform/presentation/platform_settings_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-const _sections = ['Tableau de bord', 'Clubs', 'Factures', 'Supervision'];
-const _shortSections = ['Accueil', 'Clubs', 'Factures', 'Santé'];
+const _sections = ['À faire', 'Clubs', 'Caisse', 'Réglages'];
+const _shortSections = ['À faire', 'Clubs', 'Caisse', 'Réglages'];
 const _icons = [
-  Icons.space_dashboard_outlined,
+  Icons.checklist_rtl_outlined,
   Icons.groups_outlined,
-  Icons.receipt_long_outlined,
-  Icons.monitor_heart_outlined,
+  Icons.point_of_sale_outlined,
+  Icons.settings_outlined,
 ];
 const _clubsSection = 1;
-const _invoicesSection = 2;
-const _healthSection = 3;
+const _cashSection = 2;
+const _settingsSection = 3;
 
 /// Separate from the team shell: never changes team, role or JWT metadata.
 class PlatformControlPage extends ConsumerStatefulWidget {
@@ -91,6 +94,12 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
 
   void _openTeam(String id) => setState(() => _selectedTeamId = id);
 
+  /// Fiche d'un club depuis la Caisse ou « À faire ».
+  void _openClub(String id) => setState(() {
+        _section = _clubsSection;
+        _selectedTeamId = id;
+      });
+
   @override
   Widget build(BuildContext context) {
     final auth = ref.watch(authControllerProvider);
@@ -132,7 +141,11 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                 IconButton(
                   tooltip: 'Actualiser les données',
                   icon: const Icon(Icons.refresh),
-                  onPressed: () => ref.invalidate(platformSnapshotProvider),
+                  onPressed: () {
+                    ref.invalidate(platformSnapshotProvider);
+                    ref.invalidate(platformAlertsProvider);
+                    ref.invalidate(platformLedgerProvider);
+                  },
                 ),
                 IconButton(
                   tooltip: 'Se déconnecter',
@@ -249,9 +262,9 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                     selected == null ? _sections[_section] : selected.name,
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
-                  // Seules la fiche d'un club (paiements) et les factures
-                  // permettent d'agir.
-                  if (selected == null && _section != _invoicesSection)
+                  // La liste des clubs ne fait que lire ; on agit depuis la
+                  // fiche d'un club, la Caisse et les Réglages.
+                  if (selected == null && _section == _clubsSection)
                     const Chip(
                       avatar: Icon(Icons.visibility_outlined, size: 16),
                       label: Text('Lecture seule'),
@@ -269,8 +282,10 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                 switch (_section) {
                   0 => _dashboard(snapshot),
                   _clubsSection => _clubs(snapshot),
-                  _invoicesSection => const PlatformInvoicesSection(),
-                  _ => _health(snapshot),
+                  _cashSection => PlatformCashSection(onOpenClub: _openClub),
+                  _ => PlatformSettingsSection(
+                      supervision: _health(snapshot),
+                    ),
                 },
               const SizedBox(height: 24),
               const Text(
@@ -318,12 +333,18 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        PlatformAlertsPanel(
+          onOpenCash: () => _navigate(_cashSection),
+          onOpenSettings: () => _navigate(_settingsSection),
+          onOpenClub: _openClub,
+        ),
+        const SizedBox(height: 24),
         const _SectionTitle('Argent'),
         _metrics([
           (
             'Encaissé cette année',
             _euros(totals.collectedYearCents),
-            'Paiements notés depuis le 1er janvier',
+            'Paiements reçus depuis le 1er janvier (avant remboursements)',
           ),
           (
             'À encaisser sous 30 jours',
@@ -455,7 +476,7 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
               color: AppTheme.warning,
               title: '${health!.failedJobs} exécution(s) de tâche en échec',
               subtitle: 'Dernière heure · ouvrir la supervision',
-              onTap: () => _navigate(_healthSection),
+              onTap: () => _navigate(_settingsSection),
             ),
           if ((health?.failedPush ?? 0) > 0)
             _actionTile(
@@ -465,7 +486,7 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                   '${health!.failedPush} tentative(s) de notification en échec',
               subtitle:
                   'Dernière heure · un échec ne prouve pas une panne générale',
-              onTap: () => _navigate(_healthSection),
+              onTap: () => _navigate(_settingsSection),
             ),
           if (health?.failedJobs == 0 && health?.failedPush == 0)
             const ListTile(
@@ -820,6 +841,7 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        const _SectionTitle('Supervision technique'),
         Text(
           health == null
               ? 'Supervision indisponible'

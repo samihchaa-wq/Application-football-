@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:petit_filet/features/billing/domain/invoice.dart';
+import 'package:petit_filet/features/platform/domain/platform_cash.dart';
 // Chargé à la demande : la bibliothèque PDF reste hors du bundle principal
 // (budget de téléchargement de l'appli web).
 import 'package:petit_filet/features/billing/domain/invoice_pdf.dart'
@@ -38,4 +39,13 @@ Future<void> downloadInvoicesCsv(
 }) async {
   final bytes = Uint8List.fromList(utf8.encode(invoicesToCsv(invoices)));
   await save(bytes, 'livre-des-recettes.csv', 'text/csv');
+}
+
+Future<void> downloadCreditNotePdf(
+  CreditNote note, {
+  FileSaver save = shareFile,
+}) async {
+  await invoice_pdf.loadLibrary();
+  final bytes = await invoice_pdf.buildCreditNotePdf(note);
+  await save(bytes, note.fileName, 'application/pdf');
 }
