@@ -224,7 +224,9 @@ Deno.serve(async (req: Request) => {
     const originHash = await sha256Hex(requestOrigin(req));
     const { data: allowed, error: rateLimitError } = await admin.rpc(
       "consume_registration_rate_limit",
-      { p_origin_hash: originHash },
+      // Plafond propre à chaque parcours : rejoindre un club (large) ou créer
+      // un club (strict). Voir 20261203000000_quota_inscription_par_parcours.
+      { p_origin_hash: originHash, p_mode: mode },
     );
     if (rateLimitError) throw rateLimitError;
     if (allowed !== true) {

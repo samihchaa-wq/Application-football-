@@ -6,6 +6,12 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- inscription : un club qui inscrit ses joueurs depuis le même réseau
+  (vestiaire, même box) n'est plus bloqué au sixième. Rejoindre un club :
+  30 inscriptions par heure et 100 par jour depuis une même adresse ; créer
+  un club : 5 par heure et 15 par jour, compteur séparé. Migration
+  `20261203000000_quota_inscription_par_parcours.sql`, fonctions
+  `register-account` et `claim-club` à redéployer pour passer le parcours ;
 - Gestionnaire refait en 4 onglets : « À faire » (alertes de paiement,
   paiements par carte reçus, factures et avoirs en attente), « Clubs »
   (fiche avec contacts, paiement avec référence, période offerte ou essai
