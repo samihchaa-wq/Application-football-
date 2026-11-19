@@ -1,4 +1,5 @@
 import 'package:petit_filet/core/providers/supabase_provider.dart';
+import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -241,6 +242,34 @@ class ClubSubscriptionRepository {
     final result = await _client.rpc('admin_get_club_storage_usage');
     if (result is! Map) return null;
     return ClubStorageUsage.fromJson(Map<String, dynamic>.from(result));
+  }
+
+  /// Ouvre un paiement par carte (Stripe) et renvoie l'adresse de la page de
+  /// paiement. Le montant est calculé et figé par le serveur, réduction de
+  /// parrainage comprise. Réservé aux administrateurs du club.
+  Future<Uri> startCardPayment() async {
+    final FunctionResponse response;
+    try {
+      response = await _client.functions.invoke('stripe-checkout');
+    } on FunctionsHttpException catch (error) {
+      throw functionHttpError(
+        error,
+        fallback: 'Le paiement par carte est indisponible pour le moment.',
+      );
+    }
+    final data = response.data;
+    final url = data is Map ? Uri.tryParse('${data['url'] ?? ''}') : null;
+    if (url == null || url.scheme != 'https') {
+      throw UserFacingError(
+        'Le paiement par carte est indisponible pour le moment.',
+      );
+    }
+    return url;
+  }
+
+  /// Réduction de 100 % : ouvre l'année offerte par le parrainage.
+  Future<void> claimFreeYear() async {
+    await _client.rpc('admin_claim_free_year');
   }
 
   /// État du club du compte connecté : 'active', 'suspended'…

@@ -6,6 +6,12 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- paiement par carte (Stripe) : l'admin du club paie l'abonnement depuis
+  l'écran Abonnement, ou depuis l'écran « club suspendu » pour rouvrir. Le
+  montant est calculé par le serveur, réduction de parrainage figée au clic ;
+  la confirmation de Stripe ouvre l'année, rouvre le club, crée la facture et
+  fait gagner le parrain. À 100 % de parrainage : « Activer mon année
+  offerte ». Mise en service : `docs/STRIPE.md` ;
 - suppression d'un compte : elle aboutit toujours, même dans un club sans
   autre administrateur actif. Les traces d'auteur du compte supprimé (match
   créé, compte rendu validé…) restent sans auteur au lieu d'être attribuées au

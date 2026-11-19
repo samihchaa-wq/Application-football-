@@ -57,6 +57,8 @@ def main() -> int:
         "send-push": False,
         "send-prediction-reminders": True,
         "calendar-feed": False,
+        "stripe-checkout": True,
+        "stripe-webhook": False,
     }
     versioned_functions = {
         path.name
@@ -80,6 +82,24 @@ def main() -> int:
             actual is expected,
             f"{slug}: verify_jwt={actual!r}, attendu {expected!r}",
         )
+
+    # Paiement par carte : la session est préparée au nom de l'administrateur,
+    # jamais avec la clé de service ; la confirmation exige une signature
+    # Stripe valide avant toute écriture.
+    checkout = function_file("stripe-checkout", "handler.ts")
+    require(
+        "SUPABASE_SERVICE_ROLE_KEY" not in checkout
+        and 'rpc("admin_prepare_card_payment")' in checkout
+        and "global: { headers: { Authorization: authHeader } }" in checkout,
+        "stripe-checkout doit appeler la base au nom de l’administrateur",
+    )
+    webhook = function_file("stripe-webhook", "handler.ts")
+    require_in_order(
+        webhook,
+        "await verifyStripeSignature(",
+        'admin.rpc("stripe_record_card_payment"',
+        "stripe-webhook doit vérifier la signature avant d’enregistrer",
+    )
 
     manage_entry = source("manage-user")
     require(

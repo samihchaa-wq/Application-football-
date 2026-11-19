@@ -27,6 +27,15 @@ verify_jwt = true
 
 [functions.calendar-feed]
 verify_jwt = false
+
+# Paiement par carte : la session est ouverte au nom de l'administrateur
+# (jeton vérifié) ; la confirmation vient de Stripe, authentifiée par la
+# signature de l'événement, pas par un jeton Supabase.
+[functions.stripe-checkout]
+verify_jwt = true
+
+[functions.stripe-webhook]
+verify_jwt = false
 # Connexion par Facebook : désactivée tant que l'application Facebook n'est pas
 # créée. Sur une base en ligne, ce réglage se fait dans le tableau de bord
 # Supabase (Authentication > Providers > Facebook) avec l'identifiant et le

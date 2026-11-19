@@ -129,6 +129,10 @@ insert into reviewed_open_definers (fonction, motif) values
    'n’écrit que la ligne du demandeur : version des conditions acceptée et déclaration d’âge'),
   ('export_my_data()',
    'ne lit que les lignes du demandeur dans son club, sans les secrets de notification'),
+  ('admin_prepare_card_payment()',
+   'garde : private.billing_admin_club_id() exige un administrateur actif de son club (club actif ou suspendu pour impayé) ; montant calculé par le serveur'),
+  ('admin_claim_free_year()',
+   'garde : private.billing_admin_club_id() ; refuse s’il reste un montant à payer ou si l’année est déjà payée'),
   ('get_my_private_details()',
    'ne lit que le téléphone et la date de naissance du demandeur, dans son club');
 

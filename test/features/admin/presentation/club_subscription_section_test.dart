@@ -1,3 +1,5 @@
+import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/features/admin/presentation/card_payment_button.dart';
 import 'package:petit_filet/features/admin/presentation/club_subscription_section.dart';
 import 'package:petit_filet/features/club/data/club_subscription.dart';
 import 'package:flutter/material.dart';
@@ -5,10 +7,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  late _FakeSubscriptionRepository repository;
+  late List<Uri> opened;
+
+  setUp(() {
+    repository = _FakeSubscriptionRepository();
+    opened = [];
+  });
+
   Future<void> pump(WidgetTester tester, ClubSubscription subscription) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          clubSubscriptionRepositoryProvider.overrideWithValue(repository),
+          openPaymentPageProvider.overrideWithValue((url) async {
+            opened.add(url);
+            return true;
+          }),
           clubSubscriptionProvider.overrideWith((ref) async => subscription),
           clubStorageUsageProvider.overrideWith((ref) async => null),
           clubReferralsProvider.overrideWith((ref) async => null),
@@ -27,6 +42,7 @@ void main() {
     required ClubSubscriptionState state,
     DateTime? periodEnd,
     DateTime? suspensionOn,
+    int? amountDueCents,
   }) =>
       ClubSubscription(
         state: state,
@@ -38,7 +54,67 @@ void main() {
         basePriceCents: 7900,
         yearlyAmountCents: 7900,
         suspensionOn: suspensionOn,
+        amountDueCents: amountDueCents,
       );
+
+  testWidgets('à régler : l’admin paie par carte le montant du serveur', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      subscription(state: ClubSubscriptionState.toPay, amountDueCents: 7505),
+    );
+    final button = find.byKey(const Key('club-pay-by-card'));
+    expect(find.text('Payer 75,05\u00a0€ par carte'), findsOneWidget);
+    await tester.ensureVisible(button);
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    expect(repository.cardPayments, 1);
+    expect(opened, [Uri.parse('https://checkout.stripe.com/c/test')]);
+  });
+
+  testWidgets('paiement indisponible : le message est affiché', (
+    tester,
+  ) async {
+    repository.failCardPayment = true;
+    await pump(tester, subscription(state: ClubSubscriptionState.toPay));
+    final button = find.byKey(const Key('club-pay-by-card'));
+    await tester.ensureVisible(button);
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    expect(opened, isEmpty);
+    expect(
+      find.text('Le paiement par carte est indisponible pour le moment.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('parrainage à 100 % : l’admin active son année offerte', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      subscription(state: ClubSubscriptionState.toPay, amountDueCents: 0),
+    );
+    expect(find.byKey(const Key('club-pay-by-card')), findsNothing);
+    final button = find.byKey(const Key('club-claim-free-year'));
+    await tester.ensureVisible(button);
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    expect(repository.freeYearClaims, 1);
+  });
+
+  testWidgets('abonnement payé loin de l’échéance : pas de bouton de paiement',
+      (tester) async {
+    await pump(
+      tester,
+      subscription(
+        state: ClubSubscriptionState.active,
+        periodEnd: DateTime.now().add(const Duration(days: 300)),
+      ),
+    );
+    expect(find.byKey(const Key('club-pay-by-card')), findsNothing);
+  });
 
   testWidgets('essai terminé : l’admin voit la date de suspension', (
     tester,
@@ -93,7 +169,7 @@ void main() {
     );
     expect(
       find.text(
-        'L’abonnement arrive à échéance. Contacte-nous pour le renouveler.',
+        'L’abonnement arrive à échéance : pense à le renouveler.',
       ),
       findsOneWidget,
     );
@@ -163,4 +239,27 @@ void main() {
     );
     expect(find.byKey(const Key('club-subscription-amount-due')), findsNothing);
   });
+}
+
+class _FakeSubscriptionRepository implements ClubSubscriptionRepository {
+  int cardPayments = 0;
+  int freeYearClaims = 0;
+  bool failCardPayment = false;
+
+  @override
+  Future<Uri> startCardPayment() async {
+    cardPayments += 1;
+    if (failCardPayment) {
+      throw UserFacingError(
+        'Le paiement par carte est indisponible pour le moment.',
+      );
+    }
+    return Uri.parse('https://checkout.stripe.com/c/test');
+  }
+
+  @override
+  Future<void> claimFreeYear() async => freeYearClaims += 1;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

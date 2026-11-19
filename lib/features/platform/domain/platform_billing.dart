@@ -8,6 +8,13 @@ const platformPaymentMethods = <String, String>{
   'autre': 'Autre',
 };
 
+/// Libellés de tous les moyens, y compris la carte (venue de Stripe, jamais
+/// notée à la main).
+const platformPaymentMethodLabels = <String, String>{
+  ...platformPaymentMethods,
+  'carte': 'Carte (Stripe)',
+};
+
 /// Un paiement reçu hors ligne, noté par l'éditeur.
 class PlatformPayment {
   const PlatformPayment({
@@ -33,7 +40,7 @@ class PlatformPayment {
   final DateTime? periodEnd;
   final String? note;
 
-  String get methodLabel => platformPaymentMethods[method] ?? 'Autre';
+  String get methodLabel => platformPaymentMethodLabels[method] ?? 'Autre';
 }
 
 /// Fiche de facturation d'une équipe dans la console de l'éditeur.

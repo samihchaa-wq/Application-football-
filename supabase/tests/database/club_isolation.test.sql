@@ -394,6 +394,14 @@ select is(
         'platform_update_club(uuid,text,text,timestamp with time zone,timestamp with time zone,integer,integer,bigint,text)',
         'platform_health()',
         'platform_record_offline_payment(uuid,integer,text,date,text)',
+        -- Paiement par carte (Stripe) : effet commun d'un paiement, interne ;
+        -- administrateur du club (même suspendu pour impayé) ; confirmation
+        -- de Stripe réservée à service_role.
+        'private.apply_club_payment(uuid,integer,text,date,text,uuid,integer,integer,text)',
+        'private.billing_admin_club_id()',
+        'admin_prepare_card_payment()',
+        'admin_claim_free_year()',
+        'stripe_record_card_payment(uuid,text,integer,text)',
         'platform_club_billing(uuid)',
         'platform_control_overview()',
         -- Effacement planifié des clubs impayés depuis 3 ans (tâche de nuit).

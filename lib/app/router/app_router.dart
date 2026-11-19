@@ -281,7 +281,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
               GoRoute(
                 path: '/admin/abonnement',
-                builder: (_, __) => const ClubSubscriptionPage(),
+                builder: (_, state) => ClubSubscriptionPage(
+                  paymentReturn: paymentReturnFrom(
+                    state.uri.queryParameters['paiement'],
+                  ),
+                ),
               ),
               GoRoute(
                 path: '/admin/anciens-joueurs',

@@ -52,4 +52,32 @@ void main() {
     expect(find.text('Total annuel : 79 €'), findsOneWidget);
     expect(find.text('50 Mo utilisés sur 200 Mo.'), findsOneWidget);
   });
+
+  testWidgets('retour de Stripe : le message de remerciement s’affiche', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          clubSubscriptionProvider.overrideWith((ref) async => null),
+          clubReferralsProvider.overrideWith((ref) async => null),
+          clubInvoicesProvider.overrideWith((ref) async => const []),
+          clubStorageUsageProvider.overrideWith((ref) async => null),
+        ],
+        child: const MaterialApp(
+          home: ClubSubscriptionPage(paymentReturn: PaymentReturn.paid),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.byKey(const Key('club-payment-return')), findsOneWidget);
+    expect(find.textContaining('Paiement reçu par Stripe'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 5));
+  });
+
+  test('lit le retour de la page de paiement', () {
+    expect(paymentReturnFrom('merci'), PaymentReturn.paid);
+    expect(paymentReturnFrom('annule'), PaymentReturn.canceled);
+    expect(paymentReturnFrom(null), PaymentReturn.none);
+  });
 }
