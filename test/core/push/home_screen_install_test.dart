@@ -62,4 +62,23 @@ void main() {
       isFalse,
     );
   });
+
+  test('la famille du téléphone choisit les bons gestes', () {
+    expect(
+      installPlatformFor(userAgent: _iPhoneSafari, maxTouchPoints: 5),
+      InstallPlatform.iphone,
+    );
+    expect(
+      installPlatformFor(userAgent: _iPadDesktopMode, maxTouchPoints: 5),
+      InstallPlatform.iphone,
+    );
+    expect(
+      installPlatformFor(userAgent: _android, maxTouchPoints: 5),
+      InstallPlatform.android,
+    );
+    expect(
+      installPlatformFor(userAgent: _iPadDesktopMode, maxTouchPoints: 0),
+      InstallPlatform.other,
+    );
+  });
 }

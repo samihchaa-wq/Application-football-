@@ -1,4 +1,6 @@
 // Implémentation hors Web : les notifications push ne sont pas disponibles.
+import 'package:petit_filet/core/push/home_screen_install.dart';
+
 Future<bool> pushSupported() async => false;
 
 Future<String> pushPermission() async => 'unsupported';
@@ -21,3 +23,12 @@ void pushListenReceived(void Function() callback) {}
 bool pushNeedsHomeScreenInstall() => false;
 
 Future<String> pushSubscriptionKeyStatus(String vapidPublicKey) async => 'none';
+
+InstallPlatform pushInstallPlatform() => InstallPlatform.other;
+
+/// Hors navigateur, l'application est déjà « installée ».
+bool pushAppInstalled() => false;
+
+bool pushCanPromptInstall() => false;
+
+Future<String> pushPromptInstall() async => 'unavailable';

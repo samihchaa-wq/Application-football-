@@ -52,10 +52,14 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
   couleurs, saison, premier match, invitation des joueurs), cochées toutes
   seules et masquables. Sans saison, le formulaire de match dit désormais
   « Crée d'abord la saison : Réglages du club › Saison » ;
-- notifications sur iPhone : quand l'appli est ouverte dans Safari, un
-  bandeau explique qu'il faut l'ajouter à l'écran d'accueil pour être
-  prévenu, avec un guide en 3 gestes (« Comment faire ») et un « Plus tard »
-  qui ne coupe pas les notifications ;
+- installer l'appli : guide en 3 gestes pour iPhone (Safari › Partager ›
+  « Sur l'écran d'accueil ») et pour Android (Chrome › menu ⋮ › « Installer
+  l'application »), le bon téléphone choisi d'office, l'autre à un geste.
+  Sur Android, bouton « Installer maintenant » quand Chrome le permet.
+  Entrée « Installer l'appli sur mon téléphone » dans Paramètres (masquée une
+  fois l'appli installée). Sur iPhone ouvert dans Safari, un bandeau le
+  propose en plus, car les notifications n'y arrivent qu'une fois l'appli
+  installée ; « Plus tard » ne coupe pas les notifications ;
 - envoi des notifications : le journal garde la raison donnée par le service
   du téléphone (par exemple Apple : `{"reason":"…"}`) au lieu du seul
   « Received unexpected response code ». Fonction `send-push` à redéployer ;

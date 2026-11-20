@@ -16,6 +16,12 @@ external JSPromise<JSString> _subscribe(JSString vapidKey);
 @JS('asGrintaPush.current')
 external JSPromise<JSString> _current();
 
+@JS('asGrintaPush.canPromptInstall')
+external JSBoolean _canPromptInstall();
+
+@JS('asGrintaPush.promptInstall')
+external JSPromise<JSString> _promptInstall();
+
 @JS('asGrintaPush.keyStatus')
 external JSPromise<JSString> _keyStatus(JSString vapidKey);
 
@@ -137,5 +143,50 @@ Future<String> pushSubscriptionKeyStatus(String vapidPublicKey) async {
     return (await _keyStatus(vapidPublicKey.toJS).toDart).toDart;
   } catch (_) {
     return 'none';
+  }
+}
+
+bool _standalone() {
+  try {
+    return (_iosStandalone?.toDart ?? false) ||
+        web.window.matchMedia('(display-mode: standalone)').matches;
+  } catch (_) {
+    return false;
+  }
+}
+
+/// iPhone, Android ou autre, d'après le navigateur.
+InstallPlatform pushInstallPlatform() {
+  try {
+    final navigator = web.window.navigator;
+    return installPlatformFor(
+      userAgent: navigator.userAgent,
+      maxTouchPoints: navigator.maxTouchPoints,
+    );
+  } catch (_) {
+    return InstallPlatform.other;
+  }
+}
+
+/// Vrai quand l'application tourne déjà depuis l'écran d'accueil.
+bool pushAppInstalled() => _standalone();
+
+/// Vrai quand le navigateur (Chrome sur Android) propose l'installation en
+/// un geste.
+bool pushCanPromptInstall() {
+  try {
+    return _canPromptInstall().toDart;
+  } catch (_) {
+    return false;
+  }
+}
+
+/// Ouvre la fenêtre d'installation du navigateur : 'accepted', 'dismissed'
+/// ou 'unavailable'.
+Future<String> pushPromptInstall() async {
+  try {
+    return (await _promptInstall().toDart).toDart;
+  } catch (_) {
+    return 'unavailable';
   }
 }

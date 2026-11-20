@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/push/home_screen_install.dart';
 import 'package:petit_filet/features/notifications/presentation/push_device_banner.dart';
 import 'package:petit_filet/features/preferences/data/push_subscriptions_repository.dart';
 import 'package:flutter/material.dart';
@@ -173,12 +174,12 @@ void main() {
       await tester.tap(find.byKey(const Key('install-guide-open')));
       await tester.pumpAndSettle();
 
-      expect(find.text('Installer l’appli sur ton iPhone'), findsOneWidget);
+      expect(find.text('Installer l’appli sur ton téléphone'), findsOneWidget);
       expect(find.textContaining('Sur l’écran d’accueil'), findsOneWidget);
 
       await tester.tap(find.text('J’ai compris'));
       await tester.pumpAndSettle();
-      expect(find.text('Installer l’appli sur ton iPhone'), findsNothing);
+      expect(find.text('Installer l’appli sur ton téléphone'), findsNothing);
     });
 
     testWidgets('« Plus tard » est retenu, sans couper les notifications',
@@ -250,7 +251,39 @@ void main() {
       await tester.tap(find.byKey(const Key('install-guide-open')));
       await tester.pumpAndSettle();
 
-      expect(find.text('Installer l’appli sur ton iPhone'), findsOneWidget);
+      expect(find.text('Installer l’appli sur ton téléphone'), findsOneWidget);
     },
   );
+
+  testWidgets('le guide explique aussi l’installation sur Android',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () => showHomeScreenInstallGuide(
+                context,
+                platform: InstallPlatform.android,
+              ),
+              child: const Text('ouvrir'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('ouvrir'));
+    await tester.pumpAndSettle();
+
+    // Téléphone Android reconnu : les gestes de Chrome d'abord.
+    expect(find.textContaining('Dans Chrome, touche le menu'), findsOneWidget);
+    expect(find.textContaining('Installer l’application'), findsOneWidget);
+
+    // L'iPhone reste à un geste (pour aider un coéquipier).
+    await tester.tap(find.text('iPhone'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Dans Safari, touche le bouton Partager'),
+        findsOneWidget);
+    expect(find.textContaining('Dans Chrome'), findsNothing);
+  });
 }

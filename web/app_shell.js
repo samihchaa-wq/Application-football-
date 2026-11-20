@@ -274,7 +274,30 @@
     });
   }
 
+  // Installation en un geste (Chrome sur Android) : le navigateur annonce
+  // qu'il peut installer l'appli ; on garde l'annonce pour le bouton
+  // « Installer maintenant » du guide.
+  var deferredInstallPrompt = null;
+  window.addEventListener('beforeinstallprompt', function (event) {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+  });
+  window.addEventListener('appinstalled', function () {
+    deferredInstallPrompt = null;
+  });
+
   window.asGrintaPush = {
+    canPromptInstall: function () {
+      return deferredInstallPrompt !== null;
+    },
+    promptInstall: async function () {
+      if (!deferredInstallPrompt) return 'unavailable';
+      var prompt = deferredInstallPrompt;
+      deferredInstallPrompt = null;
+      prompt.prompt();
+      var choice = await prompt.userChoice;
+      return choice && choice.outcome === 'accepted' ? 'accepted' : 'dismissed';
+    },
     support: function () {
       return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
     },

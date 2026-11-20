@@ -21,3 +21,19 @@ bool needsHomeScreenInstall({
   final desktopModeIPad = ua.contains('macintosh') && maxTouchPoints > 1;
   return iPhoneOrIPod || classicIPad || desktopModeIPad;
 }
+
+/// Famille de téléphone, pour montrer les bons gestes d'installation.
+enum InstallPlatform { iphone, android, other }
+
+InstallPlatform installPlatformFor({
+  required String userAgent,
+  required int maxTouchPoints,
+}) {
+  final ua = userAgent.toLowerCase();
+  if (ua.contains('android')) return InstallPlatform.android;
+  final apple = ua.contains('iphone') ||
+      ua.contains('ipod') ||
+      ua.contains('ipad') ||
+      (ua.contains('macintosh') && maxTouchPoints > 1);
+  return apple ? InstallPlatform.iphone : InstallPlatform.other;
+}

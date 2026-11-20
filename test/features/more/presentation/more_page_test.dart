@@ -102,6 +102,21 @@ Future<_FakeAuthRepository> _pumpMorePage(
 }
 
 void main() {
+  testWidgets(
+    'chacun trouve dans Paramètres comment installer l’appli, iPhone ou '
+    'Android',
+    (tester) async {
+      await _pumpMorePage(tester, profile: _player, sportsEnabled: false);
+
+      await tester.tap(find.byKey(const Key('more-install-app')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Installer l’appli sur ton téléphone'), findsOneWidget);
+      expect(find.text('iPhone'), findsOneWidget);
+      expect(find.text('Android'), findsOneWidget);
+    },
+  );
+
   testWidgets('an admin sees the account card and both setting groups', (
     tester,
   ) async {
@@ -231,6 +246,11 @@ void main() {
   testWidgets('a player without sports management only sees their account', (
     tester,
   ) async {
+    // Écran haut : toute la liste est construite, « Se déconnecter » compris
+    // (l'entrée « Installer l'appli » l'a poussé sous le bas d'un 800×600).
+    tester.view.physicalSize = const Size(800, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     await _pumpMorePage(tester, profile: _player, sportsEnabled: false);
 
     expect(find.text('Julien Martin'), findsOneWidget);
