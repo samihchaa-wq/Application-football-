@@ -16,6 +16,9 @@ external JSPromise<JSString> _subscribe(JSString vapidKey);
 @JS('asGrintaPush.current')
 external JSPromise<JSString> _current();
 
+@JS('asGrintaPush.keyStatus')
+external JSPromise<JSString> _keyStatus(JSString vapidKey);
+
 @JS('asGrintaPush.unsubscribe')
 external JSPromise<JSString> _unsubscribe();
 
@@ -124,5 +127,15 @@ bool pushNeedsHomeScreenInstall() {
     );
   } catch (_) {
     return false;
+  }
+}
+
+/// 'none' sans abonnement, 'match' si l'abonnement de cet appareil a été créé
+/// avec [vapidPublicKey], 'mismatch' sinon (il ne reçoit alors plus rien).
+Future<String> pushSubscriptionKeyStatus(String vapidPublicKey) async {
+  try {
+    return (await _keyStatus(vapidPublicKey.toJS).toDart).toDart;
+  } catch (_) {
+    return 'none';
   }
 }

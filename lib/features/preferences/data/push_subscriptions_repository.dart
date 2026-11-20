@@ -75,6 +75,18 @@ class SupabasePushSubscriptionsRepository
   Future<bool> resync() async {
     if (_client.auth.currentUser == null) return false;
 
+    // Abonnement créé avec l'ancienne clé d'envoi : il ne reçoit plus rien.
+    // Si le joueur avait autorisé les notifications, on le refait sans rien
+    // lui demander, puis on retire l'ancien côté serveur.
+    if (await pushSubscriptionKeyStatus(pushVapidPublicKey) == 'mismatch' &&
+        await pushPermission() == 'granted') {
+      final stale = await pushCurrentSubscription();
+      final fresh = await pushSubscribe(pushVapidPublicKey);
+      if (fresh != null && await _register(fresh)) {
+        await _forgetEndpointOf(stale, keep: fresh);
+      }
+    }
+
     final json = await pushCurrentSubscription();
     final registered = json != null && await _register(json);
     await _reportDevice(json);
@@ -104,6 +116,25 @@ class SupabasePushSubscriptionsRepository
       },
     );
     await pushForgetDisplayReceipts(receipts);
+  }
+
+  /// Supprime côté serveur l'abonnement [stale], sauf s'il s'agit du même
+  /// point d'envoi que [keep].
+  Future<void> _forgetEndpointOf(String? stale, {required String keep}) async {
+    if (stale == null) return;
+    String endpointOf(String json) =>
+        (Map<String, dynamic>.from(jsonDecode(json) as Map)['endpoint'] ?? '')
+            .toString();
+    final oldEndpoint = endpointOf(stale);
+    if (oldEndpoint.isEmpty || oldEndpoint == endpointOf(keep)) return;
+    try {
+      await _client
+          .from('push_subscriptions')
+          .delete()
+          .eq('endpoint', oldEndpoint);
+    } catch (_) {
+      // Sans gravité : le serveur retire seul un point d'envoi refusé (410).
+    }
   }
 
   Future<bool> _register(String json) async {

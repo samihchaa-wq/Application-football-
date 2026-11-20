@@ -19,3 +19,5 @@ void pushListenReceived(void Function() callback) {}
 
 /// Hors navigateur, aucune installation n'est à proposer.
 bool pushNeedsHomeScreenInstall() => false;
+
+Future<String> pushSubscriptionKeyStatus(String vapidPublicKey) async => 'none';

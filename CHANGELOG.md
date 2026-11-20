@@ -6,6 +6,12 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Exploitation
 
+- notifications : cause des refus d'Apple trouvée. L'appli s'abonnait avec
+  la clé d'envoi de l'application d'origine, alors que le serveur commercial
+  signe avec sa propre clé (créée le 12/11) : Apple refusait chaque envoi
+  (code 400). L'appli utilise désormais la clé du serveur, et un téléphone
+  déjà abonné avec l'ancienne clé se réabonne seul à l'ouverture (ou affiche
+  « Activer » si le téléphone exige un appui) ;
 - la publication automatique publie aussi les fonctions serveur (via le
   workflow de mise en route, fonctions seulement), juste avant l'appli :
   l'appli et le serveur ne divergent plus ;
