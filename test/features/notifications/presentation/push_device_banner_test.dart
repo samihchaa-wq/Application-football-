@@ -215,4 +215,42 @@ void main() {
       expect(find.byType(TextButton), findsNothing);
     });
   });
+
+  testWidgets(
+    'au-dessus des écrans, comme dans l’appli, le guide s’ouvre quand même',
+    (tester) async {
+      final navigatorKey = GlobalKey<NavigatorState>();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            pushSubscriptionsRepositoryProvider
+                .overrideWithValue(_FakePushSubscriptions()),
+            pushStatusProvider.overrideWith(
+              (ref) async => (supported: false, subscribed: false),
+            ),
+            homeScreenInstallNeededProvider.overrideWithValue(true),
+          ],
+          child: MaterialApp(
+            navigatorKey: navigatorKey,
+            // Même place que dans lib/app/app.dart : hors du navigateur.
+            builder: (context, child) => Column(
+              children: [
+                PushDeviceBanner(
+                  navigatorContext: () => navigatorKey.currentContext,
+                ),
+                Expanded(child: child ?? const SizedBox.shrink()),
+              ],
+            ),
+            home: const Scaffold(body: SizedBox.shrink()),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('install-guide-open')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Installer l’appli sur ton iPhone'), findsOneWidget);
+    },
+  );
 }

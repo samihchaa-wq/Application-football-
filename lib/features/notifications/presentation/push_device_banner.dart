@@ -10,7 +10,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// notifications pour voir la cloche grise, et un téléphone qui bloquait
 /// l'affichage dans ses réglages gardait même une cloche verte.
 class PushDeviceBanner extends ConsumerStatefulWidget {
-  const PushDeviceBanner({super.key});
+  const PushDeviceBanner({super.key, this.navigatorContext});
+
+  /// Contexte du navigateur de l'application. Le bandeau est posé au-dessus
+  /// des écrans (constructeur de MaterialApp), donc sans navigateur parmi ses
+  /// ancêtres : le guide d'installation s'ouvre dans celui des écrans.
+  final BuildContext? Function()? navigatorContext;
 
   @override
   ConsumerState<PushDeviceBanner> createState() => _PushDeviceBannerState();
@@ -71,7 +76,9 @@ class _PushDeviceBannerState extends ConsumerState<PushDeviceBanner> {
     }
     if (alert == PushDeviceAlert.needsInstall) {
       return _InstallBanner(
-        onHowTo: () => showHomeScreenInstallGuide(context),
+        onHowTo: () => showHomeScreenInstallGuide(
+          widget.navigatorContext?.call() ?? context,
+        ),
         onLater: _laterInstall,
       );
     }
@@ -222,8 +229,8 @@ Future<void> showHomeScreenInstallGuide(BuildContext context) {
               step(
                 2,
                 Icons.add_box_outlined,
-                'Fais défiler et choisis « Sur l’écran d’accueil », puis '
-                '« Ajouter ».',
+                'Fais défiler et choisis «\u00a0Sur l’écran d’accueil\u00a0», '
+                'puis «\u00a0Ajouter\u00a0».',
               ),
               step(
                 3,
