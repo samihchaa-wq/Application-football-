@@ -48,10 +48,13 @@ function euros(cents: number): string {
 export function subscriptionReminderMail(
   reminder: SubscriptionReminder,
   contactEmail: string,
+  appUrl = "",
 ): { subject: string; text: string } {
   const what = reminder.trial
     ? `L'essai gratuit de ${reminder.clubName} sur Petit Filet se termine le ${reminder.dueOn}.`
     : `L'abonnement de ${reminder.clubName} à Petit Filet arrive à échéance le ${reminder.dueOn}.`;
+  const base = appUrl.trim().replace(/\/+$/, "");
+  const payLink = base ? `${base}/#/admin/abonnement` : "";
   return {
     subject: "L'abonnement arrive à échéance",
     text: [
@@ -59,8 +62,11 @@ export function subscriptionReminderMail(
       "",
       what,
       "",
-      `Pour continuer à utiliser l'application, il reste à régler l'abonnement annuel du club : ${euros(reminder.amountCents)}, par virement ou par chèque.`,
-      `Écris-nous à ${contactEmail} pour recevoir la facture et les coordonnées de paiement.`,
+      `Pour continuer à utiliser l'application, il reste à régler l'abonnement annuel du club : ${euros(reminder.amountCents)}.`,
+      payLink
+        ? `Le plus simple : payer par carte depuis l'application, écran Abonnement : ${payLink}`
+        : "Le plus simple : payer par carte depuis l'application, écran Abonnement.",
+      `Tu préfères un virement ou un chèque ? Écris-nous à ${contactEmail}.`,
       "",
       `Sans paiement à cette date, l'accès du club sera suspendu. Les données sont conservées et l'accès revient dès le paiement enregistré.`,
       "",

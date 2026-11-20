@@ -1,0 +1,96 @@
+name: 'GitHub Pages : redirection'
+
+# Remplace l'ancien site GitHub Pages (une copie de l'appli du 12/11/2026,
+# branchée sur la base commerciale) par une page qui renvoie vers l'adresse
+# officielle de l'appli. Les anciens liens (e-mails, favoris, notifications)
+# arrivent au bon endroit, au même écran.
+#
+# Lancement manuel, une fois : Actions > « GitHub Pages : redirection » > Run.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      COMMERCIAL_APP_URL: ${{ vars.COMMERCIAL_APP_URL }}
+    steps:
+      - name: Build the redirect page
+        shell: bash
+        run: |
+          set -euo pipefail
+          target="${COMMERCIAL_APP_URL:-https://app.petitfilet.fr/}"
+          case "$target" in
+            https://*/) ;;
+            *) echo "::error::COMMERCIAL_APP_URL doit commencer par https:// et finir par /"; exit 1 ;;
+          esac
+          case "$target" in
+            *github.io*) echo '::error::La redirection ne peut pas viser GitHub Pages.'; exit 1 ;;
+          esac
+          mkdir -p site
+          cat > site/index.html <<HTML
+          <!doctype html>
+          <html lang="fr">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <meta name="robots" content="noindex">
+            <title>Petit Filet a déménagé</title>
+            <meta http-equiv="refresh" content="0; url=${target}">
+            <script>
+              location.replace('${target}' + (location.hash || ''));
+            </script>
+          </head>
+          <body style="font-family: system-ui, sans-serif; padding: 24px;">
+            <p>Petit Filet a déménagé : <a href="${target}">${target}</a></p>
+          </body>
+          </html>
+          HTML
+          cp site/index.html site/404.html
+          # L'ancien site installait un service worker : celui-ci le remplace et
+          # se désinscrit, pour que les téléphones quittent l'ancienne copie.
+          cat > site/sw.js <<'JS'
+          self.addEventListener('install', () => self.skipWaiting());
+          self.addEventListener('activate', (event) => {
+            event.waitUntil((async () => {
+              for (const key of await caches.keys()) await caches.delete(key);
+              await self.registration.unregister();
+              for (const client of await self.clients.matchAll()) client.navigate(client.url);
+            })());
+          });
+          JS
+          cp site/sw.js site/flutter_service_worker.js
+          grep -Fq "$target" site/index.html
+
+      - name: Configure Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

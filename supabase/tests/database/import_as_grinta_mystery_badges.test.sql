@@ -29,8 +29,32 @@ select is(
     'custom_le_malchanceux_1790198253832',
     'custom_le_boucher_1790198376585',
     'custom_le_plongeur_1790198344854')),
-  23::bigint,
-  'All 23 documented custom mystery badges are available as templates'
+  14::bigint,
+  '14 of the 23 imported badges stay templates for new clubs (20261203010000 removed jokes, duplicates and mocking badges)'
+);
+
+select is(
+  (select count(*) from private.badge_templates
+   where code in ('custom_la_glissade_1790198393809',
+    'custom_la_ligna_amarilla_1790198849385',
+    'custom_mal_chauff_1790198442991',
+    'custom_c_est_dans_l_lan_1790726366134',
+    'custom_voy_a_marcar_1790725466122',
+    'custom_gardien_d_un_soir_1790198294777',
+    'custom_le_malchanceux_1790198253832',
+    'custom_le_boucher_1790198376585',
+    'custom_le_plongeur_1790198344854')),
+  0::bigint,
+  'New clubs no longer receive AS Grinta inside jokes, duplicates or mocking badges'
+);
+
+select ok(
+  exists (select 1 from private.badge_templates
+          where code = 'custom_t_te_de_boli_1790694926988'
+            and name = 'Tête du défenseur')
+  and not exists (select 1 from private.badge_templates
+                  where kind = 'custom' and btrim(description) = ''),
+  'Kept templates carry a neutral name and a real description'
 );
 
 select is(

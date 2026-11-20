@@ -9,13 +9,12 @@ import 'package:pdf/widgets.dart' as pw;
 /// Mention obligatoire d'une micro-entreprise en franchise de TVA.
 const invoiceVatMention = 'TVA non applicable, art. 293 B du CGI';
 
-/// Mentions de retard obligatoires entre professionnels, même pour une
-/// facture déjà payée.
-const invoiceLatePaymentMention =
-    'En cas de retard de paiement : pénalités au taux de trois fois le taux '
-    'd’intérêt légal et indemnité forfaitaire de 40 € pour frais de '
-    'recouvrement (art. L441-10 et D441-5 du Code de commerce). '
-    'Pas d’escompte pour paiement anticipé.';
+/// Mention de paiement. Les pénalités de retard et l'indemnité de 40 € du
+/// Code de commerce ne valent qu'entre professionnels : les conditions
+/// d'abonnement traitent le club (une association) en non-professionnel et
+/// les ont retirées (docs/legal/README.md). La facture, émise après
+/// paiement, ne les mentionne donc plus.
+const invoiceLatePaymentMention = 'Pas d’escompte pour paiement anticipé.';
 
 /// Construit le PDF d'une facture. Une facture en attente (sans numéro) est
 /// toujours marquée « BROUILLON » et ne vaut pas facture.

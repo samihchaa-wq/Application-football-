@@ -85,6 +85,16 @@ async function deleteProfileWithRetry(
   throw lastError ?? new Error("Profile deletion failed");
 }
 
+/// Comptes du club de démonstration, partagés entre prospects : ni
+/// suppression ni changement de mot de passe depuis l'application (la base
+/// refuse aussi, voir 20261203020000_protection_comptes_demo.sql).
+export function isDemoAccount(id: string): boolean {
+  return id.toLowerCase().startsWith("de000000-0000-4000-8000-");
+}
+
+const DEMO_ACCOUNT_ERROR =
+  "Compte de démonstration : il ne peut être ni supprimé ni changé de mot de passe.";
+
 export function createManageUserHandler({
   createClient,
   getEnv,
@@ -150,6 +160,9 @@ export function createManageUserHandler({
           global: { headers: { "x-club-id": selfClubId } },
         });
         const selfId = userData.user.id;
+        if (isDemoAccount(selfId)) {
+          return jsonResponse({ error: DEMO_ACCOUNT_ERROR }, 403);
+        }
 
         // Le dernier administrateur d'un club qui a d'autres membres doit
         // d'abord nommer un autre administrateur : sinon plus personne ne
@@ -241,6 +254,9 @@ export function createManageUserHandler({
         if (!uuidIsValid) {
           return jsonResponse({ error: "Valid user id is required" }, 400);
         }
+        if (isDemoAccount(userId)) {
+          return jsonResponse({ error: DEMO_ACCOUNT_ERROR }, 403);
+        }
         if (userId === userData.user.id) {
           return jsonResponse(
             { error: "Utilise ton profil pour modifier ton mot de passe." },
@@ -305,6 +321,9 @@ export function createManageUserHandler({
             .test(userId);
         if (!uuidIsValid) {
           return jsonResponse({ error: "Valid user id is required" }, 400);
+        }
+        if (isDemoAccount(userId)) {
+          return jsonResponse({ error: DEMO_ACCOUNT_ERROR }, 403);
         }
         if (userId === userData.user.id) {
           return jsonResponse(

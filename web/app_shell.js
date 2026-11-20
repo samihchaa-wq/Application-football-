@@ -274,22 +274,79 @@
     });
   }
 
+  // Installation en un geste (Chrome sur Android) : le navigateur annonce
+  // qu'il peut installer l'appli ; on garde l'annonce pour le bouton
+  // « Installer maintenant » du guide.
+  var deferredInstallPrompt = null;
+  window.addEventListener('beforeinstallprompt', function (event) {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+  });
+  window.addEventListener('appinstalled', function () {
+    deferredInstallPrompt = null;
+  });
+
   window.asGrintaPush = {
+    canPromptInstall: function () {
+      return deferredInstallPrompt !== null;
+    },
+    promptInstall: async function () {
+      if (!deferredInstallPrompt) return 'unavailable';
+      var prompt = deferredInstallPrompt;
+      deferredInstallPrompt = null;
+      prompt.prompt();
+      var choice = await prompt.userChoice;
+      return choice && choice.outcome === 'accepted' ? 'accepted' : 'dismissed';
+    },
     support: function () {
       return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
     },
     permission: function () {
       return 'Notification' in window ? Notification.permission : 'unsupported';
     },
+    // Clé d'envoi (VAPID, base64url) en octets.
+    vapidKeyBytes: function (vapidKey) {
+      const padding = '='.repeat((4 - (vapidKey.length % 4)) % 4);
+      const base64 = (vapidKey + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const raw = atob(base64);
+      return Uint8Array.from(Array.from(raw, function (c) { return c.charCodeAt(0); }));
+    },
+    // Vrai si l'abonnement a été créé avec une autre clé que celle du
+    // serveur : le service du téléphone refuse alors tous les envois.
+    keyDiffers: function (subscription, key) {
+      const current = subscription && subscription.options
+        ? subscription.options.applicationServerKey
+        : null;
+      if (!current) return false;
+      const bytes = new Uint8Array(current);
+      if (bytes.length !== key.length) return true;
+      for (let i = 0; i < bytes.length; i++) {
+        if (bytes[i] !== key[i]) return true;
+      }
+      return false;
+    },
+    // 'none' sans abonnement, 'match' ou 'mismatch' selon sa clé d'envoi.
+    keyStatus: async function (vapidKey) {
+      if (!window.asGrintaPush.support()) return 'none';
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (!registration) return 'none';
+      const subscription = await registration.pushManager.getSubscription();
+      if (!subscription) return 'none';
+      const key = window.asGrintaPush.vapidKeyBytes(vapidKey);
+      return window.asGrintaPush.keyDiffers(subscription, key) ? 'mismatch' : 'match';
+    },
     subscribe: async function (vapidKey) {
       if (!window.asGrintaPush.support()) return '';
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') return '';
       const registration = await navigator.serviceWorker.ready;
-      const padding = '='.repeat((4 - (vapidKey.length % 4)) % 4);
-      const base64 = (vapidKey + padding).replace(/-/g, '+').replace(/_/g, '/');
-      const raw = atob(base64);
-      const key = Uint8Array.from(Array.from(raw, function (c) { return c.charCodeAt(0); }));
+      const key = window.asGrintaPush.vapidKeyBytes(vapidKey);
+      // Un abonnement créé avec une ancienne clé empêche d'en créer un
+      // nouveau (InvalidStateError) et ne reçoit plus rien : on le retire.
+      const existing = await registration.pushManager.getSubscription();
+      if (existing && window.asGrintaPush.keyDiffers(existing, key)) {
+        await existing.unsubscribe();
+      }
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: key,

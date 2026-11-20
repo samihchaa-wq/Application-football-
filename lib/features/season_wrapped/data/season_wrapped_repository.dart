@@ -440,7 +440,7 @@ SeasonWrapped demoSeasonWrapped(String seasonName) {
     ],
     'badge_count': 4,
     'badges': [
-      {'code': 'matches_played__50', 'name': 'Fidèle', 'emoji': '📅'},
+      {'code': 'matches_played__50', 'name': 'Fidèle', 'emoji': '👟'},
       {'code': 'clean_sheets__10', 'name': 'Mur', 'emoji': '🧱'},
       {'code': 'motm__first', 'name': 'Homme du match', 'emoji': '⭐'},
       {'code': 'season_top_scorer', 'name': 'Meilleur buteur', 'emoji': '🥇'},

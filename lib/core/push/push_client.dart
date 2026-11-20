@@ -4,5 +4,12 @@ export 'push_client_stub.dart'
 
 /// Clé publique VAPID du serveur d'envoi (la clé privée reste dans
 /// Supabase Vault, lue uniquement par l'Edge Function send-push).
+///
+/// Elle doit être la moitié publique de la paire `push_vapid_public` /
+/// `push_vapid_private` du coffre de la base commerciale, créée le
+/// 12/11/2026 par tool/commercial_supabase_setup.py. Jusqu'au 20/11/2026,
+/// l'appli gardait la clé de l'application d'origine : les téléphones
+/// s'abonnaient avec une clé que le serveur ne détenait pas, et Apple
+/// refusait chaque envoi (code 400).
 const String pushVapidPublicKey =
-    'BDZa9YcR2dn5pzohdAgKuSxfM-2FdudE3WhbPvd4SQKUE4XWeBbExvgABIX2yj7prfmoo-qpJ9Kcoy4SA-KxYio';
+    'BIe-vdCcku4JJ6S1EKNF7aKwgqvv0naUAqZr-2IKguzKoSNuyxEXdkwvZXUP3vD38XYQ2P_16CR9vkQB-OWG1Yw';

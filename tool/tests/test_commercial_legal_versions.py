@@ -8,6 +8,7 @@ import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 DART = ROOT / "lib/features/legal/domain/legal_documents.dart"
+DEMO_SCRIPT = ROOT / "supabase/demo/club_demo.sql"
 CONSENT_FILES = [
     ROOT / "supabase/functions/register-account/consent.ts",
     ROOT / "supabase/functions/claim-club/consent.ts",
@@ -36,6 +37,12 @@ class LegalVersionsTest(unittest.TestCase):
                 self.assertEqual(
                     _ts_const(path, "CURRENT_CLUB_CONTRACT_VERSION"), contract
                 )
+
+    def test_demo_accounts_accept_the_published_terms(self) -> None:
+        # Sinon chaque prospect tombe d'abord sur « Les conditions ont changé ».
+        match = re.search(r"terms_version = '([^']+)'", DEMO_SCRIPT.read_text())
+        self.assertIsNotNone(match)
+        self.assertEqual(match.group(1), _dart_const("legalVersion"))
 
     def test_both_registration_paths_share_the_same_rules(self) -> None:
         first, second = (path.read_text() for path in CONSENT_FILES)

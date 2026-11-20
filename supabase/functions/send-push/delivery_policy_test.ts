@@ -2,6 +2,7 @@ import "./weather_refresh_test.ts";
 
 import {
   classifyPushFailure,
+  describePushError,
   executePushDelivery,
   executeValidatedPushDelivery,
   invalidPushSubscriptionReason,
@@ -164,4 +165,20 @@ Deno.test("préserve la livraison d'une souscription bien formée", async () => 
   assertEquals(outcome.success, true);
   assertEquals(outcome.attempts, 1);
   assertEquals(called, 1);
+});
+
+Deno.test("la raison donnée par Apple est gardée dans le journal", () => {
+  const error = Object.assign(new Error("Received unexpected response code"), {
+    statusCode: 400,
+    body: '{"reason":"BadJwtToken"}\n',
+  });
+  assertEquals(
+    describePushError(error),
+    'Received unexpected response code · réponse du service : {"reason":"BadJwtToken"}',
+  );
+});
+
+Deno.test("sans corps de réponse, le message reste tel quel et borné", () => {
+  assertEquals(describePushError(new Error("timeout")), "timeout");
+  assertEquals(describePushError("x".repeat(800)).length, 500);
 });

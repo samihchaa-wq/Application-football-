@@ -1,5 +1,6 @@
 import {
   createManageUserHandler,
+  isDemoAccount,
   type ManageUserDependencies,
 } from "./handler.ts";
 
@@ -370,4 +371,10 @@ Deno.test("manage-user : profil introuvable ne donne aucun droit admin", async (
     403,
   );
   assertNoPrivilegedAction(f.events);
+});
+
+Deno.test("manage-user : les comptes de démonstration sont reconnus", () => {
+  assertEquals(isDemoAccount("de000000-0000-4000-8000-000000000001"), true);
+  assertEquals(isDemoAccount("DE000000-0000-4000-8000-000000000012"), true);
+  assertEquals(isDemoAccount("1f0e8a2c-0000-4000-8000-000000000001"), false);
 });

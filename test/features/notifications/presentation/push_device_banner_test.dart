@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/push/home_screen_install.dart';
 import 'package:petit_filet/features/notifications/presentation/push_device_banner.dart';
 import 'package:petit_filet/features/preferences/data/push_subscriptions_repository.dart';
 import 'package:flutter/material.dart';
@@ -143,4 +144,146 @@ void main() {
       expect(find.textContaining('Toujours bloquées'), findsOneWidget);
     },
   );
+
+  group('iPhone ouvert dans Safari', () {
+    Future<void> pumpUnsupported(WidgetTester tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            pushSubscriptionsRepositoryProvider
+                .overrideWithValue(_FakePushSubscriptions()),
+            pushStatusProvider.overrideWith(
+              (ref) async => (supported: false, subscribed: false),
+            ),
+            homeScreenInstallNeededProvider.overrideWithValue(true),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(body: Column(children: [PushDeviceBanner()])),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('le joueur apprend qu’il doit installer l’appli, et comment',
+        (tester) async {
+      await pumpUnsupported(tester);
+
+      expect(find.text('Installe l’appli pour être prévenu'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('install-guide-open')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Installer l’appli sur ton téléphone'), findsOneWidget);
+      expect(find.textContaining('Sur l’écran d’accueil'), findsOneWidget);
+
+      await tester.tap(find.text('J’ai compris'));
+      await tester.pumpAndSettle();
+      expect(find.text('Installer l’appli sur ton téléphone'), findsNothing);
+    });
+
+    testWidgets('« Plus tard » est retenu, sans couper les notifications',
+        (tester) async {
+      await pumpUnsupported(tester);
+
+      await tester.tap(find.byKey(const Key('install-guide-later')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Installe l’appli pour être prévenu'), findsNothing);
+      expect(await readInstallHintDismissed(), isTrue);
+      expect(await readPushOptOut(), isFalse);
+    });
+
+    testWidgets('un ordinateur qui ne sait pas recevoir n’affiche rien',
+        (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            pushSubscriptionsRepositoryProvider
+                .overrideWithValue(_FakePushSubscriptions()),
+            pushStatusProvider.overrideWith(
+              (ref) async => (supported: false, subscribed: false),
+            ),
+            homeScreenInstallNeededProvider.overrideWithValue(false),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(body: Column(children: [PushDeviceBanner()])),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TextButton), findsNothing);
+    });
+  });
+
+  testWidgets(
+    'au-dessus des écrans, comme dans l’appli, le guide s’ouvre quand même',
+    (tester) async {
+      final navigatorKey = GlobalKey<NavigatorState>();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            pushSubscriptionsRepositoryProvider
+                .overrideWithValue(_FakePushSubscriptions()),
+            pushStatusProvider.overrideWith(
+              (ref) async => (supported: false, subscribed: false),
+            ),
+            homeScreenInstallNeededProvider.overrideWithValue(true),
+          ],
+          child: MaterialApp(
+            navigatorKey: navigatorKey,
+            // Même place que dans lib/app/app.dart : hors du navigateur.
+            builder: (context, child) => Column(
+              children: [
+                PushDeviceBanner(
+                  navigatorContext: () => navigatorKey.currentContext,
+                ),
+                Expanded(child: child ?? const SizedBox.shrink()),
+              ],
+            ),
+            home: const Scaffold(body: SizedBox.shrink()),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('install-guide-open')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Installer l’appli sur ton téléphone'), findsOneWidget);
+    },
+  );
+
+  testWidgets('le guide explique aussi l’installation sur Android',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () => showHomeScreenInstallGuide(
+                context,
+                platform: InstallPlatform.android,
+              ),
+              child: const Text('ouvrir'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('ouvrir'));
+    await tester.pumpAndSettle();
+
+    // Téléphone Android reconnu : les gestes de Chrome d'abord.
+    expect(find.textContaining('Dans Chrome, touche le menu'), findsOneWidget);
+    expect(find.textContaining('Installer l’application'), findsOneWidget);
+
+    // L'iPhone reste à un geste (pour aider un coéquipier).
+    await tester.tap(find.text('iPhone'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Dans Safari, touche le bouton Partager'),
+        findsOneWidget);
+    expect(find.textContaining('Dans Chrome'), findsNothing);
+  });
 }

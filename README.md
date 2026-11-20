@@ -72,8 +72,9 @@ Le fonctionnement détaillé de chaque module est décrit dans
 - Tâches planifiées : `pg_cron`, une passe par club et par minute pour les
   rappels, la clôture des votes et les bilans de saison.
 - Hébergement : Cloudflare Pages pour l’application commerciale (publiée par
-  `auto_release_commercial.yml` après contrôles, ou à la main) ; GitHub Pages
-  pour le site de test à clubs fictifs (publication manuelle).
+  `auto_release_commercial.yml` après contrôles, ou à la main), avec les
+  fonctions serveur publiées juste avant. L'ancien site GitHub Pages ne fait
+  plus que rediriger vers l'adresse officielle (`pages_redirect.yml`).
 
 ### Organisation du dépôt
 

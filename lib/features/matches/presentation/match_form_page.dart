@@ -819,7 +819,11 @@ class _MatchFormPageState extends ConsumerState<MatchFormPage> {
   Future<void> _submit() async {
     if (_seasonId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Aucune saison ouverte disponible.')),
+        const SnackBar(
+          content: Text(
+            'Crée d’abord la saison : Réglages du club › Saison.',
+          ),
+        ),
       );
       return;
     }

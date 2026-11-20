@@ -238,7 +238,11 @@ class _PetitFiletAppState extends ConsumerState<PetitFiletApp>
                       ),
                     ),
                   if (isAuthenticated) const ClubConfigurationStatusBanner(),
-                  if (isAuthenticated) const PushDeviceBanner(),
+                  if (isAuthenticated)
+                    PushDeviceBanner(
+                      navigatorContext: () =>
+                          router.routerDelegate.navigatorKey.currentContext,
+                    ),
                   Expanded(
                     // Quand le nom du club arrive ou change, les écrans déjà
                     // affichés sont redessinés avec le bon nom.

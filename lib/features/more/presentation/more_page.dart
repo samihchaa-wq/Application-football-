@@ -1,5 +1,6 @@
 import 'package:petit_filet/core/club/club_identity.dart';
 import 'package:petit_filet/core/config/app_config.dart';
+import 'package:petit_filet/core/push/push_client.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/widgets/pf_app_bar.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
@@ -9,6 +10,7 @@ import 'package:petit_filet/features/auth/presentation/sign_out_confirmation.dar
 import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
 import 'package:petit_filet/features/matches/presentation/matches_controller.dart';
 import 'package:petit_filet/features/more/presentation/calendar_subscription_tile.dart';
+import 'package:petit_filet/features/notifications/presentation/push_device_banner.dart';
 import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -38,6 +40,14 @@ class MorePage extends ConsumerWidget {
           const _SectionLabel('Mon compte'),
           _SettingsGroup(
             children: [
+              // Masqué une fois l'appli ouverte depuis l'écran d'accueil.
+              if (!pushAppInstalled())
+                _SettingsTile(
+                  key: const Key('more-install-app'),
+                  icon: Icons.install_mobile,
+                  title: 'Installer l’appli sur mon téléphone',
+                  onTap: () => showHomeScreenInstallGuide(context),
+                ),
               const CalendarSubscriptionTile(),
               // Les admins ont leur Effectif modifiable plus bas.
               if (!isAdminView)
@@ -282,6 +292,7 @@ class _SettingsGroup extends StatelessWidget {
 
 class _SettingsTile extends StatelessWidget {
   const _SettingsTile({
+    super.key,
     required this.icon,
     required this.title,
     required this.onTap,

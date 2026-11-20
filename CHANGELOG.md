@@ -4,8 +4,71 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ## Non publié
 
+### Exploitation
+
+- notifications : cause des refus d'Apple trouvée. L'appli s'abonnait avec
+  la clé d'envoi de l'application d'origine, alors que le serveur commercial
+  signe avec sa propre clé (créée le 12/11) : Apple refusait chaque envoi
+  (code 400). L'appli utilise désormais la clé du serveur, et un téléphone
+  déjà abonné avec l'ancienne clé se réabonne seul à l'ouverture (ou affiche
+  « Activer » si le téléphone exige un appui) ;
+- la publication automatique publie aussi les fonctions serveur (via le
+  workflow de mise en route, fonctions seulement), juste avant l'appli :
+  l'appli et le serveur ne divergent plus ;
+- l'ancien site GitHub Pages (copie du 12/11 branchée sur la base
+  commerciale) est retiré : `deploy_pages.yml` passe dans
+  `workflows-disabled/`, et le nouveau workflow manuel « GitHub Pages :
+  redirection » le remplace par une page qui renvoie vers l'adresse
+  officielle et désinstalle l'ancien service worker.
+
 ### Produit
 
+- textes légaux, version `2026-11-20` (nouvel accord demandé aux
+  membres) : Stripe ajouté à la politique de confidentialité et aux
+  conditions d'abonnement (paiement par carte en service). Facture : plus de
+  pénalités de retard ni d'indemnité de 40 €, comme dans les conditions.
+  E-mail de rappel d'échéance : paiement par carte avec le lien direct vers
+  l'écran Abonnement, virement ou chèque sur demande. Fonctions
+  `register-account`, `claim-club` et `account-email` à publier en même temps
+  que l'appli, sinon les inscriptions sont refusées ;
+- démo en ligne : les comptes partagés `demoadmin` et `demojoueur` ne
+  peuvent plus être supprimés ni changer de mot de passe (refus de la base et
+  de la fonction `manage-user`). Nouveau workflow « Démo : remise à zéro »
+  chaque nuit à 3 h 17 UTC (secret `DEMO_PASSWORD` à créer). Les comptes de
+  démo arrivent directement sur l'appli (conditions du jour acceptées), les
+  matchs passés tombent le dimanche à 15 h et le prochain match le week-end
+  qui vient. Migration `20261203020000_protection_comptes_demo.sql` ;
+- badges des nouveaux clubs : jeu neutre. Retirés des modèles : blagues
+  internes d'AS Grinta (« Voy a marcar », « La línea amarilla ! », « C'est
+  dans l'élan »), doublons (« Le Boucher », « Le Malchanceux », « Le
+  Plongeur », second « Gardien d'un soir ») et badges moqueurs (« La
+  glissade », « Mal échauffé »). « Tête de Boli » devient « Tête du
+  défenseur », « Sauvetage in extremis » reçoit une description, l'icône du
+  coach et celle des matchs joués (calendrier « JULY 17 ») sont neutres. Les
+  clubs existants gardent leurs badges. Migration
+  `20261203010000_badges_par_defaut_neutres.sql` ;
+- nouveau club : carte « Bien démarrer » en haut du Calendrier pour
+  l'administrateur, avec les 4 étapes dans l'ordre où elles marchent (logo et
+  couleurs, saison, premier match, invitation des joueurs), cochées toutes
+  seules et masquables. Sans saison, le formulaire de match dit désormais
+  « Crée d'abord la saison : Réglages du club › Saison » ;
+- installer l'appli : guide en 3 gestes pour iPhone (Safari › Partager ›
+  « Sur l'écran d'accueil ») et pour Android (Chrome › menu ⋮ › « Installer
+  l'application »), le bon téléphone choisi d'office, l'autre à un geste.
+  Sur Android, bouton « Installer maintenant » quand Chrome le permet.
+  Entrée « Installer l'appli sur mon téléphone » dans Paramètres (masquée une
+  fois l'appli installée). Sur iPhone ouvert dans Safari, un bandeau le
+  propose en plus, car les notifications n'y arrivent qu'une fois l'appli
+  installée ; « Plus tard » ne coupe pas les notifications ;
+- envoi des notifications : le journal garde la raison donnée par le service
+  du téléphone (par exemple Apple : `{"reason":"…"}`) au lieu du seul
+  « Received unexpected response code ». Fonction `send-push` à redéployer ;
+- inscription : un club qui inscrit ses joueurs depuis le même réseau
+  (vestiaire, même box) n'est plus bloqué au sixième. Rejoindre un club :
+  30 inscriptions par heure et 100 par jour depuis une même adresse ; créer
+  un club : 5 par heure et 15 par jour, compteur séparé. Migration
+  `20261203000000_quota_inscription_par_parcours.sql`, fonctions
+  `register-account` et `claim-club` à redéployer pour passer le parcours ;
 - Gestionnaire refait en 4 onglets : « À faire » (alertes de paiement,
   paiements par carte reçus, factures et avoirs en attente), « Clubs »
   (fiche avec contacts, paiement avec référence, période offerte ou essai

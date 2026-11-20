@@ -18,7 +18,9 @@ import 'package:petit_filet/features/matches/data/calendar_history_repository.da
 import 'package:petit_filet/features/matches/data/club_events_repository.dart';
 import 'package:petit_filet/features/matches/domain/club_event.dart';
 import 'package:petit_filet/features/matches/domain/match_model.dart';
+import 'package:petit_filet/features/matches/presentation/calendar_entry_form_page.dart';
 import 'package:petit_filet/features/matches/presentation/matches_controller.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/club_start_guide.dart';
 import 'package:petit_filet/features/matches/presentation/widgets/admin_match_options_button.dart';
 import 'package:petit_filet/features/matches/presentation/widgets/calendar_feed_event_card.dart';
 import 'package:petit_filet/features/matches/presentation/widgets/historical_match_card.dart';
@@ -106,6 +108,14 @@ class _MergedMatchesViewState extends ConsumerState<MergedMatchesView> {
     }
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _openCreateMatch() async {
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => const CalendarEntryFormPage()),
+    );
+    if (!mounted || changed != true) return;
+    await _refresh();
   }
 
   Future<void> _refresh() async {
@@ -342,6 +352,18 @@ class _MergedMatchesViewState extends ConsumerState<MergedMatchesView> {
                   const SliverToBoxAdapter(
                     child: SizedBox(height: AppSpacing.microGap),
                   ),
+                  if (isAdmin && !state.isLoading && state.error == null)
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.screenGutter,
+                      ),
+                      sliver: SliverToBoxAdapter(
+                        child: ClubStartGuide(
+                          hasMatches: entries.isNotEmpty,
+                          onCreateMatch: _openCreateMatch,
+                        ),
+                      ),
+                    ),
                   if (state.isLoading)
                     const SliverPadding(
                       padding: EdgeInsets.symmetric(
