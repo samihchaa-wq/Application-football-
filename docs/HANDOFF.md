@@ -38,3 +38,11 @@ Restent à vérifier sur GitHub avant intégration : PR #69 (+1 manuel), #72 (é
 - Les cinq automatisations de coordination couvrent les neuf missions M01–M09 ; utiliser `docs/CHANTIER.md` et les PR/issues pour communiquer. Ne pas déclarer « fait » sans résultat vérifiable.
 
 **Ce document ne vaut ni autorisation de déploiement ni certification du lancement.**
+
+## Outils Claude (session du 21/11/2026)
+
+- Fusionné (PR #215) : Graphify (carte du code), caveman (style concis), Chrome DevTools MCP, compétences Supabase, grill-me, web-design-guidelines, ui-ux-pro-max. Publication automatique qui a suivi : verte.
+- En attente de fusion (PR #216) : VibeSec, agent `eclaireur` (Haiku), sommaire `docs/INDEX.md`, cette section.
+- Environnement cloud « Application-football » : installe Graphify et construit la carte au démarrage. À choisir à l'ouverture d'une session.
+- Écartés après examen : Vercel (appli sur Cloudflare), Oh My Claude Code (trop lourd), claude-mem et Olmind (mémoire perdue dans le cloud, ou source invérifiable), Find Skills (installe sans relecture), anti-ai-slop/hallmark (sites web neufs, pas Flutter).
+- **À faire ensuite, à la demande de la personne qui pilote** : chercher d'autres compétences utiles à Petit Filet (Flutter, direction artistique, accessibilité, fonctionnalités d'appli sportive). Les lire avant installation, en recommander peu, éviter les doublons avec l'existant.
