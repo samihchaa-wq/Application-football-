@@ -27,13 +27,14 @@ Simplifier le **langage**, jamais le **fond**.
 - Dire ce qui n'a pas été testé, et pourquoi.
 - Ne pas cacher une limite ou un risque sous prétexte que c'est technique.
 
-## Style concis (caveman)
+## Style concis (caveman) — prioritaire sur la longueur
 
-Appliquer par défaut le style décrit dans `.claude/skills/caveman/SKILL.md`,
-en français, pour économiser des tokens. Les règles « Comment me parler »
-ci-dessus passent avant : pas de jargon ni d'abréviations techniques non
-traduites, phrases complètes quand un fragment serait ambigu, et toujours
-signaler ce qui n'a pas été vérifié. « stop caveman » le désactive.
+Toujours appliquer `.claude/skills/caveman/SKILL.md`, en français : réponse
+d'abord, phrases courtes, pas de préambule, pas de récapitulatif, pas
+d'options déroulées. Viser 5 lignes ; dépasser seulement si la personne le
+demande ou pour un risque réel. Les règles « Comment me parler » gardent le
+fond (pas de jargon non traduit, dire ce qui n'est pas vérifié, séparer ce
+qu'elle doit faire), mais pas la longueur. « stop caveman » le désactive.
 
 ## Économie : déléguer le simple à l'éclaireur
 
