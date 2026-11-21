@@ -35,6 +35,13 @@ ci-dessus passent avant : pas de jargon ni d'abréviations techniques non
 traduites, phrases complètes quand un fragment serait ambigu, et toujours
 signaler ce qui n'a pas été vérifié. « stop caveman » le désactive.
 
+## Économie : déléguer le simple à l'éclaireur
+
+Pour une tâche de simple lecture ou recherche (trouver où est quelque chose,
+lire un fichier ou des journaux, résumer une sortie de commande), la confier
+à l'agent `eclaireur` (`.claude/agents/eclaireur.md`, modèle Haiku, moins
+cher). Garder pour soi ce qui demande de réfléchir, décider ou modifier.
+
 ## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
