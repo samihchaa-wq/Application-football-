@@ -32,3 +32,6 @@ supabase/.branches/
 # Fichiers Python compilés
 __pycache__/
 *.pyc
+
+# Graphify : carte du code, régénérée localement (graphify update .)
+graphify-out/
