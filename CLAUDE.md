@@ -42,6 +42,16 @@ lire un fichier ou des journaux, résumer une sortie de commande), la confier
 à l'agent `eclaireur` (`.claude/agents/eclaireur.md`, modèle Haiku, moins
 cher). Garder pour soi ce qui demande de réfléchir, décider ou modifier.
 
+## Mémoire : sommaire d'abord, conversations courtes
+
+- Pour une question sur le projet (règles, décisions, historique), lire
+  d'abord `docs/INDEX.md`, puis seulement la ou les notes utiles. Après
+  ajout ou renommage d'une note : `python3 tool/docs_index.py`.
+- Quand une conversation devient longue, ou à la fin d'un travail
+  important : écrire l'essentiel (fait, décidé, reste à faire) dans
+  `docs/HANDOFF.md`, puis proposer d'ouvrir une nouvelle session, qui
+  repartira de cette note au lieu de tout l'historique.
+
 ## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
