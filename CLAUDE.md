@@ -27,6 +27,14 @@ Simplifier le **langage**, jamais le **fond**.
 - Dire ce qui n'a pas été testé, et pourquoi.
 - Ne pas cacher une limite ou un risque sous prétexte que c'est technique.
 
+## Style concis (caveman)
+
+Appliquer par défaut le style décrit dans `.claude/skills/caveman/SKILL.md`,
+en français, pour économiser des tokens. Les règles « Comment me parler »
+ci-dessus passent avant : pas de jargon ni d'abréviations techniques non
+traduites, phrases complètes quand un fragment serait ambigu, et toujours
+signaler ce qui n'a pas été vérifié. « stop caveman » le désactive.
+
 ## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
