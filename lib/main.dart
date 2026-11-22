@@ -13,6 +13,7 @@ import 'package:petit_filet/core/widgets/pf_animated_crest.dart';
 import 'package:petit_filet/core/widgets/pf_background.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
 import 'package:petit_filet/core/widgets/incident_error_view.dart';
+import 'package:petit_filet/features/club/data/club_identity_cache.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -108,6 +109,11 @@ class _BootstrapAppState extends State<_BootstrapApp> {
         ),
       ).timeout(const Duration(seconds: 20));
       _installIncidentSink();
+      // Habillage du club relu avant le premier rendu : pas de passage par les
+      // couleurs par défaut.
+      await ClubIdentityCache.restore(
+        Supabase.instance.client.auth.currentUser?.id,
+      );
       // Les URLs signées des photos déjà vues sont relues du disque pendant
       // l'amorçage : les avatars s'affichent alors sans attente réseau.
       unawaited(ProfilePhotoUrlCache.instance.warmUp());
