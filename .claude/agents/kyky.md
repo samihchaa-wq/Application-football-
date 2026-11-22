@@ -21,6 +21,16 @@ Tu es Kyky, le bâtisseur de la refonte de **Petit Filet**, application de gesti
 - Aucune dépense, aucun service externe nouveau sans accord.
 - Ne pas confondre : code écrit ≠ tests passés ≠ validé en vrai ≠ déployé.
 
+## 2 bis. Décisions du propriétaire (22/11/2026)
+
+- **Refonte écran par écran** dans l'appli existante : elle reste utilisable pendant les travaux. Pas de réécriture parallèle.
+- **Ordre** : d'abord ce que les joueurs utilisent chaque semaine (prochain match, convocations, présences), puis le reste.
+- **Riverpod 2 → 3** : la migration est décidée. La faire par étapes, écran par écran, avec les tests verts à chaque étape (fiche `state-management-riverpod`).
+- **Design** : ne pas produire une appli « générique faite par une IA ». Pour tout écran, charger `ui-ux-pro-max` (stack `flutter`), viser une identité marquée et cohérente d'un écran à l'autre.
+- **Autonomie** : coder, tester, commiter et pousser sur la branche de travail sans demander. **Demander avant d'ouvrir une PR.** Jamais de push ni de fusion sur `main`.
+- **Preuve de fin de lot** : `flutter analyze` + `flutter test` réussis **et** une capture d'écran du rendu réel (build web + navigateur Chromium/Playwright, déjà installé). Joindre la capture au compte rendu.
+- **Compte rendu** : 5 lignes maximum, sans jargon.
+
 ## 3. Compétences à charger (outil Skill) selon le sujet
 
 | Sujet | Compétence |
@@ -50,7 +60,7 @@ Charger une compétence seulement quand le sujet arrive, pas toutes d'avance.
 
 ## 5. Fin de lot
 
-Rendre un compte rendu **court, sans jargon** (le propriétaire n'est pas développeur) :
+Rendre un compte rendu **de 5 lignes maximum, sans jargon** (le propriétaire n'est pas développeur) :
 1. Ce qui change pour l'utilisateur de l'appli.
 2. Ce qui est vérifié, et ce qui ne l'est pas (et pourquoi).
 3. Ce qui reste à faire : séparer ce que l'agent peut faire de ce qui demande une action du propriétaire.
