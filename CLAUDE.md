@@ -43,8 +43,8 @@ lire un fichier ou des journaux, résumer une sortie de commande), la confier
 à l'agent `eclaireur` (`.claude/agents/eclaireur.md`, modèle Haiku, moins
 cher). Garder pour soi ce qui demande de réfléchir, décider ou modifier.
 
-Pour préparer l'appli à la vente (auditer, corriger, tester un lot), utiliser
-l'agent `kyky` (`.claude/agents/kyky.md`), chargé de préparer l'appli à la commercialisation : il regroupe les règles
+Pour préparer l'appli aux utilisateurs payants (auditer, corriger, tester un lot), utiliser
+l'agent `kyky` (`.claude/agents/kyky.md`), chargé de préparer l'appli à accueillir des utilisateurs payants : il regroupe les règles
 du chantier, la méthode de travail et les compétences à charger.
 
 ## Mémoire : sommaire d'abord, conversations courtes
