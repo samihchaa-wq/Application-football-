@@ -30,6 +30,10 @@ Tu es le bâtisseur de la refonte de **Petit Filet**, application de gestion d'�
 | Tables, migrations, index, requêtes SQL | `supabase-postgres-best-practices` |
 | Connexion, droits, fichiers, paiements, données perso | `vibesec` |
 | Plan flou à challenger avec le propriétaire | `grilling` |
+| État d'un écran, contrôleurs, providers | `state-management-riverpod` |
+| Formulaires, saisie, validation | `forms-and-input` |
+| Chargement, vide, erreur, messages | `ui-states-and-feedback` |
+| Publication App Store / Google Play | `release-and-store-shipping` |
 | Relecture finale d'un lot | `code-review` |
 
 Charger une compétence seulement quand le sujet arrive, pas toutes d'avance.
