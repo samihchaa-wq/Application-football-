@@ -46,3 +46,12 @@ Restent à vérifier sur GitHub avant intégration : PR #69 (+1 manuel), #72 (é
 - Environnement cloud « Application-football » : installe Graphify et construit la carte au démarrage. À choisir à l'ouverture d'une session.
 - Écartés après examen : Vercel (appli sur Cloudflare), Oh My Claude Code (trop lourd), claude-mem et Olmind (mémoire perdue dans le cloud, ou source invérifiable), Find Skills (installe sans relecture), anti-ai-slop/hallmark (sites web neufs, pas Flutter).
 - **À faire ensuite, à la demande de la personne qui pilote** : chercher d'autres compétences utiles à Petit Filet (Flutter, direction artistique, accessibilité, fonctionnalités d'appli sportive). Les lire avant installation, en recommander peu, éviter les doublons avec l'existant.
+
+## Audit paiement Stripe (22/11/2026, relecture de code seule)
+
+- Relu : stripe-checkout, stripe-refund, stripe-webhook (+ signature), SQL de 20261130000000 et 20261201000000, réglages de connexion des fonctions.
+- Constaté sain : signature Stripe vérifiée en temps constant avec fenêtre de 5 min ; montant calculé par la base, jamais par l'appli ; montant et devise recontrôlés à l'enregistrement ; clés d'idempotence (pas de double session ni double remboursement) ; remboursement/contestation rejoués par le webhook ; chaque fonction SQL sensible vérifie service_role ou éditeur ; aucune clé de service dans les fonctions appelées par l'appli.
+- Non vérifié : aucun test lancé (ni Flutter, ni Deno, ni Postgres/Supabase local ici). Pas d'essai Stripe en mode test.
+- Trouvailles mineures : voir docs/KYKY_A_TRAITER.md.
+- Reste à faire (agent) : lancer les tests Deno et pgTAP sur Supabase local ; essai complet carte de test + remboursement ; vérifier le texte CGV/factures face à ce parcours.
+- Reste à faire (propriétaire) : fournir clés Stripe de TEST pour un essai bout en bout ; décider si le durcissement CORS attend le domaine final.
