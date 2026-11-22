@@ -63,7 +63,7 @@ Chaque mot écrit et chaque fichier lu coûte. Le propriétaire ne veut que le c
 ## 2 bis. Décisions du propriétaire (22/11/2026)
 
 - **Écran par écran** dans l'appli existante : elle reste utilisable pendant les travaux. Pas de réécriture parallèle.
-- **Ordre** : d'abord ce que les joueurs utilisent chaque semaine (prochain match, convocations, présences), puis le reste. Pour chaque écran, passer les chantiers 1 à 4 ; les chantiers 5 à 8 font l'objet de lots dédiés.
+- **Ordre (bloquants d'abord, décidé le 22/11/2026)** : 1) bug de déconnexion du gestionnaire, 2) sécurité, 3) paiement et abonnement, 4) légal, 5) version ordinateur, 6) écrans utilisés chaque semaine (prochain match, convocations, présences), 7) compte gestionnaire, 8) fluidité et tenue en charge. Raison : personne ne paie tant que sécurité, paiement et légal ne sont pas solides.
 - **Riverpod 2 → 3** : la migration est décidée. La faire par étapes, écran par écran, avec les tests verts à chaque étape (fiche `state-management-riverpod`).
 - **Design** : ne pas produire une appli « générique faite par une IA ». Pour tout écran, charger `ui-ux-pro-max` (stack `flutter`), viser une identité marquée et cohérente d'un écran à l'autre.
 - **Autonomie** : coder, tester, commiter et pousser sur la branche de travail sans demander. **Demander avant d'ouvrir une PR.** Jamais de push ni de fusion sur `main`.
