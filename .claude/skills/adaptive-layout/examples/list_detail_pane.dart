@@ -12,12 +12,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 enum WindowSizeClass { compact, medium, expanded, large, extraLarge }
 
 WindowSizeClass windowSizeClassFor(double width) => switch (width) {
-  < 600 => WindowSizeClass.compact,
-  < 840 => WindowSizeClass.medium,
-  < 1200 => WindowSizeClass.expanded,
-  < 1600 => WindowSizeClass.large,
-  _ => WindowSizeClass.extraLarge,
-};
+      < 600 => WindowSizeClass.compact,
+      < 840 => WindowSizeClass.medium,
+      < 1200 => WindowSizeClass.expanded,
+      < 1600 => WindowSizeClass.large,
+      _ => WindowSizeClass.extraLarge,
+    };
 
 extension WindowSizeClassX on WindowSizeClass {
   bool get canShowTwoPanes => index >= WindowSizeClass.expanded.index;
@@ -64,8 +64,8 @@ class TasksScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final twoPane = windowSizeClassFor(MediaQuery.sizeOf(context).width)
-        .canShowTwoPanes;
+    final twoPane =
+        windowSizeClassFor(MediaQuery.sizeOf(context).width).canShowTwoPanes;
 
     if (!twoPane) {
       // Compact: list only. Tapping navigates to a detail route.

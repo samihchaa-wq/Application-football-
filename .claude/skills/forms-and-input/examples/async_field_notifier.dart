@@ -35,8 +35,8 @@ const _debounce = Duration(milliseconds: 400);
 // Manual AsyncNotifierProvider (D7). State is idle (null) or a NameCheck result.
 final nameAvailabilityNotifierProvider =
     AsyncNotifierProvider.autoDispose<NameAvailabilityNotifier, NameCheck?>(
-      NameAvailabilityNotifier.new,
-    );
+  NameAvailabilityNotifier.new,
+);
 
 // Riverpod 3.0: the base class is the unified AsyncNotifier; auto-dispose is the
 // provider modifier above (.autoDispose), not a separate base class.
@@ -103,9 +103,8 @@ class _AccountNameFieldState extends ConsumerState<AccountNameField> {
       keyboardType: TextInputType.text,
       textCapitalization: TextCapitalization.none,
       autofillHints: const [AutofillHints.newUsername],
-      onChanged: ref
-          .read(nameAvailabilityNotifierProvider.notifier)
-          .onNameChanged,
+      onChanged:
+          ref.read(nameAvailabilityNotifierProvider.notifier).onNameChanged,
       // Sync validator stays pure: shape only. Async result comes via errorText.
       validator: (value) =>
           (value == null || value.trim().isEmpty) ? l10n.fieldRequired : null,

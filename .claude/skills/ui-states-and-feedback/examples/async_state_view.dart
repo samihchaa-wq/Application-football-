@@ -42,15 +42,15 @@ class NotesScreen extends ConsumerWidget {
           // Filtered-empty is resolved BEFORE empty — different question,
           // different answer, different action.
           (true, true) => EmptyStateView(
-            title: l10n.notesNoMatches,
-            actionLabel: l10n.clearFilter,
-            onAction: () => ref.read(notesFilterProvider.notifier).clear(),
-          ),
+              title: l10n.notesNoMatches,
+              actionLabel: l10n.clearFilter,
+              onAction: () => ref.read(notesFilterProvider.notifier).clear(),
+            ),
           (true, false) => EmptyStateView(
-            title: l10n.notesEmptyTitle,
-            actionLabel: l10n.notesEmptyCreate,
-            onAction: () => ref.read(notesProvider.notifier).createDraft(),
-          ),
+              title: l10n.notesEmptyTitle,
+              actionLabel: l10n.notesEmptyCreate,
+              onAction: () => ref.read(notesProvider.notifier).createDraft(),
+            ),
           (false, _) => NotesListView(items: items),
         },
       ),

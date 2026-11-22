@@ -48,16 +48,16 @@ class TaskListState {
       tasks.where((t) => !t.done).length; // derive, don't store
 
   List<Task> get visible => switch (filter) {
-    TaskFilter.all => tasks,
-    TaskFilter.open => [
-      for (final t in tasks)
-        if (!t.done) t,
-    ],
-    TaskFilter.done => [
-      for (final t in tasks)
-        if (t.done) t,
-    ],
-  };
+        TaskFilter.all => tasks,
+        TaskFilter.open => [
+            for (final t in tasks)
+              if (!t.done) t,
+          ],
+        TaskFilter.done => [
+            for (final t in tasks)
+              if (t.done) t,
+          ],
+      };
 
   TaskListState copyWith({List<Task>? tasks, TaskFilter? filter}) =>
       TaskListState(tasks: tasks ?? this.tasks, filter: filter ?? this.filter);
@@ -148,8 +148,8 @@ class TaskListNotifier extends StreamNotifier<TaskListState> {
 
 final taskListNotifierProvider =
     StreamNotifierProvider.autoDispose<TaskListNotifier, TaskListState>(
-      TaskListNotifier.new,
-    );
+  TaskListNotifier.new,
+);
 
 // --- The View: dumb ConsumerWidget. watch to show, read to act ---------------
 

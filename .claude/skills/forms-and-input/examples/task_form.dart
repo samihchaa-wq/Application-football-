@@ -42,9 +42,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
     // Validate all fields at once via the form key.
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    await ref
-        .read(taskFormNotifierProvider.notifier)
-        .save(
+    await ref.read(taskFormNotifierProvider.notifier).save(
           title: _titleController.text.trim(),
           notes: _notesController.text.trim(),
         );
