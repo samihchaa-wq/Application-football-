@@ -1,0 +1,5 @@
+# Obsidian : on partage seulement les réglages communs (app.json).
+# Le reste est propre à chaque appareil (fenêtres ouvertes, extensions installées).
+.obsidian/*
+!.obsidian/app.json
+.trash/
