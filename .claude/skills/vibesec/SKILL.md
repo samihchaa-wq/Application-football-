@@ -1,9 +1,11 @@
 ---
 name: vibesec
-description: This skill helps Claude write secure web applications. Use this when working on any web application or when a user requests a scan or audit to ensure security best practices are followed.
+description: Security review checklist. Use only when a change touches a sensitive area — authentication, sessions, roles and permissions, Supabase RLS policies or Edge Functions, file uploads, payments, secrets, invitations or links shared between users, personal data — or when the user asks for a security scan or audit. Not for ordinary UI or styling work.
 ---
 
 # Secure Coding Guide for Web Applications
+
+> **Ce projet (adaptation locale)** : application Flutter (mobile + web) avec Supabase. La vraie barrière de sécurité est côté serveur : politiques RLS, fonctions SQL et Edge Functions. Tout contrôle fait seulement dans l'appli Flutter est contournable. Les sections propres aux navigateurs (XSS dans du HTML, CSRF, cookies, en-têtes) ne s'appliquent qu'à la version web, et seulement si du HTML ou des liens externes sont affichés.
 
 ## Overview
 

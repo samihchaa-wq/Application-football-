@@ -11,3 +11,9 @@
 | vibesec | github.com/BehiSecc/VibeSec-Skill (nom renommé en minuscules) | 0590993 | Apache-2.0 |
 
 Copies figées : pas de mise à jour automatique. Relire avant de mettre à jour.
+
+## Adaptations locales (à refaire après toute mise à jour)
+
+- graphify : description restreinte à `/graphify` (les consignes d'usage sont dans CLAUDE.md). Une réinstallation via `graphify install` peut écraser ce fichier.
+- vibesec : description restreinte aux zones sensibles ; encadré Flutter + Supabase en tête.
+- web-design-guidelines : section « Ce projet » pour traduire les règles HTML en Flutter.
