@@ -3,6 +3,7 @@ import 'package:petit_filet/core/theme/calendar_card_palette.dart';
 import 'package:petit_filet/core/widgets/calendar_scoreline.dart';
 import 'package:petit_filet/features/matches/domain/match_model.dart';
 import 'package:flutter/material.dart';
+import 'package:petit_filet/core/widgets/match_fixture.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -30,6 +31,15 @@ class MatchHistoryCard extends ConsumerWidget {
     final border = match.isCancelled
         ? CalendarCardPalette.cancelledBorder
         : CalendarCardPalette.matchBorder(match.matchType);
+    final ownScore = match.ownScore;
+    final opponentScore = match.opponentScore;
+    final resultStripe = match.isFinished &&
+            !match.isInternal &&
+            !match.isCancelled &&
+            ownScore != null &&
+            opponentScore != null
+        ? MatchFixture.resultColor(ownScore, opponentScore)
+        : null;
     final fixture = match.isInternal
         ? const CalendarCenteredTitle('Match entre nous')
         // Scores colorés selon le résultat de l'équipe du club : vert victoire,
@@ -80,12 +90,26 @@ class MatchHistoryCard extends ConsumerWidget {
       // Une fois terminé, un « Match entre nous » devient une archive purement
       // informative, et un match annulé n'a plus rien à ouvrir : pas de
       // navigation ni d'indication visuelle cliquable.
-      child: isFinishedInternal || match.isCancelled
-          ? content
-          : InkWell(
-              onTap: () => context.push('/matches/${match.id}'),
-              child: content,
+      child: Stack(
+        children: [
+          isFinishedInternal || match.isCancelled
+              ? content
+              : InkWell(
+                  onTap: () => context.push('/matches/${match.id}'),
+                  child: content,
+                ),
+          // Un match joué se lit d'un coup d'œil : liseré vert (victoire),
+          // orange (nul) ou rouge (défaite) sur le bord gauche.
+          if (resultStripe != null)
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: 5,
+              child: IgnorePointer(child: ColoredBox(color: resultStripe)),
             ),
+        ],
+      ),
     );
   }
 }

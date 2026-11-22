@@ -163,7 +163,11 @@ class _CalendarMatchesViewState extends ConsumerState<CalendarMatchesView> {
         Expanded(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final contentWidth = math.min(constraints.maxWidth, 1120.0);
+              // Le fil des matchs garde une largeur de lecture ; le mois a besoin de
+              // plus de place.
+              final maxContent =
+                  _displayMode == _CalendarDisplayMode.scroll ? 820.0 : 1120.0;
+              final contentWidth = math.min(constraints.maxWidth, maxContent);
               return Align(
                 alignment: Alignment.topCenter,
                 child: SizedBox(

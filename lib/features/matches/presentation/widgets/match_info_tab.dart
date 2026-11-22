@@ -1,4 +1,5 @@
 import 'package:petit_filet/core/theme/app_spacing.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/utils/app_formats.dart';
 import 'package:petit_filet/core/widgets/match_fixture.dart';
 import 'package:petit_filet/features/club/data/club_repository.dart';
@@ -33,149 +34,139 @@ class MatchInfoTab extends ConsumerWidget {
       ),
       data: (info) {
         final encounters = info.lastEncounters.take(_encounterSlots).toList();
-        return Card(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.cardPadding),
+        final jersey = JerseyOption.fromId(info.jerseyNote);
+        final showWeather = info.kickoffAt != null &&
+            info.address != null &&
+            ref.watch(clubModuleEnabledProvider(ClubModule.weather));
+        // Sur grand écran, la colonne garde une largeur lisible.
+        return Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (info.effectiveMeetingAt != null)
-                  _InfoRow(
-                    child: Text(
-                      'Rendez-vous  ${AppFormats.time(info.effectiveMeetingAt!)}',
-                      style: const TextStyle(
-                        fontSize: 15.5,
-                        fontWeight: FontWeight.w400,
+                if (info.effectiveMeetingAt != null || info.jerseyNote != null)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.cardPadding),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (info.effectiveMeetingAt != null)
+                            Expanded(
+                              child: _InfoBlock(
+                                label: 'Rendez-vous',
+                                child: Text(
+                                  AppFormats.time(info.effectiveMeetingAt!),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                ),
+                              ),
+                            ),
+                          if (info.jerseyNote != null)
+                            Expanded(
+                              child: _InfoBlock(
+                                label: 'Maillot',
+                                child: jersey == null
+                                    ? Text(
+                                        info.jerseyNote!,
+                                        style: _valueStyle,
+                                      )
+                                    : Row(
+                                        children: [
+                                          SizedBox(
+                                            width: 32,
+                                            height: 38,
+                                            child: KitJersey(kit: jersey.kit),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          SizedBox(
+                                            width: 32,
+                                            height: 38,
+                                            child: KitJersey(
+                                              kit: jersey.kit,
+                                              isGoalkeeper: true,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Flexible(
+                                            child: Text(
+                                              jersey.label,
+                                              style: _valueStyle,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ),
-                if (info.jerseyNote != null) ...[
-                  const SizedBox(height: AppSpacing.contentGap),
-                  Builder(
-                    builder: (context) {
-                      final jersey = JerseyOption.fromId(info.jerseyNote);
-                      if (jersey == null) {
-                        return _InfoRow(
-                          child: Text.rich(
-                            TextSpan(
-                              children: [
-                                const TextSpan(
-                                  text: 'Maillot  ',
-                                  style: TextStyle(
-                                    fontSize: 15.5,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                                TextSpan(
-                                  text: info.jerseyNote!,
-                                  style: const TextStyle(
-                                    fontSize: 15.5,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }
-                      return _InfoRow(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'Maillot  ',
-                              style: TextStyle(
-                                fontSize: 15.5,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                            SizedBox(
-                              width: 32,
-                              height: 38,
-                              child: KitJersey(kit: jersey.kit),
-                            ),
-                            const SizedBox(width: 4),
-                            SizedBox(
-                              width: 32,
-                              height: 38,
-                              child: KitJersey(
-                                kit: jersey.kit,
-                                isGoalkeeper: true,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Flexible(
-                              child: Text(
-                                jersey.label,
-                                style: const TextStyle(
-                                  fontSize: 15.5,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ],
                 // On ne récupère la météo au coup d'envoi que quand une
                 // adresse est renseignée : sinon la carte affichait la météo
-                // d'un lieu par défaut (généralement Toulouse), sans rapport
-                // avec le match — trompeur.
+                // d'un lieu par défaut, sans rapport avec le match.
                 // Le club peut aussi avoir désactivé la météo.
-                if (info.kickoffAt != null &&
-                    info.address != null &&
-                    ref.watch(clubModuleEnabledProvider(ClubModule.weather)))
+                if (showWeather)
                   MatchWeatherCard(
                     matchId: matchId,
                     kickoffAt: info.kickoffAt!,
                     plannedDurationMinutes: 90,
                   ),
                 if (!info.isInternal)
-                  const SizedBox(height: AppSpacing.sectionGap),
-                if (!info.isInternal)
-                  Text(
-                    encounters.length > 1
-                        ? 'Dernières rencontres'
-                        : 'Dernière rencontre',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleSmall
-                        ?.copyWith(fontWeight: FontWeight.w400),
-                  ),
-                if (!info.isInternal)
-                  const SizedBox(height: AppSpacing.contentGap),
-                if (!info.isInternal && encounters.isEmpty)
-                  Text(
-                    'Aucune rencontre passée contre cet adversaire.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Theme.of(context).hintColor,
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.cardPadding),
+                      child: _InfoBlock(
+                        label: encounters.length > 1
+                            ? 'Dernières rencontres'
+                            : 'Dernière rencontre',
+                        child: encounters.isEmpty
+                            ? Text(
+                                'Première confrontation : aucun précédent '
+                                'enregistré.',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Theme.of(context).hintColor,
+                                ),
+                              )
+                            : Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  for (var index = 0;
+                                      index < encounters.length;
+                                      index++) ...[
+                                    if (index > 0)
+                                      const SizedBox(
+                                        width: AppSpacing.microGap,
+                                      ),
+                                    Expanded(
+                                      child: _EncounterChip(
+                                        encounter: encounters[index],
+                                      ),
+                                    ),
+                                  ],
+                                  // Cases vides : chaque score garde la
+                                  // largeur qu'il aurait avec cinq
+                                  // rencontres, même s'il est seul.
+                                  for (var index = encounters.length;
+                                      index < _encounterSlots;
+                                      index++) ...[
+                                    const SizedBox(width: AppSpacing.microGap),
+                                    const Expanded(child: SizedBox.shrink()),
+                                  ],
+                                ],
+                              ),
+                      ),
                     ),
-                  )
-                else if (!info.isInternal)
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      for (var index = 0;
-                          index < encounters.length;
-                          index++) ...[
-                        if (index > 0)
-                          const SizedBox(width: AppSpacing.microGap),
-                        Expanded(
-                          child: _EncounterChip(encounter: encounters[index]),
-                        ),
-                      ],
-                      // Cases vides : chaque score garde la largeur qu'il
-                      // aurait avec cinq rencontres, même s'il est seul.
-                      for (var index = encounters.length;
-                          index < _encounterSlots;
-                          index++) ...[
-                        const SizedBox(width: AppSpacing.microGap),
-                        const Expanded(child: SizedBox.shrink()),
-                      ],
-                    ],
                   ),
               ],
             ),
@@ -186,17 +177,36 @@ class MatchInfoTab extends ConsumerWidget {
   }
 }
 
+const _valueStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.w400);
+
 /// Nombre de dernières rencontres affichées sur une ligne.
 const _encounterSlots = 5;
 
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.child});
+/// Petit libellé discret au-dessus d'une valeur plus grande : la taille et la
+/// couleur portent la hiérarchie (le texte reste en graisse normale).
+class _InfoBlock extends StatelessWidget {
+  const _InfoBlock({required this.label, required this.child});
 
+  final String label;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    return Row(children: [Expanded(child: child)]);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: AppTheme.textFaint,
+                letterSpacing: 0.8,
+                fontWeight: FontWeight.w400,
+              ),
+        ),
+        const SizedBox(height: AppSpacing.contentGap),
+        child,
+      ],
+    );
   }
 }
 
