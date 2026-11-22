@@ -242,7 +242,12 @@ class AuthRepository {
   Future<AuthProfile?> _fetchProfileFromServer({
     required bool retryAfterSignIn,
   }) async {
-    final attempts = retryAfterSignIn ? 5 : 1;
+    // Une seule tentative laissait l'écran « Connexion temporairement
+    // indisponible » dès qu'un réseau mobile se réveillait lentement ou que
+    // le jeton avait expiré pendant l'absence. Trois tentatives courtes,
+    // avec renouvellement de la session si le jeton est expiré.
+    final attempts = retryAfterSignIn ? 5 : 3;
+    var sessionRefreshed = false;
     Object? lastError;
     for (var attempt = 0; attempt < attempts; attempt++) {
       try {
@@ -253,9 +258,17 @@ class AuthRepository {
         return AuthProfile.fromJson(Map<String, dynamic>.from(response as Map));
       } catch (error) {
         lastError = error;
+        if (!sessionRefreshed && _isExpiredToken(error)) {
+          sessionRefreshed = true;
+          try {
+            await _client.auth.refreshSession();
+          } catch (_) {
+            // Refus réel du serveur d'identité : la dernière erreur reste.
+          }
+        }
         if (attempt + 1 < attempts) {
           await Future<void>.delayed(
-            Duration(milliseconds: 150 * (attempt + 1)),
+            Duration(milliseconds: 300 * (attempt + 1)),
           );
         }
       }
@@ -373,3 +386,11 @@ class AuthRepository {
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(ref.watch(supabaseClientProvider));
 });
+
+/// Jeton d'accès expiré ou illisible : se corrige en renouvelant la session.
+bool _isExpiredToken(Object error) {
+  if (error is PostgrestException) {
+    return const {'PGRST301', 'PGRST302', 'PGRST303'}.contains(error.code);
+  }
+  return error is AuthException;
+}
