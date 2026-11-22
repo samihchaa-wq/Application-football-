@@ -5,6 +5,7 @@ import 'package:petit_filet/app/shell/module_navigation.dart';
 import 'package:petit_filet/core/theme/app_spacing.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/theme/calendar_card_palette.dart';
+import 'package:petit_filet/core/utils/app_formats.dart';
 import 'package:petit_filet/core/utils/match_window.dart';
 import 'package:petit_filet/core/widgets/calendar_scoreline.dart';
 import 'package:petit_filet/core/widgets/pf_empty_state.dart';
@@ -681,7 +682,11 @@ Widget _buildEntryCard(_FeedEntry entry, bool isAdmin, DateTime now) {
     case _FeedKind.upcomingMatch:
       return _UpcomingMatchCard(match: entry.match!, isAdmin: isAdmin);
     case _FeedKind.nextMatch:
-      return _UpcomingMatchCard(match: entry.match!, isAdmin: isAdmin);
+      return _UpcomingMatchCard(
+        match: entry.match!,
+        isAdmin: isAdmin,
+        hero: !entry.match!.isInternal && !entry.match!.isCancelled,
+      );
     case _FeedKind.liveMatch:
       final match = entry.match!;
       return HomeNextMatchCard(
@@ -719,10 +724,18 @@ Widget _buildEntryCard(_FeedEntry entry, bool isAdmin, DateTime now) {
 }
 
 class _UpcomingMatchCard extends ConsumerWidget {
-  const _UpcomingMatchCard({required this.match, required this.isAdmin});
+  const _UpcomingMatchCard({
+    required this.match,
+    required this.isAdmin,
+    this.hero = false,
+  });
 
   final MatchModel match;
   final bool isAdmin;
+
+  /// Le prochain match : carte mise en avant, plus grande, avec compte à
+  /// rebours. Les autres matchs à venir restent des cartes compactes.
+  final bool hero;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -791,45 +804,65 @@ class _UpcomingMatchCard extends ConsumerWidget {
           );
 
     final address = match.address?.trim();
-    final content = CalendarCardSections(
-      header: CalendarDateLine(
-        kickoffAt: match.kickoffAt,
-        label: match.isInternal ? null : match.calendarTypeLabel,
-        endInset: CalendarCardActionsOverlay.dateInsetFor(actionCount),
-      ),
-      bodyBottomPadding:
-          match.isCancelled ? CalendarCardSpacing.cancelledBodyBottom : null,
-      body: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          fixture,
-          if (match.isCancelled) ...[
-            const SizedBox(height: CalendarCardSpacing.cancelledLabelGap),
-            const CalendarCancelledLabel(),
-          ],
-          if (availabilityIsOpen)
-            MatchAvailabilitySelector(
-              matchId: match.id,
-              embeddedOnDark: true,
-              topSpacing: CalendarCardSpacing.line,
+    final content = hero
+        ? _NextMatchHeroBody(
+            match: match,
+            homeName: homeName,
+            awayName: awayName,
+            actionInset: CalendarCardActionsOverlay.dateInsetFor(actionCount),
+            address: address,
+            availability: availabilityIsOpen
+                ? MatchAvailabilitySelector(
+                    matchId: match.id,
+                    embeddedOnDark: true,
+                    topSpacing: 0,
+                  )
+                : null,
+          )
+        : CalendarCardSections(
+            header: CalendarDateLine(
+              kickoffAt: match.kickoffAt,
+              label: match.isInternal
+                  ? null
+                  : '${match.calendarTypeLabel} · '
+                      '${match.isHome ? 'Domicile' : 'Extérieur'}',
+              endInset: CalendarCardActionsOverlay.dateInsetFor(actionCount),
             ),
-        ],
-      ),
-      footer: address != null && address.isNotEmpty
-          ? CalendarAddressLine(
-              address,
-              onTap: () => showMatchAddressSheet(context, address),
-            )
-          : null,
-    );
+            bodyBottomPadding: match.isCancelled
+                ? CalendarCardSpacing.cancelledBodyBottom
+                : null,
+            body: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                fixture,
+                if (match.isCancelled) ...[
+                  const SizedBox(height: CalendarCardSpacing.cancelledLabelGap),
+                  const CalendarCancelledLabel(),
+                ],
+                if (availabilityIsOpen)
+                  MatchAvailabilitySelector(
+                    matchId: match.id,
+                    embeddedOnDark: true,
+                    topSpacing: CalendarCardSpacing.line,
+                  ),
+              ],
+            ),
+            footer: address != null && address.isNotEmpty
+                ? CalendarAddressLine(
+                    address,
+                    onTap: () => showMatchAddressSheet(context, address),
+                  )
+                : null,
+          );
 
     return Card(
       color: cardSurface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        side: BorderSide(color: cardBorder, width: 1.2),
+        side: BorderSide(color: cardBorder, width: hero ? 2 : 1.2),
       ),
+      elevation: hero ? 6 : null,
       clipBehavior: Clip.antiAlias,
       child: CalendarCardActionsOverlay(
         actions: cardActions,
@@ -996,6 +1029,153 @@ class _MessageCard extends StatelessWidget {
         message: message,
         tone: tone,
         compact: true,
+      ),
+    );
+  }
+}
+
+/// Corps de la carte « prochain match » : point focal du calendrier.
+class _NextMatchHeroBody extends StatelessWidget {
+  const _NextMatchHeroBody({
+    required this.match,
+    required this.homeName,
+    required this.awayName,
+    required this.actionInset,
+    required this.address,
+    required this.availability,
+  });
+
+  final MatchModel match;
+  final String homeName;
+  final String awayName;
+  final double actionInset;
+  final String? address;
+  final Widget? availability;
+
+  static String countdown(DateTime kickoff, DateTime now) {
+    final diff = kickoff.difference(now);
+    if (diff.isNegative) return 'En cours';
+    if (diff.inMinutes < 60) return 'Dans ${diff.inMinutes} min';
+    if (diff.inHours < 24) return 'Dans ${diff.inHours} h';
+    final days = DateTime(kickoff.year, kickoff.month, kickoff.day)
+        .difference(DateTime(now.year, now.month, now.day))
+        .inDays;
+    if (days == 1) return 'Demain';
+    return 'Dans $days jours';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final accent = theme.colorScheme.primary;
+    final kickoff = match.kickoffAt.toLocal();
+    final opponent = match.opponentName ?? 'Adversaire';
+    final venue = match.isHome ? 'À domicile' : 'À l’extérieur';
+    final addr = address;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color.alphaBlend(accent.withValues(alpha: .38), AppTheme.surface),
+            AppTheme.surface,
+          ],
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsetsDirectional.only(end: actionInset),
+              child: Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      'PROCHAIN MATCH',
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: AppTheme.textSecondary,
+                        letterSpacing: 2,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: accent,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      child: Text(
+                        countdown(kickoff, DateTime.now()),
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: Text(
+                    opponent,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      color: AppTheme.textPrimary,
+                      fontSize: 30,
+                      height: 1.05,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  AppFormats.time(kickoff),
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    color: AppTheme.textPrimary,
+                    fontSize: 30,
+                    height: 1.05,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '${match.isHome ? homeName : awayName} · $venue · '
+              '${AppFormats.calendarDateTimeLong(kickoff, includeTime: false)}'
+              '${match.calendarTypeLabel.isEmpty ? '' : ' · ${match.calendarTypeLabel}'}',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: AppTheme.textSecondary,
+              ),
+            ),
+            if (addr != null && addr.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              CalendarAddressLine(
+                addr,
+                onTap: () => showMatchAddressSheet(context, addr),
+              ),
+            ],
+            if (availability != null) ...[
+              const SizedBox(height: 14),
+              availability!,
+            ],
+          ],
+        ),
       ),
     );
   }

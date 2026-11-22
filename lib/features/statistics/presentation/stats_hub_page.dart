@@ -1,5 +1,6 @@
 import 'package:petit_filet/app/shell/module_navigation.dart';
 import 'package:petit_filet/core/theme/app_spacing.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:petit_filet/core/utils/name_validation.dart';
 import 'package:petit_filet/core/utils/ranking.dart';
@@ -286,7 +287,8 @@ class _PlayersPanelState extends ConsumerState<_PlayersPanel> {
           trailingGap: nameWithBadgesGap,
         );
 
-        return Padding(
+        final leaders = _leaderTiles(data.players, showsAssists);
+        final table = Padding(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.screenGutter,
             AppSpacing.contentGap,
@@ -322,6 +324,13 @@ class _PlayersPanelState extends ConsumerState<_PlayersPanel> {
                 ),
             ],
           ),
+        );
+        if (leaders.isEmpty) return table;
+        return Column(
+          children: [
+            _LeadersStrip(tiles: leaders),
+            Expanded(child: table),
+          ],
         );
       },
     );
@@ -514,6 +523,109 @@ class _Message extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _Leader {
+  const _Leader(this.label, this.value, this.name);
+  final String label;
+  final int value;
+  final String name;
+}
+
+/// Les meilleurs du club d'un coup d'œil : le chiffre est le point focal, le
+/// tableau complet reste dessous pour trier et comparer.
+List<_Leader> _leaderTiles(
+  List<PlayerStatistics> players,
+  bool showsAssists,
+) {
+  _Leader? best(String label, int Function(PlayerStatistics) value) {
+    PlayerStatistics? top;
+    for (final player in players) {
+      if (top == null || value(player) > value(top)) top = player;
+    }
+    if (top == null || value(top) <= 0) return null;
+    return _Leader(label, value(top), capitalizePersonName(top.playerName));
+  }
+
+  return [
+    best('Meilleur buteur', (p) => p.goals),
+    if (showsAssists) best('Meilleur passeur', (p) => p.assists),
+    best('Homme du match', (p) => p.hdm ?? 0),
+    best('Plus présent', (p) => p.matchesPlayed ?? 0),
+  ].whereType<_Leader>().toList();
+}
+
+class _LeadersStrip extends StatelessWidget {
+  const _LeadersStrip({required this.tiles});
+
+  final List<_Leader> tiles;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SizedBox(
+      height: 108,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.screenGutter,
+          AppSpacing.contentGap,
+          AppSpacing.screenGutter,
+          0,
+        ),
+        itemCount: tiles.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        itemBuilder: (context, index) {
+          final tile = tiles[index];
+          return Container(
+            width: 148,
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+            decoration: BoxDecoration(
+              color: AppTheme.surface,
+              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+              border: Border(
+                left: BorderSide(
+                  color: theme.colorScheme.primary,
+                  width: 4,
+                ),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  tile.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: AppTheme.textFaint,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                Text(
+                  '${tile.value}',
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    color: AppTheme.textPrimary,
+                    fontSize: 36,
+                    height: 1.1,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                Text(
+                  tile.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

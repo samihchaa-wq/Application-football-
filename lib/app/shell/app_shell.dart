@@ -216,7 +216,20 @@ class _AppShellState extends ConsumerState<AppShell>
                                 color: AppTheme.outline.withValues(alpha: .28),
                               ),
                             ],
-                            Expanded(child: content),
+                            // Sur grand écran, le contenu garde une largeur de
+                            // lecture, centrée : plus d'écrans étirés sur
+                            // 1200 px.
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.topCenter,
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                    maxWidth: 1040,
+                                  ),
+                                  child: content,
+                                ),
+                              ),
+                            ),
                           ],
                         )
                       : content,

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:petit_filet/app/shell/module_navigation.dart';
+import 'package:petit_filet/core/widgets/sticky_header_table.dart';
 import 'package:petit_filet/features/auth/data/auth_repository.dart';
 import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:petit_filet/features/badges/data/statistics_badge_emblems_provider.dart';
@@ -58,10 +59,15 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  // Le bandeau des meilleurs répète des noms et des chiffres : les tests du
+  // tableau ne regardent que le tableau.
+  Finder inTable(Finder finder) =>
+      find.descendant(of: find.byType(StickyHeaderTableCard), matching: finder);
+
   List<String> playerOrder(WidgetTester tester) {
     final names = {'Karim', 'Maxime', 'Julien'};
     final found = tester
-        .widgetList<Text>(find.byType(Text))
+        .widgetList<Text>(inTable(find.byType(Text)))
         .map((text) => text.data)
         .whereType<String>()
         .where(names.contains)
@@ -79,10 +85,10 @@ void main() {
     await pumpStats(tester);
 
     expect(repository.requestedPlayers, [StatisticsPeriod.current]);
-    expect(find.text('Karim'), findsOneWidget);
-    expect(find.text('Maxime'), findsOneWidget);
-    expect(find.text('12'), findsOneWidget);
-    expect(find.text('7'), findsOneWidget);
+    expect(inTable(find.text('Karim')), findsOneWidget);
+    expect(inTable(find.text('Maxime')), findsOneWidget);
+    expect(inTable(find.text('12')), findsOneWidget);
+    expect(inTable(find.text('7')), findsOneWidget);
     expect(find.text('HDM'), findsOneWidget);
     // La saison en cours montre toujours la colonne des passes décisives.
     expect(find.text('PD'), findsOneWidget);
@@ -126,7 +132,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Précédente'));
     await tester.pumpAndSettle();
-    expect(find.text('Karim'), findsNothing);
+    expect(inTable(find.text('Karim')), findsNothing);
 
     final container = ProviderScope.containerOf(
       tester.element(find.byType(StatsHubPage)),
@@ -176,8 +182,8 @@ void main() {
       repository.requestedPlayers,
       [StatisticsPeriod.current, StatisticsPeriod.previous],
     );
-    expect(find.text('Maxime'), findsOneWidget);
-    expect(find.text('Karim'), findsNothing);
+    expect(inTable(find.text('Maxime')), findsOneWidget);
+    expect(inTable(find.text('Karim')), findsNothing);
     // Aucune passe enregistrée sur cette période : pas de colonne vide.
     expect(find.text('PD'), findsNothing);
   });
@@ -423,7 +429,7 @@ void main() {
 
     await pumpStats(tester, section: 'rankings');
 
-    expect(find.text('Karim'), findsOneWidget);
+    expect(inTable(find.text('Karim')), findsOneWidget);
     expect(find.text('–'), findsOneWidget);
   });
 }
