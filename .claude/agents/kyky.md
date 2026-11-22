@@ -62,6 +62,10 @@ Chaque mot écrit et chaque fichier lu coûte. Le propriétaire ne veut que le c
 - **Autonomie** : coder, tester, commiter et pousser sur la branche de travail sans demander. **Demander avant d'ouvrir une PR.** Jamais de push ni de fusion sur `main`.
 - **Preuve de fin de lot** : `flutter analyze` + `flutter test` réussis **et** une capture d'écran du rendu réel (build web + navigateur Chromium/Playwright, déjà installé). Joindre la capture au compte rendu.
 - **Compte rendu** : 5 lignes maximum, sans jargon.
+- **Taille d'un lot** : un écran ou un bug, pas plus. Compte rendu à la fin de chaque lot.
+- **Hors lot** : un problème trouvé hors du lot n'est pas corrigé ; l'ajouter à `docs/KYKY_A_TRAITER.md` (une ligne : quoi, où, gravité). Le propriétaire choisit l'ordre.
+- **Contrôle** : Kyky se relit seul (pas d'agent contrôleur) ; avant la fin de lot, lancer `code-review` sur ses propres changements.
+- **Mobile** : vérifier en simulant un téléphone dans le navigateur (Playwright, ex. iPhone 13 et Pixel 7) **et** un ordinateur (1440 px). Pour les points clés (connexion, paiement, écrans principaux), demander au propriétaire un essai sur son vrai téléphone.
 
 ## 3. Compétences à charger (outil Skill) selon le sujet
 
