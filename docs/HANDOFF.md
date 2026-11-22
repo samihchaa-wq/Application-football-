@@ -46,3 +46,10 @@ Restent à vérifier sur GitHub avant intégration : PR #69 (+1 manuel), #72 (é
 - Environnement cloud « Application-football » : installe Graphify et construit la carte au démarrage. À choisir à l'ouverture d'une session.
 - Écartés après examen : Vercel (appli sur Cloudflare), Oh My Claude Code (trop lourd), claude-mem et Olmind (mémoire perdue dans le cloud, ou source invérifiable), Find Skills (installe sans relecture), anti-ai-slop/hallmark (sites web neufs, pas Flutter).
 - **À faire ensuite, à la demande de la personne qui pilote** : chercher d'autres compétences utiles à Petit Filet (Flutter, direction artistique, accessibilité, fonctionnalités d'appli sportive). Les lire avant installation, en recommander peu, éviter les doublons avec l'existant.
+
+## Lot 1 Kyky : déconnexion du gestionnaire (22/11/2026)
+
+- Lu : connexion gestionnaire = `/auth/sign-in?redirect=/control`, même session que le reste de l'appli (pas d'espace séparé). Hypothèse du propriétaire non confirmée par le code.
+- Déjà en place (commits 4f30eea, dc1b0e3) : au retour dans l'appli, jeton expiré = session renouvelée au lieu d'« accès refusé ». Test : `test/app/router/manager_session_resume_test.dart`.
+- Non fait : reproduction et preuve. Cet environnement n'a ni Flutter ni graphify (`/opt/flutter` absent) : aucun test lancé, aucun code modifié.
+- Reste : session avec Flutter, lancer analyze + test, reproduire sur téléphone et ordinateur ; demander au propriétaire quel écran et quel message apparaissent après le retour (page de connexion ? « Accès gestionnaire requis » ?) et après combien de temps d'absence.
