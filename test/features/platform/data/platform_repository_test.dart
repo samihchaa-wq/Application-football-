@@ -19,6 +19,67 @@ void main() {
     },
   );
 
+  test(
+    'jeton expiré au retour dans l’appli : session renouvelée puis relecture, '
+    'jamais « accès refusé »',
+    () async {
+      var refreshed = 0;
+      var overviewCalls = 0;
+      final repository = PlatformRepository(
+        (name) async {
+          if (name == 'platform_control_overview') {
+            overviewCalls++;
+            if (refreshed == 0) {
+              throw const PostgrestException(
+                message: 'JWT expired',
+                code: 'PGRST301',
+              );
+            }
+            return {
+              'clubs': [
+                {'id': 'a', 'name': 'Team'},
+              ],
+            };
+          }
+          throw const PostgrestException(message: 'off', code: '42P01');
+        },
+        refreshSession: () async => refreshed++,
+      );
+      final snapshot = await repository.fetch();
+      expect(snapshot.teams.single.name, 'Team');
+      expect(refreshed, 1);
+      expect(overviewCalls, 2);
+    },
+  );
+
+  test('jeton toujours refusé après renouvellement : un seul essai de plus',
+      () async {
+    var refreshed = 0;
+    var calls = 0;
+    final repository = PlatformRepository(
+      (name) async {
+        calls++;
+        throw const PostgrestException(
+            message: 'JWT expired', code: 'PGRST301');
+      },
+      refreshSession: () async => refreshed++,
+    );
+    await expectLater(repository.fetch(), throwsA(isA<PlatformAccessDenied>()));
+    expect(refreshed, 1);
+    expect(calls, 2);
+  });
+
+  test('refus réel (42501) : aucun renouvellement de session', () async {
+    var refreshed = 0;
+    final repository = PlatformRepository(
+      (name) async =>
+          throw const PostgrestException(message: 'denied', code: '42501'),
+      refreshSession: () async => refreshed++,
+    );
+    await expectLater(repository.fetch(), throwsA(isA<PlatformAccessDenied>()));
+    expect(refreshed, 0);
+  });
+
   test('revocation between teams and health discards all data', () async {
     final repository = PlatformRepository((name) async {
       if (name == 'platform_control_overview') {
