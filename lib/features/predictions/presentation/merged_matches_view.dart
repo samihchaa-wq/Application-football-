@@ -625,29 +625,46 @@ class _FeedSectionHeaderDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.black,
-        border: Border(
-          bottom: BorderSide(
-            color: AppTheme.outline.withValues(
-              alpha: overlapsContent ? .5 : .25,
+    return SizedBox(
+      height: _height,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: AppTheme.background,
+          border: Border(
+            bottom: BorderSide(
+              color: AppTheme.outline.withValues(
+                alpha: overlapsContent ? .5 : .2,
+              ),
             ),
           ),
         ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.screenGutter,
-        ),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            title,
-            style: Theme.of(context)
-                .textTheme
-                .titleSmall
-                ?.copyWith(color: Colors.white, fontWeight: FontWeight.w400),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.screenGutter,
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Repère de couleur du club : ancre l'œil sur le titre.
+              Container(
+                width: 4,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.circular(1),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: AppTheme.textFaint,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0.8,
+                      fontSize: 15,
+                    ),
+              ),
+            ],
           ),
         ),
       ),

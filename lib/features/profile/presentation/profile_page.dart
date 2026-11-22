@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:petit_filet/core/widgets/player_photo_mode_picker.dart';
 import 'package:petit_filet/core/storage/player_photo_mode.dart';
 import 'package:petit_filet/core/security/password_policy.dart';
@@ -115,11 +116,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           final sectionGap = compact ? 12.0 : 16.0;
           final fieldGap = compact ? 6.0 : 8.0;
 
+          // Sur grand écran, le formulaire garde une largeur lisible, centrée.
+          final sideGap = math.max(16.0, (constraints.maxWidth - 760) / 2);
           return ListView(
             padding: EdgeInsets.fromLTRB(
-              16,
+              sideGap,
               compact ? 4 : 8,
-              16,
+              sideGap,
               compact ? 10 : 16,
             ),
             children: [
@@ -288,9 +291,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         isEmpty: _birthDate == null,
                         decoration: InputDecoration(
                           labelText: 'Date de naissance (optionnel)',
-                          helperText: 'Téléphone et date de naissance sont '
-                              'visibles par les membres de ton club.',
-                          helperMaxLines: 2,
                           isDense: true,
                           enabled: _savedDetails != null,
                           suffixIcon: _birthDate == null
@@ -320,7 +320,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                   'indisponibles pour le moment.'
                               : 'Visibles par les membres du club dans '
                                   'l’Effectif.',
-                          style: Theme.of(context).textTheme.bodySmall,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppTheme.textFaint,
+                                  ),
                         ),
                       ),
                     ],

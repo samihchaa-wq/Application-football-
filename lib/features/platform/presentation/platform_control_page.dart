@@ -103,12 +103,23 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
   @override
   Widget build(BuildContext context) {
     final auth = ref.watch(authControllerProvider);
+    // Même palette que le reste de l'appli (fond, surfaces), pas un thème
+    // Material générique.
     final scheme = ColorScheme.fromSeed(
       seedColor: AppTheme.defaultPrimary,
       brightness: Brightness.dark,
+    ).copyWith(
+      surface: AppTheme.background,
+      surfaceContainerLow: AppTheme.surface,
+      surfaceContainer: AppTheme.surface,
+      surfaceContainerHigh: AppTheme.surfaceHigh,
+      outline: AppTheme.outline,
     );
     return Theme(
-      data: Theme.of(context).copyWith(colorScheme: scheme),
+      data: Theme.of(context).copyWith(
+        colorScheme: scheme,
+        scaffoldBackgroundColor: AppTheme.background,
+      ),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final wide = constraints.maxWidth >= 1000;
@@ -127,12 +138,16 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                     children: [
                       Text(
                         'PETIT FILET',
-                        style: TextStyle(fontSize: 13, letterSpacing: 2),
+                        style: TextStyle(
+                          fontSize: 12,
+                          letterSpacing: 2.4,
+                          color: AppTheme.defaultAccent,
+                        ),
                       ),
                       Text('Poste de contrôle',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 20)),
+                          style: TextStyle(fontSize: 24)),
                     ],
                   ),
                 ),
