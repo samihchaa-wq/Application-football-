@@ -44,7 +44,7 @@ lire un fichier ou des journaux, résumer une sortie de commande), la confier
 cher). Garder pour soi ce qui demande de réfléchir, décider ou modifier.
 
 Pour la refonte de l'appli (concevoir, coder, corriger, tester un lot), utiliser
-l'agent `batisseur` (`.claude/agents/batisseur.md`) : il regroupe les règles
+l'agent `kyky` (`.claude/agents/kyky.md`) : il regroupe les règles
 du chantier, la méthode de travail et les compétences à charger.
 
 ## Mémoire : sommaire d'abord, conversations courtes
