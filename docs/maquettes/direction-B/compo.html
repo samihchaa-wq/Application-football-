@@ -1,0 +1,13 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Composition — Direction B</title><link rel="stylesheet" href="style.css"></head><body>
+<script src="shell.js"></script>
+<script>
+const P=[["Karim",1,50,91],["Romain",3,14,72],["Kevin",5,37,76],["Baptiste",4,63,76],["Julien",2,86,72],["Mehdi",6,35,54],["Antoine",8,65,54],["Théo",11,16,34],["Maxime",10,50,36],["Lucas",7,84,34],["Yanis",9,50,14]];
+let stripes='';for(let i=0;i<8;i++)stripes+=`<rect x="0" y="${i*14}" width="100" height="14" fill="${i%2?'#175a31':'#1F6B3A'}"/>`;
+const pl=P.map(([n,k,x,y])=>`<g transform="translate(${x} ${y})"><path d="M-5.5 -4 L-2.5 -6 Q0 -4.5 2.5 -6 L5.5 -4 L4.2 -0.8 L3 -1.6 L3 5.5 L-3 5.5 L-3 -1.6 L-4.2 -0.8 Z" fill="${n==='Karim'?'#FFD23F':'#fff'}" stroke="#111" stroke-width=".7"/><text y="3.4" text-anchor="middle" font-family="Unbounded,sans-serif" font-weight="600" font-size="4.4" fill="#111">${k}</text><rect x="-8" y="7.2" width="16" height="4.6" rx="2.3" fill="#111"/><text y="10.5" text-anchor="middle" font-family="Figtree,sans-serif" font-weight="600" font-size="3.2" fill="#fff">${n}</text></g>`).join('');
+const pitch=`<svg viewBox="0 0 100 112" width="100%" style="display:block">${stripes}<g fill="none" stroke="#fff" stroke-width=".6" opacity=".9"><rect x="2" y="2" width="96" height="108"/><line x1="2" y1="56" x2="98" y2="56"/><circle cx="50" cy="56" r="9"/><rect x="24" y="2" width="52" height="16"/><rect x="24" y="94" width="52" height="16"/></g>${pl}</svg>`;
+shell("compo.html","4-2-3-1",`
+<div class="cols"><div class="pitch">${pitch}</div>
+<div><div class="sectitle"><h2>Remplaçants</h2><i class="stripes"></i></div><div class="bench"><span>Alexis</span><span>Florian</span><span>Quentin</span><span>Nathan</span><span>Sofiane</span></div>
+<div class="sectitle" style="margin-top:26px"><h2>Titulaires</h2><i class="stripes"></i></div>
+<div class="card">${P.map(([n,k])=>`<div class="kv"><span class="sc" style="width:36px">${k}</span><b style="flex:1">${n}</b><span class="tag club">TITULAIRE</span></div>`).join('')}</div></div></div>`);
+</script></body></html>

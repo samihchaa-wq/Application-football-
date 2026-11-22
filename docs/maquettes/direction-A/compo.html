@@ -1,0 +1,14 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Composition — Direction A</title><link rel="stylesheet" href="style.css"></head><body>
+<script src="shell.js"></script>
+<script>
+const P=[["Karim",1,50,91],["Romain",3,14,72],["Kevin",5,37,76],["Baptiste",4,63,76],["Julien",2,86,72],["Mehdi",6,35,54],["Antoine",8,65,54],["Théo",11,16,34],["Maxime",10,50,36],["Lucas",7,84,34],["Yanis",9,50,14]];
+const players=P.map(([n,k,x,y])=>`<g transform="translate(${x} ${y})"><circle r="5.2" fill="#FBF8F0" stroke="#16202B" stroke-width=".7"/><text y="1.9" text-anchor="middle" font-family="Fraunces,serif" font-weight="600" font-size="5.2" fill="#16202B">${k}</text><text y="10.4" text-anchor="middle" font-family="Public Sans,sans-serif" font-weight="600" font-size="3.4" fill="#16202B">${n}</text></g>`).join('');
+const pitch=`<svg viewBox="0 0 100 112" width="100%" style="display:block"><rect x="2" y="2" width="96" height="108" fill="none" stroke="#16202B" stroke-width=".7"/><line x1="2" y1="56" x2="98" y2="56" stroke="#16202B" stroke-width=".5"/><circle cx="50" cy="56" r="9" fill="none" stroke="#16202B" stroke-width=".5"/><rect x="24" y="2" width="52" height="16" fill="none" stroke="#16202B" stroke-width=".5"/><rect x="38" y="2" width="24" height="6" fill="none" stroke="#16202B" stroke-width=".5"/><rect x="24" y="94" width="52" height="16" fill="none" stroke="#16202B" stroke-width=".5"/><rect x="38" y="104" width="24" height="6" fill="none" stroke="#16202B" stroke-width=".5"/>${players}</svg>`;
+shell("compo.html","Composition",`
+<p class="kicker">FC Démo – ES Trois Chênes · dimanche 20h00</p>
+<div style="display:flex;justify-content:space-between;align-items:baseline;margin:6px 0 14px"><h2 style="font-size:26px">4-2-3-1</h2><span class="meta">11 titulaires · 5 remplaçants</span></div>
+<div class="cols"><div class="pitchwrap">${pitch}</div>
+<div><h2 style="font-size:20px">Remplaçants</h2><div class="bench"><span>Alexis</span><span>Florian</span><span>Quentin</span><span>Nathan</span><span>Sofiane</span></div>
+<section class="sec"><h2 style="font-size:20px">Feuille d'équipe</h2><hr class="rule" style="margin:8px 0 0">
+${P.map(([n,k])=>`<div class="row" style="padding:8px 0"><span class="num" style="font-size:20px;width:28px">${k}</span><span>${n}</span><span class="meta" style="margin:0">titulaire</span></div>`).join('')}</section></div></div>`);
+</script></body></html>

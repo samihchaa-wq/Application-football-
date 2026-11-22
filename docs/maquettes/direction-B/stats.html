@@ -1,0 +1,16 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Statistiques — Direction B</title><link rel="stylesheet" href="style.css"></head><body>
+<script src="shell.js"></script>
+<script>
+const R=[["Yanis",7,3,0,2,2],["Antoine",7,1,0,2,0],["Maxime",7,1,0,2,2],["Mehdi",7,1,0,2,1],["Alexis",7,0,0,2,0],["Florian",7,0,0,2,0],["Lucas",7,0,0,2,1],["Julien",6,2,0,1,1]];
+shell("stats.html","Les chiffres",`
+<div class="tabs"><a class="on" href="#">Joueurs</a><a href="#">Équipe</a><a href="#">Prono</a></div>
+<div class="leaders">
+ <div class="card club"><span class="small">BUTEUR</span><div class="v">3</div><b>Yanis</b></div>
+ <div class="card"><span class="small">HOMME DU MATCH</span><div class="v">2</div><b>Yanis, Maxime</b></div>
+ <div class="card"><span class="small">PLUS PRÉSENT</span><div class="v">7</div><b>6 joueurs</b></div>
+ <div class="card" style="background:var(--sun)"><span class="small">BILAN</span><div class="v" style="font-size:26px;padding-top:10px">5V 2N 1D</div><b>15 – 9 · +6</b></div>
+</div>
+<div class="card"><table><thead><tr><th>Joueur</th><th>J</th><th>B</th><th>PD</th><th>CS</th><th>HDM</th></tr></thead><tbody>
+${R.map((r,i)=>`<tr class="${i==0?'top':''}"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td></tr>`).join('')}
+</tbody></table></div>`);
+</script></body></html>

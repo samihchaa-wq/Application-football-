@@ -1,0 +1,17 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Statistiques — Direction A</title><link rel="stylesheet" href="style.css"></head><body>
+<script src="shell.js"></script>
+<script>
+const R=[["Yanis",7,3,0,2,2],["Antoine",7,1,0,2,0],["Maxime",7,1,0,2,2],["Mehdi",7,1,0,2,1],["Alexis",7,0,0,2,0],["Florian",7,0,0,2,0],["Lucas",7,0,0,2,1],["Julien",6,2,0,1,1]];
+shell("stats.html","Statistiques",`
+<div class="tabs" style="margin-top:0"><a class="on" href="#">Joueurs</a><a href="#">Équipe</a><a href="#">Prono</a></div>
+<div class="leaders">
+ <div><span class="kicker">Meilleur buteur</span><div class="v">3</div><div class="n">Yanis</div></div>
+ <div><span class="kicker">Homme du match</span><div class="v">2</div><div class="n">Yanis, Maxime</div></div>
+ <div><span class="kicker">Plus présent</span><div class="v">7</div><div class="n">6 joueurs</div></div>
+ <div><span class="kicker">Bilan</span><div class="v">5V 2N 1D</div><div class="n">15 – 9 · +6</div><div class="bar"><i style="width:63%"></i></div></div>
+</div>
+<section class="sec"><h2>Classement des joueurs</h2>
+<table><thead><tr><th>Joueur</th><th>J</th><th>B</th><th>PD</th><th>CS</th><th>HDM</th></tr></thead><tbody>
+${R.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td class="${r[2]?'hl':''}">${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td></tr>`).join('')}
+</tbody></table></section>`);
+</script></body></html>
