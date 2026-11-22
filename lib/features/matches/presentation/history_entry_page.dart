@@ -1,4 +1,7 @@
 import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/widgets/match_fixture.dart';
+import 'dart:math' as math;
 import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:petit_filet/core/widgets/pf_app_bar.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
@@ -231,17 +234,21 @@ class _HistoryEntryPageState extends ConsumerState<HistoryEntryPage> {
     }
 
     final theme = Theme.of(context);
+    // Sur grand écran, le formulaire garde une largeur lisible, centrée.
+    final side = math.max(16.0, (MediaQuery.sizeOf(context).width - 720) / 2);
     return Column(
       children: [
         Expanded(
           child: ListView(
             controller: _scrollController,
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            padding: EdgeInsets.fromLTRB(side, 12, side, 24),
             children: [
               Text(
                 'Seuls l’adversaire, la date et le score sont obligatoires. '
                 'Le reste peut être complété si tu t’en souviens.',
-                style: theme.textTheme.bodySmall,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: AppTheme.textSecondary,
+                ),
               ),
               if (_savedCount > 0) ...[
                 const SizedBox(height: 8),
@@ -283,7 +290,7 @@ class _HistoryEntryPageState extends ConsumerState<HistoryEntryPage> {
         SafeArea(
           top: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            padding: EdgeInsets.fromLTRB(side, 8, side, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -306,7 +313,17 @@ class _HistoryEntryPageState extends ConsumerState<HistoryEntryPage> {
     );
   }
 
+  static const _steps = {
+    'Affiche': 1,
+    'Score': 2,
+    'Joueurs présents': 3,
+    'Buteurs': 4,
+    'Homme du match': 5,
+  };
+
   Widget _section(ThemeData theme, String title, List<Widget> children) {
+    final step = _steps[title];
+    final accent = theme.colorScheme.primary;
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -314,8 +331,42 @@ class _HistoryEntryPageState extends ConsumerState<HistoryEntryPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(title, style: theme.textTheme.titleMedium),
-            const SizedBox(height: 12),
+            Row(
+              children: [
+                if (step != null) ...[
+                  Container(
+                    width: 28,
+                    height: 28,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: accent.withValues(alpha: .25),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: accent),
+                    ),
+                    child: Text(
+                      '$step',
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: AppTheme.textPrimary,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      color: AppTheme.textPrimary,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
             ...children,
           ],
         ),
@@ -416,30 +467,48 @@ class _HistoryEntryPageState extends ConsumerState<HistoryEntryPage> {
   }
 
   Widget _scoreRow(ThemeData theme) {
-    return Row(
-      children: [
-        Expanded(
-          child: _Stepper(
-            key: const Key('history-score-for'),
-            label: ClubIdentity.shortName,
-            value: _draft.scoreFor,
-            onChanged: (value) => _update((d) => d.setScoreFor(value)),
+    // Tableau d'affichage : le résultat colore le fond, les chiffres sont
+    // grands pour se lire d'un coup d'œil.
+    final result =
+        _draft.scoreFor == _draft.scoreAgainst && _draft.scoreFor == 0
+            ? AppTheme.textFaint
+            : MatchFixture.resultColor(_draft.scoreFor, _draft.scoreAgainst);
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+      decoration: BoxDecoration(
+        color: result.withValues(alpha: .12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        border: Border.all(color: result.withValues(alpha: .6)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _Stepper(
+              key: const Key('history-score-for'),
+              label: ClubIdentity.shortName,
+              value: _draft.scoreFor,
+              onChanged: (value) => _update((d) => d.setScoreFor(value)),
+            ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Text('–', style: theme.textTheme.headlineSmall),
-        ),
-        Expanded(
-          child: _Stepper(
-            key: const Key('history-score-against'),
-            label: 'Adversaire',
-            value: _draft.scoreAgainst,
-            onChanged: (value) =>
-                _update((d) => d.copyWith(scoreAgainst: value.clamp(0, 99))),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              '–',
+              style: theme.textTheme.displaySmall?.copyWith(color: result),
+            ),
           ),
-        ),
-      ],
+          Expanded(
+            child: _Stepper(
+              key: const Key('history-score-against'),
+              label: 'Adversaire',
+              value: _draft.scoreAgainst,
+              onChanged: (value) => _update(
+                (d) => d.copyWith(scoreAgainst: value.clamp(0, 99)),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -685,7 +754,13 @@ class _Stepper extends StatelessWidget {
               icon: const Icon(Icons.remove_circle_outline),
               onPressed: value <= 0 ? null : () => onChanged(value - 1),
             ),
-            Text('$value', style: theme.textTheme.headlineSmall),
+            Text(
+              '$value',
+              style: theme.textTheme.displaySmall?.copyWith(
+                color: AppTheme.textPrimary,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
             IconButton(
               icon: const Icon(Icons.add_circle_outline),
               onPressed: value >= 99 ? null : () => onChanged(value + 1),

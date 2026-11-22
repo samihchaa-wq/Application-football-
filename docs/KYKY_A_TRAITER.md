@@ -32,7 +32,8 @@ Vu en vrai = ouvert dans la démo (téléphone 390x844 et ordinateur 1440x900), 
 | Bilan de saison (`/wrapped`) | oui | oui | État vide seulement |
 | Réglages du club (liste des sections) | oui | oui | Redessiné : icône colorée, titre plus grand, une ligne d'explication par section. Contenu des sections non ouvert en démo |
 | Maillots, Équipes & stades, Saison, Notification, Invités | oui | oui | |
-| Ajouter un match passé (`/admin/history`) | oui | oui | NON redessiné (formulaire plat) |
+| Ajouter un match passé (`/admin/history`) | oui | non | Redessiné (lot 3) : étapes numérotées, score en tableau d'affichage coloré, largeur limitée sur grand écran. Vu en téléphone sur build local ; PC non recapturé |
+| Détail d'un match joué (fiche + terrain) | oui | non | Sur la démo, les 11 joueurs du match du 11/11 se chevauchent sur le terrain (positions de la démo en diagonale ?) : à vérifier si c'est la donnée ou le code |
 | Textes légaux (`/legal/cgu`, `/legal/confidentialite`) | oui | oui | Contiennent « [Prénom NOM] » : à compléter avant ouverture (légal) |
 | Connexion | oui | oui | |
 | Composition admin, finaliser, vote, prono d'un match, historique d'un match, invités d'un match | non | non | Routes avec identifiant : non parcourues |
@@ -41,4 +42,6 @@ Vu en vrai = ouvert dans la démo (téléphone 390x844 et ordinateur 1440x900), 
 | Poste de contrôle (`/control`) | non | non | Interdit pour ce compte |
 | Mode mois du calendrier | non | non | |
 
-À traiter : redessiner « Ajouter un match passé », ouvrir les écrans « non » ci-dessus (ils demandent de créer des matchs dans FC Démo : composition admin, finaliser, vote, prono, historique, invités, mode mois), tester les états vide/erreur un par un. La barre du bas met « Calendrier » en surbrillance sur l'écran Effectif (comportement d'avant).
+À traiter : redessiner « Ajouter un match passé », ouvrir les écrans « non » ci-dessus (ils demandent de créer des matchs dans FC Démo : composition admin, finaliser, vote, prono, historique, invités, mode mois), tester les états vide/erreur un par un. Corrigé (lot 3) : la barre du bas surligne Accueil sur Effectif, Réglages et Profil. Accueil PC : raccourcis sous le prochain match (plus de zone vide).
+
+Non parcouru au lot 3 : aucune donnée créée dans FC Démo (le choix de date est une roue sur canvas, les identifiants de match ne sont pas lisibles dans l'adresse). Restent : vote, prono, finaliser, invités d'un match, mode mois, états vide/erreur/hors-ligne.

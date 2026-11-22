@@ -64,11 +64,17 @@ class _AppShellState extends ConsumerState<AppShell>
 
   // Ordre de la barre : Accueil, Calendrier, Statistiques. Les branches du
   // routeur gardent leur ordre d'origine (0 calendrier, 1 stats, 2 accueil).
-  int get _navIndex => switch (_selectedIndex) {
-        2 => 0,
-        0 => 1,
-        _ => 2,
-      };
+  // Les écrans du club (Effectif, Réglages, Profil…) vivent dans la branche
+  // du calendrier mais n'en font pas partie : l'Accueil reste alors surligné.
+  int get _navIndex {
+    if (_selectedIndex == 2) return 0;
+    if (_selectedIndex == 1) return 2;
+    final path = _uri.path;
+    final isCalendar = path.startsWith('/matches') ||
+        path == '/unavailability' ||
+        path == '/pronos';
+    return isCalendar ? 1 : 0;
+  }
 
   @override
   void initState() {

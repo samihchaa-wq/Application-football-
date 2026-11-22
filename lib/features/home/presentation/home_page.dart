@@ -91,13 +91,19 @@ class HomePage extends ConsumerWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(flex: 6, child: hero),
+                    Expanded(
+                      flex: 6,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [hero, const SizedBox(height: 20), quick],
+                      ),
+                    ),
                     const SizedBox(width: 16),
                     Expanded(
                       flex: 5,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [...side, quick],
+                        children: side,
                       ),
                     ),
                   ],
