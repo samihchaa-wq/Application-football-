@@ -79,7 +79,9 @@ ProviderContainer buildTestContainer(AppDatabase memoryDb) {
   // ProviderContainer.test() self-disposes; no manual addTearDown needed.
   return ProviderContainer.test(
     overrides: [
-      databaseProvider.overrideWithValue(memoryDb), // real in-memory DB, not a mock
+      databaseProvider.overrideWithValue(
+        memoryDb,
+      ), // real in-memory DB, not a mock
       clockProvider.overrideWithValue(Clock.fixed(DateTime.utc(2026, 1, 1))),
     ],
   );

@@ -36,16 +36,19 @@ class Task {
 }
 
 /// Manual provider (Riverpod 3.x default). In a real app this watches a repo.
-final tasksProvider = Provider<List<Task>>((ref) => const [
-      Task(id: 't1', title: 'Draft proposal', details: 'Outline the scope.'),
-      Task(id: 't2', title: 'Review PR', details: 'Check the migration path.'),
-      Task(id: 't3', title: 'Plan sprint', details: 'Groom the backlog.'),
-    ]);
+final tasksProvider = Provider<List<Task>>(
+  (ref) => const [
+    Task(id: 't1', title: 'Draft proposal', details: 'Outline the scope.'),
+    Task(id: 't2', title: 'Review PR', details: 'Check the migration path.'),
+    Task(id: 't3', title: 'Plan sprint', details: 'Groom the backlog.'),
+  ],
+);
 
 /// Selection lives ABOVE both panes so crossing a breakpoint (or rotating)
 /// preserves which task is open.
-final selectedTaskProvider =
-    NotifierProvider<SelectedTaskNotifier, TaskId?>(SelectedTaskNotifier.new);
+final selectedTaskProvider = NotifierProvider<SelectedTaskNotifier, TaskId?>(
+  SelectedTaskNotifier.new,
+);
 
 class SelectedTaskNotifier extends Notifier<TaskId?> {
   @override
@@ -72,9 +75,9 @@ class TasksScreen extends ConsumerWidget {
           child: _TaskListPane(
             onTap: (id) {
               ref.read(selectedTaskProvider.notifier).select(id);
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (_) => _TaskDetailRoute(id: id),
-              ));
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => _TaskDetailRoute(id: id)),
+              );
             },
           ),
         ),
@@ -154,8 +157,7 @@ class _TaskDetailPane extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final task =
-        ref.watch(tasksProvider).where((t) => t.id == id).firstOrNull;
+    final task = ref.watch(tasksProvider).where((t) => t.id == id).firstOrNull;
     if (task == null) return const _DetailPlaceholder();
 
     return Center(
@@ -182,8 +184,10 @@ class _DetailPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Text('Select a task',
-          style: Theme.of(context).textTheme.titleMedium),
+      child: Text(
+        'Select a task',
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
     );
   }
 }

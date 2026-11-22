@@ -44,12 +44,19 @@ class TaskListState {
   factory TaskListState.initial(List<Task> tasks) =>
       TaskListState(tasks: tasks, filter: TaskFilter.all);
 
-  int get openCount => tasks.where((t) => !t.done).length; // derive, don't store
+  int get openCount =>
+      tasks.where((t) => !t.done).length; // derive, don't store
 
   List<Task> get visible => switch (filter) {
         TaskFilter.all => tasks,
-        TaskFilter.open => [for (final t in tasks) if (!t.done) t],
-        TaskFilter.done => [for (final t in tasks) if (t.done) t],
+        TaskFilter.open => [
+            for (final t in tasks)
+              if (!t.done) t,
+          ],
+        TaskFilter.done => [
+            for (final t in tasks)
+              if (t.done) t,
+          ],
       };
 
   TaskListState copyWith({List<Task>? tasks, TaskFilter? filter}) =>
@@ -76,13 +83,16 @@ bool _listEquals(List<Task> a, List<Task> b) {
 
 abstract interface class TaskRepository {
   Stream<List<Task>> watchAll(); // the live source of truth build() tracks
-  Future<void> markComplete(TaskId id); // persists transactionally, returns after commit
+  Future<void> markComplete(
+    TaskId id,
+  ); // persists transactionally, returns after commit
 }
 
 // --- DI seams: throw until overridden at the composition root -----------------
 
 final taskRepositoryProvider = Provider<TaskRepository>(
-  (ref) => throw UnimplementedError('override taskRepositoryProvider in main()'),
+  (ref) =>
+      throw UnimplementedError('override taskRepositoryProvider in main()'),
 );
 
 // Derived read model: a projection over the source stream, never a stored cache.
@@ -100,15 +110,18 @@ class TaskFilterNotifier extends Notifier<TaskFilter> {
   void set(TaskFilter filter) => state = filter; // build() below watches this
 }
 
-final taskFilterProvider =
-    NotifierProvider<TaskFilterNotifier, TaskFilter>(TaskFilterNotifier.new);
+final taskFilterProvider = NotifierProvider<TaskFilterNotifier, TaskFilter>(
+  TaskFilterNotifier.new,
+);
 
 // --- The ViewModel: one StreamNotifier over the live query --------------------
 
 class TaskListNotifier extends StreamNotifier<TaskListState> {
   @override
   Stream<TaskListState> build() {
-    final filter = ref.watch(taskFilterProvider); // re-projects when the filter changes
+    final filter = ref.watch(
+      taskFilterProvider,
+    ); // re-projects when the filter changes
     return ref
         .watch(taskRepositoryProvider)
         .watchAll() // the live source of truth — tracks EVERY emission
@@ -123,7 +136,9 @@ class TaskListNotifier extends StreamNotifier<TaskListState> {
   }
 
   Future<void> _complete(TaskId id) async {
-    await ref.read(taskRepositoryProvider).markComplete(id); // returns after commit
+    await ref
+        .read(taskRepositoryProvider)
+        .markComplete(id); // returns after commit
   }
 
   void _report(Object error, StackTrace stack) {
@@ -133,7 +148,8 @@ class TaskListNotifier extends StreamNotifier<TaskListState> {
 
 final taskListNotifierProvider =
     StreamNotifierProvider.autoDispose<TaskListNotifier, TaskListState>(
-        TaskListNotifier.new);
+  TaskListNotifier.new,
+);
 
 // --- The View: dumb ConsumerWidget. watch to show, read to act ---------------
 
@@ -161,8 +177,9 @@ class TaskListScreen extends ConsumerWidget {
                 title: Text(task.title),
                 value: task.done,
                 // Pass the stable id, never the captured task value.
-                onChanged: (_) =>
-                    ref.read(taskListNotifierProvider.notifier).complete(task.id),
+                onChanged: (_) => ref
+                    .read(taskListNotifierProvider.notifier)
+                    .complete(task.id),
               ),
           ],
         ),

@@ -104,7 +104,9 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                 onPressed: submitting ? null : _submit,
                 child: submitting
                     ? const SizedBox.square(
-                        dimension: 20, child: CircularProgressIndicator())
+                        dimension: 20,
+                        child: CircularProgressIndicator(),
+                      )
                     : Text(l10n.saveAction),
               ),
             ],

@@ -60,9 +60,7 @@ class AdaptiveScaffold extends StatelessWidget {
             ],
           ),
         ),
-      WindowSizeClass.medium ||
-      WindowSizeClass.expanded =>
-        Scaffold(
+      WindowSizeClass.medium || WindowSizeClass.expanded => Scaffold(
           body: SafeArea(
             child: Row(
               children: [
@@ -87,9 +85,7 @@ class AdaptiveScaffold extends StatelessWidget {
             ),
           ),
         ),
-      WindowSizeClass.large ||
-      WindowSizeClass.extraLarge =>
-        Scaffold(
+      WindowSizeClass.large || WindowSizeClass.extraLarge => Scaffold(
           body: SafeArea(
             child: Row(
               children: [
@@ -146,8 +142,10 @@ class _ProductShellDemoState extends State<ProductShellDemo> {
             // `design-system-structure`; only the width cap here is structural.
             padding: const EdgeInsets.all(16),
             children: [
-              Text('Section ${_destinations[_index].label}',
-                  style: Theme.of(context).textTheme.headlineSmall),
+              Text(
+                'Section ${_destinations[_index].label}',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
               const SizedBox(height: 16), // placeholder spacing
               for (var i = 0; i < 12; i++)
                 ListTile(

@@ -24,6 +24,7 @@ final clockProvider = Provider<Clock>((ref) => const Clock());
 abstract interface class AccountRepository {
   Future<bool> isNameTaken(String name);
 }
+
 final accountRepositoryProvider = Provider<AccountRepository>(
   (ref) => throw UnimplementedError('override in bootstrap'),
 );
@@ -110,10 +111,14 @@ class _AccountNameFieldState extends ConsumerState<AccountNameField> {
       decoration: InputDecoration(
         labelText: l10n.accountNameLabel,
         suffixIcon: status.isLoading
-            ? const SizedBox.square(dimension: 16, child: CircularProgressIndicator())
+            ? const SizedBox.square(
+                dimension: 16,
+                child: CircularProgressIndicator(),
+              )
             : null,
         errorText: switch (status) {
-          AsyncData(:final value) when value == NameCheck.taken => l10n.nameTaken,
+          AsyncData(:final value) when value == NameCheck.taken =>
+            l10n.nameTaken,
           AsyncError() => l10n.nameCheckFailed,
           _ => null, // idle / loading / available
         },

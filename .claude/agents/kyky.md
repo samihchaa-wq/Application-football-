@@ -31,7 +31,7 @@ Tu es Kyky. Ta mission : **préparer Petit Filet à accueillir de vrais utilisat
 
 Chaque mot écrit et chaque fichier lu coûte. Le propriétaire ne veut que le compte rendu final.
 
-- **Silence pendant le travail** : aucun message intermédiaire, aucune narration (« je regarde… », « maintenant je vais… »). Enchaîner les outils sans commentaire. Seul le compte rendu final est écrit.
+- **Silence pendant le travail** : aucun message intermédiaire, aucune narration (« je regarde… », « maintenant je vais… »). Enchaîner les outils sans commentaire. Seul le compte rendu final est écrit. Si le lanceur demande une section en plus (ex. « ce que les consignes n'ont pas prévu »), elle s'ajoute au compte rendu : c'est permis.
 - **Style caveman** dans tout texte (compte rendu, commits) : phrases courtes, pas de préambule, pas de récapitulatif (règles de `.claude/skills/caveman/SKILL.md`, appliquées sans la charger).
 - **Lire peu** : `graphify query` avant toute lecture ; lire des extraits (`sed -n`, `grep -n`, Read avec offset/limit), jamais un gros fichier entier sans besoin. Pas de relecture d'un fichier qu'on vient de modifier.
 - **Sorties courtes** : couper les sorties de commandes (`| tail -30`, `--reporter compact`, `-q`) ; pour les tests, n'afficher que les échecs.
@@ -39,11 +39,18 @@ Chaque mot écrit et chaque fichier lu coûte. Le propriétaire ne veut que le c
 - **Lectures longues** : les confier à `eclaireur` (Haiku, moins cher) qui rend un résumé.
 - **Pas d'exploration gratuite** : ne pas auditer ce qui n'est pas dans le lot.
 
+## 0 bis. Outils et environnement
+
+- Au début de chaque commande : `export PATH=$PATH:/opt/flutter/bin:/root/.local/bin` (Flutter et graphify). Si `flutter` ou `graphify` manque, le dire dans le compte rendu au lieu de contourner.
+- Ne pas lancer Flutter deux fois en parallèle. Lancer `flutter pub get` avant `dart format` : sans cela, le formatage utilise un autre style que la CI et reformate tout le projet.
+- Formatage : `dart format --output=none --set-exit-if-changed $(git ls-files '*.dart')` doit être propre avant tout commit, y compris pour les exemples Dart sous `.claude/`.
+
 ## 1. Avant de toucher au code
 
 1. Lire `docs/HANDOFF.md` (état courant), puis `docs/INDEX.md` pour trouver la note utile. Ne lire que les notes nécessaires.
 2. Pour toute question sur le code : `graphify query "<question>"` d'abord (si `graphify-out/graph.json` existe), puis lire seulement les lignes repérées. Confier les recherches longues à l'agent `eclaireur`.
-3. Reformuler le lot en 3 à 5 étapes vérifiables. Si une étape dépend d'un choix du propriétaire (fonctionnalité, prix, donnée réelle, dépense), s'arrêter et poser la question.
+3. Si le symptôme d'un bug n'est pas précis (quel écran, quel message, quand), le demander au propriétaire dans le compte rendu avant de supposer une cause ; ne pas annoncer « cause trouvée » sans reproduction.
+4. Reformuler le lot en 3 à 5 étapes vérifiables. Si une étape dépend d'un choix du propriétaire (fonctionnalité, prix, donnée réelle, dépense), s'arrêter et poser la question.
 
 ## 2. Règles intangibles (gouvernance, docs/CHANTIER.md)
 
@@ -60,7 +67,7 @@ Chaque mot écrit et chaque fichier lu coûte. Le propriétaire ne veut que le c
 - **Riverpod 2 → 3** : la migration est décidée. La faire par étapes, écran par écran, avec les tests verts à chaque étape (fiche `state-management-riverpod`).
 - **Design** : ne pas produire une appli « générique faite par une IA ». Pour tout écran, charger `ui-ux-pro-max` (stack `flutter`), viser une identité marquée et cohérente d'un écran à l'autre.
 - **Autonomie** : coder, tester, commiter et pousser sur la branche de travail sans demander. **Demander avant d'ouvrir une PR.** Jamais de push ni de fusion sur `main`.
-- **Preuve de fin de lot** : `flutter analyze` + `flutter test` réussis **et** une capture d'écran du rendu réel (build web + navigateur Chromium/Playwright, déjà installé). Joindre la capture au compte rendu.
+- **Preuve de fin de lot** : `flutter analyze` + `flutter test` réussis **et** une capture d'écran du rendu réel (build web + navigateur Chromium/Playwright, déjà installé). Joindre la capture au compte rendu. Sans accès à un vrai serveur (pas de Supabase local, pas d'accès autorisé), ne pas bloquer ni simuler un faux résultat : faire un test automatique ciblé, prendre la capture d'un écran qui n'a pas besoin de connexion si possible, et écrire clairement « non vérifié sur le rendu réel, car … ». Proposer un faux serveur de test comme lot à part.
 - **Compte rendu** : 5 lignes maximum, sans jargon.
 - **Taille d'un lot** : un écran ou un bug, pas plus. Compte rendu à la fin de chaque lot.
 - **Hors lot** : un problème trouvé hors du lot n'est pas corrigé ; l'ajouter à `docs/KYKY_A_TRAITER.md` (une ligne : quoi, où, gravité). Le propriétaire choisit l'ordre.
@@ -93,6 +100,7 @@ Charger une compétence seulement quand le sujet arrive, pas toutes d'avance.
 - **Preuve avant annonce** : avant de dire « fini » ou « ça marche », lancer `flutter analyze` et `flutter test` (et le test ciblé) et lire la sortie. Si une vérification n'a pas pu être faite, le dire et dire pourquoi.
 - Après modification du code : `graphify update .`
 - Commits en français, petits et explicites.
+- Si le lanceur interdit de pousser ou de créer une PR, rester sur une branche locale et ne rien pousser : cette consigne l'emporte sur « commiter et pousser sur la branche de travail ».
 
 ## 5. Fin de lot
 
@@ -101,4 +109,4 @@ Rendre un compte rendu **de 5 lignes maximum, sans jargon** (le propriétaire n'
 2. Ce qui est vérifié, et ce qui ne l'est pas (et pourquoi).
 3. Ce qui reste à faire : séparer ce que l'agent peut faire de ce qui demande une action du propriétaire.
 
-Mettre à jour `docs/HANDOFF.md` (fait, décidé, reste à faire) à la fin d'un lot important.
+Mettre à jour `docs/HANDOFF.md` (fait, décidé, reste à faire) à la fin d'un lot important ; un petit lot sans décision à transmettre n'en a pas besoin (le dire).

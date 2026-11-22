@@ -31,7 +31,9 @@ class NotesScreen extends ConsumerWidget {
         // screen and never falls into this branch.
         loading: () => const DelayedSkeleton(child: NotesSkeleton()),
         error: (error, _) => ErrorStateView(
-          message: l10n.failureMessage(error is Failure ? error.code : 'error.unknown'),
+          message: l10n.failureMessage(
+            error is Failure ? error.code : 'error.unknown',
+          ),
           // Retry re-runs the provider; scroll position, filters and entered
           // text all survive because none of them live in this provider.
           onRetry: () => ref.invalidate(notesProvider),
@@ -124,7 +126,10 @@ class _SkeletonRow extends StatelessWidget {
     final surface = Theme.of(context).colorScheme.surfaceContainerHighest;
     // Same height and insets as NoteRow — matching geometry is the whole point.
     return Padding(
-      padding: const EdgeInsetsDirectional.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsetsDirectional.symmetric(
+        horizontal: 16,
+        vertical: 12,
+      ),
       child: SizedBox(
         height: 40,
         child: DecoratedBox(decoration: BoxDecoration(color: surface)),
@@ -169,7 +174,11 @@ class EmptyStateView extends StatelessWidget {
 }
 
 class ErrorStateView extends StatelessWidget {
-  const ErrorStateView({required this.message, required this.onRetry, super.key});
+  const ErrorStateView({
+    required this.message,
+    required this.onRetry,
+    super.key,
+  });
 
   /// Already localized, resolved from a typed Failure's stable code.
   /// NEVER an exception's toString().
@@ -214,8 +223,11 @@ class NoteRow extends StatelessWidget {
           ? Row(
               children: [
                 // Never colour-alone: the icon and the text both carry the state.
-                Icon(Icons.error_outline,
-                    size: 16, color: Theme.of(context).colorScheme.error),
+                Icon(
+                  Icons.error_outline,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.error,
+                ),
                 const SizedBox(width: 4),
                 Expanded(child: Text(l10n.rowSyncFailed)),
                 TextButton(onPressed: onRetrySync, child: Text(l10n.retry)),
