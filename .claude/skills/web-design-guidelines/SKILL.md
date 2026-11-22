@@ -18,6 +18,10 @@ Review files for compliance with Web Interface Guidelines.
 3. Check against all rules in the guidelines
 4. Output findings in the terse `file:line` format
 
+## Ce projet (adaptation locale)
+
+L'appli est en Flutter, pas en HTML. Traduire chaque règle vers son équivalent Flutter (par ex. libellés accessibles → `Semantics`/`tooltip`, focus clavier → `FocusNode`/ordre de focus, cibles tactiles ≥ 48 px, contraste, `MediaQuery.textScaler`, zones sûres → `SafeArea`). Ignorer les règles sans équivalent (balises HTML, CSS, métadonnées de page) au lieu de les signaler.
+
 ## Guidelines Source
 
 The rules are bundled with this skill in the [references/command.md](references/command.md) file. Read that file before each review. Do not fetch rules from the network.

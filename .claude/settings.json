@@ -37,5 +37,16 @@
   },
   "enabledMcpjsonServers": [
     "chrome-devtools"
-  ]
+  ],
+  "extraKnownMarketplaces": {
+    "dart-flutter": {
+      "source": {
+        "source": "github",
+        "repo": "flutter/agent-plugins"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "dart-flutter@dart-flutter": true
+  }
 }

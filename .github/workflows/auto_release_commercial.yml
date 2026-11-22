@@ -11,6 +11,7 @@ on:
     paths-ignore:
       - 'docs/**'
       - '**/*.md'
+      - '.claude/**'
       - 'supabase/production_migrations.lock'
   workflow_dispatch:
 

@@ -11,6 +11,7 @@ on:
       - 'supabase/production_migrations.lock'
       - 'docs/**'
       - '**/*.md'
+      - '.claude/**'
   # Pas de relance quand seul le titre ou la description de la pull request
   # change : le contrôle ne lit ni l'un ni l'autre.
   pull_request:
