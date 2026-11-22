@@ -6,3 +6,4 @@ Une ligne par point : quoi, où, gravité. Le propriétaire choisit l'ordre.
 - Légal : les CGV disent « sans remboursement de la période en cours » mais l'appli permet à l'éditeur de rembourser (double paiement, erreur). Prévoir une phrase sur ces cas. Gravité faible.
 - Bug déconnexion gestionnaire : correctifs déjà fusionnés (Poste de contrôle + profil au retour), tests verts. Pas encore essayé sur vrai téléphone ni ordinateur. Gravité haute tant que non confirmé.
 - Outils : ni Supabase CLI ni Deno sur cette machine, donc pas de test des règles d'accès (RLS) ni des fonctions Stripe en local. Gravité moyenne.
+- Identité visuelle : écrans accueil/match/profil/Poste de contrôle non audités à l'écran (pas de serveur) ; textes forcés w400 partout, cartes toutes identiques, emojis à revoir — moyenne

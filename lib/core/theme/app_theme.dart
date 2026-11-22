@@ -23,6 +23,10 @@ class _PfPageTransitionsBuilder extends PageTransitionsBuilder {
 }
 
 abstract final class AppTheme {
+  /// Condensée de stade (bilan de saison, maillots) : elle porte aussi les
+  /// titres, boutons et onglets, le corps du texte reste en police système.
+  static const String displayFont = 'Oswald';
+
   // Identité Petit Filet : anthracite, rouge et argent.
   static const Color background = Color(0xFF101418);
   static const Color surface = Color(0xFF191F25);
@@ -149,9 +153,9 @@ abstract final class AppTheme {
   static const double spaceSm = 12;
   static const double spaceMd = 16;
   static const double spaceLg = 24;
-  static const double radiusSm = 12;
-  static const double radiusMd = 16;
-  static const double radiusLg = 22;
+  static const double radiusSm = 10;
+  static const double radiusMd = 12;
+  static const double radiusLg = 18;
 
   static ShapeBorder cardShape({
     double radius = radiusMd,
@@ -219,29 +223,34 @@ abstract final class AppTheme {
     return base.copyWith(
       textTheme: base.textTheme.copyWith(
         displaySmall: base.textTheme.displaySmall?.copyWith(
+          fontFamily: displayFont,
           color: textPrimary,
           fontWeight: FontWeight.w400,
-          letterSpacing: -1,
+          letterSpacing: .2,
           shadows: textOutline,
         ),
         headlineMedium: base.textTheme.headlineMedium?.copyWith(
+          fontFamily: displayFont,
           color: textPrimary,
           fontWeight: FontWeight.w400,
-          letterSpacing: -.55,
+          letterSpacing: .2,
           shadows: textOutline,
         ),
         headlineSmall: base.textTheme.headlineSmall?.copyWith(
+          fontFamily: displayFont,
           color: textPrimary,
           fontWeight: FontWeight.w400,
           shadows: textOutline,
         ),
         titleLarge: base.textTheme.titleLarge?.copyWith(
+          fontFamily: displayFont,
           color: textPrimary,
           fontWeight: FontWeight.w400,
-          letterSpacing: -.2,
+          letterSpacing: .3,
           shadows: textOutline,
         ),
         titleMedium: base.textTheme.titleMedium?.copyWith(
+          fontFamily: displayFont,
           color: textPrimary,
           fontWeight: FontWeight.w400,
           shadows: textOutline,
@@ -266,9 +275,10 @@ abstract final class AppTheme {
           shadows: textOutline,
         ),
         labelLarge: base.textTheme.labelLarge?.copyWith(
+          fontFamily: displayFont,
           color: textPrimary,
           fontWeight: FontWeight.w400,
-          letterSpacing: .05,
+          letterSpacing: .6,
           shadows: textOutline,
         ),
         labelMedium: base.textTheme.labelMedium?.copyWith(
@@ -291,10 +301,11 @@ abstract final class AppTheme {
         titleSpacing: 12,
         actionsPadding: EdgeInsets.only(right: 6),
         titleTextStyle: TextStyle(
+          fontFamily: displayFont,
           color: textPrimary,
-          fontSize: 20,
+          fontSize: 21,
           fontWeight: FontWeight.w400,
-          letterSpacing: -.3,
+          letterSpacing: .4,
           shadows: textOutline,
         ),
       ),
@@ -333,7 +344,12 @@ abstract final class AppTheme {
             ),
           ),
           textStyle: WidgetStateProperty.all(
-            const TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
+            const TextStyle(
+              fontFamily: displayFont,
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              letterSpacing: .6,
+            ),
           ),
         ),
       ),
@@ -346,14 +362,23 @@ abstract final class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusSm),
           ),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
+          textStyle: const TextStyle(
+            fontFamily: displayFont,
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            letterSpacing: .6,
+          ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: primaryBright,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          textStyle: const TextStyle(fontWeight: FontWeight.w400),
+          textStyle: const TextStyle(
+            fontFamily: displayFont,
+            fontWeight: FontWeight.w400,
+            letterSpacing: .5,
+          ),
         ),
       ),
       iconTheme: const IconThemeData(color: textSecondary, size: 22),
@@ -401,7 +426,12 @@ abstract final class AppTheme {
           // y compris lorsque la fiche du match en affiche cinq côte à côte.
           minimumSize: WidgetStateProperty.all(const Size(48, 42)),
           textStyle: WidgetStateProperty.all(
-            const TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
+            const TextStyle(
+              fontFamily: displayFont,
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              letterSpacing: .6,
+            ),
           ),
           backgroundColor: WidgetStateProperty.resolveWith((states) {
             return states.contains(WidgetState.selected)
@@ -450,10 +480,12 @@ abstract final class AppTheme {
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return TextStyle(
-            fontSize: selected ? 11.5 : 11,
+            fontFamily: displayFont,
+            letterSpacing: .4,
+            fontSize: selected ? 12.5 : 12,
             height: 1.1,
             color: selected ? Colors.white : textFaint,
-            fontWeight: selected ? FontWeight.w400 : FontWeight.w400,
+            fontWeight: FontWeight.w400,
             shadows: textOutline,
           );
         }),

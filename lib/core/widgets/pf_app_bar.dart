@@ -96,14 +96,7 @@ class _HeaderBackdrop extends StatelessWidget {
     // recalcul à chaque image pendant le défilement, surtout sur iPhone.
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            AppTheme.surface.withValues(alpha: .94),
-            AppTheme.surface.withValues(alpha: .74),
-          ],
-        ),
+        color: AppTheme.surface.withValues(alpha: .96),
         border: Border(
           bottom: BorderSide(
             color: AppTheme.accent.withValues(alpha: .22),

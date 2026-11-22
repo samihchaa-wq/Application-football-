@@ -53,17 +53,10 @@ class PfEmptyState extends StatelessWidget {
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: accent.withValues(alpha: .1),
-                      shape: BoxShape.circle,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                       border: Border.all(
-                        color: accent.withValues(alpha: .22),
+                        color: accent.withValues(alpha: .3),
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: accent.withValues(alpha: .08),
-                          blurRadius: 24,
-                          spreadRadius: 1,
-                        ),
-                      ],
                     ),
                     child: Icon(icon, size: iconSize, color: accent),
                   ),
