@@ -16,13 +16,16 @@ import 'package:url_launcher/url_launcher.dart';
 /// photo, téléphone et date de naissance. Les admins le modifient depuis
 /// leur propre écran Effectif.
 class ClubRosterPage extends ConsumerWidget {
-  const ClubRosterPage({super.key});
+  const ClubRosterPage({super.key, this.embedded = false});
+
+  /// Intégrée à l'écran Effectif (onglets) : pas de barre de titre propre.
+  final bool embedded;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final seasonAsync = ref.watch(openSeasonIdProvider);
     return Scaffold(
-      appBar: PfAppBar(title: const Text('Effectif')),
+      appBar: embedded ? null : PfAppBar(title: const Text('Effectif')),
       body: seasonAsync.when(
         loading: () => const Center(child: PfProgressIndicator()),
         error: (error, _) => Center(child: Text(humanizeError(error))),

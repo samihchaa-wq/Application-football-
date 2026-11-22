@@ -125,7 +125,7 @@ String? resolveAuthRedirect({
     return isPasswordChangeRoute ? null : '/auth/new-password';
   }
   if (isPasswordChangeRoute && !mustChangePassword && !isRecoveryRoute) {
-    return '/matches';
+    return '/accueil';
   }
 
   // Les conditions ont changé depuis l'accord de ce compte : il doit accepter
@@ -137,7 +137,7 @@ String? resolveAuthRedirect({
     return isTermsRoute ? null : '/auth/accept-terms';
   }
   if (isTermsRoute && !needsTerms) {
-    return authState.isAuthenticated ? '/matches' : '/auth/sign-in';
+    return authState.isAuthenticated ? '/accueil' : '/auth/sign-in';
   }
 
   final isAuthRoute = location.startsWith('/auth');
@@ -147,7 +147,7 @@ String? resolveAuthRedirect({
 
   if (authState.isAuthenticated && isAuthRoute && !isRecoveryRoute) {
     final redirect = _safeLocalRedirect(uri.queryParameters['redirect']);
-    if (redirect == null) return '/matches';
+    if (redirect == null) return '/accueil';
 
     // go_router n'applique cette fonction qu'une fois par navigation : la
     // destination rendue ici doit déjà tenir compte des réglages du club.
@@ -163,8 +163,8 @@ String? resolveAuthRedirect({
     return redirect;
   }
 
-  if (location == '/' || location == '/home' || location == '/accueil') {
-    return '/matches';
+  if (location == '/' || location == '/home') {
+    return '/accueil';
   }
 
   // L'aperçu Wrapped n'est qu'un outil temporaire de conception. Même un
@@ -316,7 +316,7 @@ String? _safeLocalRedirect(String? value) {
   final uri = Uri.tryParse(value);
   if (uri == null || uri.hasScheme || uri.hasAuthority) return null;
   if (!uri.path.startsWith('/') || uri.path.startsWith('/auth')) return null;
-  if (uri.path == '/accueil' || uri.path == '/home') return '/matches';
+  if (uri.path == '/home') return '/accueil';
   if (uri.path == '/pronos' && uri.queryParameters['category'] == 'matches') {
     return '/matches';
   }

@@ -28,7 +28,7 @@ String initialLocationFromBrowserHash(String hash) {
     if (location.isNotEmpty) return location;
   }
 
-  return '/matches';
+  return '/accueil';
 }
 
 /// Résout la route de démarrage à partir de l'adresse complète.
@@ -52,7 +52,7 @@ InitialBrowserLocation initialLocationFromBrowser({
 
   final base = basePath.endsWith('/') ? basePath : '$basePath/';
   if (!pathname.startsWith(base)) {
-    return const InitialBrowserLocation('/matches');
+    return const InitialBrowserLocation('/accueil');
   }
 
   final route = pathname.substring(base.length).replaceFirst(
@@ -60,7 +60,7 @@ InitialBrowserLocation initialLocationFromBrowser({
         '',
       );
   if (route.isEmpty || route == 'index.html' || route == '404.html') {
-    return const InitialBrowserLocation('/matches');
+    return const InitialBrowserLocation('/accueil');
   }
 
   final query = _withoutDeploymentMarker(search);

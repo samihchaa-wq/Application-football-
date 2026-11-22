@@ -7,7 +7,6 @@ import 'package:petit_filet/app/shell/app_shell.dart';
 import 'package:petit_filet/features/admin/presentation/club_kits_page.dart';
 import 'package:petit_filet/features/admin/presentation/club_settings_page.dart';
 import 'package:petit_filet/features/admin/presentation/club_subscription_page.dart';
-import 'package:petit_filet/features/players/presentation/club_roster_page.dart';
 import 'package:petit_filet/features/matches/presentation/history_entry_page.dart';
 import 'package:petit_filet/features/admin/presentation/admin_menu_page.dart'
     deferred as admin_menu;
@@ -41,7 +40,8 @@ import 'package:petit_filet/features/players/presentation/player_card_link.dart'
 import 'package:petit_filet/features/players/data/player_stat_ranking.dart';
 import 'package:petit_filet/features/players/presentation/player_card_page.dart';
 import 'package:petit_filet/features/players/presentation/player_stat_ranking_page.dart';
-import 'package:petit_filet/features/players/presentation/players_registry_page.dart';
+import 'package:petit_filet/features/home/presentation/home_page.dart';
+import 'package:petit_filet/features/players/presentation/effectif_hub_page.dart';
 import 'package:petit_filet/features/predictions/presentation/pronos_hub_page.dart';
 import 'package:petit_filet/features/profile/presentation/profile_page.dart';
 import 'package:petit_filet/features/platform/presentation/platform_control_page.dart'
@@ -111,9 +111,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       sportsManagementEnabled: ref.read(sportsManagementRoutingStateProvider),
     ),
     routes: [
-      GoRoute(path: '/', redirect: (_, __) => '/matches'),
-      GoRoute(path: '/home', redirect: (_, __) => '/matches'),
-      GoRoute(path: '/accueil', redirect: (_, __) => '/matches'),
+      GoRoute(path: '/', redirect: (_, __) => '/accueil'),
+      GoRoute(path: '/home', redirect: (_, __) => '/accueil'),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => AppShell(
           location: state.uri.toString(),
@@ -214,9 +213,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
               GoRoute(
                 path: '/admin/administration',
-                builder: (_, __) => DeferredRoutePage(
-                  load: admin_administration.loadLibrary,
-                  builder: (_) => admin_administration.AdminPage(),
+                builder: (_, __) => EffectifHubPage(
+                  initialTab: 2,
+                  registrationsBuilder: _registrationsTab,
                 ),
               ),
               GoRoute(
@@ -293,11 +292,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(path: '/more', builder: (_, __) => const MorePage()),
               GoRoute(
                 path: '/effectif',
-                builder: (_, __) => const ClubRosterPage(),
+                builder: (_, state) => EffectifHubPage(
+                  initialTab: switch (state.uri.queryParameters['onglet']) {
+                    'joueurs' => 1,
+                    'inscriptions' => 2,
+                    _ => 0,
+                  },
+                  registrationsBuilder: _registrationsTab,
+                ),
               ),
               GoRoute(
                 path: '/players',
-                builder: (_, __) => const PlayersRegistryPage(),
+                builder: (_, __) => EffectifHubPage(
+                  initialTab: 1,
+                  registrationsBuilder: _registrationsTab,
+                ),
               ),
               GoRoute(
                 path: '/profile',
@@ -348,6 +357,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     state.uri.queryParameters['periode'],
                   ),
                   playerKey: playerCardKeyFromUri(state.uri),
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            initialLocation: '/accueil',
+            routes: [
+              GoRoute(
+                path: '/accueil',
+                pageBuilder: (_, __) => const NoTransitionPage(
+                  key: ValueKey<String>('accueil-root'),
+                  child: HomePage(),
                 ),
               ),
             ],
@@ -458,3 +479,8 @@ class _RouterRefreshNotifier extends ChangeNotifier {
     super.dispose();
   }
 }
+
+Widget _registrationsTab(BuildContext context) => DeferredRoutePage(
+      load: admin_administration.loadLibrary,
+      builder: (_) => admin_administration.AdminPage(embedded: true),
+    );

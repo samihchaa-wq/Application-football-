@@ -62,6 +62,14 @@ class _AppShellState extends ConsumerState<AppShell>
   Uri get _uri => Uri.parse(widget.location);
   int get _selectedIndex => widget.navigationShell.currentIndex;
 
+  // Ordre de la barre : Accueil, Calendrier, Statistiques. Les branches du
+  // routeur gardent leur ordre d'origine (0 calendrier, 1 stats, 2 accueil).
+  int get _navIndex => switch (_selectedIndex) {
+        2 => 0,
+        0 => 1,
+        _ => 2,
+      };
+
   @override
   void initState() {
     super.initState();
@@ -143,11 +151,20 @@ class _AppShellState extends ConsumerState<AppShell>
     ref.read(statsResetRequestProvider.notifier).state++;
   }
 
+  void _openHome() {
+    if (widget.navigationShell.currentIndex != 2 || _uri.path != '/accueil') {
+      _goBranchWithoutHistory(2);
+    }
+  }
+
   void _selectDestination(int index) {
-    if (index == 0) {
-      _openMatches();
-    } else {
-      _openStats();
+    switch (index) {
+      case 0:
+        _openHome();
+      case 1:
+        _openMatches();
+      default:
+        _openStats();
     }
   }
 
@@ -206,7 +223,7 @@ class _AppShellState extends ConsumerState<AppShell>
                           children: [
                             if (statsEnabled) ...[
                               _DesktopNavigation(
-                                selectedIndex: _selectedIndex,
+                                selectedIndex: _navIndex,
                                 extended: extendRail,
                                 onSelected: _selectDestination,
                               ),
@@ -247,11 +264,16 @@ class _AppShellState extends ConsumerState<AppShell>
                   // étendu), il ne floutait qu'un fond uni, mais coûtait un
                   // recalcul à chaque image pendant le défilement.
                   child: NavigationBar(
-                    selectedIndex: _selectedIndex,
+                    selectedIndex: _navIndex,
                     labelBehavior:
                         NavigationDestinationLabelBehavior.alwaysShow,
                     onDestinationSelected: _selectDestination,
                     destinations: const [
+                      NavigationDestination(
+                        icon: Icon(Icons.home_outlined),
+                        selectedIcon: Icon(Icons.home_rounded),
+                        label: 'Accueil',
+                      ),
                       NavigationDestination(
                         icon: Icon(Icons.calendar_month_outlined),
                         selectedIcon: Icon(Icons.calendar_month_rounded),
@@ -313,6 +335,11 @@ class _DesktopNavigation extends StatelessWidget {
         ),
       ),
       destinations: const [
+        NavigationRailDestination(
+          icon: Icon(Icons.home_outlined),
+          selectedIcon: Icon(Icons.home_rounded),
+          label: Text('Accueil'),
+        ),
         NavigationRailDestination(
           icon: Icon(Icons.calendar_month_outlined),
           selectedIcon: Icon(Icons.calendar_month_rounded),

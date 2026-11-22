@@ -186,16 +186,16 @@ String? _expectedRedirect({
   if (matchedLocation == '/auth/new-password' &&
       !mustChangePassword &&
       !recoveryRoute) {
-    return '/matches';
+    return '/accueil';
   }
   if (!authenticated && !authRoute && matchedLocation != '/') {
     return '/auth/sign-in?redirect=${Uri.encodeComponent(uri.toString())}';
   }
   if (authenticated && authRoute && !recoveryRoute) {
-    return _safeRedirect(uri.queryParameters['redirect']) ?? '/matches';
+    return _safeRedirect(uri.queryParameters['redirect']) ?? '/accueil';
   }
-  if (const {'/', '/home', '/accueil'}.contains(matchedLocation)) {
-    return '/matches';
+  if (const {'/', '/home'}.contains(matchedLocation)) {
+    return '/accueil';
   }
 
   final segments = uri.pathSegments.where((value) => value.isNotEmpty).toList();
@@ -290,7 +290,7 @@ String? _safeRedirect(String? value) {
   final uri = Uri.tryParse(value);
   if (uri == null || uri.hasScheme || uri.hasAuthority) return null;
   if (!uri.path.startsWith('/') || uri.path.startsWith('/auth')) return null;
-  if (const {'/home', '/accueil'}.contains(uri.path)) return '/matches';
+  if (uri.path == '/home') return '/accueil';
   if (uri.path == '/pronos' && uri.queryParameters['category'] == 'matches') {
     return '/matches';
   }

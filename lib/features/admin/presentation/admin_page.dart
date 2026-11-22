@@ -26,7 +26,10 @@ enum _UsersSection { validated, pending }
 
 /// Effectif du club : les comptes et les fiches joueurs de la saison.
 class AdminPage extends ConsumerStatefulWidget {
-  const AdminPage({super.key});
+  const AdminPage({super.key, this.embedded = false});
+
+  /// Intégrée à l'écran Effectif (onglets) : pas de barre de titre propre.
+  final bool embedded;
 
   @override
   ConsumerState<AdminPage> createState() => _AdminPageState();
@@ -38,7 +41,7 @@ class _AdminPageState extends ConsumerState<AdminPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PfAppBar(title: const Text('Effectif')),
+      appBar: widget.embedded ? null : PfAppBar(title: const Text('Effectif')),
       body: _AdminDashboardBody(
         builder: (dashboard) => _UsersAdminSection(
           dashboard: dashboard,

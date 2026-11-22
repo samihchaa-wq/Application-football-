@@ -248,7 +248,7 @@ void main() {
           uri: Uri.parse('/auth/loading?redirect=%2Fauth%2Fregister'),
           matchedLocation: '/auth/loading',
         ),
-        '/matches',
+        '/accueil',
       );
     });
 
@@ -402,7 +402,7 @@ void main() {
             uri: uri,
             matchedLocation: '/auth/sign-in',
           ),
-          '/matches',
+          '/accueil',
         );
       }
     });
@@ -515,7 +515,7 @@ void main() {
       );
     });
 
-    test('normalizes root and former home aliases to Matchs', () {
+    test('normalizes root and former home aliases to Accueil', () {
       const state = AuthState(
         isLoading: false,
         isAuthenticated: true,
@@ -523,16 +523,24 @@ void main() {
         profile: _userProfile,
       );
 
-      for (final route in <String>['/', '/home', '/accueil']) {
+      for (final route in <String>['/', '/home']) {
         expect(
           resolveAuthRedirect(
             authState: state,
             uri: Uri.parse(route),
             matchedLocation: route,
           ),
-          '/matches',
+          '/accueil',
         );
       }
+      expect(
+        resolveAuthRedirect(
+          authState: state,
+          uri: Uri.parse('/accueil'),
+          matchedLocation: '/accueil',
+        ),
+        isNull,
+      );
     });
 
     test('asks for the new terms before anything else in the app', () {
@@ -620,7 +628,7 @@ void main() {
           uri: Uri.parse('/auth/accept-terms'),
           matchedLocation: '/auth/accept-terms',
         ),
-        '/matches',
+        '/accueil',
       );
       expect(
         resolveAuthRedirect(

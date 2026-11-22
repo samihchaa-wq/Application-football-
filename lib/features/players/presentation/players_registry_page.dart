@@ -15,14 +15,17 @@ import 'package:petit_filet/core/widgets/pf_loader.dart';
 /// leur compte est validé ; on n'ajoute ici à la main que les joueurs qui n'ont
 /// pas (encore) de compte.
 class PlayersRegistryPage extends ConsumerWidget {
-  const PlayersRegistryPage({super.key});
+  const PlayersRegistryPage({super.key, this.embedded = false});
+
+  /// Intégrée à l'écran Effectif (onglets) : pas de barre de titre propre.
+  final bool embedded;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final seasonAsync = ref.watch(openSeasonIdProvider);
 
     return Scaffold(
-      appBar: PfAppBar(title: const Text('Effectif')),
+      appBar: embedded ? null : PfAppBar(title: const Text('Effectif')),
       body: seasonAsync.when(
         loading: () => const Center(child: PfProgressIndicator()),
         error: (error, _) => Center(child: Text(humanizeError(error))),

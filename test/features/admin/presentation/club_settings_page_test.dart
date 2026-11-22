@@ -65,7 +65,10 @@ void main() {
   Future<void> openSection(WidgetTester tester, String key) async {
     final finder = find.byKey(ValueKey('club-section-$key'));
     await tester.ensureVisible(finder);
-    await tester.tap(finder);
+    // On touche l'en-tête de la section, pas le centre d'une section ouverte.
+    await tester.tap(
+      find.descendant(of: finder, matching: find.byType(ListTile)).first,
+    );
     await tester.pumpAndSettle();
   }
 

@@ -31,13 +31,13 @@ void main() {
         initialLocationFromBrowserHash(
           '#type=recovery&error=access_denied&error_code=otp_expired',
         ),
-        '/matches',
+        '/accueil',
       );
     });
 
     test('defaults to matches when the hash is unrelated', () {
-      expect(initialLocationFromBrowserHash('#foo=bar'), '/matches');
-      expect(initialLocationFromBrowserHash(''), '/matches');
+      expect(initialLocationFromBrowserHash('#foo=bar'), '/accueil');
+      expect(initialLocationFromBrowserHash(''), '/accueil');
     });
   });
 
@@ -104,14 +104,14 @@ void main() {
         '/AS-Grinta/404.html',
       ]) {
         final resolved = resolve(pathname: pathname, search: '?code=abc');
-        expect(resolved.location, '/matches', reason: pathname);
+        expect(resolved.location, '/accueil', reason: pathname);
         expect(resolved.hashUrl, isNull, reason: pathname);
       }
     });
 
     test('une adresse hors de l’application n’est pas interprétée', () {
       final resolved = resolve(pathname: '/autre/matches/m1');
-      expect(resolved.location, '/matches');
+      expect(resolved.location, '/accueil');
       expect(resolved.hashUrl, isNull);
     });
 

@@ -601,6 +601,17 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     return false;
   }
 
+  /// Une ligne par section : on sait ce qu'on va y trouver sans l'ouvrir.
+  static const Map<String, String> _sectionHints = {
+    'squad': 'Ouverture des présences, rappels, liste d’attente',
+    'matches': 'Durée, corrections, alertes de changement',
+    'live': 'Mode du coach, alertes de but et de coup d’envoi',
+    'predictions': 'Pronostics, cotes et rappels',
+    'rewards': 'Homme du match, badges, bilan de saison',
+    'other': 'Le reste des options',
+    'season': 'Clôturer ou lancer une saison',
+  };
+
   Widget _section(
     String key,
     String title,
@@ -618,8 +629,31 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
         key: ValueKey(
             query.isEmpty ? 'club-section-$key' : 'club-section-$key-$query'),
         initiallyExpanded: expanded || query.isNotEmpty,
-        leading: Icon(icon),
-        title: Text(title),
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: .2),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: Theme.of(context).colorScheme.primary),
+        ),
+        title: Text(
+          title,
+          style: Theme.of(context)
+              .textTheme
+              .titleMedium
+              ?.copyWith(fontWeight: FontWeight.w400),
+        ),
+        subtitle: _sectionHints[key] == null
+            ? null
+            : Text(
+                _sectionHints[key]!,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: AppTheme.textFaint),
+              ),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         children: [
           Column(

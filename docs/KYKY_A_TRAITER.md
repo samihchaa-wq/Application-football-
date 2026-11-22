@@ -14,21 +14,25 @@ Vu en vrai = ouvert dans la démo (téléphone 390x844 et ordinateur 1440x900), 
 
 | Écran (route) | Tél | PC | Remarque |
 |---|---|---|---|
-| Calendrier (`/matches`, `/home`, `/pronos`, `/predictions`) | oui | oui | Les 4 routes montrent le même calendrier : pas d'écran d'accueil séparé. Refait : carte « prochain match » mise en avant |
+| Accueil (`/accueil`, `/home`, `/`) | oui | oui | NOUVEAU (lot 2) : prochain match, présence, derniers résultats, Homme du match, raccourcis. Vu en vrai sur build local |
+| Calendrier (`/matches`, `/pronos`, `/predictions`) | oui | oui | Carte « prochain match » mise en avant ; compte à rebours qui se met à jour seul |
 | Détail match, onglet Info (`/matches/:id`) | oui | oui | Refait en blocs |
 | Détail match, onglets Effectif, Compo, Prono | oui | non | Compo : terrain déjà lisible. Prono pas ouvert à fond |
 | Statistiques (`/stats`, `/statistics`) Joueurs | oui | oui | Bandeau des meilleurs ajouté |
-| Statistiques Équipe, Prono (`/predictions/leaderboard`) | oui (Prono) | oui (Prono) | Équipe : non ouvert |
+| Statistiques Équipe (`/stats` onglet Équipe) | oui | non | Graphiques déjà présents (anneau de bilan, buts, écart de score en barres, séries) : rien à refaire |
+| Statistiques Prono (`/predictions/leaderboard`) | oui | oui | |
 | Fiche joueur, classement (`/stats/joueur…`) | oui | oui | Seulement l'état « introuvable » (il faut un identifiant) |
 | Profil (`/profile`) | oui | oui | Centré sur PC, texte en double retiré |
 | Paramètres (`/more`, `/admin/settings`) | oui | oui | Plat mais lisible |
 | Notifications (`/notifications`) | oui | oui | Onglet Paramètres non ouvert |
 | Indisponibilité (`/unavailability`) | oui | oui | État vide seulement |
 | Liste d'attente (`/waitlist`, `/admin/waitlist`) | oui | oui | |
-| Effectif (`/effectif`, `/players`, `/admin/administration`) | oui | oui | 3 routes, 3 listes proches : à fusionner |
+| Effectif (`/effectif`, `/players`, `/admin/administration`) | oui | oui | FUSIONNÉ (lot 2) : un écran, onglets Annuaire / Joueurs / Inscriptions (admin) ; membre simple : annuaire seul |
 | Armoire à badges (`/armoire`), Badges admin | oui | oui | |
 | Bilan de saison (`/wrapped`) | oui | oui | État vide seulement |
-| Réglages du club, Maillots, Équipes & stades, Saison, Notification, Ajouter match passé, Invités | oui | oui | Sections repliées non toutes ouvertes |
+| Réglages du club (liste des sections) | oui | oui | Redessiné : icône colorée, titre plus grand, une ligne d'explication par section. Contenu des sections non ouvert en démo |
+| Maillots, Équipes & stades, Saison, Notification, Invités | oui | oui | |
+| Ajouter un match passé (`/admin/history`) | oui | oui | NON redessiné (formulaire plat) |
 | Textes légaux (`/legal/cgu`, `/legal/confidentialite`) | oui | oui | Contiennent « [Prénom NOM] » : à compléter avant ouverture (légal) |
 | Connexion | oui | oui | |
 | Composition admin, finaliser, vote, prono d'un match, historique d'un match, invités d'un match | non | non | Routes avec identifiant : non parcourues |
@@ -37,4 +41,4 @@ Vu en vrai = ouvert dans la démo (téléphone 390x844 et ordinateur 1440x900), 
 | Poste de contrôle (`/control`) | non | non | Interdit pour ce compte |
 | Mode mois du calendrier | non | non | |
 
-À traiter : fusionner les 3 listes d'effectif, donner un vrai accueil distinct du calendrier, ouvrir les écrans « non » ci-dessus.
+À traiter : redessiner « Ajouter un match passé », ouvrir les écrans « non » ci-dessus (ils demandent de créer des matchs dans FC Démo : composition admin, finaliser, vote, prono, historique, invités, mode mois), tester les états vide/erreur un par un. La barre du bas met « Calendrier » en surbrillance sur l'écran Effectif (comportement d'avant).
