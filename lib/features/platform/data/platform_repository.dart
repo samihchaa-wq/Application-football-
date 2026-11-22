@@ -10,11 +10,32 @@ class PlatformAccessDenied implements Exception {
 
 /// Only guarded, read-only RPCs. No elevated key or client-side role grant.
 class PlatformRepository {
-  PlatformRepository(this._rpc);
+  PlatformRepository(this._rpc, {Future<void> Function()? refreshSession})
+      : _refreshSession = refreshSession;
 
   final Future<dynamic> Function(String function) _rpc;
 
+  /// Renouvelle la session. Au retour dans l'appli, le jeton d'accès a pu
+  /// expirer pendant l'absence : le serveur répond alors « jeton expiré », ce
+  /// qui ne veut pas dire « compte non autorisé ».
+  final Future<void> Function()? _refreshSession;
+
   Future<PlatformSnapshot> fetch() async {
+    try {
+      return await _fetch(canRetry: _refreshSession != null);
+    } on PostgrestException catch (error) {
+      final refresh = _refreshSession;
+      if (refresh == null || !_isExpiredToken(error)) rethrow;
+      try {
+        await refresh();
+      } catch (_) {
+        throw const PlatformAccessDenied();
+      }
+      return _fetch(canRetry: false);
+    }
+  }
+
+  Future<PlatformSnapshot> _fetch({required bool canRetry}) async {
     try {
       // This RPC checks private.platform_operators before returning any club.
       final response = await _rpc('platform_control_overview')
@@ -54,6 +75,7 @@ class PlatformRepository {
         health = PlatformHealth.fromJson(Map<String, dynamic>.from(response));
       } on PostgrestException catch (error) {
         // A revoked operator must lose the entire snapshot, not only health.
+        if (canRetry && _isExpiredToken(error)) rethrow;
         if (_isAccessError(error)) throw const PlatformAccessDenied();
       } on AuthException {
         throw const PlatformAccessDenied();
@@ -68,6 +90,7 @@ class PlatformRepository {
         dailyVisits: dailyVisits,
       );
     } on PostgrestException catch (error) {
+      if (canRetry && _isExpiredToken(error)) rethrow;
       if (_isAccessError(error)) throw const PlatformAccessDenied();
       rethrow;
     } on AuthException {
@@ -76,12 +99,21 @@ class PlatformRepository {
   }
 }
 
+/// Jeton expiré ou illisible : se corrige en renouvelant la session.
+bool _isExpiredToken(PostgrestException error) =>
+    const {'PGRST301', 'PGRST302', 'PGRST303'}.contains(error.code);
+
 bool _isAccessError(PostgrestException error) =>
     const {'42501', 'PGRST301', 'PGRST302', 'PGRST303'}.contains(error.code);
 
 final platformRepositoryProvider = Provider<PlatformRepository>((ref) {
   final client = ref.watch(supabaseClientProvider);
-  return PlatformRepository((name) async => await client.rpc(name));
+  return PlatformRepository(
+    (name) async => await client.rpc(name),
+    refreshSession: () async {
+      await client.auth.refreshSession();
+    },
+  );
 });
 
 /// No disk persistence. Signed-out/session changes destroy the previous view.
