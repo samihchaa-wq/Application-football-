@@ -8,7 +8,7 @@
 | grill-me, grilling | github.com/mattpocock/skills | abeeaf9 | MIT |
 | web-design-guidelines | github.com/vercel-labs/agent-skills | 5a37a63 | MIT (voir README du dépôt) |
 | ui-ux-pro-max | github.com/nextlevelbuilder/ui-ux-pro-max-skill (tests retirés) | f76d165 | MIT |
-| state-management-riverpod, release-and-store-shipping, forms-and-input, ui-states-and-feedback | github.com/zakariaf/Flutter-Skills | e073e5e | MIT |
+| state-management-riverpod, release-and-store-shipping, forms-and-input, ui-states-and-feedback, adaptive-layout, flutter-performance | github.com/zakariaf/Flutter-Skills | e073e5e | MIT |
 | vibesec | github.com/BehiSecc/VibeSec-Skill (nom renommé en minuscules) | 0590993 | Apache-2.0 |
 
 Copies figées : pas de mise à jour automatique. Relire avant de mettre à jour.
