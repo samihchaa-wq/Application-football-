@@ -9,12 +9,12 @@ import 'package:flutter/material.dart';
 enum WindowSizeClass { compact, medium, expanded, large, extraLarge }
 
 WindowSizeClass windowSizeClassFor(double width) => switch (width) {
-      < 600 => WindowSizeClass.compact,
-      < 840 => WindowSizeClass.medium,
-      < 1200 => WindowSizeClass.expanded,
-      < 1600 => WindowSizeClass.large,
-      _ => WindowSizeClass.extraLarge,
-    };
+  < 600 => WindowSizeClass.compact,
+  < 840 => WindowSizeClass.medium,
+  < 1200 => WindowSizeClass.expanded,
+  < 1600 => WindowSizeClass.large,
+  _ => WindowSizeClass.extraLarge,
+};
 
 extension WindowSizeClassX on WindowSizeClass {
   bool get canShowTwoPanes => index >= WindowSizeClass.expanded.index;
@@ -50,65 +50,61 @@ class AdaptiveScaffold extends StatelessWidget {
 
     return switch (sizeClass) {
       WindowSizeClass.compact => Scaffold(
-          body: SafeArea(bottom: false, child: body),
-          bottomNavigationBar: NavigationBar(
-            selectedIndex: selectedIndex,
-            onDestinationSelected: onSelect,
-            destinations: [
-              for (final d in destinations)
-                NavigationDestination(icon: Icon(d.icon), label: d.label),
+        body: SafeArea(bottom: false, child: body),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: selectedIndex,
+          onDestinationSelected: onSelect,
+          destinations: [
+            for (final d in destinations)
+              NavigationDestination(icon: Icon(d.icon), label: d.label),
+          ],
+        ),
+      ),
+      WindowSizeClass.medium || WindowSizeClass.expanded => Scaffold(
+        body: SafeArea(
+          child: Row(
+            children: [
+              NavigationRail(
+                extended: sizeClass == WindowSizeClass.expanded,
+                labelType: sizeClass == WindowSizeClass.expanded
+                    ? NavigationRailLabelType.none
+                    : NavigationRailLabelType.all,
+                selectedIndex: selectedIndex,
+                onDestinationSelected: onSelect,
+                destinations: [
+                  for (final d in destinations)
+                    NavigationRailDestination(
+                      icon: Icon(d.icon),
+                      label: Text(d.label),
+                    ),
+                ],
+              ),
+              const VerticalDivider(width: 1),
+              Expanded(child: body),
             ],
           ),
         ),
-      WindowSizeClass.medium ||
-      WindowSizeClass.expanded =>
-        Scaffold(
-          body: SafeArea(
-            child: Row(
-              children: [
-                NavigationRail(
-                  extended: sizeClass == WindowSizeClass.expanded,
-                  labelType: sizeClass == WindowSizeClass.expanded
-                      ? NavigationRailLabelType.none
-                      : NavigationRailLabelType.all,
-                  selectedIndex: selectedIndex,
-                  onDestinationSelected: onSelect,
-                  destinations: [
-                    for (final d in destinations)
-                      NavigationRailDestination(
-                        icon: Icon(d.icon),
-                        label: Text(d.label),
-                      ),
-                  ],
-                ),
-                const VerticalDivider(width: 1),
-                Expanded(child: body),
-              ],
-            ),
+      ),
+      WindowSizeClass.large || WindowSizeClass.extraLarge => Scaffold(
+        body: SafeArea(
+          child: Row(
+            children: [
+              NavigationDrawer(
+                selectedIndex: selectedIndex,
+                onDestinationSelected: onSelect,
+                children: [
+                  for (final d in destinations)
+                    NavigationDrawerDestination(
+                      icon: Icon(d.icon),
+                      label: Text(d.label),
+                    ),
+                ],
+              ),
+              Expanded(child: body),
+            ],
           ),
         ),
-      WindowSizeClass.large ||
-      WindowSizeClass.extraLarge =>
-        Scaffold(
-          body: SafeArea(
-            child: Row(
-              children: [
-                NavigationDrawer(
-                  selectedIndex: selectedIndex,
-                  onDestinationSelected: onSelect,
-                  children: [
-                    for (final d in destinations)
-                      NavigationDrawerDestination(
-                        icon: Icon(d.icon),
-                        label: Text(d.label),
-                      ),
-                  ],
-                ),
-                Expanded(child: body),
-              ],
-            ),
-          ),
-        ),
+      ),
     };
   }
 }
@@ -146,8 +142,10 @@ class _ProductShellDemoState extends State<ProductShellDemo> {
             // `design-system-structure`; only the width cap here is structural.
             padding: const EdgeInsets.all(16),
             children: [
-              Text('Section ${_destinations[_index].label}',
-                  style: Theme.of(context).textTheme.headlineSmall),
+              Text(
+                'Section ${_destinations[_index].label}',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
               const SizedBox(height: 16), // placeholder spacing
               for (var i = 0; i < 12; i++)
                 ListTile(

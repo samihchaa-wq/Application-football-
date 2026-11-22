@@ -42,7 +42,9 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
     // Validate all fields at once via the form key.
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    await ref.read(taskFormNotifierProvider.notifier).save(
+    await ref
+        .read(taskFormNotifierProvider.notifier)
+        .save(
           title: _titleController.text.trim(),
           notes: _notesController.text.trim(),
         );
@@ -104,7 +106,9 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                 onPressed: submitting ? null : _submit,
                 child: submitting
                     ? const SizedBox.square(
-                        dimension: 20, child: CircularProgressIndicator())
+                        dimension: 20,
+                        child: CircularProgressIndicator(),
+                      )
                     : Text(l10n.saveAction),
               ),
             ],
