@@ -90,8 +90,8 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
       await tester.pumpWidget(_portraits());
-      await expectLater(find.byType(MaterialApp),
-          matchesGoldenFile('portraits_$nom.png'));
+      await expectLater(
+          find.byType(MaterialApp), matchesGoldenFile('portraits_$nom.png'));
     });
   }
 }
