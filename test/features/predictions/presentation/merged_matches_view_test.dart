@@ -553,6 +553,9 @@ class _UnusedMatchesRepository implements MatchesRepository {
 }
 
 class _FakeAuthRepository implements AuthRepository {
+  @override
+  bool get currentUserHasNoClub => false;
+
   final _events = StreamController<supabase.AuthState>.broadcast();
 
   @override

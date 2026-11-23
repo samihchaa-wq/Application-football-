@@ -8,6 +8,7 @@ import 'package:petit_filet/features/club/data/club_repository.dart';
 import 'package:petit_filet/features/legal/domain/legal_documents.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 /// Compte connecté sans club : le compte n'a pas encore de
 /// club. La personne en rejoint un avec un code d'invitation, ou en crée un.
@@ -245,6 +246,12 @@ class _ChooseClubPageState extends ConsumerState<ChooseClubPage> {
                       ? 'Créer mon club'
                       : 'Rejoindre le club',
             ),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: _submitting ? null : () => context.go('/control'),
+            icon: const Icon(Icons.admin_panel_settings_outlined),
+            label: const Text('Ouvrir la Console gestionnaire'),
           ),
           const SizedBox(height: 12),
           TextButton(

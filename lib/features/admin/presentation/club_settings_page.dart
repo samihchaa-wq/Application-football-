@@ -1180,6 +1180,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
                 IconButton(
                   key: const Key('club-usual-squad-size-minus'),
                   icon: const Icon(Icons.remove_circle_outline),
+                  tooltip: 'Retirer',
                   onPressed: _savingUsualSquadSize || _usualSquadSize <= 1
                       ? null
                       : () => _saveUsualSquadSize(_usualSquadSize - 1),
@@ -1188,6 +1189,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
                 IconButton(
                   key: const Key('club-usual-squad-size-plus'),
                   icon: const Icon(Icons.add_circle_outline),
+                  tooltip: 'Ajouter',
                   onPressed: _savingUsualSquadSize || _usualSquadSize >= 30
                       ? null
                       : () => _saveUsualSquadSize(_usualSquadSize + 1),

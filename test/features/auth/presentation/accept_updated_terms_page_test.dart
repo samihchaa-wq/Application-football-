@@ -133,5 +133,8 @@ class _FakeAuthRepository implements AuthRepository {
   bool get hasSession => true;
 
   @override
+  bool get currentUserHasNoClub => false;
+
+  @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
