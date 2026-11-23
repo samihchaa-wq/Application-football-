@@ -51,7 +51,9 @@ class CalendarFeedEventCard extends ConsumerWidget {
       shape: PfCardBorder(
           radius: AppTheme.radiusMd,
           borderColor: CalendarCardPalette.eventBorder,
-          borderWidth: 1.2),
+          borderWidth: 1.2,
+          tint: .16,
+          stripe: true),
       clipBehavior: Clip.antiAlias,
       child: CalendarCardActionsOverlay(
         actions: editButton,

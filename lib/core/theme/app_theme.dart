@@ -181,9 +181,9 @@ abstract final class AppTheme {
 
   static const TextStyle _display = TextStyle(
     fontFamily: displayFont,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w500,
     color: textPrimary,
-    letterSpacing: .3,
+    letterSpacing: .8,
   );
 
   static ThemeData get light {
@@ -247,11 +247,11 @@ abstract final class AppTheme {
             .copyWith(letterSpacing: -.2),
         titleMedium: base.textTheme.titleMedium?.copyWith(
           color: textPrimary,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
         ),
         titleSmall: base.textTheme.titleSmall?.copyWith(
           color: textPrimary,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
         ),
         bodyLarge: base.textTheme.bodyLarge?.copyWith(
           color: textPrimary,
@@ -267,12 +267,12 @@ abstract final class AppTheme {
         ),
         labelLarge: base.textTheme.labelLarge?.copyWith(
           color: textPrimary,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
           letterSpacing: .1,
         ),
         labelMedium: base.textTheme.labelMedium?.copyWith(
           color: textSecondary,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
         ),
         labelSmall: base.textTheme.labelSmall?.copyWith(color: textFaint),
       ),
@@ -290,7 +290,7 @@ abstract final class AppTheme {
           fontFamily: displayFont,
           color: textPrimary,
           fontSize: 20,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w500,
           letterSpacing: -.3,
         ),
       ),
@@ -349,7 +349,7 @@ abstract final class AppTheme {
             ),
           ),
           textStyle: WidgetStateProperty.all(
-            const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+            const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
           ),
         ),
       ),
@@ -363,14 +363,14 @@ abstract final class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusSm),
           ),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: primaryBright,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          textStyle: const TextStyle(fontWeight: FontWeight.w700),
+          textStyle: const TextStyle(fontWeight: FontWeight.w500),
         ),
       ),
       iconTheme: const IconThemeData(color: textSecondary, size: 22),
@@ -418,7 +418,7 @@ abstract final class AppTheme {
           // y compris lorsque la fiche du match en affiche cinq côte à côte.
           minimumSize: WidgetStateProperty.all(const Size(48, 42)),
           textStyle: WidgetStateProperty.all(
-            const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
           ),
           backgroundColor: WidgetStateProperty.resolveWith((states) {
             return states.contains(WidgetState.selected)
@@ -448,7 +448,7 @@ abstract final class AppTheme {
         side: BorderSide(color: outline.withValues(alpha: .28)),
         labelStyle: const TextStyle(
           color: textPrimary,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
       ),
@@ -472,7 +472,7 @@ abstract final class AppTheme {
             fontSize: 12,
             height: 1.1,
             color: selected ? primaryBright : textFaint,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            fontWeight: selected ? FontWeight.w500 : FontWeight.w400,
           );
         }),
       ),
@@ -483,7 +483,7 @@ abstract final class AppTheme {
         unselectedIconTheme: const IconThemeData(color: textFaint),
         selectedLabelTextStyle: TextStyle(
           color: primaryBright,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w500,
         ),
         unselectedLabelTextStyle: const TextStyle(color: textFaint),
       ),

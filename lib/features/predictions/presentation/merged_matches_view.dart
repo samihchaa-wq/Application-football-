@@ -809,7 +809,11 @@ class _UpcomingMatchCard extends ConsumerWidget {
     return Card(
       color: cardSurface,
       shape: PfCardBorder(
-          radius: AppTheme.radiusMd, borderColor: cardBorder, borderWidth: 1.2),
+          radius: AppTheme.radiusMd,
+          borderColor: cardBorder,
+          borderWidth: 1.2,
+          tint: .16,
+          stripe: true),
       clipBehavior: Clip.antiAlias,
       child: CalendarCardActionsOverlay(
         actions: cardActions,

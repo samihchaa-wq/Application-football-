@@ -424,7 +424,9 @@ class ClubEventCard extends ConsumerWidget {
       shape: PfCardBorder(
           radius: AppTheme.radiusMd,
           borderColor: CalendarCardPalette.eventBorder,
-          borderWidth: 1.2),
+          borderWidth: 1.2,
+          tint: .16,
+          stripe: true),
       clipBehavior: Clip.antiAlias,
       child: CalendarCardActionsOverlay(
         actions: editButton,
@@ -508,7 +510,11 @@ class MonthlyMatchCard extends ConsumerWidget {
     return Card(
       color: surface,
       shape: PfCardBorder(
-          radius: AppTheme.radiusMd, borderColor: border, borderWidth: 1.2),
+          radius: AppTheme.radiusMd,
+          borderColor: border,
+          borderWidth: 1.2,
+          tint: .16,
+          stripe: true),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: _onTap(context, phase),

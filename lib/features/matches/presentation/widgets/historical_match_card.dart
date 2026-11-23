@@ -34,7 +34,12 @@ class HistoricalMatchCard extends StatelessWidget {
 
     return Card(
       color: surface,
-      shape: PfCardBorder(radius: 20, borderColor: border, borderWidth: 1.3),
+      shape: PfCardBorder(
+          radius: 20,
+          borderColor: border,
+          borderWidth: 1.3,
+          tint: .16,
+          stripe: true),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => context.push('/matches/history/${match.id}', extra: match),

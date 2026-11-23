@@ -80,7 +80,7 @@ class CalendarScoreline extends StatelessWidget {
             letterSpacing: 1,
             height: 1.15,
             fontFamily: AppTheme.displayFont,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w500,
           ),
         ),
       );
@@ -305,7 +305,7 @@ class CalendarTeamName extends StatelessWidget {
       (Theme.of(context).textTheme.titleMedium ?? const TextStyle()).copyWith(
         color: color,
         fontSize: fontSize,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w500,
         height: 1.15,
       );
 

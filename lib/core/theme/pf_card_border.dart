@@ -12,7 +12,15 @@ class PfCardBorder extends ShapeBorder {
     required this.radius,
     required this.borderColor,
     this.borderWidth = 1,
+    this.tint = 0,
+    this.stripe = false,
   });
+
+  /// Part de la couleur du contour diffusée dans le fond (0 = aucune).
+  final double tint;
+
+  /// Liseré plein sur le bord gauche, de la couleur du contour (« billet »).
+  final bool stripe;
 
   final double radius;
   final Color borderColor;
@@ -54,6 +62,28 @@ class PfCardBorder extends ShapeBorder {
           stops: const [0, .5, 1],
         ).createShader(rect),
     );
+
+    if (tint > 0) {
+      canvas.drawRect(
+        rect,
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              borderColor.withValues(alpha: tint),
+              borderColor.withValues(alpha: 0),
+            ],
+            stops: const [0, .8],
+          ).createShader(rect),
+      );
+    }
+    if (stripe) {
+      canvas.drawRect(
+        Rect.fromLTWH(rect.left, rect.top, 5, rect.height),
+        Paint()..color = borderColor,
+      );
+    }
 
     // Tracé de terrain, en bas à droite.
     final motif = Paint()
@@ -103,5 +133,7 @@ class PfCardBorder extends ShapeBorder {
         radius: radius * t,
         borderColor: borderColor,
         borderWidth: borderWidth * t,
+        tint: tint,
+        stripe: stripe,
       );
 }
