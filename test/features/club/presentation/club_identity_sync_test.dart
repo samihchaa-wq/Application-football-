@@ -351,6 +351,9 @@ class _SwitchableAuthController extends AuthController {
 }
 
 class _FixedAuthRepository implements AuthRepository {
+  @override
+  bool get currentUserHasNoClub => false;
+
   _FixedAuthRepository(this.profile);
 
   AuthProfile profile;

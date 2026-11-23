@@ -112,6 +112,9 @@ void main() {
 }
 
 class _LoadingAuthRepository implements AuthRepository {
+  @override
+  bool get currentUserHasNoClub => false;
+
   final Completer<AuthProfile?> _profile = Completer<AuthProfile?>();
 
   @override

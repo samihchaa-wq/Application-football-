@@ -299,7 +299,20 @@ class AuthController extends StateNotifier<AuthState> {
       if (refreshGeneration != _authGeneration) return;
       _loadingFallback?.cancel();
       final hasSession = _repository.hasSession;
-      if (hasSession) {
+      if (hasSession && _repository.currentUserHasNoClub) {
+        // Le serveur refuse de renvoyer un profil à un compte sans club
+        // (erreur, pas réponse vide) : ce n'est pas une panne.
+        _profileFromCache = false;
+        unawaited(_profileCache?.remember(null));
+        state = state.copyWith(
+          isLoading: false,
+          isAuthenticated: false,
+          hasSession: true,
+          needsClub: true,
+          clearProfile: true,
+          clearError: true,
+        );
+      } else if (hasSession) {
         state = state.copyWith(
           isLoading: false,
           hasSession: true,
