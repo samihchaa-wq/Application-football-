@@ -4,7 +4,11 @@ const [url, key, n = "500"] = process.argv.slice(2);
 if (!/^wss?:\/\/(127\.0\.0\.1|localhost)[:/]/.test(url ?? "")) {
   console.error("Refus : Realtime local uniquement."); process.exit(2);
 }
-const N = Number(n); let ok = 0, fail = 0; const t0 = Date.now(); const lat = [];
+const N = Number(n);
+if (!Number.isInteger(N) || N < 1) {
+  console.error("Refus : le nombre de clients doit être un entier >= 1."); process.exit(2);
+}
+ let ok = 0, fail = 0; const t0 = Date.now(); const lat = [];
 await Promise.all(Array.from({ length: N }, (_, i) => new Promise((res) => {
   const s = Date.now();
   const ws = new WebSocket(`${url}?apikey=${key}&vsn=1.0.0`);
