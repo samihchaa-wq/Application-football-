@@ -58,12 +58,15 @@ Future<void> _pump(
   WidgetTester tester, {
   required bool isAdmin,
   MatchAvailabilityBoard? board,
+  bool sportsEnabled = true,
+  bool? routing = true,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         matchDetailsProvider(_matchId).overrideWith((ref) async => _upcoming()),
-        sportsManagementEnabledProvider.overrideWithValue(true),
+        sportsManagementEnabledProvider.overrideWithValue(sportsEnabled),
+        sportsManagementRoutingStateProvider.overrideWithValue(routing),
         isAdminViewProvider.overrideWithValue(isAdmin),
         matchAvailabilityBoardProvider(_matchId).overrideWith(
           (ref) async => board,
@@ -79,10 +82,29 @@ Future<void> _pump(
       child: const MaterialApp(home: MatchDetailsPage(matchId: _matchId)),
     ),
   );
-  await tester.pumpAndSettle();
+  if (routing == null) {
+    await tester.pump(const Duration(milliseconds: 100));
+  } else {
+    await tester.pumpAndSettle();
+  }
 }
 
 void main() {
+  testWidgets(
+      'réglages du club pas encore lus : pas de « Gestion sportive indisponible »',
+      (tester) async {
+    await _pump(tester, isAdmin: false, sportsEnabled: false, routing: null);
+
+    expect(find.text('Gestion sportive indisponible.'), findsNothing);
+  });
+
+  testWidgets('gestion sportive réellement coupée : message affiché',
+      (tester) async {
+    await _pump(tester, isAdmin: false, sportsEnabled: false, routing: false);
+
+    expect(find.text('Gestion sportive indisponible.'), findsOneWidget);
+  });
+
   group('match à venir, vue joueur', () {
     testWidgets('rien de publié : aucune carte menant à une page vide',
         (tester) async {

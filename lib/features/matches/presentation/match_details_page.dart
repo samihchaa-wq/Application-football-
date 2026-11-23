@@ -60,6 +60,9 @@ class MatchDetailsPage extends ConsumerWidget {
     final detailsAsync = ref.watch(matchDetailsProvider(matchId));
     final isAdmin = ref.watch(isAdminViewProvider);
     final sportsEnabled = ref.watch(sportsManagementEnabledProvider);
+    // `null` : réglages du club pas encore lus (démarrage à froid). Ce n'est
+    // pas « coupé » : on attend au lieu d'afficher « indisponible ».
+    final sportsKnown = ref.watch(sportsManagementRoutingStateProvider) != null;
     final currentProfileId = ref.watch(
       authControllerProvider.select((state) => state.profile?.id),
     );
@@ -129,6 +132,11 @@ class MatchDetailsPage extends ConsumerWidget {
                     const SizedBox(height: 16),
                     if (sportsEnabled)
                       _UpcomingModules(matchId: matchId, isAdmin: isAdmin)
+                    else if (!sportsKnown)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24),
+                        child: Center(child: PfProgressIndicator()),
+                      )
                     else
                       const Card(
                         child: Padding(

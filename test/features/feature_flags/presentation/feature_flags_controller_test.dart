@@ -9,7 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  main2();
+  _coldStartTests();
   tearDown(() => AppLogger.sink = null);
 
   test('does not call the server before authentication', () async {
@@ -455,7 +455,7 @@ class _DelayedRepository extends _FakeFeatureFlagsRepository {
   }
 }
 
-void main2() {
+void _coldStartTests() {
   test('cold start: the last rebuild wins over a stale answer', () async {
     final repository = _DelayedRepository();
     addTearDown(repository.dispose);
@@ -483,7 +483,8 @@ void main2() {
     // Réponses tardives dans le désordre : la dernière lecture est « activée ».
     for (var i = 0; i < repository.pending.length; i++) {
       repository.pending[i].complete(
-        _snapshot(enabled: i == repository.pending.length - 1,
+        _snapshot(
+            enabled: i == repository.pending.length - 1,
             updatedAt: DateTime.utc(2026, 7, 20, 12)),
       );
       await pumpEventQueue();
