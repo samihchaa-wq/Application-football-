@@ -482,24 +482,20 @@ class _MatchModule extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          child: Row(
             children: [
               CircleAvatar(radius: 24, child: Icon(icon)),
-              const SizedBox(height: 14),
-              Text(
-                title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge
-                    ?.copyWith(fontWeight: FontWeight.w400),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w400,
+                      ),
+                ),
               ),
-              const SizedBox(height: 12),
-              const Align(
-                alignment: Alignment.centerRight,
-                child: Icon(Icons.chevron_right),
-              ),
+              const Icon(Icons.chevron_right),
             ],
           ),
         ),
