@@ -136,7 +136,7 @@ class MatchDetailHeaderCard extends StatelessWidget {
                     compact ? compactNameSize : CalendarTeamName.regularSize,
                 crestSize: compact
                     ? compactCrestSize
-                    : CalendarScoreline.regularCrestSize,
+                    : CalendarScoreline.regularCrestSize + 10,
                 limitNameLines: !compact,
               ),
             if (showMotmAction) ...[

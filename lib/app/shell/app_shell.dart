@@ -241,30 +241,38 @@ class _AppShellState extends ConsumerState<AppShell>
           ),
           bottomNavigationBar: useRail || !statsEnabled
               ? null
-              : ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(24),
-                  ),
-                  // Pas de flou : rien ne défile sous la barre (corps non
-                  // étendu), il ne floutait qu'un fond uni, mais coûtait un
-                  // recalcul à chaque image pendant le défilement.
-                  child: NavigationBar(
-                    selectedIndex: _selectedIndex,
-                    labelBehavior:
-                        NavigationDestinationLabelBehavior.alwaysShow,
-                    onDestinationSelected: _selectDestination,
-                    destinations: const [
-                      NavigationDestination(
-                        icon: Icon(Icons.calendar_month_outlined),
-                        selectedIcon: Icon(Icons.calendar_month_rounded),
-                        label: 'Calendrier',
+              : Padding(
+                  // Barre flottante : détachée des bords, avec son relief.
+                  padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(26),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: .10),
                       ),
-                      NavigationDestination(
-                        icon: Icon(Icons.leaderboard_outlined),
-                        selectedIcon: Icon(Icons.leaderboard_rounded),
-                        label: 'Statistiques',
+                      boxShadow: AppTheme.cardShadows,
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(26),
+                      child: NavigationBar(
+                        selectedIndex: _selectedIndex,
+                        labelBehavior:
+                            NavigationDestinationLabelBehavior.alwaysShow,
+                        onDestinationSelected: _selectDestination,
+                        destinations: const [
+                          NavigationDestination(
+                            icon: Icon(Icons.calendar_month_outlined),
+                            selectedIcon: Icon(Icons.calendar_month_rounded),
+                            label: 'Calendrier',
+                          ),
+                          NavigationDestination(
+                            icon: Icon(Icons.leaderboard_outlined),
+                            selectedIcon: Icon(Icons.leaderboard_rounded),
+                            label: 'Statistiques',
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
         );
