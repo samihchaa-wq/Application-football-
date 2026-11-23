@@ -16,3 +16,9 @@
 - Hors périmètre : test « lettres accentuées restent autorisées » (test/core/security/password_policy_test.dart) échoue. Logique de mot de passe, voir Fonctions. Gravité : moyenne (cause non cherchée, peut venir de la version Dart).
 - Bloqué : docker sans démon, Supabase CLI absente → pas d'appli avec données, donc pas de capture réelle des écrans.
 - Reste à faire (moi) : monter les écrans avec de fausses données (build web + Playwright, réseau simulé) pour capturer ordinateur 1440 px. Non vérifiés en Nuit : direct, compositions en édition, légaux, connexion.
+
+## 23/11/2026 16:15 — passage 3 (aucun code changé)
+- Bloqué : Flutter n'est plus là (conteneur neuf). Réinstallation (clone Flutter 3.50.1) et `pip install graphifyy` refusés par le contrôle de sécurité de la session. Graphify absent aussi.
+- Sans Flutter : pas d'analyse, pas de tests, pas de capture. Écrire du code d'écran sans vérifier = interdit.
+- Décision propriétaire : autoriser l'installation de Flutter (clone github.com/flutter, 3.50.1) et de graphifyy (déjà accordé dans la charte §0) dans cette session, ou fournir un environnement avec Flutter préinstallé.
+- Reste à faire (moi) : écrans en Nuit, ordinateur 1440 px d'abord, avec fausses données + capture Playwright.
