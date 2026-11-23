@@ -48,11 +48,9 @@ final clubIdentitySyncProvider = Provider<void>((ref) {
   }, fireImmediately: true);
 });
 
-/// Habille l'application aux couleurs du club.
+/// Tous les clubs partagent les mêmes couleurs : celles de Petit Filet.
+/// Les couleurs enregistrées en base ne sont plus appliquées.
 void applyClubColors(Club club) {
-  final primary = AppTheme.parseHex(club.primaryColor);
-  final secondary = AppTheme.parseHex(club.secondaryColor);
-  AppTheme.applyClubColors(primary: primary, secondary: secondary);
-  // Les maillots par défaut reprennent les couleurs du club.
-  ClubKits.setClubColors(primary: primary, secondary: secondary);
+  AppTheme.resetClubColors();
+  ClubKits.setClubColors();
 }
