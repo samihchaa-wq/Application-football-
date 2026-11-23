@@ -56,6 +56,8 @@ String? resolveAuthRedirect({
   // Connecté mais sans club : seule l'étape « rejoindre ou créer
   // un club » est accessible.
   if (authState.needsClub) {
+    // Compte éditeur : pas de club à rejoindre, la Console est son espace.
+    if (authState.isPlatformOperator) return '/control';
     if (location == '/auth/choose-club') return null;
 
     // Un lien d'invitation peut arriver directement ou après la restauration

@@ -82,6 +82,9 @@ class _StartupAuthRepository implements AuthRepository {
   bool get currentUserHasNoClub => false;
 
   @override
+  Future<bool> isPlatformOperator() async => false;
+
+  @override
   ({String firstName, String lastName}) get suggestedNames =>
       (firstName: '', lastName: '');
 

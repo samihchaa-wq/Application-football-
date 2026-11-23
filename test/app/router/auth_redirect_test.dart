@@ -50,6 +50,34 @@ void main() {
       },
     );
 
+    test('sends an operator account without a club to the console', () {
+      const state = AuthState(
+        isLoading: false,
+        hasSession: true,
+        needsClub: true,
+        isPlatformOperator: true,
+      );
+
+      for (final path in ['/', '/matches', '/auth/choose-club']) {
+        expect(
+          resolveAuthRedirect(
+            authState: state,
+            uri: Uri.parse(path),
+            matchedLocation: path,
+          ),
+          '/control',
+        );
+      }
+      expect(
+        resolveAuthRedirect(
+          authState: state,
+          uri: Uri.parse('/control'),
+          matchedLocation: '/control',
+        ),
+        isNull,
+      );
+    });
+
     test('keeps a signed-in account without a club on the club step', () {
       const state = AuthState(
         isLoading: false,

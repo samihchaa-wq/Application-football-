@@ -249,7 +249,7 @@ class _AppShellState extends ConsumerState<AppShell>
                     child: Row(
                       children: [
                         Expanded(
-                          child: _NavButton(
+                          child: ShellNavButton(
                             label: 'Calendrier',
                             selected: _selectedIndex == 0,
                             onTap: () => _selectDestination(0),
@@ -257,7 +257,7 @@ class _AppShellState extends ConsumerState<AppShell>
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: _NavButton(
+                          child: ShellNavButton(
                             label: 'Statistiques',
                             selected: _selectedIndex == 1,
                             onTap: () => _selectDestination(1),
@@ -319,7 +319,7 @@ class _DesktopNavigation extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: _NavButton(
+            child: ShellNavButton(
               label: 'Calendrier',
               selected: selectedIndex == 0,
               onTap: () => onSelected(0),
@@ -328,7 +328,7 @@ class _DesktopNavigation extends StatelessWidget {
           const SizedBox(height: 12),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: _NavButton(
+            child: ShellNavButton(
               label: 'Statistiques',
               selected: selectedIndex == 1,
               onTap: () => onSelected(1),
@@ -341,8 +341,9 @@ class _DesktopNavigation extends StatelessWidget {
 }
 
 /// Bouton large de la barre du bas : texte seul, plein quand il est actif.
-class _NavButton extends StatelessWidget {
-  const _NavButton({
+@visibleForTesting
+class ShellNavButton extends StatelessWidget {
+  const ShellNavButton({
     required this.label,
     required this.selected,
     required this.onTap,
@@ -384,8 +385,8 @@ class _NavButton extends StatelessWidget {
           child: InkWell(
             borderRadius: radius,
             onTap: onTap,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 52),
+            child: SizedBox(
+              height: 52,
               child: Center(
                 child: Text(
                   label,

@@ -529,6 +529,9 @@ class _Repository implements AuthRepository {
   bool get hasSession => true;
   @override
   bool get currentUserHasNoClub => true;
+
+  @override
+  Future<bool> isPlatformOperator() async => false;
   @override
   Stream<supabase.AuthState> get authStateChanges => const Stream.empty();
   @override

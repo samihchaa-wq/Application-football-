@@ -115,6 +115,9 @@ class _LoadingAuthRepository implements AuthRepository {
   @override
   bool get currentUserHasNoClub => false;
 
+  @override
+  Future<bool> isPlatformOperator() async => false;
+
   final Completer<AuthProfile?> _profile = Completer<AuthProfile?>();
 
   @override
