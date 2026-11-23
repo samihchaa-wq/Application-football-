@@ -77,6 +77,22 @@ abstract final class AppTheme {
 
   static void resetClubColors() => applyClubColors();
 
+  /// Texte des boutons pleins : blanc tant qu'il reste lisible sur la couleur
+  /// du bouton, sinon la couleur de fond sombre (couleur de club très claire).
+  static Color get onPrimaryButton =>
+      contrastRatio(Colors.white, primary) >= minAccentContrast
+          ? Colors.white
+          : background;
+
+  /// Haut du dégradé des boutons pleins : un peu plus clair que [primary],
+  /// sans jamais faire passer le texte sous le contraste AA.
+  static Color get primaryLit {
+    final lit = Color.lerp(primary, Colors.white, .10)!;
+    return contrastRatio(onPrimaryButton, lit) >= minAccentContrast
+        ? lit
+        : primary;
+  }
+
   /// Fond d'un onglet ou d'un choix sélectionné. Le texte sélectionné y est
   /// écrit avec [accent] : il doit rester lisible quelle que soit la couleur
   /// secondaire du club.
@@ -189,7 +205,7 @@ abstract final class AppTheme {
   static ThemeData get light {
     final scheme = ColorScheme.dark(
       primary: primary,
-      onPrimary: Colors.white,
+      onPrimary: onPrimaryButton,
       primaryContainer: surfaceHero,
       onPrimaryContainer: textPrimary,
       secondary: accent,
@@ -313,7 +329,7 @@ abstract final class AppTheme {
           ),
           backgroundBuilder: (context, states, child) {
             if (states.contains(WidgetState.disabled)) return child!;
-            final lit = Color.lerp(primary, Colors.white, .18)!;
+            final lit = primaryLit;
             return DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -338,7 +354,7 @@ abstract final class AppTheme {
           foregroundColor: WidgetStateProperty.resolveWith((states) {
             return states.contains(WidgetState.disabled)
                 ? textFaint
-                : Colors.white;
+                : onPrimaryButton;
           }),
           overlayColor: WidgetStateProperty.all(
             Colors.white.withValues(alpha: .10),
