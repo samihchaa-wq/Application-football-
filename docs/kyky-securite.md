@@ -25,3 +25,9 @@
 - Reste (propriétaire) : accord pour appliquer 20261203030000 et 20261203040000 ; seuils de création ; brancher check_club_creation_limits (Edge + migration ensemble).
 - Outils absents : graphify, Flutter, pgTAP/Supabase CLI, Docker (pas de démon). Dossier projet « Petit filet » illisible (404).
 - Hors périmètre : aucun.
+
+## 24/11/2026 (4e passage)
+- Rien de nouveau : lots 1 à 6 faits ou en attente d'accord propriétaire (voir passages du 23/11).
+- Reste (propriétaire) : appliquer 20261203030000 et 20261203040000 ; valider seuils de création ; brancher check_club_creation_limits (Edge + migration ensemble).
+- Outils absents : graphify, Flutter, pgTAP/Supabase CLI. Dossier projet « Petit filet » (charte, messages) illisible : 404.
+- Hors périmètre : aucun.
