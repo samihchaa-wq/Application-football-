@@ -415,6 +415,9 @@ class _SignedInAdminController extends AuthController {
 }
 
 class _FakeAuthRepository implements AuthRepository {
+  @override
+  bool get currentUserHasNoClub => false;
+
   final _events = StreamController<supabase.AuthState>.broadcast();
 
   @override

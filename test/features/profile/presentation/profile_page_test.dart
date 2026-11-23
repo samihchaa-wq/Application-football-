@@ -213,6 +213,9 @@ class _SignedInAuthController extends AuthController {
 }
 
 class _FakeAuthRepository implements AuthRepository {
+  @override
+  bool get currentUserHasNoClub => false;
+
   final _events = StreamController<supabase.AuthState>.broadcast();
   final savedProfiles =
       <({String firstName, String lastName, String? surnom})>[];

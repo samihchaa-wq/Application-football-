@@ -328,6 +328,9 @@ void main() {
 
 class _FakeAuthRepository implements AuthRepository {
   @override
+  bool get currentUserHasNoClub => false;
+
+  @override
   Stream<supabase.AuthState> get authStateChanges => const Stream.empty();
 
   @override
