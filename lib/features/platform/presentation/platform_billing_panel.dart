@@ -952,8 +952,9 @@ class _RefundDialogState extends _ActionDialogState<_RefundDialog> {
             decoration: const InputDecoration(labelText: 'Motif'),
           ),
           const Text(
-            'Un avoir est émis pour la facture du paiement. L’accès du club '
-            'n’est pas modifié : suspends-le à part si besoin.',
+            'Un avoir est émis pour la facture du paiement. Si tu rembourses '
+            'la totalité du dernier paiement, le club est suspendu tout de '
+            'suite. Un remboursement partiel ne change pas l’accès.',
             style: TextStyle(fontSize: 12, color: AppTheme.textFaint),
           ),
         ],

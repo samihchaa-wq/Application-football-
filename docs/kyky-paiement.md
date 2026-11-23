@@ -54,6 +54,21 @@ Rien lu en vrai dans Stripe ni Supabase.
 **Reste à faire (propriétaire)** : mêmes points que le lot 1 ; prix à décider ;
 passages `[ … ]` à remplir. Seul un avocat peut valider les CGV.
 
+## 24/11/2026 — Lot 3 : texte du bouton « Rembourser »
+
+**Fait (écrit, non compilé, non testé, non déployé)** : la boîte « Rembourser »
+disait « l'accès du club n'est pas modifié » : faux depuis la règle du 23/11.
+Texte corrigé : remboursement total du dernier paiement = club suspendu tout
+de suite ; partiel = accès inchangé. Aucun test Flutter ne cite ce texte.
+
+**Non vérifié** : Flutter absent de la session (ni analyse, ni test). Charte
+et courrier interne toujours illisibles (Projects : 404). graphify absent.
+
+**Reste à faire (moi)** : pgTAP + Flutter en CI ; message « club suspendu »
+après remboursement (le serveur renvoie `club_suspended`, l'appli ne le lit pas) ;
+relecture bout en bout impayé → suspension.
+**Reste à faire (propriétaire)** : inchangé (prix, passages `[ … ]`, avocat).
+
 ## Lieux à changer selon le prix (NON décidé, rien tranché)
 
 Aujourd'hui : 79 € par club et par an, TVA non applicable (art. 293 B).
