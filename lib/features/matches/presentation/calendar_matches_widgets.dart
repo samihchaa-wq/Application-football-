@@ -421,13 +421,10 @@ class ClubEventCard extends ConsumerWidget {
 
     return Card(
       color: CalendarCardPalette.eventSurface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        side: const BorderSide(
-          color: CalendarCardPalette.eventBorder,
-          width: 1.2,
-        ),
-      ),
+      shape: PfCardBorder(
+          radius: AppTheme.radiusMd,
+          borderColor: CalendarCardPalette.eventBorder,
+          borderWidth: 1.2),
       clipBehavior: Clip.antiAlias,
       child: CalendarCardActionsOverlay(
         actions: editButton,
@@ -510,10 +507,8 @@ class MonthlyMatchCard extends ConsumerWidget {
 
     return Card(
       color: surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        side: BorderSide(color: border, width: 1.2),
-      ),
+      shape: PfCardBorder(
+          radius: AppTheme.radiusMd, borderColor: border, borderWidth: 1.2),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: _onTap(context, phase),

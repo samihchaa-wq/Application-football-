@@ -76,7 +76,8 @@ class CalendarScoreline extends StatelessWidget {
           // Même taille que les noms d'équipes, sur la même ligne.
           style: theme.textTheme.titleMedium?.copyWith(
             color: scoreColor,
-            fontSize: nameSize,
+            fontSize: nameSize * 1.22,
+            letterSpacing: 1,
             height: 1.15,
             fontFamily: AppTheme.displayFont,
             fontWeight: FontWeight.w700,
@@ -304,7 +305,7 @@ class CalendarTeamName extends StatelessWidget {
       (Theme.of(context).textTheme.titleMedium ?? const TextStyle()).copyWith(
         color: color,
         fontSize: fontSize,
-        fontWeight: FontWeight.w400,
+        fontWeight: FontWeight.w600,
         height: 1.15,
       );
 

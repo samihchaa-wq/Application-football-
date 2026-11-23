@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/theme/pf_card_border.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/theme/calendar_card_palette.dart';
 import 'package:petit_filet/core/widgets/calendar_scoreline.dart';
@@ -47,13 +48,10 @@ class CalendarFeedEventCard extends ConsumerWidget {
 
     return Card(
       color: CalendarCardPalette.eventSurface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        side: const BorderSide(
-          color: CalendarCardPalette.eventBorder,
-          width: 1.2,
-        ),
-      ),
+      shape: PfCardBorder(
+          radius: AppTheme.radiusMd,
+          borderColor: CalendarCardPalette.eventBorder,
+          borderWidth: 1.2),
       clipBehavior: Clip.antiAlias,
       child: CalendarCardActionsOverlay(
         actions: editButton,

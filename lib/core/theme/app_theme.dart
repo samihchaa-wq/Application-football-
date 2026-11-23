@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:petit_filet/core/theme/pf_card_border.dart';
 
 class _PfPageTransitionsBuilder extends PageTransitionsBuilder {
   const _PfPageTransitionsBuilder();
@@ -158,12 +159,10 @@ abstract final class AppTheme {
     Color? borderColor,
     double borderWidth = 1,
   }) =>
-      RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(radius),
-        side: BorderSide(
-          color: borderColor ?? Colors.white.withValues(alpha: .10),
-          width: borderWidth,
-        ),
+      PfCardBorder(
+        radius: radius,
+        borderColor: borderColor ?? Colors.white.withValues(alpha: .12),
+        borderWidth: borderWidth,
       );
 
   /// Relief des cartes : ombre profonde et fine lueur rouge.
@@ -312,6 +311,20 @@ abstract final class AppTheme {
           shadowColor: WidgetStateProperty.all(
             defaultPrimary.withValues(alpha: .6),
           ),
+          backgroundBuilder: (context, states, child) {
+            if (states.contains(WidgetState.disabled)) return child!;
+            final lit = Color.lerp(primary, Colors.white, .18)!;
+            return DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [lit, primary],
+                ),
+              ),
+              child: child,
+            );
+          },
           padding: WidgetStateProperty.all(
             const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
           ),

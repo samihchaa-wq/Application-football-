@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/theme/pf_card_border.dart';
 import 'package:petit_filet/core/club/club_identity.dart';
 import 'package:petit_filet/core/theme/calendar_card_palette.dart';
 import 'package:petit_filet/core/widgets/calendar_scoreline.dart';
@@ -33,10 +34,7 @@ class HistoricalMatchCard extends StatelessWidget {
 
     return Card(
       color: surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: border, width: 1.3),
-      ),
+      shape: PfCardBorder(radius: 20, borderColor: border, borderWidth: 1.3),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => context.push('/matches/history/${match.id}', extra: match),

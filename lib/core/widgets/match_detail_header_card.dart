@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/theme/pf_card_border.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/theme/calendar_card_palette.dart';
 import 'package:petit_filet/core/widgets/calendar_scoreline.dart';
@@ -96,10 +97,7 @@ class MatchDetailHeaderCard extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero,
       color: surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: border, width: 1.3),
-      ),
+      shape: PfCardBorder(radius: 20, borderColor: border, borderWidth: 1.3),
       clipBehavior: Clip.antiAlias,
       child: CalendarCardSections(
         bandVerticalPadding: compact ? 6 : CalendarCardSpacing.band,
