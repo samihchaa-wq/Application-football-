@@ -19,3 +19,9 @@
 - Non fait volontairement : brancher check_club_creation_limits dans claim-club/register-account. Demande de redéployer les fonctions Edge ET d'appliquer la migration 20261203040000 ensemble. Attente accord propriétaire.
 - Outils absents : graphify (pas de carte), Flutter, pgTAP/Supabase CLI. Dossier projet « Petit filet » (charte, messages) illisible : erreur 404 de l'outil Projects.
 - Hors périmètre : aucun.
+
+## 23/11/2026 (3e passage, nuit)
+- Rien de nouveau à écrire : lots 1 à 6 déjà faits ou en attente d'accord propriétaire. Branche en retard de 6 commits sur main (pas fusionnée, par règle).
+- Reste (propriétaire) : accord pour appliquer 20261203030000 et 20261203040000 ; seuils de création ; brancher check_club_creation_limits (Edge + migration ensemble).
+- Outils absents : graphify, Flutter, pgTAP/Supabase CLI, Docker (pas de démon). Dossier projet « Petit filet » illisible (404).
+- Hors périmètre : aucun.
