@@ -284,7 +284,7 @@ class _Hero extends ConsumerWidget {
         gradient: const RadialGradient(
           center: Alignment.topRight,
           radius: 1.4,
-          colors: [Color(0xFFCFE3D2), AppTheme.surfaceHero, AppTheme.surface],
+          colors: [Color(0xFF4A2A35), AppTheme.surfaceHero, AppTheme.surface],
           stops: [0, .4, 1],
         ),
       ),

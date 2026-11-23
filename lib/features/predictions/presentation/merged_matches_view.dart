@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/theme/pf_card_border.dart';
 import 'package:petit_filet/core/club/club_identity.dart';
 import 'dart:async';
 
@@ -807,10 +808,12 @@ class _UpcomingMatchCard extends ConsumerWidget {
 
     return Card(
       color: cardSurface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        side: BorderSide(color: cardBorder, width: 1.2),
-      ),
+      shape: PfCardBorder(
+          radius: AppTheme.radiusMd,
+          borderColor: cardBorder,
+          borderWidth: 1.2,
+          tint: .16,
+          stripe: true),
       clipBehavior: Clip.antiAlias,
       child: CalendarCardActionsOverlay(
         actions: cardActions,

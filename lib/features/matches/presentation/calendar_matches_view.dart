@@ -6,6 +6,7 @@ import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:petit_filet/core/theme/app_spacing.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/theme/calendar_card_palette.dart';
+import 'package:petit_filet/core/theme/pf_card_border.dart';
 import 'package:petit_filet/core/utils/match_window.dart';
 import 'package:petit_filet/core/widgets/calendar_scoreline.dart';
 import 'package:petit_filet/core/widgets/pf_empty_state.dart';

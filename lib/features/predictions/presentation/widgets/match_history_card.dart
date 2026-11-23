@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/theme/pf_card_border.dart';
 import 'package:petit_filet/core/club/club_identity.dart';
 import 'package:petit_filet/core/theme/calendar_card_palette.dart';
 import 'package:petit_filet/core/widgets/calendar_scoreline.dart';
@@ -72,10 +73,12 @@ class MatchHistoryCard extends ConsumerWidget {
 
     return Card(
       color: surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: border, width: 1.3),
-      ),
+      shape: PfCardBorder(
+          radius: 20,
+          borderColor: border,
+          borderWidth: 1.3,
+          tint: .16,
+          stripe: true),
       clipBehavior: Clip.antiAlias,
       // Une fois terminé, un « Match entre nous » devient une archive purement
       // informative, et un match annulé n'a plus rien à ouvrir : pas de

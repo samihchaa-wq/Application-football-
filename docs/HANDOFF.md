@@ -61,3 +61,11 @@ Restent à vérifier sur GitHub avant intégration : PR #69 (+1 manuel), #72 (é
 - Environnement cloud « Application-football » : installe Graphify et construit la carte au démarrage. À choisir à l'ouverture d'une session.
 - Écartés après examen : Vercel (appli sur Cloudflare), Oh My Claude Code (trop lourd), claude-mem et Olmind (mémoire perdue dans le cloud, ou source invérifiable), Find Skills (installe sans relecture), anti-ai-slop/hallmark (sites web neufs, pas Flutter).
 - **À faire ensuite, à la demande de la personne qui pilote** : chercher d'autres compétences utiles à Petit Filet (Flutter, direction artistique, accessibilité, fonctionnalités d'appli sportive). Les lire avant installation, en recommander peu, éviter les doublons avec l'existant.
+
+## 23/11/2026 — Habillage « Nuit » (sombre) — état
+- Pelouse (PR #221) est en ligne mais jugé décevant. Kyky supprimé (agent retiré).
+- Branche `claude/gallant-babbage-2iz44v` : thème sombre « Nuit » (fond nuit, rouge/ambre, titres Oswald fins), cartes en billets (liseré + dégradé selon le type de match), relief, bouton en volume, barre du bas flottante, bandeaux fins, cartes Effectif/Composition compactées.
+- Captures : `docs/captures_nuit/`. Maquettes : `docs/maquettes_v2/`.
+- Vérifié : 1501 tests, analyse, formatage, rendu web local (téléphone + ordinateur) pour Calendrier, Prochain match, Match terminé, Statistiques, Effectif, Profil, Paramètres, Notifications, Liste d'attente, Armoire.
+- Pas vérifié : vrai téléphone ; direct, compositions en édition, écrans légaux et connexion en style sombre.
+- Pas fait : halo/bandes de fond (risque de page « fantôme » aux transitions), PR du thème Nuit (à demander par la propriétaire), Riverpod 3, test réseau/charge, bug déconnexion gestionnaire non reproduit.

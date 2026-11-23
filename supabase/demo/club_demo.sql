@@ -357,15 +357,18 @@ begin
       jsonb_build_object(
         'participant_id', ranked.participant_id,
         'zone', ranked.zone,
+        -- Un 4-4-2 à plat : gardien, 4 défenseurs, 4 milieux, 2 attaquants.
         'x', case when ranked.zone = 'field'
-                  then round((0.05 + 0.08 * (ranked.sort_order % 12))::numeric, 2) end,
+                  then (array[0.50, 0.15, 0.38, 0.62, 0.85, 0.15, 0.38, 0.62, 0.85, 0.35, 0.65])[ranked.zrank] end,
         'y', case when ranked.zone = 'field'
-                  then round((0.15 + 0.06 * (ranked.sort_order % 12))::numeric, 2) end,
+                  then (array[0.90, 0.70, 0.70, 0.70, 0.70, 0.45, 0.45, 0.45, 0.45, 0.20, 0.20])[ranked.zrank] end,
         'slot_label', ranked.slot_label,
         'sort_order', ranked.sort_order
       ) order by ranked.sort_order
     ) into v_entries
     from (
+     select r.*, row_number() over (partition by r.zone order by not r.is_gk, r.sort_order) as zrank
+     from (
       select
         participant.id as participant_id,
         row_number() over (order by player.position, player.id) as sort_order,
@@ -377,10 +380,12 @@ begin
           ) <= 11 then 'field'
           else 'bench'
         end as zone,
-        player.position::text as slot_label
+        player.position::text as slot_label,
+        player.is_goalkeeper as is_gk
       from public.match_sport_participants participant
       join public.season_players player on player.id = participant.season_player_id
       where participant.match_id = v_match and participant.is_eligible
+     ) r
     ) ranked;
     perform public.admin_save_match_composition(v_match, '4-4-2', v_entries, false, 'Démo');
     perform public.admin_publish_match_composition(v_match, false, 'Démo');

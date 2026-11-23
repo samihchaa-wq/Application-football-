@@ -76,10 +76,11 @@ class CalendarScoreline extends StatelessWidget {
           // Même taille que les noms d'équipes, sur la même ligne.
           style: theme.textTheme.titleMedium?.copyWith(
             color: scoreColor,
-            fontSize: nameSize,
+            fontSize: nameSize * 1.22,
+            letterSpacing: 1,
             height: 1.15,
             fontFamily: AppTheme.displayFont,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w500,
           ),
         ),
       );
@@ -304,7 +305,7 @@ class CalendarTeamName extends StatelessWidget {
       (Theme.of(context).textTheme.titleMedium ?? const TextStyle()).copyWith(
         color: color,
         fontSize: fontSize,
-        fontWeight: FontWeight.w400,
+        fontWeight: FontWeight.w500,
         height: 1.15,
       );
 
@@ -521,7 +522,7 @@ class CalendarCardSections extends StatelessWidget {
   final double bodyHorizontalPadding;
 
   /// Voile posé sur la couleur de la carte pour foncer les bandeaux.
-  static const Color bandShade = Color(0x99FFFFFF);
+  static const Color bandShade = Color(0x40000000);
 
   @override
   Widget build(BuildContext context) {

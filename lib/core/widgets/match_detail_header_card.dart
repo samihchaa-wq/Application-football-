@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/theme/pf_card_border.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/theme/calendar_card_palette.dart';
 import 'package:petit_filet/core/widgets/calendar_scoreline.dart';
@@ -96,10 +97,12 @@ class MatchDetailHeaderCard extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero,
       color: surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: border, width: 1.3),
-      ),
+      shape: PfCardBorder(
+          radius: 20,
+          borderColor: border,
+          borderWidth: 1.3,
+          tint: .34,
+          stripe: true),
       clipBehavior: Clip.antiAlias,
       child: CalendarCardSections(
         bandVerticalPadding: compact ? 6 : CalendarCardSpacing.band,
@@ -133,7 +136,7 @@ class MatchDetailHeaderCard extends StatelessWidget {
                     compact ? compactNameSize : CalendarTeamName.regularSize,
                 crestSize: compact
                     ? compactCrestSize
-                    : CalendarScoreline.regularCrestSize,
+                    : CalendarScoreline.regularCrestSize + 10,
                 limitNameLines: !compact,
               ),
             if (showMotmAction) ...[

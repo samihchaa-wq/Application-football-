@@ -47,4 +47,20 @@ void main() {
       }
     },
   );
+
+  test('le texte des boutons pleins reste lisible sur toute couleur de club',
+      () {
+    for (final hex in _palette) {
+      AppTheme.applyClubColors(primary: Color(hex));
+      final ratio = AppTheme.contrastRatio(
+        AppTheme.onPrimaryButton,
+        AppTheme.primaryLit,
+      );
+      expect(
+        ratio,
+        greaterThanOrEqualTo(AppTheme.minAccentContrast),
+        reason: 'couleur ${hex.toRadixString(16)} : contraste $ratio',
+      );
+    }
+  });
 }

@@ -45,60 +45,74 @@ class PfStatusBanner extends StatelessWidget {
       container: true,
       liveRegion: tone == PfStatusTone.error,
       label: [if (title != null) title!, message].join('. '),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(
-          horizontal: compact ? 14 : 16,
-          vertical: compact ? 12 : 14,
-        ),
+      child: DecoratedBox(
         decoration: BoxDecoration(
-          color: accent.withValues(alpha: .09),
+          color: Color.alphaBlend(
+            accent.withValues(alpha: .06),
+            AppTheme.surface,
+          ),
           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-          border: Border.all(color: accent.withValues(alpha: .24)),
+          border: Border.all(color: Colors.white.withValues(alpha: .09)),
+          boxShadow: AppTheme.cardShadows,
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: compact ? 32 : 36,
-              height: compact ? 32 : 36,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: accent.withValues(alpha: .12),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: compact ? 18 : 20, color: accent),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (title case final value? when value.trim().isNotEmpty) ...[
-                    Text(
-                      value,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        color: AppTheme.textPrimary,
-                        fontWeight: FontWeight.w700,
-                      ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Liseré de couleur : le ton du message se lit avant le texte.
+                ColoredBox(color: accent, child: const SizedBox(width: 4)),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: compact ? 12 : 14,
+                      vertical: compact ? 10 : 12,
                     ),
-                    const SizedBox(height: 2),
-                  ],
-                  Text(
-                    message,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppTheme.textSecondary,
-                      height: 1.4,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(icon, size: compact ? 20 : 22, color: accent),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (title case final value?
+                                  when value.trim().isNotEmpty) ...[
+                                Text(
+                                  value,
+                                  style: theme.textTheme.titleSmall?.copyWith(
+                                    color: AppTheme.textPrimary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                              ],
+                              Text(
+                                message,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: AppTheme.textSecondary,
+                                  height: 1.4,
+                                ),
+                              ),
+                              if (action != null) ...[
+                                const SizedBox(height: 2),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: action!,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  if (action != null) ...[
-                    const SizedBox(height: 6),
-                    Align(alignment: Alignment.centerRight, child: action!),
-                  ],
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
