@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  main2();
   tearDown(() => AppLogger.sink = null);
 
   test('does not call the server before authentication', () async {
@@ -440,4 +441,53 @@ class _PendingFeatureFlagsRepository implements FeatureFlagsRepository {
     watchCount += 1;
     return const Stream.empty();
   }
+}
+
+class _DelayedRepository extends _FakeFeatureFlagsRepository {
+  final List<Completer<FeatureFlagsSnapshot>> pending = [];
+
+  @override
+  Future<FeatureFlagsSnapshot> fetchFeatureFlags() {
+    fetchCount += 1;
+    final completer = Completer<FeatureFlagsSnapshot>();
+    pending.add(completer);
+    return completer.future;
+  }
+}
+
+void main2() {
+  test('cold start: the last rebuild wins over a stale answer', () async {
+    final repository = _DelayedRepository();
+    addTearDown(repository.dispose);
+    final ready = StateProvider<bool>((ref) => false);
+    final identity = StateProvider<String?>((ref) => null);
+    final container = ProviderContainer(
+      overrides: [
+        featureFlagsRepositoryProvider.overrideWithValue(repository),
+        featureFlagsSessionReadyProvider
+            .overrideWith((ref) => ref.watch(ready)),
+        clubSessionIdentityProvider.overrideWith((ref) => ref.watch(identity)),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.listen(featureFlagsControllerProvider, (_, __) {});
+    container.listen(sportsManagementEnabledProvider, (_, __) {});
+    await pumpEventQueue();
+
+    container.read(ready.notifier).state = true;
+    await pumpEventQueue();
+    container.read(identity.notifier).state = 'u1';
+    await pumpEventQueue();
+    container.read(identity.notifier).state = 'u1';
+    await pumpEventQueue();
+    // Réponses tardives dans le désordre : la dernière lecture est « activée ».
+    for (var i = 0; i < repository.pending.length; i++) {
+      repository.pending[i].complete(
+        _snapshot(enabled: i == repository.pending.length - 1,
+            updatedAt: DateTime.utc(2026, 7, 20, 12)),
+      );
+      await pumpEventQueue();
+    }
+    expect(container.read(sportsManagementEnabledProvider), isTrue);
+  });
 }
