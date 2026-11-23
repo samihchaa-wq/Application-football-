@@ -244,24 +244,27 @@ class _AppShellState extends ConsumerState<AppShell>
               : Padding(
                   // Deux gros boutons avec texte, détachés des bords.
                   padding: const EdgeInsets.fromLTRB(14, 6, 14, 12),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _NavButton(
-                          label: 'Calendrier',
-                          selected: _selectedIndex == 0,
-                          onTap: () => _selectDestination(0),
+                  child: SafeArea(
+                    top: false,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _NavButton(
+                            label: 'Calendrier',
+                            selected: _selectedIndex == 0,
+                            onTap: () => _selectDestination(0),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _NavButton(
-                          label: 'Statistiques',
-                          selected: _selectedIndex == 1,
-                          onTap: () => _selectDestination(1),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _NavButton(
+                            label: 'Statistiques',
+                            selected: _selectedIndex == 1,
+                            onTap: () => _selectDestination(1),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
         );
@@ -356,6 +359,7 @@ class _NavButton extends StatelessWidget {
       button: true,
       selected: selected,
       label: label,
+      onTap: onTap,
       excludeSemantics: true,
       child: Material(
         color: Colors.transparent,
