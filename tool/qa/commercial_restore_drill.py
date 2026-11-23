@@ -321,8 +321,7 @@ def cmd_access() -> dict:
         " where p.status = 'active' and u.email is not null"
         " order by p.club_id, p.role = 'admin' desc, p.created_at) s;", environ)
     pairs = [item.split(":") for item in members.split(",") if item]
-    if len(pairs) < 2:
-        raise UnsafeRestore("Il faut au moins deux clubs avec un membre actif.")
+    cross_club_checked = _cross_club_check_possible(pairs)
 
     # 1. Un visiteur sans compte ne lit rien.
     anonymous_leaks = 0
@@ -380,7 +379,24 @@ def cmd_access() -> dict:
             raise UnsafeRestore("Fichier privé lisible sans compte.")
     return {"clubs_checked": len(pairs), "club_tables_checked": len(tables),
             "own_club_rows_seen_over_http": own_rows_total,
-            "auth_sessions_opened": len(pairs), "cross_club_leaks": 0}
+            "auth_sessions_opened": len(pairs),
+            "cross_club_leaks": 0 if cross_club_checked else ONE_CLUB_NOTICE}
+
+
+ONE_CLUB_NOTICE = "non testé : un seul club dans la sauvegarde"
+
+
+def _cross_club_check_possible(pairs: list[list[str]]) -> bool:
+    """La restauration se contrôle dès qu'un club a un membre actif.
+
+    La séparation entre clubs ne peut être éprouvée qu'à partir de deux
+    clubs : avec un seul (début de la commercialisation), les autres
+    contrôles restent faits et le rapport le dit au lieu d'arrêter
+    l'exercice. Les tests de cloisonnement de la CI couvrent ce point.
+    """
+    if not pairs:
+        raise UnsafeRestore("Aucun club avec un membre actif : contrôle non probant.")
+    return len(pairs) >= 2
 
 
 def main(argv: list[str]) -> int:
