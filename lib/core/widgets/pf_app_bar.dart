@@ -132,8 +132,6 @@ class _PfTitleBar extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const PfClubHomeButton(),
-          const SizedBox(width: AppSpacing.contentGap),
           Expanded(
             child: DefaultTextStyle.merge(
               maxLines: 1,
