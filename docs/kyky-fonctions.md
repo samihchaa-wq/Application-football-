@@ -20,3 +20,19 @@
 
 **Hors périmètre**
 - Aucun relevé ce passage.
+
+## 2026-11-23 (passage 16 h 45 UTC)
+
+**Fait**
+- Branche récupérée. Flutter toujours absent. Installation de Graphify refusée par la session (non contournée). Aucun test lançable.
+- Q2 et Q6 (KYKY_QUESTIONS.md) : toujours sans réponse.
+
+**Décidé**
+- Aucun code écrit. Pas de correctif sans reproduction.
+
+**Reste à faire**
+- Moi : dès Flutter dispo, lot 2 (test « Gestion sportive indisponible » puis correctif), lot 3, lot 4.
+- Propriétaire : autoriser Flutter + Graphify pour la session planifiée ; répondre à Q2/Q6.
+
+**Hors périmètre**
+- Rien.
