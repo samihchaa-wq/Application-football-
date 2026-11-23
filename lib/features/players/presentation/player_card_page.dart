@@ -521,7 +521,7 @@ class _BadgeTile extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 11,
+                fontSize: 12,
                 height: 1.15,
                 color: AppTheme.textSecondary,
               ),

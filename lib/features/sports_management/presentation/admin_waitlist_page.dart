@@ -485,6 +485,7 @@ class _CompactIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       icon: Icon(icon, size: 20),
+      tooltip: icon == Icons.add_circle_outline ? 'Ajouter' : 'Retirer',
       onPressed: onPressed,
       visualDensity: VisualDensity.compact,
       padding: EdgeInsets.zero,

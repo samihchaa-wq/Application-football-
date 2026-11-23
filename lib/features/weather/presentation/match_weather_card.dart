@@ -141,7 +141,7 @@ class _WeatherBody extends StatelessWidget {
                           'Ressenti ${_number(apparent)}°C',
                           style: const TextStyle(
                             color: AppTheme.textSecondary,
-                            fontSize: 11,
+                            fontSize: 12,
                           ),
                         ),
                       ],
@@ -209,7 +209,7 @@ class _Metric extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: AppTheme.textFaint, fontSize: 10.5),
+              style: const TextStyle(color: AppTheme.textFaint, fontSize: 12),
             ),
           ),
           const SizedBox(width: 5),
@@ -218,7 +218,7 @@ class _Metric extends StatelessWidget {
             maxLines: 1,
             style: const TextStyle(
               color: AppTheme.textPrimary,
-              fontSize: 11.5,
+              fontSize: 12,
               fontWeight: FontWeight.w400,
             ),
           ),

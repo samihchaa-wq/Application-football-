@@ -275,7 +275,7 @@ class _MatchModeAction extends StatelessWidget {
                   child: Text(
                     label,
                     maxLines: 1,
-                    style: TextStyle(fontSize: 11, color: color),
+                    style: TextStyle(fontSize: 12, color: color),
                   ),
                 ),
               ],
@@ -359,7 +359,7 @@ class _BenchAction extends StatelessWidget {
                 child: Text(
                   label,
                   maxLines: 1,
-                  style: TextStyle(fontSize: 11, color: color),
+                  style: TextStyle(fontSize: 12, color: color),
                 ),
               ),
             ],
