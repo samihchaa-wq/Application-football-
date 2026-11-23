@@ -6,7 +6,7 @@ import 'package:petit_filet/features/matches/domain/jersey_option.dart';
 import 'package:petit_filet/features/matches/presentation/widgets/kit_jersey.dart';
 
 /// Images de référence du rendu des maillots et des portraits.
-/// Régénérer : flutter test --update-goldens test/golden
+/// Régénérer : flutter test --update-goldens test/core/widgets/rendu_visuel_golden_test.dart
 const _kit = ClubKit(
   slot: JerseyOption.france,
   label: 'Domicile',

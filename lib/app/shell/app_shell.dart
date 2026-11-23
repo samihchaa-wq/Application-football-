@@ -242,37 +242,26 @@ class _AppShellState extends ConsumerState<AppShell>
           bottomNavigationBar: useRail || !statsEnabled
               ? null
               : Padding(
-                  // Barre flottante : détachée des bords, avec son relief.
-                  padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(26),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: .10),
+                  // Deux gros boutons avec texte, détachés des bords.
+                  padding: const EdgeInsets.fromLTRB(14, 6, 14, 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _NavButton(
+                          label: 'Calendrier',
+                          selected: _selectedIndex == 0,
+                          onTap: () => _selectDestination(0),
+                        ),
                       ),
-                      boxShadow: AppTheme.cardShadows,
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(26),
-                      child: NavigationBar(
-                        selectedIndex: _selectedIndex,
-                        labelBehavior:
-                            NavigationDestinationLabelBehavior.alwaysShow,
-                        onDestinationSelected: _selectDestination,
-                        destinations: const [
-                          NavigationDestination(
-                            icon: Icon(Icons.calendar_month_outlined),
-                            selectedIcon: Icon(Icons.calendar_month_rounded),
-                            label: 'Calendrier',
-                          ),
-                          NavigationDestination(
-                            icon: Icon(Icons.leaderboard_outlined),
-                            selectedIcon: Icon(Icons.leaderboard_rounded),
-                            label: 'Statistiques',
-                          ),
-                        ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _NavButton(
+                          label: 'Statistiques',
+                          selected: _selectedIndex == 1,
+                          onTap: () => _selectDestination(1),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
         );
@@ -337,6 +326,72 @@ class _DesktopNavigation extends StatelessWidget {
           label: Text('Statistiques'),
         ),
       ],
+    );
+  }
+}
+
+/// Bouton large de la barre du bas : texte seul, plein quand il est actif.
+class _NavButton extends StatelessWidget {
+  const _NavButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(18);
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      excludeSemantics: true,
+      child: Material(
+        color: Colors.transparent,
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: radius,
+            gradient: selected
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppTheme.primaryBright, AppTheme.primary],
+                  )
+                : null,
+            color: selected ? null : AppTheme.surfaceHigh,
+            border: Border.all(
+              color: selected
+                  ? Colors.white.withValues(alpha: .22)
+                  : Colors.white.withValues(alpha: .10),
+            ),
+            boxShadow: AppTheme.cardShadows,
+          ),
+          child: InkWell(
+            borderRadius: radius,
+            onTap: onTap,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 52),
+              child: Center(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: AppTheme.displayFont,
+                    fontSize: 17,
+                    letterSpacing: .6,
+                    color: selected ? Colors.white : Colors.white70,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
