@@ -69,3 +69,10 @@ Restent à vérifier sur GitHub avant intégration : PR #69 (+1 manuel), #72 (é
 - Vérifié : 1501 tests, analyse, formatage, rendu web local (téléphone + ordinateur) pour Calendrier, Prochain match, Match terminé, Statistiques, Effectif, Profil, Paramètres, Notifications, Liste d'attente, Armoire.
 - Pas vérifié : vrai téléphone ; direct, compositions en édition, écrans légaux et connexion en style sombre.
 - Pas fait : halo/bandes de fond (risque de page « fantôme » aux transitions), PR du thème Nuit (à demander par la propriétaire), Riverpod 3, test réseau/charge, bug déconnexion gestionnaire non reproduit.
+
+## 23/11/2026 (soir) — Audit de préparation + correctif (branche `claude/festive-tesla-mluqsd`)
+- Audit : analyse propre, tests verts, base en ligne à jour (81/81), cloisonnement vérifié en lecture seule (règle restrictive par club sur les tables, fonctions privilégiées toutes sous rôle cloisonné ou relues). Le garde-fou automatique existe déjà (test club_isolation + security_definer_exposure) : rien à ajouter.
+- Corrigé : « Gestion sportive indisponible » pendant chaque relecture des réglages (reprise, notification, actualisation). Test ajouté, 1 504 tests verts. Non vérifié sur vrai téléphone.
+- Réglé le 23/11 au soir : petitfilet.fr et www.petitfilet.fr (http et https) renvoient en 301 vers https://app.petitfilet.fr/ (règle de redirection Cloudflare « petitfilet.fr vers l'appli », vérifiée). L'appli reste sur app.petitfilet.fr.
+- Constats non traités : balise de statistiques Cloudflare bloquée par la CSP ; robots.txt renvoie la page de l'appli ; ~4 Mo au premier chargement.
+- Bloquants vente inchangés : identité éditeur/SIRET vides dans les textes légaux, aucun paiement ni événement Stripe jamais reçu en production, aucun essai sur vrai téléphone, restauration des photos jamais prouvée (#91), protection de main (#45) non vérifiée.
