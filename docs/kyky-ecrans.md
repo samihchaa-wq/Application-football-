@@ -22,3 +22,9 @@
 - Sans Flutter : pas d'analyse, pas de tests, pas de capture. Écrire du code d'écran sans vérifier = interdit.
 - Décision propriétaire : autoriser l'installation de Flutter (clone github.com/flutter, 3.50.1) et de graphifyy (déjà accordé dans la charte §0) dans cette session, ou fournir un environnement avec Flutter préinstallé.
 - Reste à faire (moi) : écrans en Nuit, ordinateur 1440 px d'abord, avec fausses données + capture Playwright.
+
+## 23/11/2026 17:15 — passage 4 (aucun code changé)
+- Bloqué : même refus qu'au passage 3. Installation de graphifyy (autorisée par la charte §0) et clone Flutter refusés par le contrôle de sécurité de la session. Pas contourné.
+- Sans Flutter : pas d'analyse, pas de tests, pas de capture. Aucun écran touché.
+- Décision propriétaire : autoriser dans les réglages de la session l'installation de Flutter 3.50.1 et de graphifyy, ou fournir un environnement avec Flutter préinstallé. Tant que non fait, les passages suivants s'arrêtent ici.
+- Reste à faire (moi) : écrans en Nuit, ordinateur 1440 px d'abord, fausses données + capture Playwright.
