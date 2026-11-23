@@ -31,6 +31,29 @@ prévenir de la suspension.
 (un club qui repaie ne rouvre pas seul) ; confirmer que « dernier paiement »
 est la bonne règle.
 
+## 23/11/2026 (soir) — Lot 2 : relecture du parcours et tests Deno
+
+**Fait / vérifié**
+- Tests Deno lancés pour de vrai (Deno installé dans la session) :
+  `stripe-checkout` 6, `stripe-refund` 7, `stripe-webhook` 13,
+  `register-account` 18 : tous passent (type-check coupé, `--no-check`).
+- Relu et cohérent code ↔ CGV : essai 30 jours sans carte (défaut base),
+  rappel 10 jours avant l'échéance, suspension SANS délai de grâce (migration
+  du 18/11 : 0 jour), facture acquittée après paiement, mention TVA 293 B
+  identique sur facture et CGV, conservation des données 3 ans identique
+  CGV ↔ suppression automatique, remboursement total = suspension immédiate.
+- Aucune incohérence nouvelle trouvée.
+
+**Non vérifié** : `account-email` (test des rappels) non lancé : `jsr.io`
+inaccessible depuis la session, sa dépendance ne se télécharge pas. Aucun test
+Flutter ni pgTAP (ni Flutter ni base locale ici). `claim-club` n'a pas de test.
+Rien lu en vrai dans Stripe ni Supabase.
+
+**Reste à faire (moi)** : lancer pgTAP + Flutter en CI ; écran Gestionnaire
+« club suspendu » après remboursement total.
+**Reste à faire (propriétaire)** : mêmes points que le lot 1 ; prix à décider ;
+passages `[ … ]` à remplir. Seul un avocat peut valider les CGV.
+
 ## Lieux à changer selon le prix (NON décidé, rien tranché)
 
 Aujourd'hui : 79 € par club et par an, TVA non applicable (art. 293 B).
