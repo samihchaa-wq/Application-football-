@@ -31,8 +31,8 @@ final clubIdentitySyncProvider = Provider<void>((ref) {
     }
   }
 
-  void reset() {
-    if (keepsRestoredIdentity()) return;
+  void reset({bool force = false}) {
+    if (!force && keepsRestoredIdentity()) return;
     ClubIdentityCache.restoredUserId = null;
     ClubIdentity.reset();
     AppTheme.resetClubColors();
@@ -54,8 +54,14 @@ final clubIdentitySyncProvider = Provider<void>((ref) {
       Future<void>.microtask(() {
         if (disposed || currentGeneration != generation) return;
         final club = next.valueOrNull;
-        if (next.hasError || club == null) {
+        if (next.hasError) {
+          // Panne passagère : l'habillage restauré reste affiché.
           reset();
+          return;
+        }
+        if (club == null) {
+          // Le serveur a répondu : pas de club, la copie n'a plus lieu d'être.
+          reset(force: true);
           return;
         }
         ClubIdentityCache.restoredUserId = null;
