@@ -23,20 +23,19 @@ class _PfPageTransitionsBuilder extends PageTransitionsBuilder {
 }
 
 abstract final class AppTheme {
-  // Habillage « Pelouse » : fond crème, cartes blanches, vert profond,
-  // titres à empattement. Les clubs conservent leurs couleurs personnalisées
-  // via [applyClubColors], ramenées dans une plage lisible sur fond clair.
-  static const Color background = Color(0xFFF4EFE6);
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceHigh = Color(0xFFEFE9DD);
-  static const Color surfaceHero = Color(0xFFE2EDE1);
-  static const Color outline = Color(0xFF7F8A82);
-  static const Color defaultPrimary = Color(0xFF1F6B45);
-  static const Color defaultPrimaryBright = Color(0xFF1F6B45);
-  static const Color defaultAccent = Color(0xFF8A4E0A);
+  // Habillage « Nuit » : fond nuit, cartes en relief, rouge vif et ambre,
+  // titres et scores en condensée de stade (Oswald).
+  static const Color background = Color(0xFF0B0F14);
+  static const Color surface = Color(0xFF141A22);
+  static const Color surfaceHigh = Color(0xFF1F2733);
+  static const Color surfaceHero = Color(0xFF2B1D24);
+  static const Color outline = Color(0xFF6B7885);
+  static const Color defaultPrimary = Color(0xFFD71932);
+  static const Color defaultPrimaryBright = Color(0xFFFF6B7D);
+  static const Color defaultAccent = Color(0xFFFFB020);
 
-  /// Famille des titres (empattement).
-  static const String displayFont = 'Lora';
+  /// Famille des titres et des scores (condensée de stade).
+  static const String displayFont = 'Oswald';
 
   static Color _primary = defaultPrimary;
   static Color _primaryBright = defaultPrimaryBright;
@@ -57,13 +56,13 @@ abstract final class AppTheme {
   /// aux couleurs très foncées ou très pâles garde une interface lisible.
   static void applyClubColors({Color? primary, Color? secondary}) {
     final nextPrimary =
-        primary == null ? defaultPrimary : _withLightness(primary, .22, .38);
+        primary == null ? defaultPrimary : _withLightness(primary, .36, .50);
     final nextBright = primary == null
         ? defaultPrimaryBright
-        : _withLightness(primary, .22, .38);
+        : _withLightness(primary, .62, .78);
     final nextAccent = secondary == null
         ? defaultAccent
-        : _readableOn(_withLightness(secondary, 0, .5), selectedSurface);
+        : _readableOn(_withLightness(secondary, .5, 1), selectedSurface);
     if (nextPrimary == _primary &&
         nextBright == _primaryBright &&
         nextAccent == _accent) {
@@ -80,18 +79,18 @@ abstract final class AppTheme {
   /// Fond d'un onglet ou d'un choix sélectionné. Le texte sélectionné y est
   /// écrit avec [accent] : il doit rester lisible quelle que soit la couleur
   /// secondaire du club.
-  static const Color selectedSurface = Color(0xFFDDEADC);
+  static const Color selectedSurface = Color(0xFF3A202A);
 
   /// Contraste minimal (WCAG AA, texte normal) visé pour [accent].
   static const double minAccentContrast = 4.5;
 
-  /// Assombrit [color] jusqu'à atteindre [minAccentContrast] sur [surface].
-  /// Un accent trop pâle serait illisible sur les fonds clairs.
+  /// Éclaircit [color] jusqu'à atteindre [minAccentContrast] sur [surface].
+  /// Un accent trop sombre serait illisible sur les fonds nuit.
   static Color _readableOn(Color color, Color surface) {
     var hsl = HSLColor.fromColor(color);
     while (contrastRatio(hsl.toColor(), surface) < minAccentContrast &&
-        hsl.lightness > .03) {
-      hsl = hsl.withLightness((hsl.lightness - .02).clamp(0, 1));
+        hsl.lightness < .97) {
+      hsl = hsl.withLightness((hsl.lightness + .02).clamp(0, 1));
     }
     return hsl.toColor();
   }
@@ -118,14 +117,14 @@ abstract final class AppTheme {
     return Color(0xFF000000 | int.parse(match.group(1)!, radix: 16));
   }
 
-  static const Color reward = Color(0xFFB8860B);
-  static const Color success = Color(0xFF166B42);
-  static const Color warning = Color(0xFF8F4C08);
-  static const Color admin = Color(0xFF5B6770);
-  static const Color error = Color(0xFFC12B3C);
-  static const Color textPrimary = Color(0xFF16231B);
-  static const Color textSecondary = Color(0xFF3E4B42);
-  static const Color textFaint = Color(0xFF5F6A62);
+  static const Color reward = Color(0xFFFFC24A);
+  static const Color success = Color(0xFF34C98A);
+  static const Color warning = Color(0xFFFFB020);
+  static const Color admin = Color(0xFF9AA8B5);
+  static const Color error = Color(0xFFFF5A6A);
+  static const Color textPrimary = Color(0xFFF2F4F7);
+  static const Color textSecondary = Color(0xFFC3CBD4);
+  static const Color textFaint = Color(0xFF93A0AD);
 
   // Statuts de disponibilité : convoqué, liste d'attente, absent, sans réponse.
   // Ces quatre couleurs servent de titre de colonne, de bordure et de teinte de
@@ -150,9 +149,9 @@ abstract final class AppTheme {
   static const double spaceSm = 12;
   static const double spaceMd = 16;
   static const double spaceLg = 24;
-  static const double radiusSm = 13;
+  static const double radiusSm = 12;
   static const double radiusMd = 18;
-  static const double radiusLg = 24;
+  static const double radiusLg = 22;
 
   static ShapeBorder cardShape({
     double radius = radiusMd,
@@ -162,21 +161,22 @@ abstract final class AppTheme {
       RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(radius),
         side: BorderSide(
-          color: borderColor ?? outline.withValues(alpha: .34),
+          color: borderColor ?? Colors.white.withValues(alpha: .10),
           width: borderWidth,
         ),
       );
 
-  /// Ombre douce des cartes : un filet net en dessous, un halo vert diffus.
+  /// Relief des cartes : ombre profonde et fine lueur rouge.
   static List<BoxShadow> get cardShadows => [
         BoxShadow(
-          color: Colors.black.withValues(alpha: .06),
-          offset: const Offset(0, 1),
+          color: Colors.black.withValues(alpha: .55),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
         ),
         BoxShadow(
-          color: defaultPrimary.withValues(alpha: .08),
-          blurRadius: 24,
-          offset: const Offset(0, 8),
+          color: defaultPrimary.withValues(alpha: .06),
+          blurRadius: 30,
+          offset: const Offset(0, 2),
         ),
       ];
 
@@ -184,20 +184,21 @@ abstract final class AppTheme {
     fontFamily: displayFont,
     fontWeight: FontWeight.w700,
     color: textPrimary,
+    letterSpacing: .3,
   );
 
   static ThemeData get light {
-    final scheme = ColorScheme.light(
+    final scheme = ColorScheme.dark(
       primary: primary,
       onPrimary: Colors.white,
       primaryContainer: surfaceHero,
       onPrimaryContainer: textPrimary,
       secondary: accent,
-      onSecondary: Colors.white,
+      onSecondary: background,
       secondaryContainer: selectedSurface,
       onSecondaryContainer: textPrimary,
       tertiary: reward,
-      onTertiary: Colors.white,
+      onTertiary: background,
       surface: surface,
       onSurface: textPrimary,
       onSurfaceVariant: textSecondary,
@@ -209,12 +210,12 @@ abstract final class AppTheme {
       error: error,
       onError: Colors.white,
       outline: outline,
-      outlineVariant: const Color(0xFFD9D2C3),
+      outlineVariant: const Color(0xFF2A3440),
     );
 
     final base = ThemeData(
       useMaterial3: true,
-      brightness: Brightness.light,
+      brightness: Brightness.dark,
       colorScheme: scheme,
       scaffoldBackgroundColor: Colors.transparent,
       splashFactory: InkSparkle.splashFactory,
@@ -297,14 +298,20 @@ abstract final class AppTheme {
       cardTheme: CardThemeData(
         color: surface,
         surfaceTintColor: Colors.transparent,
-        elevation: 1,
+        elevation: 6,
         margin: EdgeInsets.zero,
-        shadowColor: defaultPrimary.withValues(alpha: .22),
-        shape: cardShape(borderColor: outline.withValues(alpha: .16)),
+        shadowColor: Colors.black,
+        shape: cardShape(radius: radiusLg),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: ButtonStyle(
           minimumSize: WidgetStateProperty.all(const Size(64, 48)),
+          elevation: WidgetStateProperty.resolveWith(
+            (states) => states.contains(WidgetState.disabled) ? 0 : 4,
+          ),
+          shadowColor: WidgetStateProperty.all(
+            defaultPrimary.withValues(alpha: .6),
+          ),
           padding: WidgetStateProperty.all(
             const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
           ),
@@ -335,11 +342,11 @@ abstract final class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: primary,
+          foregroundColor: primaryBright,
           backgroundColor: surface,
           minimumSize: const Size(64, 48),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
-          side: BorderSide(color: primary.withValues(alpha: .45)),
+          side: BorderSide(color: primaryBright.withValues(alpha: .55)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusSm),
           ),
@@ -407,7 +414,7 @@ abstract final class AppTheme {
           }),
           foregroundColor: WidgetStateProperty.resolveWith((states) {
             return states.contains(WidgetState.selected)
-                ? primary
+                ? primaryBright
                 : textSecondary;
           }),
           side: WidgetStateProperty.all(
@@ -435,14 +442,15 @@ abstract final class AppTheme {
       navigationBarTheme: NavigationBarThemeData(
         height: 66,
         backgroundColor: surface,
-        indicatorColor: primary.withValues(alpha: .14),
+        indicatorColor: primary.withValues(alpha: .28),
         surfaceTintColor: Colors.transparent,
-        elevation: 0,
+        elevation: 10,
+        shadowColor: Colors.black,
         iconTheme: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return IconThemeData(
             size: selected ? 25 : 22,
-            color: selected ? primary : textFaint,
+            color: selected ? primaryBright : textFaint,
           );
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
@@ -450,18 +458,18 @@ abstract final class AppTheme {
           return TextStyle(
             fontSize: 12,
             height: 1.1,
-            color: selected ? primary : textFaint,
+            color: selected ? primaryBright : textFaint,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
           );
         }),
       ),
       navigationRailTheme: NavigationRailThemeData(
         backgroundColor: surface,
-        indicatorColor: primary.withValues(alpha: .14),
-        selectedIconTheme: IconThemeData(color: primary),
+        indicatorColor: primary.withValues(alpha: .28),
+        selectedIconTheme: IconThemeData(color: primaryBright),
         unselectedIconTheme: const IconThemeData(color: textFaint),
         selectedLabelTextStyle: TextStyle(
-          color: primary,
+          color: primaryBright,
           fontWeight: FontWeight.w700,
         ),
         unselectedLabelTextStyle: const TextStyle(color: textFaint),
@@ -479,9 +487,9 @@ abstract final class AppTheme {
         showDragHandle: false,
       ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: textPrimary,
-        contentTextStyle: const TextStyle(color: Colors.white),
-        actionTextColor: const Color(0xFF9FD8B4),
+        backgroundColor: surfaceHigh,
+        contentTextStyle: const TextStyle(color: textPrimary),
+        actionTextColor: primaryBright,
         behavior: SnackBarBehavior.floating,
         insetPadding: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(

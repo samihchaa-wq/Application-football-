@@ -9,28 +9,28 @@ import 'package:flutter/material.dart';
 /// de rendez-vous soit identifiable au premier coup d'œil.
 abstract final class CalendarCardPalette {
   /// Repli pour un ancien match dont le type n'est pas encore connu.
-  static const Color finishedSurface = Color(0xFFEEEAE0);
-  static const Color finishedBorder = Color(0xFF9A9F98);
+  static const Color finishedSurface = Color(0xFF1B2128);
+  static const Color finishedBorder = Color(0xFF6B7885);
 
   /// Championnat : bleu foncé.
-  static const Color championshipSurface = Color(0xFFE6EEF9);
-  static const Color championshipBorder = Color(0xFF3866C4);
+  static const Color championshipSurface = Color(0xFF132033);
+  static const Color championshipBorder = Color(0xFF4C8DFF);
 
   /// Amical : bleu clair, distinct du championnat.
-  static const Color friendlySurface = Color(0xFFE3F2FB);
-  static const Color friendlyBorder = Color(0xFF2F8FC4);
+  static const Color friendlySurface = Color(0xFF11262C);
+  static const Color friendlyBorder = Color(0xFF3FB8D8);
 
   /// Match entre nous : violet foncé.
-  static const Color internalSurface = Color(0xFFEEE6F6);
-  static const Color internalBorder = Color(0xFF7A45B8);
+  static const Color internalSurface = Color(0xFF221A33);
+  static const Color internalBorder = Color(0xFFA27BE8);
 
   /// Événement : or.
-  static const Color eventSurface = Color(0xFFFBF1D6);
-  static const Color eventBorder = Color(0xFFC99A1E);
+  static const Color eventSurface = Color(0xFF2A2312);
+  static const Color eventBorder = Color(0xFFFFB020);
 
   /// Événement annulé : rouge.
-  static const Color cancelledSurface = Color(0xFFFBE4E6);
-  static const Color cancelledBorder = Color(0xFFC93A4C);
+  static const Color cancelledSurface = Color(0xFF2B161A);
+  static const Color cancelledBorder = Color(0xFFFF5A6A);
 
   /// Couleur d'un match d'après son identité sportive, indépendamment du fait
   /// qu'il soit à venir ou terminé. Les archives sans type confirmé restent

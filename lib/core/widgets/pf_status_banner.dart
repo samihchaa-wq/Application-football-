@@ -52,7 +52,10 @@ class PfStatusBanner extends StatelessWidget {
           vertical: compact ? 12 : 14,
         ),
         decoration: BoxDecoration(
-          color: accent.withValues(alpha: .09),
+          color: Color.alphaBlend(
+            accent.withValues(alpha: .08),
+            AppTheme.surface,
+          ),
           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
           border: Border.all(color: accent.withValues(alpha: .24)),
         ),
