@@ -3,6 +3,9 @@ import 'package:petit_filet/core/club/club_rules.dart';
 import 'dart:async';
 
 import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/utils/match_window.dart';
+import 'package:petit_filet/features/sports_management/presentation/match_report_page.dart';
+import 'package:petit_filet/features/matches/data/match_info_repository.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
 import 'package:petit_filet/features/match_live/domain/match_live_session.dart';
 import 'package:petit_filet/features/match_live/domain/match_live_state_bundle.dart';
@@ -59,6 +62,28 @@ class MatchLiveTab extends ConsumerWidget {
         final isCoach = isCoachAsync.valueOrNull ?? false;
 
         try {
+          // Live jamais lancé et match commencé depuis plus de 2 h : plus de
+          // direct à suivre. Admin / coach : saisie du compte rendu ; les
+          // autres : message d'absence d'information.
+          final neverStarted = !bundle.session.sessionExists ||
+              bundle.session.state == MatchLiveState.notStarted;
+          if (neverStarted &&
+              isMatchLiveAbandoned(
+                ref.watch(matchInfoProvider(matchId)).valueOrNull?.kickoffAt,
+              )) {
+            if (canEdit) {
+              return MatchReportView(matchId: matchId, embedded: true);
+            }
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  'Aucune information disponible pour ce match.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          }
           if (bundle.session.state != MatchLiveState.finished) {
             final Widget child = isCoach
                 ? _CoachLiveView(matchId: matchId, bundle: bundle)
