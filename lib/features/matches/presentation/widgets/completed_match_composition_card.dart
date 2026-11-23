@@ -210,7 +210,7 @@ class _PitchWithBench extends StatelessWidget {
     // Sur grand écran, le bloc grandit jusqu'à 560 px au lieu de rester
     // à 406 px au milieu d'une carte vide.
     return LayoutBuilder(
-      builder: (context, constraints) => Center(
+      builder: (context, constraints) => Align(
         child: SizedBox(
           width: constraints.maxWidth.isFinite
               ? constraints.maxWidth.clamp(0.0, 560.0)
@@ -222,41 +222,39 @@ class _PitchWithBench extends StatelessWidget {
   }
 
   Widget _fitted() {
-    return Center(
-      child: FittedBox(
-        fit: BoxFit.contain,
-        child: SizedBox(
-          width: _benchWidth + _gap + _pitchWidth,
-          height: _pitchHeight,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: _benchWidth,
-                height: _pitchHeight,
-                // Banc très fourni : la colonne rétrécit pour tenir à la
-                // hauteur du terrain au lieu de déborder.
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.topCenter,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      for (var i = 0; i < bench.length; i++) ...[
-                        if (i > 0) const SizedBox(height: 10),
-                        CompositionPlayerTile(entry: bench[i]),
-                      ],
+    return FittedBox(
+      fit: BoxFit.contain,
+      child: SizedBox(
+        width: _benchWidth + _gap + _pitchWidth,
+        height: _pitchHeight,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: _benchWidth,
+              height: _pitchHeight,
+              // Banc très fourni : la colonne rétrécit pour tenir à la
+              // hauteur du terrain au lieu de déborder.
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.topCenter,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var i = 0; i < bench.length; i++) ...[
+                      if (i > 0) const SizedBox(height: 10),
+                      CompositionPlayerTile(entry: bench[i]),
                     ],
-                  ),
+                  ],
                 ),
               ),
-              const SizedBox(width: _gap),
-              SizedBox(
-                width: _pitchWidth,
-                child: CompositionPitch(entries: field),
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(width: _gap),
+            SizedBox(
+              width: _pitchWidth,
+              child: CompositionPitch(entries: field),
+            ),
+          ],
         ),
       ),
     );

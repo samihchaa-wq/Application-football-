@@ -56,6 +56,38 @@ Widget _harness(
 }
 
 void main() {
+  testWidgets('terrain avec banc : grandit sur grand écran, plafonné à 560', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final bench = MatchCompositionEntry(
+      participantId: 'b',
+      seasonPlayerId: 'Remplaçant',
+      displayName: 'Remplaçant',
+      isGoalkeeper: false,
+      zone: MatchCompositionZone.bench,
+      sortOrder: 9,
+      availabilityStatus: 'available',
+      convocationStatus: 'convoked',
+      selectionStatus: 'substitute',
+    );
+    await tester.pumpWidget(
+      _harness(
+        _composition([
+          _entry(name: 'Milan', sortOrder: 0, x: .5, y: .05),
+          bench,
+        ]),
+      ),
+    );
+    await tester.pump();
+
+    // Bloc terrain + banc : 406 px de référence, agrandi jusqu'à 560 px.
+    final width = tester.getSize(find.byType(FittedBox).first).width;
+    expect(width, 560);
+  });
+
   testWidgets('un emplacement vide s’affiche en case grisée, sans nom', (
     tester,
   ) async {
