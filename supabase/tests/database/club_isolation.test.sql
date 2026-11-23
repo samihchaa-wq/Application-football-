@@ -378,6 +378,8 @@ select is(
         'private.vault_secrets()',
         'private.provision_club(uuid)',
         'private.run_for_each_club(text)',
+        'private.run_for_each_busy_club(text)',
+        'private.club_has_scheduled_work(uuid)',
         'create_club(text,text,text,text,text,uuid)',
         'club_for_invite_code(text)',
         -- Parrainage : réservées à la fonction serveur d'inscription

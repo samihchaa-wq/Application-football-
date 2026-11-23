@@ -189,7 +189,10 @@ select is(
     from cron.job
     where jobname = 'prediction-j5-reminders'
       and active
-      and command = 'select private.run_for_each_club(''select public.push_prediction_j5_notifications()'');'
+      and command in (
+        'select private.run_for_each_club(''select public.push_prediction_j5_notifications()'');',
+        'select private.run_for_each_busy_club(''select public.push_prediction_j5_notifications()'');'
+      )
   ),
   1,
   'le cron de pronostic J-5 est actif'

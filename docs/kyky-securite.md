@@ -1,0 +1,14 @@
+# Journal Sécurité (agent Kyky Sécurité)
+
+## 23/11/2026
+- Fait (écrit, non testé : pas de base locale ni pgTAP ici) :
+  - Lot 1 : déjà couvert. `public_definer_execution.test.sql` exige un garde ou une ligne motivée pour chaque fonction exposée. Rien ajouté.
+  - Lot 2 : déjà fait (migration 20261125000000, 41 fonctions). Vérifié en vrai (lecture prod) : 161 fonctions exposées ; seules 4 jamais appelées restent, voulues (démo, règles d'accès, Live public).
+  - Lot 3 : migration 20261203030000 + test cron_busy_clubs_only. Le parcours filtrait déjà les clubs suspendus ; il saute maintenant les clubs sans match proche/Live/vote pour 6 tâches.
+  - Lot 4 : migration 20261203040000 + test club_creation_limits. Création reste ouverte.
+  - Lot 5 : SECURITY_RPC_MATRIX.md et production-operations.md mis à jour.
+- Décidé : création de club ouverte (propriétaire, 23/11).
+- Reste à faire (moi) : lot 6 (pannes réseau côté appli), brancher check_club_creation_limits dans claim-club et register-account, adapter notifications_v2_contract.test.sql (attend run_for_each_club pour prediction-j5-reminders).
+- Reste (propriétaire) : accord pour appliquer les 2 migrations ; valider les seuils de création (3/j adresse, 2/j e-mail, 60 s, 20/h) ; test de charge 500/1000 clubs.
+- Outils manquants : graphify (installation refusée par la session), pgTAP/Supabase CLI/docker sans démon. `.claude/agents/kyky.md` supprimé du dépôt (commit 48377f4) : règles lues dans le prompt.
+- Hors périmètre : aucun.

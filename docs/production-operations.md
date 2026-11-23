@@ -125,3 +125,9 @@ Une différence signifie qu’une modification a été faite en production hors 
 ## Incident
 
 En cas d’anomalie après déploiement, arrêter les changements supplémentaires et isoler d’abord la cause. Préférer une migration corrective additive ou une restauration validée à la modification d’une migration déjà appliquée. Les références d’incident côté Flutter sont décrites dans `docs/observability.md`.
+
+## Tâches planifiées et création de club (23/11/2026)
+
+- Les tâches passent club par club (`private.run_for_each_club`, clubs actifs seulement). Estimation : le premier mur est vers 300 clubs (un cœur entier) et 900 clubs (une tâche dépasse 60 s). La migration `20261203030000` (non appliquée) ne parcourt que les clubs ayant un match proche, un Live ou un vote ouvert pour les six tâches pilotées par les matchs. Après application : vérifier dans `cron.job_run_details` qu'aucune tâche n'échoue et qu'un rappel de pronostic part toujours.
+- Création de club : ouverte à tous. Quota par adresse réseau en place (5/h, 15/j). Limites supplémentaires préparées (migration `20261203040000`, non appliquée, non branchée) : e-mail jetable refusé, 60 s entre deux demandes, 3/j par adresse, 2/j par e-mail, 20/h global. Journal dans `private.club_creation_log` (hachés, 90 jours). À surveiller : part de refus `reason <> 'ok'`.
+- Avant application d'une de ces migrations : accord du propriétaire, puis la fusion sur `main` déclenche la publication automatique.

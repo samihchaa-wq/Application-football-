@@ -1,5 +1,23 @@
 # Matrice de sécurité des RPC Supabase
 
+## État au 23/11/2026 (lecture seule de la base commerciale)
+
+Les tableaux plus bas datent de l'audit de juillet 2026 sur l'application d'origine (×2, cotes). Ils sont gardés pour l'historique. L'état actuel :
+
+- **161 fonctions `SECURITY DEFINER` appelables par un compte connecté** (`public`) : 52 `admin_*`, 24 `platform_*`, 11 `coach_*`, 10 `staff_*`, le reste en lecture ou réglage du compte courant.
+- **0 fonction appelable sans compte** (`anon`).
+- Toutes ont un `search_path` vide. Test : `security_definer_exposure.test.sql`.
+- Chaque fonction exposée doit vérifier son appelant : un garde nommé (`is_*`, `can_*`, `require_*`, `private.uid()`) dans son corps, ou une ligne motivée dans la liste relue à la main de `public_definer_execution.test.sql`. Une nouvelle fonction sans garde fait échouer ce test.
+- Fonctions `platform_*` : réservées à l'éditeur (`private.is_platform_operator()`), sauf `admin_prepare_card_payment` et `admin_claim_free_year` (administrateur du club, garde `private.billing_admin_club_id()`).
+- 41 anciennes RPC jamais appelées ont perdu l'accès « compte connecté » (migration `20261125000000`, test `unused_legacy_rpcs_revoked.test.sql`). Il en reste 4 volontairement ouvertes : `admin_create_match_complete` (13 arguments) et `admin_publish_match_convocations` (script du club de démonstration et tests), `is_match_staff` (règles d'accès), `get_match_live_timeline` (contrat public du Live).
+- Création de club : reste ouverte à tous. Limites anti-abus préparées dans la migration `20261203040000` (non appliquée) : fonction `check_club_creation_limits`, réservée aux fonctions Edge, pas encore branchée.
+
+Méthode de revérification : requête sur `pg_proc` filtrée par `prosecdef` et `has_function_privilege('authenticated', oid, 'EXECUTE')`, puis recherche de chaque nom dans `lib/` et `supabase/functions/`.
+
+---
+
+## Historique : audit de juillet 2026
+
 Audit préparatoire réalisé sur le projet de production le 20 juillet 2026, sans écriture de données.
 
 ## Principes
