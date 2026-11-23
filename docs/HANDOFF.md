@@ -2,6 +2,13 @@
 
 **Actualisé le 17 novembre 2026 (correctif de gouvernance publication).** Source de vérité opérationnelle : branche `main`, PR ouvertes et contrôles GitHub sur le dernier SHA ; les états ci-dessous peuvent évoluer.
 
+## Session Kyky du 22/11/2026 (branche claude/gallant-babbage-2iz44v)
+
+- Fait : flash au lancement corrigé (copie locale de l'habillage du club relue avant le 1er rendu ; test ajouté). Console gestionnaire : plus de second renouvellement de session concurrent (test ajouté). 3 maquettes dans docs/maquettes/.
+- Vérifié : analyze propre, 1497 tests verts. Non vérifié : rendu réel (pas de Supabase local), déconnexion gestionnaire non reproduite.
+- Décisions à prendre : docs/KYKY_QUESTIONS.md. Hors lot : docs/KYKY_A_TRAITER.md.
+- Outils : Supabase CLI absente, docker sans démon.
+
 ## Règles impératives
 
 1. **Écriture uniquement dans `samihchaa-wq/Application-football-`.** Ne jamais modifier les dépôts, données, sites ni bases Supabase d'AS Grinta original ou de Carte soirée. Le dépôt AS Grinta peut être consulté en lecture seule pour comparer ses fonctionnalités et son interface.
