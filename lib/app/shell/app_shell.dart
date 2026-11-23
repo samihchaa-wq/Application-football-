@@ -283,49 +283,56 @@ class _DesktopNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NavigationRail(
-      selectedIndex: selectedIndex,
-      extended: extended,
-      minWidth: 72,
-      minExtendedWidth: 200,
-      groupAlignment: -.7,
-      labelType:
-          extended ? NavigationRailLabelType.none : NavigationRailLabelType.all,
-      onDestinationSelected: onSelected,
-      leading: Padding(
-        padding: const EdgeInsets.only(top: 20, bottom: 26),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset(
-              'assets/images/petit_filet_logo.webp',
-              width: 40,
-              height: 40,
-              fit: BoxFit.contain,
-              filterQuality: FilterQuality.high,
+    return SizedBox(
+      width: extended ? 220 : 160,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 20, bottom: 26),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/petit_filet_logo.webp',
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
+                ),
+                if (extended) ...[
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Text(
+                      ClubIdentity.appName,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                ],
+              ],
             ),
-            if (extended) ...[
-              const SizedBox(width: 10),
-              Text(
-                ClubIdentity.appName,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ],
-          ],
-        ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: _NavButton(
+              label: 'Calendrier',
+              selected: selectedIndex == 0,
+              onTap: () => onSelected(0),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: _NavButton(
+              label: 'Statistiques',
+              selected: selectedIndex == 1,
+              onTap: () => onSelected(1),
+            ),
+          ),
+        ],
       ),
-      destinations: const [
-        NavigationRailDestination(
-          icon: Icon(Icons.calendar_month_outlined),
-          selectedIcon: Icon(Icons.calendar_month_rounded),
-          label: Text('Calendrier'),
-        ),
-        NavigationRailDestination(
-          icon: Icon(Icons.leaderboard_outlined),
-          selectedIcon: Icon(Icons.leaderboard_rounded),
-          label: Text('Statistiques'),
-        ),
-      ],
     );
   }
 }

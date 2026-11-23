@@ -125,7 +125,7 @@ class _MatchRow extends StatelessWidget {
                 Text(
                   _months[match.date.month - 1],
                   style: const TextStyle(
-                    fontSize: 10,
+                    fontSize: 12,
                     color: AppTheme.textFaint,
                   ),
                 ),
@@ -162,7 +162,7 @@ class _MatchRow extends StatelessWidget {
                         child: Text(
                           type.label,
                           style: TextStyle(
-                            fontSize: 9,
+                            fontSize: 12,
                             letterSpacing: .4,
                             color: Color.lerp(type.color, Colors.white, .35),
                           ),
@@ -173,7 +173,7 @@ class _MatchRow extends StatelessWidget {
                     Text(
                       match.isHome ? 'Domicile' : 'Extérieur',
                       style: const TextStyle(
-                        fontSize: 11,
+                        fontSize: 12,
                         color: AppTheme.textFaint,
                       ),
                     ),
