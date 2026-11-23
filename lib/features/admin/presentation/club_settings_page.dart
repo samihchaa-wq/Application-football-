@@ -5,7 +5,6 @@ import 'package:petit_filet/core/widgets/pf_app_bar.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
 import 'package:petit_filet/features/admin/presentation/club_season_tile.dart';
 import 'package:petit_filet/features/club/data/club_repository.dart';
-import 'package:petit_filet/features/club/presentation/club_identity_sync.dart';
 import 'package:petit_filet/features/club/presentation/club_rules_sync.dart';
 import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
 import 'package:petit_filet/features/season_wrapped/domain/wrapped_stat_selection.dart';
@@ -49,27 +48,8 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   bool _savingContact = false;
   bool _savingUsualSquadSize = false;
   bool _renewingCode = false;
-  bool _savingColors = false;
   bool _savingLogo = false;
 
-  /// Choix proposés : des teintes franches, lisibles une fois ajustées au
-  /// fond sombre de l'application.
-  static const _palette = <String>[
-    '#D71932',
-    '#FF7585',
-    '#1A4AC0',
-    '#1F6FEB',
-    '#0E9F9A',
-    '#168A52',
-    '#7CB518',
-    '#FBE80C',
-    '#F5A300',
-    '#E8590C',
-    '#D62828',
-    '#C2185B',
-    '#7B2CBF',
-    '#FFFFFF',
-  ];
   final Set<ClubModule> _pendingModules = {};
 
   @override
@@ -294,72 +274,6 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     } finally {
       if (mounted) setState(() => _savingUsualSquadSize = false);
     }
-  }
-
-  Future<void> _setColors({String? primary, String? secondary}) async {
-    final club = _club;
-    if (club == null || _savingColors) return;
-    setState(() => _savingColors = true);
-    try {
-      final updated = await ref.read(clubRepositoryProvider).updateColors(
-            primary: primary ?? club.primaryColor ?? '#D71932',
-            secondary: secondary ?? club.secondaryColor ?? '#FF7585',
-          );
-      if (!mounted) return;
-      setState(() => _club = updated);
-      refreshClubConfiguration(ref.invalidate);
-      applyClubColors(updated);
-    } catch (_) {
-      if (mounted) _showMessage('Les couleurs n’ont pas pu être enregistrées.');
-    } finally {
-      if (mounted) setState(() => _savingColors = false);
-    }
-  }
-
-  Widget _colorRow(
-    String label,
-    String keyPrefix,
-    String? current,
-    void Function(String hex) onPick,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: [
-            for (final hex in _palette)
-              Semantics(
-                button: true,
-                selected: current?.toUpperCase() == hex,
-                label: '$label $hex',
-                child: InkWell(
-                  key: ValueKey('$keyPrefix-$hex'),
-                  customBorder: const CircleBorder(),
-                  onTap: _savingColors ? null : () => onPick(hex),
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: AppTheme.parseHex(hex),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: current?.toUpperCase() == hex
-                            ? AppTheme.textPrimary
-                            : AppTheme.outline,
-                        width: current?.toUpperCase() == hex ? 3 : 1,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ],
-    );
   }
 
   void _adoptClub(Club club) {
@@ -1138,27 +1052,6 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
                   ),
                 ],
               ),
-              _labelWithInfo(
-                'colors',
-                'Couleurs du club',
-                'Couleurs de l’interface pour tous les membres du club.',
-              ),
-              const SizedBox(height: 8),
-              const SizedBox(height: 12),
-              _colorRow(
-                'Couleur principale',
-                'club-color-primary',
-                club.primaryColor,
-                (hex) => _setColors(primary: hex),
-              ),
-              const SizedBox(height: 14),
-              _colorRow(
-                'Couleur secondaire',
-                'club-color-secondary',
-                club.secondaryColor,
-                (hex) => _setColors(secondary: hex),
-              ),
-              const SizedBox(height: 12),
               ListTile(
                 key: const ValueKey('club-kits-entry'),
                 contentPadding: EdgeInsets.zero,
