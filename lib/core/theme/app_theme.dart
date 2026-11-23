@@ -33,7 +33,7 @@ abstract final class AppTheme {
   static const Color outline = Color(0xFF7F8A82);
   static const Color defaultPrimary = Color(0xFF1F6B45);
   static const Color defaultPrimaryBright = Color(0xFF1F6B45);
-  static const Color defaultAccent = Color(0xFFA9610F);
+  static const Color defaultAccent = Color(0xFF8A4E0A);
 
   /// Famille des titres (empattement).
   static const String displayFont = 'Lora';
@@ -119,8 +119,8 @@ abstract final class AppTheme {
   }
 
   static const Color reward = Color(0xFFB8860B);
-  static const Color success = Color(0xFF1B7F4F);
-  static const Color warning = Color(0xFFB4610D);
+  static const Color success = Color(0xFF166B42);
+  static const Color warning = Color(0xFF8F4C08);
   static const Color admin = Color(0xFF5B6770);
   static const Color error = Color(0xFFC12B3C);
   static const Color textPrimary = Color(0xFF16231B);
