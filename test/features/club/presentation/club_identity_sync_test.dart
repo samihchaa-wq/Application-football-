@@ -354,6 +354,9 @@ class _FixedAuthRepository implements AuthRepository {
   @override
   bool get currentUserHasNoClub => false;
 
+  @override
+  Future<bool> isPlatformOperator() async => false;
+
   _FixedAuthRepository(this.profile);
 
   AuthProfile profile;

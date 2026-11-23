@@ -52,6 +52,9 @@ class _Repo implements AuthRepository {
 
   @override
   bool get currentUserHasNoClub => noClub;
+
+  @override
+  Future<bool> isPlatformOperator() async => false;
   @override
   ({String firstName, String lastName}) get suggestedNames =>
       (firstName: '', lastName: '');

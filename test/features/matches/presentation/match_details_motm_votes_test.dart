@@ -331,6 +331,9 @@ class _FakeAuthRepository implements AuthRepository {
   bool get currentUserHasNoClub => false;
 
   @override
+  Future<bool> isPlatformOperator() async => false;
+
+  @override
   Stream<supabase.AuthState> get authStateChanges => const Stream.empty();
 
   @override
