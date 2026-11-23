@@ -13,7 +13,7 @@ void main() {
   tearDown(AppTheme.resetClubColors);
 
   test('les actions et textes Petit Filet gardent un contraste AA', () {
-    final scheme = AppTheme.dark.colorScheme;
+    final scheme = AppTheme.light.colorScheme;
     for (final pair in [
       (scheme.onPrimary, scheme.primary),
       (scheme.onSecondary, scheme.secondary),

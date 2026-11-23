@@ -78,19 +78,8 @@ class CalendarScoreline extends StatelessWidget {
             color: scoreColor,
             fontSize: nameSize,
             height: 1.15,
-            fontWeight: FontWeight.w400,
-            // Des chiffres colorés sur fond sombre paraissent plus fins que
-            // les noms en blanc : un léger contour de la même couleur leur
-            // redonne la même épaisseur visuelle, sans passer en gras.
-            shadows: [
-              for (final offset in const [
-                Offset(.35, 0),
-                Offset(-.35, 0),
-                Offset(0, .35),
-                Offset(0, -.35),
-              ])
-                Shadow(color: scoreColor, offset: offset),
-            ],
+            fontFamily: AppTheme.displayFont,
+            fontWeight: FontWeight.w700,
           ),
         ),
       );
@@ -532,7 +521,7 @@ class CalendarCardSections extends StatelessWidget {
   final double bodyHorizontalPadding;
 
   /// Voile posé sur la couleur de la carte pour foncer les bandeaux.
-  static const Color bandShade = Color(0x47000000);
+  static const Color bandShade = Color(0x121F3A28);
 
   @override
   Widget build(BuildContext context) {

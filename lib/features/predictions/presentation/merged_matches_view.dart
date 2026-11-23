@@ -627,7 +627,7 @@ class _FeedSectionHeaderDelegate extends SliverPersistentHeaderDelegate {
   ) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: Colors.black,
+        color: AppTheme.background,
         border: Border(
           bottom: BorderSide(
             color: AppTheme.outline.withValues(
@@ -647,7 +647,7 @@ class _FeedSectionHeaderDelegate extends SliverPersistentHeaderDelegate {
             style: Theme.of(context)
                 .textTheme
                 .titleSmall
-                ?.copyWith(color: Colors.white, fontWeight: FontWeight.w400),
+                ?.copyWith(color: AppTheme.textSecondary, fontWeight: FontWeight.w700),
           ),
         ),
       ),

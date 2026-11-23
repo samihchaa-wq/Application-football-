@@ -55,6 +55,14 @@ flutter:
   # La condensée de stade du bilan de saison : elle porte les chiffres et les
   # titres. Licence SIL OFL dans assets/fonts.
   fonts:
+    # Titres de l'habillage « Pelouse » (empattement). Licence SIL OFL dans
+    # assets/fonts.
+    - family: Lora
+      fonts:
+        - asset: assets/fonts/Lora-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Lora-Bold.ttf
+          weight: 700
     - family: Oswald
       fonts:
         - asset: assets/fonts/Oswald-Light.ttf

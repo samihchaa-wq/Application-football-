@@ -32,9 +32,9 @@ class MatchFixture extends StatelessWidget {
   final double scoreFontSize;
   final TextAlign textAlign;
 
-  static const Color _won = Color(0xFF3BD16F);
-  static const Color _lost = Color(0xFFFF3B4A);
-  static const Color _draw = Color(0xFFE9963C);
+  static const Color _won = Color(0xFF1B8A4B);
+  static const Color _lost = Color(0xFFC62A3B);
+  static const Color _draw = Color(0xFFB8700F);
 
   static Color resultColor(int ownScore, int opponentScore) {
     if (ownScore > opponentScore) return _won;

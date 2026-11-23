@@ -199,7 +199,7 @@ void main() {
             ),
           ],
           child: MaterialApp(
-            theme: AppTheme.dark,
+            theme: AppTheme.light,
             home: const PlayerCardPage(playerKey: key),
           ),
         ),
@@ -327,7 +327,7 @@ void main() {
             ),
           ],
           child: MaterialApp.router(
-            theme: AppTheme.dark,
+            theme: AppTheme.light,
             routerConfig: router,
           ),
         ),
@@ -414,7 +414,7 @@ void main() {
             ),
           ],
           child: MaterialApp(
-            theme: AppTheme.dark,
+            theme: AppTheme.light,
             home: const PlayerCardPage(playerKey: profileKey),
           ),
         ),

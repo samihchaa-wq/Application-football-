@@ -122,7 +122,7 @@ void main() {
         ProviderScope(
           overrides: overrides(squad),
           child: MaterialApp(
-            theme: AppTheme.dark,
+            theme: AppTheme.light,
             home: PlayerStatRankingPage(
               stat: stat,
               initialPeriod: StatisticsPeriod.current,
@@ -203,7 +203,7 @@ void main() {
         ProviderScope(
           overrides: overrides(squad),
           child: MaterialApp.router(
-            theme: AppTheme.dark,
+            theme: AppTheme.light,
             routerConfig: router,
           ),
         ),

@@ -125,7 +125,7 @@ void main() {
           invoiceRepositoryProvider.overrideWithValue(billing.invoices),
         ],
         child: MaterialApp(
-          theme: AppTheme.dark,
+          theme: AppTheme.light,
           builder: (context, child) => MediaQuery(
             data: MediaQuery.of(context)
                 .copyWith(textScaler: TextScaler.linear(textScale)),

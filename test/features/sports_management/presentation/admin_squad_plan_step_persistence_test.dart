@@ -89,7 +89,7 @@ Future<void> _pump(
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        theme: AppTheme.dark,
+        theme: AppTheme.light,
         home: AdminSquadPlanPage(
           initialMatchId: _matchId,
           initialStep: 'info',

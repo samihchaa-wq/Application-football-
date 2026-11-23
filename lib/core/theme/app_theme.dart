@@ -23,18 +23,20 @@ class _PfPageTransitionsBuilder extends PageTransitionsBuilder {
 }
 
 abstract final class AppTheme {
-  // Identité Petit Filet : anthracite, rouge et argent.
-  static const Color background = Color(0xFF101418);
-  static const Color surface = Color(0xFF191F25);
-  static const Color surfaceHigh = Color(0xFF242C34);
-  static const Color surfaceHero = Color(0xFF38232B);
-  static const Color outline = Color(0xFF63717E);
-  // Rouge profond pour les boutons à texte blanc ; rouge clair pour les
-  // liens, sélections et icônes sur fond sombre. Les clubs conservent leurs
-  // couleurs personnalisées via [applyClubColors].
-  static const Color defaultPrimary = Color(0xFFD71932);
-  static const Color defaultPrimaryBright = Color(0xFFFF7585);
-  static const Color defaultAccent = Color(0xFFFF7585);
+  // Habillage « Pelouse » : fond crème, cartes blanches, vert profond,
+  // titres à empattement. Les clubs conservent leurs couleurs personnalisées
+  // via [applyClubColors], ramenées dans une plage lisible sur fond clair.
+  static const Color background = Color(0xFFF4EFE6);
+  static const Color surface = Color(0xFFFFFFFF);
+  static const Color surfaceHigh = Color(0xFFEFE9DD);
+  static const Color surfaceHero = Color(0xFFE2EDE1);
+  static const Color outline = Color(0xFF7F8A82);
+  static const Color defaultPrimary = Color(0xFF1F6B45);
+  static const Color defaultPrimaryBright = Color(0xFF1F6B45);
+  static const Color defaultAccent = Color(0xFFA9610F);
+
+  /// Famille des titres (empattement).
+  static const String displayFont = 'Lora';
 
   static Color _primary = defaultPrimary;
   static Color _primaryBright = defaultPrimaryBright;
@@ -55,13 +57,13 @@ abstract final class AppTheme {
   /// aux couleurs très foncées ou très pâles garde une interface lisible.
   static void applyClubColors({Color? primary, Color? secondary}) {
     final nextPrimary =
-        primary == null ? defaultPrimary : _withLightness(primary, .36, .50);
+        primary == null ? defaultPrimary : _withLightness(primary, .22, .38);
     final nextBright = primary == null
         ? defaultPrimaryBright
-        : _withLightness(primary, .66, .76);
+        : _withLightness(primary, .22, .38);
     final nextAccent = secondary == null
         ? defaultAccent
-        : _readableOn(_withLightness(secondary, .52, 1), selectedSurface);
+        : _readableOn(_withLightness(secondary, 0, .5), selectedSurface);
     if (nextPrimary == _primary &&
         nextBright == _primaryBright &&
         nextAccent == _accent) {
@@ -78,19 +80,18 @@ abstract final class AppTheme {
   /// Fond d'un onglet ou d'un choix sélectionné. Le texte sélectionné y est
   /// écrit avec [accent] : il doit rester lisible quelle que soit la couleur
   /// secondaire du club.
-  static const Color selectedSurface = Color(0xFF39252D);
+  static const Color selectedSurface = Color(0xFFDDEADC);
 
   /// Contraste minimal (WCAG AA, texte normal) visé pour [accent].
   static const double minAccentContrast = 4.5;
 
-  /// Éclaircit [color] jusqu'à atteindre [minAccentContrast] sur [surface].
-  /// Exemple : un club bleu (#1A4AC0) donnait un texte bleu sur fond bleu,
-  /// presque illisible dans les onglets sélectionnés.
+  /// Assombrit [color] jusqu'à atteindre [minAccentContrast] sur [surface].
+  /// Un accent trop pâle serait illisible sur les fonds clairs.
   static Color _readableOn(Color color, Color surface) {
     var hsl = HSLColor.fromColor(color);
     while (contrastRatio(hsl.toColor(), surface) < minAccentContrast &&
-        hsl.lightness < .97) {
-      hsl = hsl.withLightness((hsl.lightness + .02).clamp(0, .97));
+        hsl.lightness > .03) {
+      hsl = hsl.withLightness((hsl.lightness - .02).clamp(0, 1));
     }
     return hsl.toColor();
   }
@@ -117,14 +118,14 @@ abstract final class AppTheme {
     return Color(0xFF000000 | int.parse(match.group(1)!, radix: 16));
   }
 
-  static const Color reward = Color(0xFFFFD84A);
-  static const Color success = Color(0xFF48C98B);
-  static const Color warning = Color(0xFFF0A34A);
-  static const Color admin = Color(0xFFB9C5D1);
-  static const Color error = Color(0xFFFF6F7D);
-  static const Color textPrimary = Color(0xFFF5F7FA);
-  static const Color textSecondary = Color(0xFFD7DDE4);
-  static const Color textFaint = Color(0xFFA9B4C0);
+  static const Color reward = Color(0xFFB8860B);
+  static const Color success = Color(0xFF1B7F4F);
+  static const Color warning = Color(0xFFB4610D);
+  static const Color admin = Color(0xFF5B6770);
+  static const Color error = Color(0xFFC12B3C);
+  static const Color textPrimary = Color(0xFF16231B);
+  static const Color textSecondary = Color(0xFF3E4B42);
+  static const Color textFaint = Color(0xFF5F6A62);
 
   // Statuts de disponibilité : convoqué, liste d'attente, absent, sans réponse.
   // Ces quatre couleurs servent de titre de colonne, de bordure et de teinte de
@@ -149,9 +150,9 @@ abstract final class AppTheme {
   static const double spaceSm = 12;
   static const double spaceMd = 16;
   static const double spaceLg = 24;
-  static const double radiusSm = 12;
-  static const double radiusMd = 16;
-  static const double radiusLg = 22;
+  static const double radiusSm = 13;
+  static const double radiusMd = 18;
+  static const double radiusLg = 24;
 
   static ShapeBorder cardShape({
     double radius = radiusMd,
@@ -166,18 +167,37 @@ abstract final class AppTheme {
         ),
       );
 
-  static ThemeData get dark {
-    final scheme = ColorScheme.dark(
+  /// Ombre douce des cartes : un filet net en dessous, un halo vert diffus.
+  static List<BoxShadow> get cardShadows => [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: .06),
+          offset: const Offset(0, 1),
+        ),
+        BoxShadow(
+          color: defaultPrimary.withValues(alpha: .08),
+          blurRadius: 24,
+          offset: const Offset(0, 8),
+        ),
+      ];
+
+  static const TextStyle _display = TextStyle(
+    fontFamily: displayFont,
+    fontWeight: FontWeight.w700,
+    color: textPrimary,
+  );
+
+  static ThemeData get light {
+    final scheme = ColorScheme.light(
       primary: primary,
       onPrimary: Colors.white,
       primaryContainer: surfaceHero,
       onPrimaryContainer: textPrimary,
       secondary: accent,
-      onSecondary: background,
-      secondaryContainer: Color(0xFF39252D),
-      onSecondaryContainer: Color(0xFFFFDDE2),
+      onSecondary: Colors.white,
+      secondaryContainer: selectedSurface,
+      onSecondaryContainer: textPrimary,
       tertiary: reward,
-      onTertiary: background,
+      onTertiary: Colors.white,
       surface: surface,
       onSurface: textPrimary,
       onSurfaceVariant: textSecondary,
@@ -187,19 +207,14 @@ abstract final class AppTheme {
       surfaceContainerHigh: surfaceHigh,
       surfaceContainerHighest: surfaceHigh,
       error: error,
-      // `error` sert de FOND aux boutons de confirmation destructifs
-      // (« Supprimer », « Tout effacer »). Blanc sur #FF6F7D ne donne que
-      // 2,68:1, sous le seuil WCAG AA même pour du grand texte ; le fond
-      // anthracite dépasse 7:1. `error` employé en texte reste
-      // inchangé et parfaitement lisible.
-      onError: background,
+      onError: Colors.white,
       outline: outline,
-      outlineVariant: Color(0xFF343E48),
+      outlineVariant: const Color(0xFFD9D2C3),
     );
 
     final base = ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: Brightness.light,
       colorScheme: scheme,
       scaffoldBackgroundColor: Colors.transparent,
       splashFactory: InkSparkle.splashFactory,
@@ -218,67 +233,48 @@ abstract final class AppTheme {
 
     return base.copyWith(
       textTheme: base.textTheme.copyWith(
-        displaySmall: base.textTheme.displaySmall?.copyWith(
-          color: textPrimary,
-          fontWeight: FontWeight.w400,
-          letterSpacing: -1,
-          shadows: textOutline,
-        ),
-        headlineMedium: base.textTheme.headlineMedium?.copyWith(
-          color: textPrimary,
-          fontWeight: FontWeight.w400,
-          letterSpacing: -.55,
-          shadows: textOutline,
-        ),
-        headlineSmall: base.textTheme.headlineSmall?.copyWith(
-          color: textPrimary,
-          fontWeight: FontWeight.w400,
-          shadows: textOutline,
-        ),
-        titleLarge: base.textTheme.titleLarge?.copyWith(
-          color: textPrimary,
-          fontWeight: FontWeight.w400,
-          letterSpacing: -.2,
-          shadows: textOutline,
-        ),
+        displaySmall: base.textTheme.displaySmall
+            ?.merge(_display)
+            .copyWith(letterSpacing: -.6),
+        headlineMedium: base.textTheme.headlineMedium
+            ?.merge(_display)
+            .copyWith(letterSpacing: -.4),
+        headlineSmall: base.textTheme.headlineSmall
+            ?.merge(_display)
+            .copyWith(letterSpacing: -.2),
+        titleLarge: base.textTheme.titleLarge
+            ?.merge(_display)
+            .copyWith(letterSpacing: -.2),
         titleMedium: base.textTheme.titleMedium?.copyWith(
           color: textPrimary,
-          fontWeight: FontWeight.w400,
-          shadows: textOutline,
+          fontWeight: FontWeight.w600,
         ),
         titleSmall: base.textTheme.titleSmall?.copyWith(
           color: textPrimary,
-          shadows: textOutline,
+          fontWeight: FontWeight.w600,
         ),
         bodyLarge: base.textTheme.bodyLarge?.copyWith(
           color: textPrimary,
           height: 1.4,
-          shadows: textOutline,
         ),
         bodyMedium: base.textTheme.bodyMedium?.copyWith(
           color: textSecondary,
           height: 1.4,
-          shadows: textOutline,
         ),
         bodySmall: base.textTheme.bodySmall?.copyWith(
           color: textFaint,
           height: 1.35,
-          shadows: textOutline,
         ),
         labelLarge: base.textTheme.labelLarge?.copyWith(
           color: textPrimary,
-          fontWeight: FontWeight.w400,
-          letterSpacing: .05,
-          shadows: textOutline,
+          fontWeight: FontWeight.w600,
+          letterSpacing: .1,
         ),
         labelMedium: base.textTheme.labelMedium?.copyWith(
           color: textSecondary,
-          shadows: textOutline,
+          fontWeight: FontWeight.w600,
         ),
-        labelSmall: base.textTheme.labelSmall?.copyWith(
-          color: textFaint,
-          shadows: textOutline,
-        ),
+        labelSmall: base.textTheme.labelSmall?.copyWith(color: textFaint),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -291,31 +287,31 @@ abstract final class AppTheme {
         titleSpacing: 12,
         actionsPadding: EdgeInsets.only(right: 6),
         titleTextStyle: TextStyle(
+          fontFamily: displayFont,
           color: textPrimary,
-          fontSize: 20,
-          fontWeight: FontWeight.w400,
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
           letterSpacing: -.3,
-          shadows: textOutline,
         ),
       ),
       cardTheme: CardThemeData(
         color: surface,
         surfaceTintColor: Colors.transparent,
-        elevation: 0,
+        elevation: 1,
         margin: EdgeInsets.zero,
-        shadowColor: Colors.black.withValues(alpha: .18),
-        shape: cardShape(),
+        shadowColor: defaultPrimary.withValues(alpha: .22),
+        shape: cardShape(borderColor: outline.withValues(alpha: .16)),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: ButtonStyle(
           minimumSize: WidgetStateProperty.all(const Size(64, 48)),
           padding: WidgetStateProperty.all(
-            const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
           ),
           backgroundColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.disabled)) return surfaceHigh;
             if (states.contains(WidgetState.pressed)) {
-              return primary.withValues(alpha: .78);
+              return primary.withValues(alpha: .82);
             }
             return primary;
           }),
@@ -325,41 +321,42 @@ abstract final class AppTheme {
                 : Colors.white;
           }),
           overlayColor: WidgetStateProperty.all(
-            Colors.white.withValues(alpha: .06),
+            Colors.white.withValues(alpha: .10),
           ),
           shape: WidgetStateProperty.all(
             RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(radiusMd),
+              borderRadius: BorderRadius.circular(radiusSm),
             ),
           ),
           textStyle: WidgetStateProperty.all(
-            const TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
+            const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
           ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: textPrimary,
+          foregroundColor: primary,
+          backgroundColor: surface,
           minimumSize: const Size(64, 48),
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
-          side: BorderSide(color: outline.withValues(alpha: .6)),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
+          side: BorderSide(color: primary.withValues(alpha: .45)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusSm),
           ),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
+          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: primaryBright,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          textStyle: const TextStyle(fontWeight: FontWeight.w400),
+          textStyle: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       iconTheme: const IconThemeData(color: textSecondary, size: 22),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: surfaceHigh,
+        fillColor: surface,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 13,
@@ -375,24 +372,24 @@ abstract final class AppTheme {
         prefixIconColor: textSecondary,
         suffixIconColor: textSecondary,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radiusMd),
-          borderSide: BorderSide(color: outline.withValues(alpha: .48)),
+          borderRadius: BorderRadius.circular(radiusSm),
+          borderSide: BorderSide(color: outline.withValues(alpha: .45)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radiusMd),
-          borderSide: BorderSide(color: outline.withValues(alpha: .42)),
+          borderRadius: BorderRadius.circular(radiusSm),
+          borderSide: BorderSide(color: outline.withValues(alpha: .38)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radiusMd),
-          borderSide: BorderSide(color: primaryBright, width: 1.4),
+          borderRadius: BorderRadius.circular(radiusSm),
+          borderSide: BorderSide(color: primaryBright, width: 1.6),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radiusMd),
+          borderRadius: BorderRadius.circular(radiusSm),
           borderSide: const BorderSide(color: error),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radiusMd),
-          borderSide: const BorderSide(color: error, width: 1.4),
+          borderRadius: BorderRadius.circular(radiusSm),
+          borderSide: const BorderSide(color: error, width: 1.6),
         ),
       ),
       segmentedButtonTheme: SegmentedButtonThemeData(
@@ -401,19 +398,21 @@ abstract final class AppTheme {
           // y compris lorsque la fiche du match en affiche cinq côte à côte.
           minimumSize: WidgetStateProperty.all(const Size(48, 42)),
           textStyle: WidgetStateProperty.all(
-            const TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
+            const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
           ),
           backgroundColor: WidgetStateProperty.resolveWith((states) {
             return states.contains(WidgetState.selected)
                 ? selectedSurface
-                : surfaceHigh;
+                : surface;
           }),
           foregroundColor: WidgetStateProperty.resolveWith((states) {
             return states.contains(WidgetState.selected)
-                ? Colors.white
+                ? primary
                 : textSecondary;
           }),
-          side: WidgetStateProperty.all(BorderSide.none),
+          side: WidgetStateProperty.all(
+            BorderSide(color: outline.withValues(alpha: .28)),
+          ),
           padding: WidgetStateProperty.all(
             const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
           ),
@@ -425,38 +424,47 @@ abstract final class AppTheme {
         ),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: surfaceHigh,
+        backgroundColor: surface,
         side: BorderSide(color: outline.withValues(alpha: .28)),
         labelStyle: const TextStyle(
           color: textPrimary,
-          fontWeight: FontWeight.w400,
-          shadows: textOutline,
+          fontWeight: FontWeight.w600,
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        height: 62,
-        backgroundColor: const Color(0xFF14191F),
-        indicatorColor: accent.withValues(alpha: .13),
+        height: 66,
+        backgroundColor: surface,
+        indicatorColor: primary.withValues(alpha: .14),
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         iconTheme: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return IconThemeData(
-            size: selected ? 25 : 21,
-            color: selected ? accent : textFaint,
+            size: selected ? 25 : 22,
+            color: selected ? primary : textFaint,
           );
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return TextStyle(
-            fontSize: selected ? 11.5 : 11,
+            fontSize: 12,
             height: 1.1,
-            color: selected ? Colors.white : textFaint,
-            fontWeight: selected ? FontWeight.w400 : FontWeight.w400,
-            shadows: textOutline,
+            color: selected ? primary : textFaint,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
           );
         }),
+      ),
+      navigationRailTheme: NavigationRailThemeData(
+        backgroundColor: surface,
+        indicatorColor: primary.withValues(alpha: .14),
+        selectedIconTheme: IconThemeData(color: primary),
+        unselectedIconTheme: const IconThemeData(color: textFaint),
+        selectedLabelTextStyle: TextStyle(
+          color: primary,
+          fontWeight: FontWeight.w700,
+        ),
+        unselectedLabelTextStyle: const TextStyle(color: textFaint),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: surface,
@@ -465,17 +473,23 @@ abstract final class AppTheme {
           borderRadius: BorderRadius.circular(radiusLg),
         ),
       ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: surface,
+        surfaceTintColor: Colors.transparent,
+        showDragHandle: false,
+      ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: surfaceHero,
-        contentTextStyle: const TextStyle(color: textPrimary),
+        backgroundColor: textPrimary,
+        contentTextStyle: const TextStyle(color: Colors.white),
+        actionTextColor: const Color(0xFF9FD8B4),
         behavior: SnackBarBehavior.floating,
         insetPadding: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(radiusMd),
+          borderRadius: BorderRadius.circular(radiusSm),
         ),
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
-        color: accent,
+        color: primary,
         circularTrackColor: surfaceHigh,
         linearTrackColor: surfaceHigh,
         linearMinHeight: 4,
@@ -483,14 +497,14 @@ abstract final class AppTheme {
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primary,
         foregroundColor: Colors.white,
-        elevation: 1,
+        elevation: 2,
       ),
       dividerTheme: DividerThemeData(
-        color: outline.withValues(alpha: .3),
+        color: outline.withValues(alpha: .24),
         space: 24,
         thickness: 1,
       ),
-      dividerColor: outline.withValues(alpha: .3),
+      dividerColor: outline.withValues(alpha: .24),
     );
   }
 }

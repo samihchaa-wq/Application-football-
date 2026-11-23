@@ -156,7 +156,7 @@ class _PetitFiletAppState extends ConsumerState<PetitFiletApp>
     final isAuthenticated = ref.watch(
       authControllerProvider.select((state) => state.isAuthenticated),
     );
-    final baseTheme = AppTheme.dark;
+    final baseTheme = AppTheme.light;
 
     return MaterialApp.router(
       title: ClubIdentity.appName,
@@ -168,33 +168,6 @@ class _PetitFiletAppState extends ConsumerState<PetitFiletApp>
         scaffoldBackgroundColor: AppTheme.background,
         materialTapTargetSize: MaterialTapTargetSize.padded,
         visualDensity: VisualDensity.standard,
-        // Un état sélectionné se lit désormais avec le jaune club, sans
-        // modifier le fond bleu déjà utilisé par les boutons/onglets actifs.
-        segmentedButtonTheme: SegmentedButtonThemeData(
-          style: baseTheme.segmentedButtonTheme.style?.copyWith(
-            foregroundColor: WidgetStateProperty.resolveWith((states) {
-              if (states.contains(WidgetState.selected)) {
-                return AppTheme.accent;
-              }
-              return baseTheme.segmentedButtonTheme.style?.foregroundColor
-                      ?.resolve(states) ??
-                  AppTheme.textSecondary;
-            }),
-          ),
-        ),
-        navigationBarTheme: baseTheme.navigationBarTheme.copyWith(
-          labelTextStyle: WidgetStateProperty.resolveWith((states) {
-            final selected = states.contains(WidgetState.selected);
-            final inherited =
-                baseTheme.navigationBarTheme.labelTextStyle?.resolve(states);
-            return inherited?.copyWith(
-                  color: selected ? AppTheme.accent : AppTheme.textFaint,
-                ) ??
-                TextStyle(
-                  color: selected ? AppTheme.accent : AppTheme.textFaint,
-                );
-          }),
-        ),
       ),
       routerConfig: router,
       builder: (context, child) {
