@@ -445,21 +445,13 @@ void main() {
     expect(find.byKey(const Key('club-logo-remove')), findsNothing);
   });
 
-  testWidgets('choisir une couleur l’enregistre et habille l’application', (
-    tester,
-  ) async {
+  testWidgets('aucun choix de couleur de club n’est proposé', (tester) async {
     await pumpPage(tester);
     await openSection(tester, 'identity');
+
+    expect(find.text('Couleur principale'), findsNothing);
+    expect(find.text('Couleur secondaire'), findsNothing);
     expect(AppTheme.primary, AppTheme.defaultPrimary);
-
-    await tester.tap(find.byKey(const ValueKey('club-color-primary-#D62828')));
-    await tester.pumpAndSettle();
-
-    expect(repository.club.primaryColor, '#D62828');
-    expect(AppTheme.primary, isNot(AppTheme.defaultPrimary));
-    // La teinte choisie est conservée (rouge), la clarté est ajustée.
-    final hue = HSLColor.fromColor(AppTheme.primary).hue;
-    expect(hue < 20 || hue > 340, isTrue);
   });
 
   testWidgets('le bouton des badges reste visible quand le module est activé',
