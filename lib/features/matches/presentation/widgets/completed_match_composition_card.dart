@@ -207,9 +207,24 @@ class _PitchWithBench extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Sur grand écran, le bloc grandit jusqu'à 560 px au lieu de rester
+    // à 406 px au milieu d'une carte vide.
+    return LayoutBuilder(
+      builder: (context, constraints) => Center(
+        child: SizedBox(
+          width: constraints.maxWidth.isFinite
+              ? constraints.maxWidth.clamp(0.0, 560.0)
+              : null,
+          child: _fitted(),
+        ),
+      ),
+    );
+  }
+
+  Widget _fitted() {
     return Center(
       child: FittedBox(
-        fit: BoxFit.scaleDown,
+        fit: BoxFit.contain,
         child: SizedBox(
           width: _benchWidth + _gap + _pitchWidth,
           height: _pitchHeight,
