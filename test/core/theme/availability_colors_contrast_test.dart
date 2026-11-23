@@ -25,7 +25,7 @@ const Map<String, Color> _availabilityColors = {
 
 void main() {
   test('les titres de colonnes de l’effectif restent lisibles', () {
-    final surface = AppTheme.dark.colorScheme.surfaceContainer;
+    final surface = AppTheme.light.colorScheme.surfaceContainer;
     _availabilityColors.forEach((label, color) {
       // Fond réel de la colonne : la couleur du groupe posée en très léger
       // voile sur la surface de la carte, comme dans l’écran Effectif.

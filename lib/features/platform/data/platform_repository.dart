@@ -10,8 +10,19 @@ class PlatformAccessDenied implements Exception {
 
 /// Only guarded, read-only RPCs. No elevated key or client-side role grant.
 class PlatformRepository {
-  PlatformRepository(this._rpc, {Future<void> Function()? refreshSession})
-      : _refreshSession = refreshSession;
+  PlatformRepository(
+    this._rpc, {
+    Future<void> Function()? refreshSession,
+    String? Function()? currentAccessToken,
+  })  : _refreshSession = refreshSession,
+        _currentAccessToken = currentAccessToken;
+
+  /// Jeton d'accès courant. Au retour dans l'appli, le client Supabase
+  /// renouvelle déjà la session de lui-même : si le jeton a changé pendant la
+  /// requête, on réessaie simplement, sans second renouvellement concurrent
+  /// (deux renouvellements du même jeton de session peuvent faire révoquer la
+  /// session, donc déconnecter le gestionnaire).
+  final String? Function()? _currentAccessToken;
 
   final Future<dynamic> Function(String function) _rpc;
 
@@ -21,15 +32,20 @@ class PlatformRepository {
   final Future<void> Function()? _refreshSession;
 
   Future<PlatformSnapshot> fetch() async {
+    final tokenBefore = _currentAccessToken?.call();
     try {
       return await _fetch(canRetry: _refreshSession != null);
     } on PostgrestException catch (error) {
       final refresh = _refreshSession;
       if (refresh == null || !_isExpiredToken(error)) rethrow;
-      try {
-        await refresh();
-      } catch (_) {
-        throw const PlatformAccessDenied();
+      final tokenNow = _currentAccessToken?.call();
+      final alreadyRenewed = tokenBefore != null && tokenNow != tokenBefore;
+      if (!alreadyRenewed) {
+        try {
+          await refresh();
+        } catch (_) {
+          throw const PlatformAccessDenied();
+        }
       }
       return _fetch(canRetry: false);
     }
@@ -113,6 +129,7 @@ final platformRepositoryProvider = Provider<PlatformRepository>((ref) {
     refreshSession: () async {
       await client.auth.refreshSession();
     },
+    currentAccessToken: () => client.auth.currentSession?.accessToken,
   );
 });
 

@@ -269,21 +269,18 @@ class _AvailabilityPanel extends StatelessWidget {
         availability.status == MatchAvailabilityStatus.available;
     final selectedAbsent =
         availability.status == MatchAvailabilityStatus.absent;
-    final secondary =
-        embeddedOnDark ? const Color(0xFFD7C8FF) : AppTheme.textSecondary;
+    // Les cartes du calendrier sont désormais claires : la variante
+    // « embeddedOnDark » ne change plus que le fond (blanc translucide).
+    const secondary = AppTheme.textSecondary;
 
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: embeddedOnDark
-            ? Colors.white.withValues(alpha: .07)
+            ? Colors.white.withValues(alpha: .6)
             : AppTheme.primary.withValues(alpha: .08),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: embeddedOnDark
-              ? const Color(0xFF9B6CFF).withValues(alpha: .7)
-              : AppTheme.primary.withValues(alpha: .35),
-        ),
+        border: Border.all(color: AppTheme.primary.withValues(alpha: .28)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,7 +294,7 @@ class _AvailabilityPanel extends StatelessWidget {
                         icon: const Icon(Icons.check_circle_outline),
                         label: const Text('Présent'),
                         style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF168A52),
+                          backgroundColor: AppTheme.success,
                         ),
                       )
                     : OutlinedButton.icon(
@@ -314,7 +311,7 @@ class _AvailabilityPanel extends StatelessWidget {
                         icon: const Icon(Icons.cancel_outlined),
                         label: const Text('Absent'),
                         style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFFB33A3A),
+                          backgroundColor: AppTheme.error,
                         ),
                       )
                     : OutlinedButton.icon(
@@ -334,9 +331,7 @@ class _AvailabilityPanel extends StatelessWidget {
             Divider(
               height: 1,
               thickness: 1,
-              color: embeddedOnDark
-                  ? Colors.white.withValues(alpha: .18)
-                  : AppTheme.outline,
+              color: AppTheme.outline.withValues(alpha: .3),
             ),
             const SizedBox(height: 6),
             Row(
@@ -358,12 +353,6 @@ class _AvailabilityPanel extends StatelessWidget {
                     onPressed: onOpenEffectif,
                     icon: const Icon(Icons.groups_2_outlined),
                     label: const Text('Effectif'),
-                    style: embeddedOnDark
-                        ? OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            side: const BorderSide(color: Colors.white54),
-                          )
-                        : null,
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -372,12 +361,6 @@ class _AvailabilityPanel extends StatelessWidget {
                     onPressed: onOpenComposition,
                     icon: const Icon(Icons.sports_soccer_outlined),
                     label: const Text('Compo'),
-                    style: embeddedOnDark
-                        ? OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            side: const BorderSide(color: Colors.white54),
-                          )
-                        : null,
                   ),
                 ),
               ],

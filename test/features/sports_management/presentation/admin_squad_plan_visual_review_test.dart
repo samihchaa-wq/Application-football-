@@ -795,7 +795,7 @@ Future<void> _pumpWorkspace(
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          theme: AppTheme.dark,
+          theme: AppTheme.light,
           home: AdminSquadPlanPage(
             initialMatchId: _matchId,
             initialStep: initialStep,

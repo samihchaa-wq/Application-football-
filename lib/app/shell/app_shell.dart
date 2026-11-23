@@ -1,4 +1,5 @@
 import 'package:petit_filet/app/shell/module_navigation.dart';
+import 'package:petit_filet/core/club/club_identity.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/features/club/data/app_visit_logger.dart';
 import 'package:petit_filet/features/club/data/club_repository.dart';
@@ -28,6 +29,9 @@ bool shouldRefocusMatchesAfterRouteReturn({
 
   return !returnedFromModernPastMatch && !returnedFromHistoricalMatch;
 }
+
+/// Largeur maximale du contenu quand la barre latérale est affichée.
+const double _maxContentWidth = 1080;
 
 class AppShell extends ConsumerStatefulWidget {
   const AppShell({
@@ -193,6 +197,17 @@ class _AppShellState extends ConsumerState<AppShell>
         final useRail = constraints.maxWidth >= 840;
         final extendRail = constraints.maxWidth >= 1180;
         final content = Theme(data: moduleTheme, child: widget.navigationShell);
+        // Sur grand écran, le contenu garde une largeur de lecture : des
+        // cartes étirées sur 1 400 px sont pénibles à parcourir.
+        final constrained = useRail
+            ? Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: _maxContentWidth),
+                  child: content,
+                ),
+              )
+            : content;
 
         return Scaffold(
           backgroundColor: AppTheme.background,
@@ -216,7 +231,7 @@ class _AppShellState extends ConsumerState<AppShell>
                                 color: AppTheme.outline.withValues(alpha: .28),
                               ),
                             ],
-                            Expanded(child: content),
+                            Expanded(child: constrained),
                           ],
                         )
                       : content,
@@ -281,22 +296,31 @@ class _DesktopNavigation extends StatelessWidget {
           extended ? NavigationRailLabelType.none : NavigationRailLabelType.all,
       onDestinationSelected: onSelected,
       leading: Padding(
-        padding: const EdgeInsets.only(top: 16, bottom: 22),
-        child: Container(
-          width: 40,
-          height: 40,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: AppTheme.primary.withValues(alpha: .12),
-            borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-            border: Border.all(
-              color: AppTheme.primaryBright.withValues(alpha: .22),
+        padding: const EdgeInsets.only(top: 20, bottom: 26),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppTheme.primary,
+                borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+              ),
+              child: const Icon(
+                Icons.sports_soccer_rounded,
+                color: Colors.white,
+              ),
             ),
-          ),
-          child: Icon(
-            Icons.sports_soccer_rounded,
-            color: AppTheme.primaryBright,
-          ),
+            if (extended) ...[
+              const SizedBox(width: 10),
+              Text(
+                ClubIdentity.appName,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ],
+          ],
         ),
       ),
       destinations: const [

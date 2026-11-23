@@ -1,0 +1,25 @@
+<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
+<style>
+:root{--bg:#0E1116;--s:#171C23;--t:#F2F4F7;--m:#8B95A3;--a:#E5243B;--b:#FFB020;--r:10}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font:15px/1.4 'Inter',system-ui,sans-serif;}
+h1,h2,.big{font-family:'Oswald','Arial Narrow',sans-serif;letter-spacing:-.01em}
+.app{display:grid;grid-template-columns:1fr;min-height:100vh}
+nav{display:none}
+main{padding:20px;max-width:980px;width:100%;margin:auto}
+.card{background:var(--s);border-radius:var(--r);padding:16px;margin-bottom:14px;box-shadow:none}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.score{font-size:44px;font-weight:800}
+.btn{background:var(--a);color:#fff;border:0;border-radius:calc(var(--r)*.7);padding:12px 18px;font-weight:700}
+.pill{background:color-mix(in srgb,var(--b) 18%,transparent);color:var(--b);border-radius:99px;padding:3px 10px;font-size:12px;font-weight:700}
+.muted{color:var(--m)}.grid{display:grid;gap:14px}
+.tab{position:fixed;bottom:0;left:0;right:0;background:var(--s);display:flex;justify-content:space-around;padding:10px 0 16px;color:var(--m);font-size:12px}
+.tab b{color:var(--a)}
+@media(min-width:900px){.app{grid-template-columns:230px 1fr}nav{display:block;background:var(--s);padding:24px 16px;min-height:100vh}nav div{padding:10px 12px;border-radius:10px;color:var(--m)}nav .on{background:color-mix(in srgb,var(--a) 16%,transparent);color:var(--a);font-weight:700}.tab{display:none}.grid{grid-template-columns:2fr 1fr}}
+</style>
+<div class=app><nav><h2>Petit Filet</h2><div class=on>Matchs</div><div>Effectif</div><div>Pronos</div><div>Stats</div><div>Plus</div></nav>
+<main><div class=row><h1>Prochain match</h1><span class=pill>Convoqué</span></div>
+<div class=grid><div><div class=card><div class="row muted"><span>Dim. 29 nov. · 10 h 30</span><span>Stade municipal</span></div>
+<div class=row style="margin:18px 0"><b>FC Grinta</b><span class="big score">2 – 1</span><b>AS Rivage</b></div><button class=btn>Je suis présent</button></div>
+<div class=card><h2>Compositions</h2><p class=muted>4-4-2 · 11 titulaires · 3 remplaçants</p></div></div>
+<div><div class=card><h2>Présences</h2><p class=muted>14 présents · 3 absents · 2 en attente</p></div><div class=card><h2>Pronos</h2><p class=muted>Ton prono : 2 – 0</p></div></div></div></main>
+<div class=tab><b>Matchs</b><span>Effectif</span><span>Pronos</span><span>Stats</span><span>Plus</span></div></div>

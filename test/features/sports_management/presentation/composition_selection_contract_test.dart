@@ -130,7 +130,7 @@ Future<void> _pumpComposition(
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        theme: AppTheme.dark,
+        theme: AppTheme.light,
         home: const AdminSquadPlanPage(
           initialMatchId: _matchId,
           initialStep: 'composition',

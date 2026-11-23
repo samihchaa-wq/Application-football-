@@ -199,7 +199,7 @@ void main() {
             ),
           ],
           child: MaterialApp(
-            theme: AppTheme.dark,
+            theme: AppTheme.light,
             home: const PlayerCardPage(playerKey: key),
           ),
         ),
@@ -263,9 +263,9 @@ void main() {
       // (bronze), 4e en HDM (blanc).
       Color colorOf(String value) =>
           tester.widget<Text>(find.text(value)).style!.color!;
-      expect(colorOf('14'), const Color(0xFFFFD84A));
-      expect(colorOf('11'), const Color(0xFFAEBACA));
-      expect(colorOf('6'), const Color(0xFFDB9A5B));
+      expect(colorOf('14'), const Color(0xFFB8860B));
+      expect(colorOf('11'), const Color(0xFF7D8896));
+      expect(colorOf('6'), const Color(0xFFA9652A));
       expect(colorOf('4'), AppTheme.textPrimary);
       expect(find.text('3e du club'), findsOneWidget);
       expect(find.text('4e du club'), findsOneWidget);
@@ -327,7 +327,7 @@ void main() {
             ),
           ],
           child: MaterialApp.router(
-            theme: AppTheme.dark,
+            theme: AppTheme.light,
             routerConfig: router,
           ),
         ),
@@ -414,7 +414,7 @@ void main() {
             ),
           ],
           child: MaterialApp(
-            theme: AppTheme.dark,
+            theme: AppTheme.light,
             home: const PlayerCardPage(playerKey: profileKey),
           ),
         ),
@@ -599,21 +599,21 @@ void main() {
         expect(xs.toSet(), hasLength(6));
 
         // Un joueur de champ voit d'abord ses buts.
-        expect(colorOf(tester, '53'), const Color(0xFFFFD84A));
+        expect(colorOf(tester, '53'), const Color(0xFFB8860B));
         expect(colorOf(tester, '40'), AppTheme.textSecondary);
         expect(find.text('7'), findsOneWidget);
         expect(find.text('Saison 2026-2027 en cours.'), findsOneWidget);
 
         await tester.tap(find.text('HDM'));
         await tester.pumpAndSettle();
-        expect(colorOf(tester, '12'), const Color(0xFFFFD84A));
+        expect(colorOf(tester, '12'), const Color(0xFFB8860B));
         expect(find.text('53'), findsNothing);
 
         // Une moyenne sur moins de cinq matchs ne prend pas l'or ; une saison
         // sans match n'a pas de valeur.
         await tester.tap(find.text('% Victoires'));
         await tester.pumpAndSettle();
-        expect(colorOf(tester, '77 %'), const Color(0xFFFFD84A));
+        expect(colorOf(tester, '77 %'), const Color(0xFFB8860B));
         expect(colorOf(tester, '76 %'), AppTheme.textSecondary);
         expect(colorOf(tester, '75 %'), AppTheme.textSecondary);
         final card = find
@@ -647,16 +647,16 @@ void main() {
         await tester.tap(find.text('% Victoires'));
         await tester.pumpAndSettle();
         expect(colorOf(tester, '100 %'), AppTheme.textSecondary);
-        expect(colorOf(tester, '50 %'), const Color(0xFFFFD84A));
+        expect(colorOf(tester, '50 %'), const Color(0xFFB8860B));
 
         await tester.tap(find.text('Buts / match'));
         await tester.pumpAndSettle();
         expect(colorOf(tester, '2,00'), AppTheme.textSecondary);
-        expect(colorOf(tester, '1,60'), const Color(0xFFFFD84A));
+        expect(colorOf(tester, '1,60'), const Color(0xFFB8860B));
 
         await tester.tap(find.text('Matchs'));
         await tester.pumpAndSettle();
-        expect(colorOf(tester, '25'), const Color(0xFFFFD84A));
+        expect(colorOf(tester, '25'), const Color(0xFFB8860B));
       });
 
       testWidgets('beaucoup de saisons : la plus récente reste visible',
@@ -732,7 +732,7 @@ void main() {
               .widgetList<Text>(find.text('9'))
               .map((t) => t.style!.color)
               .toSet(),
-          {const Color(0xFFFFD84A)},
+          {const Color(0xFFB8860B)},
         );
 
         // 24/31 = 77,4 % et 17/22 = 77,3 % s'affichent tous deux « 77 % ».
@@ -743,7 +743,7 @@ void main() {
               .widgetList<Text>(find.text('77 %'))
               .map((t) => t.style!.color)
               .toList(),
-          [const Color(0xFFFFD84A), const Color(0xFFFFD84A)],
+          [const Color(0xFFB8860B), const Color(0xFFB8860B)],
         );
       });
 

@@ -97,7 +97,7 @@ Future<void> _pumpComposition(WidgetTester tester) async {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        theme: AppTheme.dark,
+        theme: AppTheme.light,
         home: const AdminSquadPlanPage(
           initialMatchId: _matchId,
           initialStep: 'composition',

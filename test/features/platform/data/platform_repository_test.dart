@@ -52,6 +52,41 @@ void main() {
     },
   );
 
+  test(
+    'jeton déjà renouvelé par le client pendant la requête : pas de second '
+    'renouvellement concurrent',
+    () async {
+      var token = 'old';
+      var refreshed = 0;
+      var calls = 0;
+      final repository = PlatformRepository(
+        (name) async {
+          if (name == 'platform_control_overview') {
+            calls++;
+            if (calls == 1) {
+              token = 'new'; // le client Supabase renouvelle de lui-même
+              throw const PostgrestException(
+                message: 'JWT expired',
+                code: 'PGRST301',
+              );
+            }
+            return {
+              'clubs': [
+                {'id': 'a', 'name': 'Team'},
+              ],
+            };
+          }
+          throw const PostgrestException(message: 'off', code: '42P01');
+        },
+        refreshSession: () async => refreshed++,
+        currentAccessToken: () => token,
+      );
+      final snapshot = await repository.fetch();
+      expect(snapshot.teams.single.name, 'Team');
+      expect(refreshed, 0);
+    },
+  );
+
   test('jeton toujours refusé après renouvellement : un seul essai de plus',
       () async {
     var refreshed = 0;

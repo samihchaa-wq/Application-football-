@@ -79,7 +79,7 @@ class PfStatusBanner extends StatelessWidget {
                       value,
                       style: theme.textTheme.titleSmall?.copyWith(
                         color: AppTheme.textPrimary,
-                        fontWeight: FontWeight.w400,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -91,13 +91,13 @@ class PfStatusBanner extends StatelessWidget {
                       height: 1.4,
                     ),
                   ),
+                  if (action != null) ...[
+                    const SizedBox(height: 6),
+                    Align(alignment: Alignment.centerRight, child: action!),
+                  ],
                 ],
               ),
             ),
-            if (action != null) ...[
-              const SizedBox(width: 10),
-              action!,
-            ],
           ],
         ),
       ),

@@ -67,19 +67,19 @@ void main() {
     test('AS Grinta est vert à domicile comme à l’extérieur', () {
       expect(
         predictionOddAccentForSide(isHomeSide: true, isOwnHome: true),
-        const Color(0xFF39E784),
+        const Color(0xFF1B8A4B),
       );
       expect(
         predictionOddAccentForSide(isHomeSide: false, isOwnHome: false),
-        const Color(0xFF39E784),
+        const Color(0xFF1B8A4B),
       );
       expect(
         predictionOddAccentForSide(isHomeSide: false, isOwnHome: true),
-        const Color(0xFFFF6B6B),
+        const Color(0xFFC62A3B),
       );
       expect(
         predictionOddAccentForSide(isHomeSide: true, isOwnHome: false),
-        const Color(0xFFFF6B6B),
+        const Color(0xFFC62A3B),
       );
     });
   });

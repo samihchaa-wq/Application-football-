@@ -22,9 +22,9 @@ class MatchResultScoreChip extends StatelessWidget {
   final String? semanticLabel;
 
   Color get _color {
-    if (scoreOwn > scoreOpponent) return const Color(0xFF39E784);
-    if (scoreOwn == scoreOpponent) return const Color(0xFFFFB43D);
-    return const Color(0xFFFF5F6D);
+    if (scoreOwn > scoreOpponent) return const Color(0xFF1B8A4B);
+    if (scoreOwn == scoreOpponent) return const Color(0xFFB4610D);
+    return const Color(0xFFC62A3B);
   }
 
   @override

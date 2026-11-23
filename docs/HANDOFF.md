@@ -2,6 +2,21 @@
 
 **Actualisé le 17 novembre 2026 (correctif de gouvernance publication).** Source de vérité opérationnelle : branche `main`, PR ouvertes et contrôles GitHub sur le dernier SHA ; les états ci-dessous peuvent évoluer.
 
+## Session Kyky du 22/11/2026 (branche claude/gallant-babbage-2iz44v)
+
+- Fait : flash au lancement corrigé (copie locale de l'habillage du club relue avant le 1er rendu ; test ajouté). Console gestionnaire : plus de second renouvellement de session concurrent (test ajouté). 3 maquettes dans docs/maquettes/.
+- Vérifié : analyze propre, 1497 tests verts. Non vérifié : rendu réel (pas de Supabase local), déconnexion gestionnaire non reproduite.
+- Décisions à prendre : docs/KYKY_QUESTIONS.md. Hors lot : docs/KYKY_A_TRAITER.md.
+- Outils : Supabase CLI absente, docker sans démon.
+
+## Session Kyky du 23/11/2026 (branche claude/gallant-babbage-2iz44v)
+
+- Fait : habillage Pelouse sur toute l'appli (thème central clair, titres Lora, coque ordinateur avec rail + largeur 1080, bandeaux), captures dans docs/captures/ (téléphone + ordinateur), docs/PR_PELOUSE.md. Palette unique (pas de choix de couleur par club : autre session).
+- Serveur local : docker + `supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor` (realtime inclus), données : supabase/demo/club_demo.sql (demoadmin / demojoueur, mot de passe choisi à l'exécution). Build web local : CSP à adapter (voir script de build), Playwright /opt/node-tools.
+- Vérifié : analyze propre, tous les tests Flutter verts ; 198 tests SQL rejoués en local (sans écart réel ; écarts = version pgTAP locale et données de démo) ; aucun accès anonyme aux tables/fonctions, RLS partout.
+- Non résolu : déconnexion gestionnaire (non reproduite), « Gestion sportive indisponible » sur lien direct quand le temps réel est coupé (docs/KYKY_A_TRAITER.md), remboursement total (Q5).
+- Non fait : Edge Functions Stripe non exécutées (edge-runtime non démarré), compositions/live en édition non capturés, migration Riverpod 3, nettoyage poussé (aucun fichier orphelin trouvé).
+
 ## Règles impératives
 
 1. **Écriture uniquement dans `samihchaa-wq/Application-football-`.** Ne jamais modifier les dépôts, données, sites ni bases Supabase d'AS Grinta original ou de Carte soirée. Le dépôt AS Grinta peut être consulté en lecture seule pour comparer ses fonctionnalités et son interface.

@@ -25,7 +25,7 @@ void main() {
             playerPositionArchiveProvider.overrideWith((ref) async => const {}),
           ],
           child: MaterialApp(
-            theme: AppTheme.dark,
+            theme: AppTheme.light,
             home: const Scaffold(
               body: SingleChildScrollView(
                 child: InternalTeamCompositionView(
@@ -69,7 +69,7 @@ void main() {
             ),
           ],
           child: MaterialApp(
-            theme: AppTheme.dark,
+            theme: AppTheme.light,
             home: const Scaffold(
               body: SingleChildScrollView(
                 child: InternalTeamCompositionView(
@@ -135,7 +135,7 @@ void main() {
             ),
           ],
           child: MaterialApp(
-            theme: AppTheme.dark,
+            theme: AppTheme.light,
             home: const Scaffold(
               body: SingleChildScrollView(
                 child: InternalTeamCompositionView(
@@ -180,7 +180,7 @@ void main() {
             playerPositionArchiveProvider.overrideWith((ref) async => const {}),
           ],
           child: MaterialApp(
-            theme: AppTheme.dark,
+            theme: AppTheme.light,
             home: const Scaffold(
               body: SingleChildScrollView(
                 child: InternalTeamCompositionView(

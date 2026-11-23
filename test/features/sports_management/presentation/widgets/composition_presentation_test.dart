@@ -88,7 +88,7 @@ Future<void> _pumpPage(
   addTearDown(tester.view.reset);
   return tester.pumpWidget(
     MaterialApp(
-      theme: AppTheme.dark,
+      theme: AppTheme.light,
       home: CompositionPresentationPage(
         data: data,
         background: _plainBackground,

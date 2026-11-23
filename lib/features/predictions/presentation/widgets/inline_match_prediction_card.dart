@@ -15,8 +15,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
 
-const Color _pfOddAccent = Color(0xFF39E784);
-const Color _opponentOddAccent = Color(0xFFFF6B6B);
+const Color _pfOddAccent = Color(0xFF1B8A4B);
+const Color _opponentOddAccent = Color(0xFFC62A3B);
 
 Color predictionOddAccentForSide({
   required bool isHomeSide,
@@ -180,7 +180,7 @@ class _InlineMatchPredictionCardState
                         label: 'N',
                         value: AppFormats.odds(item.oddsDraw),
                         selected: own == opponent,
-                        accent: const Color(0xFFE59A1F),
+                        accent: const Color(0xFFB4610D),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.contentGap),
@@ -313,19 +313,19 @@ class _StatusChip extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: highlighted
-            ? const Color(0xFF39E784).withValues(alpha: .10)
-            : Colors.white.withValues(alpha: .04),
+            ? const Color(0xFF1B8A4B).withValues(alpha: .10)
+            : AppTheme.surfaceHigh,
         borderRadius: BorderRadius.circular(99),
         border: Border.all(
           color: highlighted
-              ? const Color(0xFF39E784).withValues(alpha: .34)
+              ? const Color(0xFF1B8A4B).withValues(alpha: .34)
               : AppTheme.outline,
         ),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: highlighted ? const Color(0xFF69E99B) : AppTheme.textSecondary,
+          color: highlighted ? const Color(0xFF157A3F) : AppTheme.textSecondary,
           fontWeight: FontWeight.w400,
         ),
       ),
