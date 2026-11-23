@@ -12,3 +12,10 @@
 - Reste (propriétaire) : accord pour appliquer les 2 migrations ; valider les seuils de création (3/j adresse, 2/j e-mail, 60 s, 20/h) ; test de charge 500/1000 clubs.
 - Outils manquants : graphify (installation refusée par la session), pgTAP/Supabase CLI/docker sans démon. `.claude/agents/kyky.md` supprimé du dépôt (commit 48377f4) : règles lues dans le prompt.
 - Hors périmètre : aucun.
+
+## 23/11/2026 (2e passage, soir)
+- Vérifié en lecture : test notifications_v2_contract accepte déjà run_for_each_busy_club (rien à adapter).
+- Lot 6 : l'appli a déjà un classement central des pannes réseau (error_category.dart, app_errors.dart). Aucun changement fait : Flutter absent ici, donc rien de testable. Reste à auditer écran par écran (propriétaire/Écrans).
+- Non fait volontairement : brancher check_club_creation_limits dans claim-club/register-account. Demande de redéployer les fonctions Edge ET d'appliquer la migration 20261203040000 ensemble. Attente accord propriétaire.
+- Outils absents : graphify (pas de carte), Flutter, pgTAP/Supabase CLI. Dossier projet « Petit filet » (charte, messages) illisible : erreur 404 de l'outil Projects.
+- Hors périmètre : aucun.
