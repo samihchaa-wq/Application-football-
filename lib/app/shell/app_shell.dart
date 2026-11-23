@@ -308,18 +308,12 @@ class _DesktopNavigation extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
+            Image.asset(
+              'assets/images/petit_filet_logo.webp',
               width: 40,
               height: 40,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AppTheme.primary,
-                borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-              ),
-              child: const Icon(
-                Icons.sports_soccer_rounded,
-                color: Colors.white,
-              ),
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.high,
             ),
             if (extended) ...[
               const SizedBox(width: 10),
