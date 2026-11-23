@@ -289,7 +289,7 @@ abstract final class AppTheme {
         titleTextStyle: TextStyle(
           fontFamily: displayFont,
           color: textPrimary,
-          fontSize: 22,
+          fontSize: 20,
           fontWeight: FontWeight.w700,
           letterSpacing: -.3,
         ),

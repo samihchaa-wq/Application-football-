@@ -59,11 +59,7 @@ class MatchDetailsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final detailsAsync = ref.watch(matchDetailsProvider(matchId));
     final isAdmin = ref.watch(isAdminViewProvider);
-    // `null` tant que les réglages du club ne sont pas lus : on attend au lieu
-    // d'annoncer à tort que la gestion sportive est indisponible (lien direct,
-    // notification ouverte à froid).
-    final sportsState = ref.watch(sportsManagementRoutingStateProvider);
-    final sportsEnabled = sportsState ?? false;
+    final sportsEnabled = ref.watch(sportsManagementEnabledProvider);
     final currentProfileId = ref.watch(
       authControllerProvider.select((state) => state.profile?.id),
     );
@@ -131,12 +127,7 @@ class MatchDetailsPage extends ConsumerWidget {
                       bottomSpacing: 0,
                     ),
                     const SizedBox(height: 16),
-                    if (sportsState == null)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 48),
-                        child: Center(child: PfProgressIndicator()),
-                      )
-                    else if (sportsEnabled)
+                    if (sportsEnabled)
                       _UpcomingModules(matchId: matchId, isAdmin: isAdmin)
                     else
                       const Card(
