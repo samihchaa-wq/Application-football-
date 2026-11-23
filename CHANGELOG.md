@@ -23,6 +23,10 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- fiche d'un match à venir : « Gestion sportive indisponible » ne s'affiche
+  plus au retour dans l'application, à l'ouverture depuis une notification
+  ni en tirant pour actualiser. La relecture des réglages du club garde la
+  dernière valeur lue (un changement de compte repart toujours de zéro) ;
 - textes légaux, version `2026-11-20` (nouvel accord demandé aux
   membres) : Stripe ajouté à la politique de confidentialité et aux
   conditions d'abonnement (paiement par carte en service). Facture : plus de
