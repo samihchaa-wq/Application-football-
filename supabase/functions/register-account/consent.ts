@@ -14,7 +14,7 @@
 export const CURRENT_TERMS_VERSION = "2026-11-20";
 
 /** Version publiée des conditions d'abonnement et de l'accord sur les données. */
-export const CURRENT_CLUB_CONTRACT_VERSION = "2026-11-20";
+export const CURRENT_CLUB_CONTRACT_VERSION = "2026-11-23";
 
 export type AgeConfirmation = "15_or_more" | "parental_consent";
 

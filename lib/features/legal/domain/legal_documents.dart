@@ -19,7 +19,7 @@ const String legalVersion = '2026-11-20';
 
 /// Version des conditions d'abonnement et de l'accord sur les données,
 /// acceptée par la personne qui crée un club. Format AAAA-MM-JJ.
-const String clubContractVersion = '2026-11-20';
+const String clubContractVersion = '2026-11-23';
 
 class LegalSection {
   const LegalSection(this.title, this.paragraphs);
@@ -423,6 +423,12 @@ const LegalDocument clubSalesTerms = LegalDocument(
           'de ne pas renouveler.',
       'Le club peut arrêter à tout moment ; l’accès reste ouvert jusqu’à la '
           'fin de la période payée, sans remboursement de la période en cours.',
+      'Si l’éditeur rembourse en totalité le dernier paiement de '
+          'l’abonnement, l’abonnement prend fin et l’accès du club est '
+          'suspendu immédiatement, sans attendre la fin de la période. Un '
+          'avoir est émis ; les données sont conservées dans les conditions '
+          'de l’article 8 et le club peut se réabonner. Un remboursement '
+          'partiel ne suspend pas l’accès.',
       'En cas de manquement grave du club à ces conditions ou aux CGU, '
           'l’éditeur peut résilier après une mise en demeure restée sans effet '
           'pendant 15 jours.',
