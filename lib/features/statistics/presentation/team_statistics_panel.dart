@@ -7,9 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
 
-const _teamGreen = Color(0xFF3BD10D);
-const _teamYellow = Color(0xFFFFCA1A);
-const _teamRed = Color(0xFFFF3B30);
+const _teamGreen = Color(0xFF2E9E2A);
+const _teamYellow = Color(0xFFD79B0A);
+const _teamRed = Color(0xFFD2362D);
 
 class TeamStatisticsPanel extends ConsumerWidget {
   const TeamStatisticsPanel({required this.period, super.key});

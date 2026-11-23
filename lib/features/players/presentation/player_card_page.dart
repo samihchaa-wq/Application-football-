@@ -284,7 +284,7 @@ class _Hero extends ConsumerWidget {
         gradient: const RadialGradient(
           center: Alignment.topRight,
           radius: 1.4,
-          colors: [Color(0xFF60313C), AppTheme.surfaceHero, AppTheme.surface],
+          colors: [Color(0xFFCFE3D2), AppTheme.surfaceHero, AppTheme.surface],
           stops: [0, .4, 1],
         ),
       ),
@@ -392,11 +392,11 @@ const _heroPhotoSize = 96.0;
 const _heroInitialsScale = .84;
 
 /// Or, argent et bronze pour les trois premiers du club sur une statistique.
-const _gold = Color(0xFFFFD84A);
+const _gold = Color(0xFFB8860B);
 // Plus sombre que le blanc des autres rangs, pour que les deux ne se
 // confondent pas.
-const _silver = Color(0xFFAEBACA);
-const _bronze = Color(0xFFDB9A5B);
+const _silver = Color(0xFF7D8896);
+const _bronze = Color(0xFFA9652A);
 
 Color _medalColor(int? rank) => switch (rank) {
       1 => _gold,

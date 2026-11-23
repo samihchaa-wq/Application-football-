@@ -521,7 +521,7 @@ class CalendarCardSections extends StatelessWidget {
   final double bodyHorizontalPadding;
 
   /// Voile posé sur la couleur de la carte pour foncer les bandeaux.
-  static const Color bandShade = Color(0x121F3A28);
+  static const Color bandShade = Color(0x99FFFFFF);
 
   @override
   Widget build(BuildContext context) {

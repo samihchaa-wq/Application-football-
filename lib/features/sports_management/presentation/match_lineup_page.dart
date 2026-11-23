@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/theme/app_spacing.dart';
 import 'package:petit_filet/core/utils/match_window.dart';
 import 'package:petit_filet/core/widgets/match_sheet_top_row.dart';
@@ -400,8 +401,8 @@ class PublishedLineupPreview extends ConsumerWidget {
               ref.watch(matchAvailabilityBoardProvider(matchId)).valueOrNull;
           final beforeKickoff =
               board == null || DateTime.now().isBefore(board.kickoffAt);
-          final foreground = embeddedOnDark ? Colors.white : null;
-          final secondary = embeddedOnDark ? Colors.white : null;
+          const Color? foreground = null;
+          const Color? secondary = null;
           final content = Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -488,10 +489,10 @@ class PublishedLineupPreview extends ConsumerWidget {
             return Container(
               padding: const EdgeInsets.all(AppSpacing.cardPadding),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: .06),
+                color: Colors.white.withValues(alpha: .6),
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(
-                  color: const Color(0xFF9B6CFF).withValues(alpha: .55),
+                  color: AppTheme.primary.withValues(alpha: .28),
                 ),
               ),
               child: content,

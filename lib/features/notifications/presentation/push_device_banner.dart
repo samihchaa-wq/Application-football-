@@ -104,9 +104,8 @@ class _PushDeviceBannerState extends ConsumerState<PushDeviceBanner> {
                     'appareil : ouverture des disponibilités, convocations.',
             tone: PfStatusTone.warning,
             compact: true,
-            action: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.end,
+            action: Wrap(
+              alignment: WrapAlignment.end,
               children: [
                 TextButton(
                   onPressed: _busy ? null : (blocked ? _recheck : _enable),
@@ -147,9 +146,8 @@ class _InstallBanner extends StatelessWidget {
                 'l’appli est sur l’écran d’accueil.',
             tone: PfStatusTone.info,
             compact: true,
-            action: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.end,
+            action: Wrap(
+              alignment: WrapAlignment.end,
               children: [
                 TextButton(
                   key: const Key('install-guide-open'),
