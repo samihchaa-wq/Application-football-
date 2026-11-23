@@ -65,6 +65,22 @@ void main() {
       expect(repository.signOutCalls, 0);
     });
 
+    test('account without club is not shown as a connection outage', () async {
+      final repository = _FakeAuthRepository(
+        fetchResults: [StateError('Profile not found')],
+        hasSession: true,
+        noClub: true,
+      );
+      final controller = AuthController(repository);
+      addTearDown(controller.dispose);
+
+      await _flushAsync();
+
+      expect(controller.state.needsClub, isTrue);
+      expect(controller.state.error, isNull);
+      expect(controller.state.hasSession, isTrue);
+    });
+
     test('signIn authenticates after the post-login refresh', () async {
       final initialRefresh = Completer<AuthProfile?>();
       final repository = _FakeAuthRepository(
@@ -339,13 +355,14 @@ Future<void> _flushAsync() async {
 
 class _FakeAuthRepository implements AuthRepository {
   @override
-  bool get currentUserHasNoClub => false;
+  bool get currentUserHasNoClub => noClub;
 
   @override
   ({String firstName, String lastName}) get suggestedNames =>
       (firstName: '', lastName: '');
 
   _FakeAuthRepository({
+    this.noClub = false,
     required List<Object?> fetchResults,
     this.signInError,
     this.signOutError,
@@ -354,6 +371,7 @@ class _FakeAuthRepository implements AuthRepository {
     this.emitSignedOutDuringSignOut = false,
   }) : _fetchResults = List<Object?>.from(fetchResults);
 
+  final bool noClub;
   final List<Object?> _fetchResults;
   final Object? signInError;
   final Object? signOutError;
