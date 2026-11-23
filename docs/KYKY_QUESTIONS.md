@@ -21,3 +21,13 @@
 ## Q4. Textes légaux : infos à remplir par toi
 - Voir `docs/KYKY_A_TRAITER.md` (section légal). Je n'invente rien : identité éditeur, SIRET, adresse, e-mail, médiateur.
 - Rappel : seul un avocat peut valider ces textes.
+
+## Q5. Remboursement total : que devient l'abonnement ?
+- Constat (serveur local) : après un remboursement total, le club reste « actif » jusqu'à l'échéance ; seule une note de crédit est émise.
+- Options : A) rien (l'éditeur suspend à la main si besoin) ; B) remboursement total = suspension auto du club ; C) échéance ramenée à la date du remboursement.
+- Reco : A tant qu'il y a peu de clubs ; B si tu offres un droit de rétractation.
+
+## Q6. Déconnexion du gestionnaire : toujours non reproduite
+- Testé sur serveur local (web, jeton expiré toutes les 15 s, nouvel onglet, lien /control) : session conservée.
+- Seul cas de « déconnexion » reproduit : compte éditeur sans club, profil « en attente » → écran « Compte en attente ». Est-ce ton cas (compte éditeur = admin d'un club ou compte seul) ?
+- Besoin : téléphone ou ordinateur, navigateur ou appli installée, durée d'absence.
