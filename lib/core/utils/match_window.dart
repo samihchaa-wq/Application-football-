@@ -109,6 +109,19 @@ bool isMatchLiveTooEarly(DateTime? kickoffAt, {DateTime? now}) {
   return reference.isBefore(matchLiveOpensAt(kickoffAt));
 }
 
+/// Délai après le coup d'envoi au-delà duquel un match dont le Live n'a jamais
+/// été lancé n'a plus de direct à montrer : les joueurs n'ont rien à voir,
+/// l'administrateur passe directement à la saisie du compte rendu.
+const Duration kMatchLiveAbandonedAfterKickoff = Duration(hours: 2);
+
+bool isMatchLiveAbandoned(DateTime? kickoffAt, {DateTime? now}) {
+  if (kickoffAt == null) return false;
+  final reference = (now ?? DateTime.now()).toUtc();
+  return !reference.isBefore(
+    kickoffAt.toUtc().add(kMatchLiveAbandonedAfterKickoff),
+  );
+}
+
 /// `true` dès T-15. Utilisé par l'UI en complément du garde-fou Supabase.
 bool isMatchPredictionClosed(DateTime? kickoffAt, {DateTime? now}) {
   if (kickoffAt == null) return true;
