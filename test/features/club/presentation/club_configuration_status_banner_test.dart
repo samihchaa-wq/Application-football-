@@ -36,6 +36,11 @@ void main() {
 
     pending.completeError(StateError('réseau indisponible'));
     await tester.pumpAndSettle();
+    // Une panne brève n'est pas annoncée : le bandeau attend qu'elle dure.
+    expect(find.text('Les réglages du club sont indisponibles.'), findsNothing);
+    expect(container.read(clubModuleEnabledProvider(ClubModule.predictions)),
+        isFalse);
+    await tester.pump(clubConfigurationBannerDelay);
     expect(
         find.text('Les réglages du club sont indisponibles.'), findsOneWidget);
     expect(find.text('Réessayer'), findsOneWidget);
@@ -88,10 +93,41 @@ void main() {
     // Une panne pendant la relecture n'autorise plus rien.
     reload!.completeError(StateError('réseau indisponible'));
     await tester.pumpAndSettle();
+    await tester.pump(clubConfigurationBannerDelay);
     expect(
         find.text('Les réglages du club sont indisponibles.'), findsOneWidget);
     expect(container.read(clubModuleEnabledProvider(ClubModule.statistics)),
         isFalse);
+  });
+
+  testWidgets('une panne réparée par un nouvel essai rapide ne clignote pas',
+      (tester) async {
+    var calls = 0;
+    final container = ProviderContainer(overrides: [
+      clubSessionIdentityProvider.overrideWithValue('account-a'),
+      myClubProvider.overrideWith((ref) async => club),
+      clubRulesProvider.overrideWith((ref) async => const []),
+      clubModulesProvider.overrideWith((ref) async {
+        calls += 1;
+        if (calls == 1) throw StateError('réseau pas encore revenu');
+        return const ClubModules.allEnabled();
+      }),
+    ]);
+    addTearDown(container.dispose);
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+            home: Scaffold(body: ClubConfigurationStatusBanner()))));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('Les réglages du club sont indisponibles.'), findsNothing);
+
+    // Le retour au premier plan relance la lecture, qui réussit.
+    refreshClubConfiguration(container.invalidate);
+    await tester.pumpAndSettle();
+    await tester.pump(clubConfigurationBannerDelay * 2);
+    expect(calls, 2);
+    expect(find.text('Les réglages du club sont indisponibles.'), findsNothing);
   });
 
   testWidgets('hors connexion aucun chargement de club n’est lancé',
