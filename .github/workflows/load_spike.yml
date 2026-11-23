@@ -1,0 +1,37 @@
+name: Load spike (connexions et temps réel)
+
+# Pic de connexions et temps réel sur une base Supabase éphémère LOCALE.
+# Ne se connecte jamais à une base réelle. Les limites du forfait Supabase
+# payant ne sont pas reproduites ici : voir le rapport.
+on:
+  workflow_dispatch:
+    inputs:
+      clients:
+        description: Connexions simultanées
+        default: '300'
+
+permissions:
+  contents: read
+
+jobs:
+  spike:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf # v2
+        with:
+          version: 2.111.0
+      - name: Start isolated Supabase
+        run: supabase start -x studio,imgproxy,logflare,vector,supavisor,edge-runtime,mailpit,postgres-meta 2>&1 | tail -5
+      - name: Install pgbench
+        run: command -v pgbench >/dev/null || (sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client >/dev/null)
+      - name: Connection spike
+        run: supabase/tests/load/spike.sh 50 30 "${{ inputs.clients || '300' }}" 2>&1 | tee spike.log
+      - name: Realtime spike
+        run: |
+          KEY=$(supabase status -o env | grep '^ANON_KEY=' | cut -d= -f2- | tr -d '"')
+          node supabase/tests/load/realtime_spike.mjs ws://127.0.0.1:54321/realtime/v1/websocket "$KEY" 500 2>&1 | tee -a spike.log
+      - name: Publish the report
+        if: always()
+        run: '[ -f spike.log ] && { echo ''```''; cat spike.log; echo ''```''; } >> "$GITHUB_STEP_SUMMARY" || true'
