@@ -503,6 +503,7 @@ class _HistoryEntryPageState extends ConsumerState<HistoryEntryPage> {
             Expanded(child: Text(player.displayName)),
             IconButton(
               icon: const Icon(Icons.remove_circle_outline),
+              tooltip: 'Retirer',
               onPressed: (_draft.goals[player.key] ?? 0) == 0
                   ? null
                   : () => _update(
@@ -520,6 +521,7 @@ class _HistoryEntryPageState extends ConsumerState<HistoryEntryPage> {
             IconButton(
               key: ValueKey('history-goals-plus-${player.key}'),
               icon: const Icon(Icons.add_circle_outline),
+              tooltip: 'Ajouter',
               onPressed: _draft.assignedGoals >= _draft.scoreFor
                   ? null
                   : () => _update(
@@ -683,11 +685,13 @@ class _Stepper extends StatelessWidget {
           children: [
             IconButton(
               icon: const Icon(Icons.remove_circle_outline),
+              tooltip: 'Retirer',
               onPressed: value <= 0 ? null : () => onChanged(value - 1),
             ),
             Text('$value', style: theme.textTheme.headlineSmall),
             IconButton(
               icon: const Icon(Icons.add_circle_outline),
+              tooltip: 'Ajouter',
               onPressed: value >= 99 ? null : () => onChanged(value + 1),
             ),
           ],

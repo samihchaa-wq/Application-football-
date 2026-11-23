@@ -147,7 +147,7 @@ class _StatTile extends StatelessWidget {
           label.toUpperCase(),
           textAlign: TextAlign.center,
           style: const TextStyle(
-            fontSize: 11,
+            fontSize: 12,
             letterSpacing: .5,
             color: AppTheme.textFaint,
           ),
@@ -157,7 +157,7 @@ class _StatTile extends StatelessWidget {
           rankNote ?? (rank == null ? '–' : '${_ordinal(rank)} du club'),
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 11,
+            fontSize: 12,
             color: rank != null && rank <= 3
                 ? _medalColor(rank)
                 : AppTheme.primaryBright,
@@ -346,7 +346,7 @@ class _EvolutionCard extends StatelessWidget {
                   Text(
                     'Saison ${last.seasonName} en cours.',
                     style: const TextStyle(
-                      fontSize: 11,
+                      fontSize: 12,
                       color: AppTheme.textFaint,
                     ),
                   ),
@@ -570,7 +570,7 @@ class _SeasonBar extends StatelessWidget {
               _shortSeason,
               maxLines: 1,
               style: TextStyle(
-                fontSize: 10.5,
+                fontSize: 12,
                 color: season.isCurrent
                     ? AppTheme.textSecondary
                     : AppTheme.textFaint,
