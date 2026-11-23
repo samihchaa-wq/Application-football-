@@ -644,10 +644,8 @@ class _FeedSectionHeaderDelegate extends SliverPersistentHeaderDelegate {
           alignment: Alignment.centerLeft,
           child: Text(
             title,
-            style: Theme.of(context)
-                .textTheme
-                .titleSmall
-                ?.copyWith(color: AppTheme.textSecondary, fontWeight: FontWeight.w700),
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: AppTheme.textSecondary, fontWeight: FontWeight.w700),
           ),
         ),
       ),
