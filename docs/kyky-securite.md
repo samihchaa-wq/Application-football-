@@ -31,3 +31,10 @@
 - Reste (propriétaire) : appliquer 20261203030000 et 20261203040000 ; valider seuils de création ; brancher check_club_creation_limits (Edge + migration ensemble).
 - Outils absents : graphify, Flutter, pgTAP/Supabase CLI. Dossier projet « Petit filet » (charte, messages) illisible : 404.
 - Hors périmètre : aucun.
+
+## 24/11/2026 (5e passage)
+- Rien de nouveau à faire : lots 1 à 6 faits ou en attente d'accord propriétaire. Aucune réponse du propriétaire dans KYKY_QUESTIONS.
+- Point d'attention : main a une migration plus récente (20261204000000). Mes 2 migrations (20261203030000, 20261203040000) ont une date plus ancienne : à appliquer avec l'option « hors ordre » (--include-all), sinon elles seront sautées.
+- Reste (propriétaire) : accord pour appliquer les 2 migrations ; seuils de création ; brancher check_club_creation_limits (Edge + migration ensemble).
+- Outils absents : graphify, Flutter, pgTAP/Supabase CLI. Dossier projet « Petit filet » (charte, messages) illisible : 404.
+- Hors périmètre : aucun.
