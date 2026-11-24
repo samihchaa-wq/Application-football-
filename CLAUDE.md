@@ -31,7 +31,7 @@ Simplifier le **langage**, jamais le **fond**.
 
 Toujours appliquer `.claude/skills/caveman/SKILL.md`, en français : réponse
 d'abord, phrases courtes, pas de préambule, pas de récapitulatif, pas
-d'options déroulées. Viser 5 lignes ; dépasser seulement si la personne le
+d'options déroulées. 3 lignes maximum ; dépasser seulement si la personne le
 demande ou pour un risque réel. Les règles « Comment me parler » gardent le
 fond (pas de jargon non traduit, dire ce qui n'est pas vérifié, séparer ce
 qu'elle doit faire), mais pas la longueur. « stop caveman » le désactive.
