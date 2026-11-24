@@ -311,9 +311,8 @@ class _MysteryModeBar extends StatelessWidget {
     final selected = automatic == value;
     return Expanded(
       child: Material(
-        color: selected
-            ? AppTheme.accent.withValues(alpha: 0.16)
-            : Colors.transparent,
+        // Même apparence que les autres onglets sélectionnés de l'appli.
+        color: selected ? AppTheme.selectedSurface : Colors.transparent,
         child: InkWell(
           onTap: selected ? null : () => onChanged(value),
           child: Container(
@@ -322,7 +321,9 @@ class _MysteryModeBar extends StatelessWidget {
             child: Text(
               label,
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: selected ? AppTheme.accent : AppTheme.textSecondary,
+                    color: selected
+                        ? AppTheme.primaryBright
+                        : AppTheme.textSecondary,
                   ),
             ),
           ),

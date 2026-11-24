@@ -22,7 +22,9 @@ class PlayersRegistryPage extends ConsumerWidget {
     final seasonAsync = ref.watch(openSeasonIdProvider);
 
     return Scaffold(
-      appBar: PfAppBar(title: const Text('Effectif')),
+      // Trois pages s'appelaient « Effectif » : celle-ci liste les joueurs de
+      // la saison (dont ceux sans compte).
+      appBar: PfAppBar(title: const Text('Joueurs de la saison')),
       body: seasonAsync.when(
         loading: () => const Center(child: PfProgressIndicator()),
         error: (error, _) => Center(child: Text(humanizeError(error))),
