@@ -8,6 +8,7 @@ MatchModel _match({
   required bool isHome,
   int? own,
   int? opponent,
+  String opponentName = 'AS Pantin',
 }) =>
     MatchModel(
       id: 'm1',
@@ -19,7 +20,7 @@ MatchModel _match({
       status: status,
       ownScore: own,
       opponentScore: opponent,
-      opponentName: 'AS Pantin',
+      opponentName: opponentName,
     );
 
 void main() {
@@ -54,5 +55,26 @@ void main() {
     final firstLineEnd =
         painter.getLineBoundary(const TextPosition(offset: 0)).end;
     expect(title.substring(0, firstLineEnd).trim(), 'AS Pantin 2 -');
+  });
+
+  test('un nom trop long peut se couper entre ses mots', () {
+    // Rendu insécable, « Olympique des Coteaux » ne tenait pas sur une ligne
+    // de téléphone et le navigateur le coupait au milieu d'un mot
+    // (« Coteau » puis « x »). Les tests ne reproduisent pas ce découpage :
+    // on vérifie donc les espaces eux-mêmes.
+    final title = adminMatchTitle(
+      _match(
+        status: 'termine',
+        isHome: true,
+        own: 1,
+        opponent: 2,
+        opponentName: 'Olympique des Coteaux',
+      ),
+    );
+
+    expect(title, contains('Olympique des Coteaux'));
+    // Le score reste collé au nom voisin, le nom court reste entier.
+    expect(title, contains('2\u00A0Olympique'));
+    expect(title, startsWith('AS\u00A0Grinta\u00A01'));
   });
 }

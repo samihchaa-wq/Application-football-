@@ -6,7 +6,8 @@ import 'package:petit_filet/features/matches/presentation/widgets/match_result_s
 /// Cinq confrontations côte à côte sur un petit téléphone : la date de chaque
 /// case doit rester entière (elle s'affichait « 18/10/2 »).
 void main() {
-  testWidgets('la date d’une confrontation n’est pas coupée en 5 cases étroites',
+  testWidgets(
+      'la date d’une confrontation n’est pas coupée en 5 cases étroites',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(320, 200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
