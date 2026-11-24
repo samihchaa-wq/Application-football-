@@ -379,9 +379,10 @@ class _PlayersScrollableHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final style = pfTableHeaderTextStyle(context);
 
-    Widget valueCell(String label, _PlayerStatCol column) {
+    Widget valueCell(String label, _PlayerStatCol column, String fullName) {
       return SortableHeaderCell(
         label: label,
+        tooltip: fullName,
         flex: _playerValueFlex,
         active: sort == column,
         descending: descending,
@@ -394,14 +395,23 @@ class _PlayersScrollableHeader extends StatelessWidget {
       padding: pfTableScrollableHeaderPadding,
       child: Row(
         children: [
-          valueCell('J', _PlayerStatCol.played),
-          valueCell('B', _PlayerStatCol.goals),
-          if (showsAssists) valueCell('PD', _PlayerStatCol.assists),
-          valueCell('CS', _PlayerStatCol.cleanSheets),
-          valueCell(PlayerStat.manOfTheMatch.columnLabel, _PlayerStatCol.hdm),
-          valueCell('G', _PlayerStatCol.wins),
-          valueCell('N', _PlayerStatCol.draws),
-          valueCell('P', _PlayerStatCol.losses),
+          valueCell('J', _PlayerStatCol.played, 'Matchs joués'),
+          valueCell('B', _PlayerStatCol.goals, 'Buts'),
+          if (showsAssists)
+            valueCell('PD', _PlayerStatCol.assists, 'Passes décisives'),
+          valueCell(
+            'CS',
+            _PlayerStatCol.cleanSheets,
+            'Clean sheets : matchs sans but encaissé',
+          ),
+          valueCell(
+            PlayerStat.manOfTheMatch.columnLabel,
+            _PlayerStatCol.hdm,
+            'Homme du match',
+          ),
+          valueCell('G', _PlayerStatCol.wins, 'Matchs gagnés'),
+          valueCell('N', _PlayerStatCol.draws, 'Matchs nuls'),
+          valueCell('P', _PlayerStatCol.losses, 'Matchs perdus'),
         ],
       ),
     );
