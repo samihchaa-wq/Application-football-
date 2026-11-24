@@ -15,12 +15,13 @@ import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 const _matchId = 'upcoming-1';
 
-MatchDetailsData _upcoming() => MatchDetailsData(
+MatchDetailsData _upcoming({Duration untilKickoff = const Duration(days: 3)}) =>
+    MatchDetailsData(
       matchId: _matchId,
       opponentId: 'opp',
       opponentName: 'FC Test',
       isInternal: false,
-      kickoffAt: DateTime.now().add(const Duration(days: 3)),
+      kickoffAt: DateTime.now().add(untilKickoff),
       status: 'a_venir',
       resultValidatedAt: null,
       location: 'domicile',
@@ -60,11 +61,14 @@ Future<void> _pump(
   MatchAvailabilityBoard? board,
   bool sportsEnabled = true,
   bool? routing = true,
+  Duration untilKickoff = const Duration(days: 3),
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        matchDetailsProvider(_matchId).overrideWith((ref) async => _upcoming()),
+        matchDetailsProvider(_matchId).overrideWith(
+          (ref) async => _upcoming(untilKickoff: untilKickoff),
+        ),
         sportsManagementEnabledProvider.overrideWithValue(sportsEnabled),
         sportsManagementRoutingStateProvider.overrideWithValue(routing),
         isAdminViewProvider.overrideWithValue(isAdmin),
@@ -158,9 +162,48 @@ void main() {
     expect(find.text('Effectif'), findsOneWidget);
     expect(find.text('Composition'), findsOneWidget);
   });
+
+  group('accès au direct depuis la fiche', () {
+    final board =
+        _board(convocationState: 'published', compositionPublished: true);
+
+    testWidgets('pas de carte « Suivre le direct » plusieurs jours avant',
+        (tester) async {
+      await _pump(tester, isAdmin: false, board: board);
+      expect(find.text('Suivre le direct'), findsNothing);
+    });
+
+    testWidgets('à 10 min du coup d’envoi, le joueur peut suivre le direct',
+        (tester) async {
+      await _pump(
+        tester,
+        isAdmin: false,
+        board: board,
+        untilKickoff: const Duration(minutes: 10),
+      );
+      expect(find.text('Suivre le direct'), findsOneWidget);
+    });
+
+    testWidgets('pendant le match, la carte reste là', (tester) async {
+      await _pump(
+        tester,
+        isAdmin: true,
+        board: board,
+        untilKickoff: const Duration(minutes: -30),
+      );
+      expect(find.text('Suivre le direct'), findsOneWidget);
+      expect(find.text('Effectif'), findsOneWidget);
+    });
+  });
 }
 
 class _FakeAuthRepository implements AuthRepository {
+  @override
+  bool get currentUserHasNoClub => false;
+
+  @override
+  Future<bool> isPlatformOperator() async => false;
+
   @override
   Stream<supabase.AuthState> get authStateChanges => const Stream.empty();
 

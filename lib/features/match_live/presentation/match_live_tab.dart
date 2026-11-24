@@ -7,6 +7,7 @@ import 'package:petit_filet/core/utils/match_window.dart';
 import 'package:petit_filet/features/sports_management/presentation/match_report_page.dart';
 import 'package:petit_filet/features/matches/data/match_info_repository.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/core/widgets/pf_status_banner.dart';
 import 'package:petit_filet/features/match_live/domain/match_live_session.dart';
 import 'package:petit_filet/features/match_live/domain/match_live_state_bundle.dart';
 import 'package:petit_filet/features/match_live/presentation/match_live_pilot.dart';
@@ -85,9 +86,32 @@ class MatchLiveTab extends ConsumerWidget {
             );
           }
           if (bundle.session.state != MatchLiveState.finished) {
-            final Widget child = isCoach
+            Widget child = isCoach
                 ? _CoachLiveView(matchId: matchId, bundle: bundle)
                 : _spectatorView(bundle);
+            // Un admin qui ne peut pas piloter ne voyait que la composition,
+            // sans rien pour lancer le direct ni savoir pourquoi : dans un
+            // club sans coach désigné, personne ne pouvait le démarrer.
+            if (!isCoach && canEdit && neverStarted) {
+              child = Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
+                    child: PfStatusBanner(
+                      title: 'Seul le coach de la saison lance le direct',
+                      message: 'Désigne-le dans Effectif (fiche du membre, '
+                          'bouton Coach), ou autorise les administrateurs '
+                          'dans Réglages du club, rubrique Mode live : '
+                          '« Direct : qui le pilote ».',
+                      compact: true,
+                    ),
+                  ),
+                  child,
+                ],
+              );
+            }
             return _LiveRealtimeBoundary(matchId: matchId, child: child);
           }
 

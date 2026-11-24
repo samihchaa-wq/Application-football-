@@ -5,6 +5,14 @@ import 'package:petit_filet/features/preferences/data/push_subscriptions_reposit
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+/// Écrans où le bandeau n'a rien à faire : le poste de contrôle de
+/// l'exploitant (pas de convocations), le bilan de saison plein écran et les
+/// étapes de connexion ou d'acceptation des conditions.
+bool pushBannerAllowedOn(String path) => !(path == '/control' ||
+    path.startsWith('/control/') ||
+    path == '/wrapped' ||
+    path.startsWith('/auth/'));
+
 /// Bandeau du haut de l'application quand cet appareil ne recevra pas les
 /// notifications du club sans que le joueur l'ait choisi.
 ///
@@ -97,11 +105,10 @@ class _PushDeviceBannerState extends ConsumerState<PushDeviceBanner> {
                 ? 'Notifications bloquées'
                 : 'Notifications désactivées',
             message: blocked
-                ? 'Ton téléphone n’affiche pas les notifications du club. '
-                    'Autorise-les dans ses réglages pour être prévenu des '
-                    'disponibilités et des convocations.'
-                : 'Tu ne reçois pas les notifications du club sur cet '
-                    'appareil : ouverture des disponibilités, convocations.',
+                // Court exprès : le bandeau reste en haut de chaque écran.
+                // « appareil » : il s'affiche aussi sur ordinateur.
+                ? 'Autorise-les dans les réglages de cet appareil.'
+                : 'Active-les pour être prévenu des convocations.',
             tone: PfStatusTone.warning,
             compact: true,
             action: Wrap(
@@ -109,7 +116,7 @@ class _PushDeviceBannerState extends ConsumerState<PushDeviceBanner> {
               children: [
                 TextButton(
                   onPressed: _busy ? null : (blocked ? _recheck : _enable),
-                  child: Text(blocked ? 'C’est fait' : 'Activer'),
+                  child: Text(blocked ? 'J’ai autorisé' : 'Activer'),
                 ),
                 TextButton(
                   onPressed: _busy ? null : _decline,

@@ -44,10 +44,38 @@ export function readPushStatusCode(error: unknown): number | null {
     : null;
 }
 
+/// Abonnement créé avec une autre clé d'envoi que celle du serveur. Apple
+/// répond 400 `{"reason":"VapidPkHashMismatch"}`, Google 403 « … do not
+/// correspond to the credentials used to create the subscriptions ». Ce
+/// refus est définitif pour ce point d'envoi : le téléphone doit se
+/// réabonner, ce qu'il fait seul à la prochaine ouverture de l'appli. Le
+/// garder faisait échouer chaque envoi suivant (39 échecs en une semaine,
+/// novembre 2026).
+export function isSubscriptionKeyMismatch(
+  statusCode: number | null,
+  body: unknown,
+): boolean {
+  if (typeof body !== "string") return false;
+  if (statusCode === 400) return body.includes("VapidPkHashMismatch");
+  if (statusCode === 403) {
+    return /do not correspond to the credentials used to create the subscriptions/i
+      .test(body);
+  }
+  return false;
+}
+
+function readPushBody(error: unknown): unknown {
+  return typeof error === "object" && error !== null
+    ? (error as { body?: unknown }).body
+    : undefined;
+}
+
 export function classifyPushFailure(
   statusCode: number | null,
+  body?: unknown,
 ): PushFailureClass {
   if (statusCode === 404 || statusCode === 410) return "expired";
+  if (isSubscriptionKeyMismatch(statusCode, body)) return "expired";
 
   if (
     statusCode === null ||
@@ -93,7 +121,7 @@ export async function executePushDelivery<T>(
       return { success: true, value, attempts, statusCode };
     } catch (error) {
       const statusCode = readPushStatusCode(error);
-      const failureClass = classifyPushFailure(statusCode);
+      const failureClass = classifyPushFailure(statusCode, readPushBody(error));
 
       if (failureClass === "retryable" && attempts < maxAttempts) {
         await sleep(pushRetryDelayMs(attempts));

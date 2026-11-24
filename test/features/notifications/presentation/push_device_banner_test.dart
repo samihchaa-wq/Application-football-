@@ -62,6 +62,14 @@ Future<void> _pump(
 }
 
 void main() {
+  test('bandeau absent du poste de contrôle, du bilan et de la connexion', () {
+    expect(pushBannerAllowedOn('/control'), isFalse);
+    expect(pushBannerAllowedOn('/wrapped'), isFalse);
+    expect(pushBannerAllowedOn('/auth/accept-terms'), isFalse);
+    expect(pushBannerAllowedOn('/matches'), isTrue);
+    expect(pushBannerAllowedOn('/controle-technique'), isTrue);
+  });
+
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   testWidgets(
@@ -138,7 +146,7 @@ void main() {
       expect(find.text('Notifications bloquées'), findsOneWidget);
       expect(find.text('Activer'), findsNothing);
 
-      await tester.tap(find.text('C’est fait'));
+      await tester.tap(find.text('J’ai autorisé'));
       await tester.pumpAndSettle();
 
       expect(find.textContaining('Toujours bloquées'), findsOneWidget);

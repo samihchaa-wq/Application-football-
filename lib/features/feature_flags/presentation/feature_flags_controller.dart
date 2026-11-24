@@ -209,7 +209,10 @@ class FeatureFlagsController extends AsyncNotifier<FeatureFlagsSnapshot> {
       state = const AsyncData(FeatureFlagsSnapshot.unavailable());
       return;
     }
-    state = const AsyncLoading();
+    // Garde la valeur courante pendant la relecture (voir
+    // sportsManagementEnabledProvider) : tirer pour actualiser ne fait plus
+    // disparaître les blocs du match.
+    state = const AsyncLoading<FeatureFlagsSnapshot>().copyWithPrevious(state);
     final next = await _loadFailClosed();
     if (_isCurrent(generation)) state = AsyncData(next);
   }
@@ -220,9 +223,14 @@ final featureFlagsControllerProvider =
   FeatureFlagsController.new,
 );
 
+/// Une simple relecture des réglages du même compte (retour dans
+/// l'application, ouverture depuis une notification, « Réessayer ») garde la
+/// dernière valeur lue : sinon la fiche d'un match affichait « Gestion
+/// sportive indisponible » pendant toute la relecture. Un changement de
+/// compte ou de session (`isReloading`), lui, repart de « coupé ».
 final sportsManagementEnabledProvider = Provider<bool>((ref) {
   final flags = ref.watch(featureFlagsControllerProvider);
-  if (flags.isLoading || flags.hasError) return false;
+  if (flags.hasError || flags.isReloading) return false;
   return flags.valueOrNull?.sportsManagement.enabled ?? false;
 });
 

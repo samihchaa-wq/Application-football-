@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:petit_filet/core/club/club_kits.dart';
 import 'package:petit_filet/core/club/match_kit_snapshot.dart';
+import 'package:petit_filet/core/sync/shared_data_sync.dart';
 import 'package:petit_filet/core/theme/app_spacing.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';

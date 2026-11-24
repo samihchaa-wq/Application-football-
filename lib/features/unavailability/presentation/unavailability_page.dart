@@ -307,7 +307,7 @@ class _UnavailabilityStateChip extends StatelessWidget {
         label,
         style: TextStyle(
           color: color,
-          fontSize: 11.5,
+          fontSize: 12,
           fontWeight: FontWeight.w400,
         ),
       ),

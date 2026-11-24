@@ -146,6 +146,19 @@ class AuthRepository {
     return clubId == null || '$clubId'.isEmpty;
   }
 
+  /// Vrai si ce compte est un compte éditeur (accès à la Console). Le serveur
+  /// est seul juge : il refuse la lecture de la Console aux autres comptes.
+  Future<bool> isPlatformOperator() async {
+    try {
+      await _client
+          .rpc('platform_control_overview')
+          .timeout(const Duration(seconds: 12));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Prénom et nom connus du compte de connexion (peuvent être vides).
   ({String firstName, String lastName}) get suggestedNames {
     final metadata = _client.auth.currentUser?.userMetadata ?? const {};

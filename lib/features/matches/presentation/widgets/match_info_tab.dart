@@ -248,7 +248,7 @@ class _EncounterChip extends StatelessWidget {
                 maxLines: 1,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 9,
+                  fontSize: 12,
                   fontWeight: FontWeight.w400,
                 ),
               ),

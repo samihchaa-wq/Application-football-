@@ -286,8 +286,15 @@ declare
 begin
   perform pg_temp.demo_as(v_admin);
   v_season := public.open_or_create_season(p_season_name);
+  -- get_or_create_opponent crée toujours : appelé pour chaque saison, il
+  -- doublait chaque adversaire et coupait leurs confrontations en deux.
   for v_number in 1..array_length(v_opponents, 1) loop
-    perform public.get_or_create_opponent(v_opponents[v_number]);
+    if not exists (
+      select 1 from public.opponents
+      where club_id = v_club and name = v_opponents[v_number]
+    ) then
+      perform public.get_or_create_opponent(v_opponents[v_number]);
+    end if;
   end loop;
   perform pg_temp.demo_as(null);
 
@@ -635,6 +642,12 @@ begin
   end if;
   if (select count(*) from public.seasons where club_id = v_club and status = 'archived') <> 1 then
     raise exception 'Démo : 1 saison terminée attendue.';
+  end if;
+  if exists (
+    select 1 from public.opponents where club_id = v_club
+    group by name having count(*) > 1
+  ) then
+    raise exception 'Démo : un adversaire existe en double.';
   end if;
   if not (select enabled from private.app_feature_flags
           where club_id = v_club and key = 'notifications_paused') then

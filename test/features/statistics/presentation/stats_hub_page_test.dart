@@ -88,6 +88,31 @@ void main() {
     expect(find.text('PD'), findsOneWidget);
   });
 
+  testWidgets('chaque colonne abrégée donne son nom complet', (tester) async {
+    repository.players[StatisticsPeriod.current] = [
+      _player('Karim', played: 12, goals: 7, assists: 3),
+    ];
+
+    await pumpStats(tester);
+
+    for (final fullName in [
+      'Matchs joués',
+      'Buts',
+      'Passes décisives',
+      'Clean sheets : matchs sans but encaissé',
+      'Homme du match',
+      'Matchs gagnés',
+      'Matchs nuls',
+      'Matchs perdus',
+    ]) {
+      expect(
+        find.byWidgetPredicate((w) => w is Tooltip && w.message == fullName),
+        findsOneWidget,
+        reason: fullName,
+      );
+    }
+  });
+
   testWidgets('trier par buts range les joueurs du meilleur au moins bon',
       (tester) async {
     repository.players[StatisticsPeriod.current] = [
@@ -536,6 +561,12 @@ class _FakeStatisticsRepository implements StatisticsRepository {
 }
 
 class _FakeAuthRepository implements AuthRepository {
+  @override
+  bool get currentUserHasNoClub => false;
+
+  @override
+  Future<bool> isPlatformOperator() async => false;
+
   final _events = StreamController<Never>.broadcast();
 
   @override

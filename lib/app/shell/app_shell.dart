@@ -242,36 +242,28 @@ class _AppShellState extends ConsumerState<AppShell>
           bottomNavigationBar: useRail || !statsEnabled
               ? null
               : Padding(
-                  // Barre flottante : détachée des bords, avec son relief.
-                  padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(26),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: .10),
-                      ),
-                      boxShadow: AppTheme.cardShadows,
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(26),
-                      child: NavigationBar(
-                        selectedIndex: _selectedIndex,
-                        labelBehavior:
-                            NavigationDestinationLabelBehavior.alwaysShow,
-                        onDestinationSelected: _selectDestination,
-                        destinations: const [
-                          NavigationDestination(
-                            icon: Icon(Icons.calendar_month_outlined),
-                            selectedIcon: Icon(Icons.calendar_month_rounded),
+                  // Deux gros boutons avec texte, détachés des bords.
+                  padding: const EdgeInsets.fromLTRB(14, 6, 14, 12),
+                  child: SafeArea(
+                    top: false,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ShellNavButton(
                             label: 'Calendrier',
+                            selected: _selectedIndex == 0,
+                            onTap: () => _selectDestination(0),
                           ),
-                          NavigationDestination(
-                            icon: Icon(Icons.leaderboard_outlined),
-                            selectedIcon: Icon(Icons.leaderboard_rounded),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ShellNavButton(
                             label: 'Statistiques',
+                            selected: _selectedIndex == 1,
+                            onTap: () => _selectDestination(1),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -294,49 +286,124 @@ class _DesktopNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NavigationRail(
-      selectedIndex: selectedIndex,
-      extended: extended,
-      minWidth: 72,
-      minExtendedWidth: 200,
-      groupAlignment: -.7,
-      labelType:
-          extended ? NavigationRailLabelType.none : NavigationRailLabelType.all,
-      onDestinationSelected: onSelected,
-      leading: Padding(
-        padding: const EdgeInsets.only(top: 20, bottom: 26),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset(
-              'assets/images/petit_filet_logo.webp',
-              width: 40,
-              height: 40,
-              fit: BoxFit.contain,
-              filterQuality: FilterQuality.high,
+    return SizedBox(
+      width: extended ? 220 : 160,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 20, bottom: 26),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/petit_filet_logo.webp',
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
+                ),
+                if (extended) ...[
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Text(
+                      ClubIdentity.appName,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                ],
+              ],
             ),
-            if (extended) ...[
-              const SizedBox(width: 10),
-              Text(
-                ClubIdentity.appName,
-                style: Theme.of(context).textTheme.titleLarge,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: ShellNavButton(
+              label: 'Calendrier',
+              selected: selectedIndex == 0,
+              onTap: () => onSelected(0),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: ShellNavButton(
+              label: 'Statistiques',
+              selected: selectedIndex == 1,
+              onTap: () => onSelected(1),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Bouton large de la barre du bas : texte seul, plein quand il est actif.
+@visibleForTesting
+class ShellNavButton extends StatelessWidget {
+  const ShellNavButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(18);
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      onTap: onTap,
+      excludeSemantics: true,
+      child: Material(
+        color: Colors.transparent,
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: radius,
+            gradient: selected
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppTheme.primaryBright, AppTheme.primary],
+                  )
+                : null,
+            color: selected ? null : AppTheme.surfaceHigh,
+            border: Border.all(
+              color: selected
+                  ? Colors.white.withValues(alpha: .22)
+                  : Colors.white.withValues(alpha: .10),
+            ),
+            boxShadow: AppTheme.cardShadows,
+          ),
+          child: InkWell(
+            borderRadius: radius,
+            onTap: onTap,
+            child: SizedBox(
+              height: 52,
+              child: Center(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: AppTheme.displayFont,
+                    fontSize: 17,
+                    letterSpacing: .6,
+                    color: selected ? Colors.white : Colors.white70,
+                  ),
+                ),
               ),
-            ],
-          ],
+            ),
+          ),
         ),
       ),
-      destinations: const [
-        NavigationRailDestination(
-          icon: Icon(Icons.calendar_month_outlined),
-          selectedIcon: Icon(Icons.calendar_month_rounded),
-          label: Text('Calendrier'),
-        ),
-        NavigationRailDestination(
-          icon: Icon(Icons.leaderboard_outlined),
-          selectedIcon: Icon(Icons.leaderboard_rounded),
-          label: Text('Statistiques'),
-        ),
-      ],
     );
   }
 }

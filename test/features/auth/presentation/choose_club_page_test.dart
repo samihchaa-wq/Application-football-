@@ -62,6 +62,12 @@ class _FakeAuthController extends AuthController {
 
 class _NoRepository implements AuthRepository {
   @override
+  bool get currentUserHasNoClub => false;
+
+  @override
+  Future<bool> isPlatformOperator() async => false;
+
+  @override
   Stream<supabase.AuthState> get authStateChanges => const Stream.empty();
 
   @override

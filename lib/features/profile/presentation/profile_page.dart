@@ -227,9 +227,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               TextButton.icon(
                 onPressed: busy ? null : _pickAndUploadPhoto,
                 icon: const Icon(Icons.photo_camera_outlined),
-                label: Text(
-                  'Photo : ${PlayerPhotoMode.fromPhotoUrl(profile?.photoUrl).label}',
-                ),
+                // « Photo : Type joueur » ne disait pas que le bouton sert à
+                // changer de photo.
+                label: const Text('Changer ma photo'),
               ),
               SizedBox(height: sectionGap),
               Card(
@@ -303,12 +303,21 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                       : () => setState(() => _birthDate = null),
                                 ),
                         ),
-                        child: InkWell(
-                          onTap: _savedDetails == null || busy
-                              ? null
-                              : _pickBirthDate,
-                          child: Text(
-                            _birthDate == null ? '' : formatDay(_birthDate!),
+                        // Sans nom, le lecteur d'écran annonçait un bouton
+                        // vide quand aucune date n'est choisie.
+                        child: Semantics(
+                          label: _birthDate == null
+                              ? 'Choisir la date de naissance'
+                              : 'Date de naissance : '
+                                  '${formatDay(_birthDate!)}, modifier',
+                          excludeSemantics: true,
+                          child: InkWell(
+                            onTap: _savedDetails == null || busy
+                                ? null
+                                : _pickBirthDate,
+                            child: Text(
+                              _birthDate == null ? '' : formatDay(_birthDate!),
+                            ),
                           ),
                         ),
                       ),

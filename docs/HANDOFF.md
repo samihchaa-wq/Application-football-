@@ -17,6 +17,16 @@
 - Non résolu : déconnexion gestionnaire (non reproduite), « Gestion sportive indisponible » sur lien direct quand le temps réel est coupé (docs/KYKY_A_TRAITER.md), remboursement total (Q5).
 - Non fait : Edge Functions Stripe non exécutées (edge-runtime non démarré), compositions/live en édition non capturés, migration Riverpod 3, nettoyage poussé (aucun fichier orphelin trouvé).
 
+## Session UI UX Pro Max du 24/11/2026 (branche claude/lucid-cannon-s0z1fc)
+
+- Fait (thème sombre actuel) : bandeau notifications raccourci, alertes rouges lisibles, légende du tableau des stats, onglets sélectionnés d'un seul rouge, fin des fonds gris hérités du thème clair, calendrier limité à 760 px sur ordinateur, titre « Banc (n) » sur toutes les compositions (sauf vidéo), en-tête de match compact partout, état vide + rappel du match avant le coup d'envoi, petits textes (Abonnement, −5 %, Changer ma photo, Convoqués).
+- Vérifié : analyze propre, 1514 tests verts, captures locales (téléphone 375 px et ordinateur 1280 px) sur Supabase local + club de démo.
+- Essayé puis annulé : marge latérale 16 px (débordements fiche joueur). Les marges restent 8 px (pages communes) ou 16 px (pages codées à la main).
+- Live (ajout) : rappel du match avant le coup d'envoi côté coach, libellés « Durée (min) » / « Système », boutons +/− du score plus visibles (zone tactile déjà 48 px, mesurée).
+- Live (déroulé testé en local : but, buteur, fin de match) : bandeau « buteur à désigner » remonté sous le score (il était hors écran), confirmations Fin / Recommencer expliquées, bandeau « Compte rendu du match » après la fin, messages d'information en bleu (AppTheme.info) au lieu du rouge des erreurs.
+- Non fait : changements de joueurs (glisser-déposer) non testés, texte agrandi, paysage, vrai téléphone ; barre du bas qui reste sur « Calendrier » dans Paramètres.
+- Non intégré : aucune PR ouverte (une fusion sur main publie en production).
+
 ## Règles impératives
 
 1. **Écriture uniquement dans `samihchaa-wq/Application-football-`.** Ne jamais modifier les dépôts, données, sites ni bases Supabase d'AS Grinta original ou de Carte soirée. Le dépôt AS Grinta peut être consulté en lecture seule pour comparer ses fonctionnalités et son interface.
@@ -69,3 +79,32 @@ Restent à vérifier sur GitHub avant intégration : PR #69 (+1 manuel), #72 (é
 - Vérifié : 1501 tests, analyse, formatage, rendu web local (téléphone + ordinateur) pour Calendrier, Prochain match, Match terminé, Statistiques, Effectif, Profil, Paramètres, Notifications, Liste d'attente, Armoire.
 - Pas vérifié : vrai téléphone ; direct, compositions en édition, écrans légaux et connexion en style sombre.
 - Pas fait : halo/bandes de fond (risque de page « fantôme » aux transitions), PR du thème Nuit (à demander par la propriétaire), Riverpod 3, test réseau/charge, bug déconnexion gestionnaire non reproduit.
+
+## 23/11/2026 (soir) — Audit de préparation + correctif (branche `claude/festive-tesla-mluqsd`)
+- Audit : analyse propre, tests verts, base en ligne à jour (81/81), cloisonnement vérifié en lecture seule (règle restrictive par club sur les tables, fonctions privilégiées toutes sous rôle cloisonné ou relues). Le garde-fou automatique existe déjà (test club_isolation + security_definer_exposure) : rien à ajouter.
+- Corrigé : « Gestion sportive indisponible » pendant chaque relecture des réglages (reprise, notification, actualisation). Test ajouté, 1 504 tests verts. Non vérifié sur vrai téléphone.
+- Réglé le 23/11 au soir : petitfilet.fr et www.petitfilet.fr (http et https) renvoient en 301 vers https://app.petitfilet.fr/ (règle de redirection Cloudflare « petitfilet.fr vers l'appli », vérifiée). L'appli reste sur app.petitfilet.fr.
+- Constats non traités : balise de statistiques Cloudflare bloquée par la CSP ; robots.txt renvoie la page de l'appli ; ~4 Mo au premier chargement.
+- Bloquants vente inchangés : identité éditeur/SIRET vides dans les textes légaux, aucun paiement ni événement Stripe jamais reçu en production, aucun essai sur vrai téléphone, restauration des photos jamais prouvée (#91), protection de main (#45) non vérifiée.
+
+## 24/11/2026 — Audit, 2e passe (hors légal, paiement test, téléphone)
+- Production (lecture seule) : seul club = **FC Démo** (aucun club client). 16 tâches planifiées, 0 échec sur 7 j. Aucun accès anonyme (tables, fonctions, fichiers). Aucun secret dans l'historique du dépôt public (838 commits). Fonctions sans connexion relues (account-email, calendar-feed) : limites de fréquence, jetons comparés en temps constant, pas de fuite d'existence de compte.
+- Local (copie + club démo, appli construite) : 33 écrans admin + 18 joueur, 0 erreur appli/serveur ; 320 px correct. 1 bouton sans nom (Profil), boutons « Afficher le menu » indiscernables au lecteur d'écran.
+- Corrigé sur cette branche : exercice de restauration (échouait car un seul club ; la restauration elle-même est bonne : 130 tables, 3 822 lignes, 6 s) ; surveillance horaire du site et du service de connexion (avant : base seulement).
+- Ouvert : remise à zéro de la démo échoue chaque nuit (secret GitHub `DEMO_PASSWORD` absent) ; iPhones abonnés avec l'ancienne clé push → échec 400 « VapidPkHashMismatch » à chaque envoi tant qu'ils n'ont pas rouvert l'appli (classé « permanent », abonnement gardé) ; 1re ouverture 8 s en bonne 4G, 22 s en réseau faible (2-3 s ensuite) ; rapports d'erreur perdus pour un compte sans club (club_isolation sur client_incident_log) ; get_club_rules ~90 ms à chaque ouverture.
+- Corrigé ensuite sur la même branche : abonnement push refusé pour mauvaise clé → retiré (le téléphone se réabonne à l'ouverture) ; compte sans club → incident ignoré sans erreur (migration 20261205000000, test pgTAP) ; get_club_rules en une requête (31 ms → 1 ms en local, résultat identique ; migration 20261205010000) ; accessibilité (date de naissance, « Actions pour <nom> ») ; robots.txt ; balise mobile-web-app-capable ; préchargement de main.dart.js et flutter_bootstrap.js (gain local 0,6 s, à mesurer en production) ; message de chargement lent rassurant à 15 s, « Recharger » seulement à 45 s.
+- Écarté après mesure : découper le code (Flutter + Dart = 2/3 du poids, gain ~1 s sur 19 en réseau faible).
+- Suite pgTAP complète rejouée en local : écarts = version pgTAP locale (codes d'erreur corrects, texte attendu différent) et données de démo ; aucun fichier en échec ne touche aux fonctions modifiées. La CI fait foi.
+- Reste à la propriétaire : secret GitHub DEMO_PASSWORD ; Web Analytics Cloudflare (couper, ou l'autoriser dans la CSP) ; Riverpod 3 et mises à jour majeures (go_router, share_plus, connectivity_plus) = chantier séparé.
+
+## 24/11/2026 — Audit, 3e passe (parcours complets en local, PR #231)
+- Testé de bout en bout sur copie locale (fonctions lancées avec Deno, e-mails capturés par un faux service) : inscription (cas d'erreur clairs ; e-mail obligatoire ; limites de fréquence ; code d'invitation non devinable), confirmation d'e-mail (2e compte même adresse refusé), mot de passe oublié (seulement compte validé), validation par l'admin, 1re connexion, photo (« Autre » ; « Type joueur » exige un PNG détouré), export « mes données » (rien d'un autre membre), suppression de compte, réponse Présent/Absent vue par l'admin, version ordinateur 1280/1920 px.
+- Corrigé : fuite par le temps de réponse de « mot de passe oublié » (envoi après la réponse) ; inscription sans preuve de consentement possible si profil hors du club annoncé (échoue et supprime) ; noms complets dans « En attente » ; écran admin d'un match rafraîchi en direct sur signal sportif ; en-têtes de statistiques nommés ; « Cet appareil » dans le bandeau ; Permissions-Policy ; versions épinglées des types Edge Runtime.
+- Non testé de bout en bout : le direct (exige réponses, convocations, compo publiée) ; e-mails réels via Brevo ; vrai téléphone.
+- Base locale : `private.local_default_club` capte les inscriptions (normal en local, absent en production — vérifié).
+
+## 24/11/2026 — Audit, 4e passe (après-match, saison, démo — PR #236)
+- Testé en local : points des pronostics (serveur = écran, au centime) ; liste d'attente ; armoire à badges ; fin de saison puis bilan (calculé par la tâche de 5 min, bouton « Ma saison » ensuite) ; création de la saison suivante ; création d'un match ; indisponibilité (le joueur passe absent sur le match couvert) ; poste de contrôle.
+- Corrigé : pronostic fermé d'un match fini/annulé (« le Live est ouvert » était faux) ; dates des confrontations coupées ; nom de nouvelle saison déjà pris (refus serveur) ; refus de fin de saison expliqués (24 h de correction, matchs restants) ; bandeau notifications sur poste de contrôle / bilan / connexion ; calendrier admin montrant les autres saisons après une mise à jour en direct ; noms longs coupés au milieu d'un mot ; adversaires de la démo en double (vérifié en ligne : 6 doublons, corrigé à la prochaine remise à zéro nocturne).
+- Copie locale instable : chaque redémarrage du poste coupe Docker (relancer `dockerd`, puis `docker start` de la base ; si le réseau manque, refaire `supabase stop/start`).
+

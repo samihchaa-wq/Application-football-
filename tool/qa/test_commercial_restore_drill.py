@@ -60,5 +60,20 @@ class RefusalTest(unittest.TestCase):
         self.assertEqual(drill.main([]), 1)
 
 
+class ClubCountTest(unittest.TestCase):
+    """Un seul club en production ne doit plus faire échouer l'exercice."""
+
+    def test_no_active_club_stops_the_drill(self):
+        with self.assertRaises(drill.UnsafeRestore):
+            drill._cross_club_check_possible([])
+
+    def test_one_club_is_checked_without_cross_club_test(self):
+        self.assertFalse(drill._cross_club_check_possible([["u1", "c1"]]))
+
+    def test_two_clubs_enable_the_cross_club_test(self):
+        self.assertTrue(
+            drill._cross_club_check_possible([["u1", "c1"], ["u2", "c2"]]))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -112,6 +112,9 @@ class _RosterList extends ConsumerWidget {
                       ].join(' · '),
                     ),
                     trailing: PopupMenuButton<String>(
+                      // Nom propre à la ligne : sinon le lecteur d'écran
+                      // annonce « Afficher le menu » sur chaque joueur.
+                      tooltip: 'Actions pour ${player.displayName}',
                       onSelected: (action) async {
                         final repo = ref.read(rosterRepositoryProvider);
                         try {

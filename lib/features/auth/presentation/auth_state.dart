@@ -36,6 +36,7 @@ class AuthState {
     this.isAuthenticated = false,
     this.hasSession = false,
     this.needsClub = false,
+    this.isPlatformOperator = false,
     this.profile,
     this.error,
   });
@@ -55,6 +56,9 @@ class AuthState {
   /// Connecté mais rattaché à aucun club : la
   /// personne doit encore rejoindre un club ou en créer un.
   final bool needsClub;
+
+  /// Compte éditeur sans club : il va directement à la Console.
+  final bool isPlatformOperator;
   final AuthProfile? profile;
   final String? error;
 
@@ -68,6 +72,7 @@ class AuthState {
     bool? isAuthenticated,
     bool? hasSession,
     bool? needsClub,
+    bool? isPlatformOperator,
     AuthProfile? profile,
     String? error,
     bool clearError = false,
@@ -79,6 +84,7 @@ class AuthState {
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       hasSession: hasSession ?? this.hasSession,
       needsClub: needsClub ?? this.needsClub,
+      isPlatformOperator: isPlatformOperator ?? this.isPlatformOperator,
       profile: clearProfile ? null : (profile ?? this.profile),
       error: clearError ? null : (error ?? this.error),
     );
@@ -201,6 +207,19 @@ class AuthController extends StateNotifier<AuthState> {
 
   Future<void> refreshProfile() => _refreshProfile();
 
+  Future<void> _detectPlatformOperator() async {
+    var operator = false;
+    try {
+      operator = await _repository.isPlatformOperator();
+    } catch (_) {
+      operator = false;
+    }
+    if (!mounted || !state.needsClub) return;
+    if (operator != state.isPlatformOperator) {
+      state = state.copyWith(isPlatformOperator: operator);
+    }
+  }
+
   Future<void> _drainRefreshQueue({
     required bool initialRetryAfterSignIn,
   }) async {
@@ -237,6 +256,7 @@ class AuthController extends StateNotifier<AuthState> {
           clearProfile: true,
           clearError: true,
         );
+        unawaited(_detectPlatformOperator());
         return;
       }
       if (profile == null && hasSession) {
@@ -263,6 +283,7 @@ class AuthController extends StateNotifier<AuthState> {
         isAuthenticated: profile != null && profile.isActive,
         hasSession: hasSession,
         needsClub: false,
+        isPlatformOperator: false,
         profile: profile,
         clearProfile: profile == null,
         clearError: true,
@@ -299,7 +320,21 @@ class AuthController extends StateNotifier<AuthState> {
       if (refreshGeneration != _authGeneration) return;
       _loadingFallback?.cancel();
       final hasSession = _repository.hasSession;
-      if (hasSession) {
+      if (hasSession && _repository.currentUserHasNoClub) {
+        // Le serveur refuse de renvoyer un profil à un compte sans club
+        // (erreur, pas réponse vide) : ce n'est pas une panne.
+        _profileFromCache = false;
+        unawaited(_profileCache?.remember(null));
+        state = state.copyWith(
+          isLoading: false,
+          isAuthenticated: false,
+          hasSession: true,
+          needsClub: true,
+          clearProfile: true,
+          clearError: true,
+        );
+        unawaited(_detectPlatformOperator());
+      } else if (hasSession) {
         state = state.copyWith(
           isLoading: false,
           hasSession: true,

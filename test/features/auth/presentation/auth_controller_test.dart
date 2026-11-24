@@ -65,6 +65,39 @@ void main() {
       expect(repository.signOutCalls, 0);
     });
 
+    test('account without club is not shown as a connection outage', () async {
+      final repository = _FakeAuthRepository(
+        fetchResults: [StateError('Profile not found')],
+        hasSession: true,
+        noClub: true,
+      );
+      final controller = AuthController(repository);
+      addTearDown(controller.dispose);
+
+      await _flushAsync();
+
+      expect(controller.state.needsClub, isTrue);
+      expect(controller.state.error, isNull);
+      expect(controller.state.hasSession, isTrue);
+    });
+
+    test('account without club that is an operator is flagged for the console',
+        () async {
+      final repository = _FakeAuthRepository(
+        fetchResults: [StateError('Profile not found')],
+        hasSession: true,
+        noClub: true,
+        operator: true,
+      );
+      final controller = AuthController(repository);
+      addTearDown(controller.dispose);
+
+      await _flushAsync();
+
+      expect(controller.state.needsClub, isTrue);
+      expect(controller.state.isPlatformOperator, isTrue);
+    });
+
     test('signIn authenticates after the post-login refresh', () async {
       final initialRefresh = Completer<AuthProfile?>();
       final repository = _FakeAuthRepository(
@@ -339,13 +372,15 @@ Future<void> _flushAsync() async {
 
 class _FakeAuthRepository implements AuthRepository {
   @override
-  bool get currentUserHasNoClub => false;
+  bool get currentUserHasNoClub => noClub;
 
   @override
   ({String firstName, String lastName}) get suggestedNames =>
       (firstName: '', lastName: '');
 
   _FakeAuthRepository({
+    this.noClub = false,
+    this.operator = false,
     required List<Object?> fetchResults,
     this.signInError,
     this.signOutError,
@@ -353,6 +388,12 @@ class _FakeAuthRepository implements AuthRepository {
     this.hasSession = false,
     this.emitSignedOutDuringSignOut = false,
   }) : _fetchResults = List<Object?>.from(fetchResults);
+
+  final bool noClub;
+  final bool operator;
+
+  @override
+  Future<bool> isPlatformOperator() async => operator;
 
   final List<Object?> _fetchResults;
   final Object? signInError;

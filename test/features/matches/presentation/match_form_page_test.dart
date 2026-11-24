@@ -288,6 +288,12 @@ class _SignedInController extends AuthController {
 }
 
 class _FakeAuthRepository implements AuthRepository {
+  @override
+  bool get currentUserHasNoClub => false;
+
+  @override
+  Future<bool> isPlatformOperator() async => false;
+
   final _events = StreamController<supabase.AuthState>.broadcast();
 
   @override

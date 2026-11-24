@@ -100,10 +100,17 @@ class _MemberContactDialogState extends State<_MemberContactDialog> {
                       onPressed: () => setState(() => _birthDate = null),
                     ),
             ),
-            child: InkWell(
-              key: const Key('member-contact-birth-date'),
-              onTap: _pickDate,
-              child: Text(birthDate == null ? '' : formatDay(birthDate)),
+            // Sans nom, le lecteur d'écran annonçait un bouton vide.
+            child: Semantics(
+              label: birthDate == null
+                  ? 'Choisir la date de naissance'
+                  : 'Date de naissance : ${formatDay(birthDate)}, modifier',
+              excludeSemantics: true,
+              child: InkWell(
+                key: const Key('member-contact-birth-date'),
+                onTap: _pickDate,
+                child: Text(birthDate == null ? '' : formatDay(birthDate)),
+              ),
             ),
           ),
           const SizedBox(height: 12),

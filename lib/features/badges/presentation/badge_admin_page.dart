@@ -251,8 +251,8 @@ class _BadgeAdminPageState extends ConsumerState<BadgeAdminPage> {
                 clipBehavior: Clip.antiAlias,
                 child: TabBar(
                   indicatorSize: TabBarIndicatorSize.tab,
-                  indicatorColor: AppTheme.accent,
-                  labelColor: AppTheme.accent,
+                  indicatorColor: AppTheme.primaryBright,
+                  labelColor: AppTheme.primaryBright,
                   unselectedLabelColor: AppTheme.textSecondary,
                   dividerColor: Colors.transparent,
                   tabs: [
