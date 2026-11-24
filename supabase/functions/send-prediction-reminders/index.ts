@@ -1,4 +1,4 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2.95.0/edge-runtime.d.ts";
 
 const headers = {
   "Access-Control-Allow-Origin": "*",

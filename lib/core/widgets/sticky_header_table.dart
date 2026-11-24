@@ -399,10 +399,15 @@ class SortableHeaderCell extends StatelessWidget {
     this.flex,
     this.align = TextAlign.center,
     this.style,
+    this.tooltip,
     super.key,
   });
 
   final String label;
+
+  /// Nom complet d'une colonne abrégée (« J » → « Matchs joués ») : affiché
+  /// au survol ou à l'appui long, et lu par les lecteurs d'écran.
+  final String? tooltip;
   final int? flex;
   final bool active;
   final bool descending;
@@ -452,8 +457,12 @@ class SortableHeaderCell extends StatelessWidget {
       ),
     );
 
+    final message = tooltip;
+    final described =
+        message == null ? cell : Tooltip(message: message, child: cell);
+
     final flexValue = flex;
-    if (flexValue == null) return cell;
-    return Expanded(flex: flexValue, child: cell);
+    if (flexValue == null) return described;
+    return Expanded(flex: flexValue, child: described);
   }
 }

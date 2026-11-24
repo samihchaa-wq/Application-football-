@@ -34,6 +34,20 @@ def stamp_index() -> None:
             raise SystemExit(f"Référence de shell introuvable dans {INDEX_PATH}: {source}")
         html = html.replace(source, stamped, 1)
 
+    # Préchargements : même adresse, encodée comme encodeURIComponent, que
+    # celle que demanderont app_shell.js (flutter_bootstrap.js) et le
+    # chargeur Flutter (mainJsPath), sinon le fichier serait téléchargé deux
+    # fois.
+    encoded = encode_version(WEB_VERSION)
+    preloads = {
+        'href="flutter_bootstrap.js"': f'href="flutter_bootstrap.js?v={encoded}"',
+        'href="main.dart.js"': f'href="main.dart.js?v={encoded}"',
+    }
+    for source, stamped in preloads.items():
+        if html.count(source) != 1:
+            raise SystemExit(f"Préchargement introuvable ou ambigu dans {INDEX_PATH}: {source}")
+        html = html.replace(source, stamped, 1)
+
     INDEX_PATH.write_text(html, encoding="utf-8")
 
 

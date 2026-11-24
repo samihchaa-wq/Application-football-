@@ -522,20 +522,30 @@
     block.className = 'asg-stalled';
     block.setAttribute('role', 'alert');
 
+    // Une première ouverture sur un réseau faible prend 20 s environ (3 Mo
+    // à télécharger, mesuré en novembre 2026). Proposer « Recharger » dès
+    // 15 s faisait tout recommencer : on rassure d'abord, et le bouton
+    // n'apparaît qu'après 45 s.
     var text = document.createElement('p');
     text.style.margin = '0';
-    text.textContent = 'Le chargement prend plus de temps que d’habitude.';
-
-    var retry = document.createElement('button');
-    retry.type = 'button';
-    retry.textContent = 'Recharger';
-    retry.addEventListener('click', function () {
-      window.location.reload();
-    });
+    text.textContent = 'Première ouverture : l’appli se télécharge. Sur un ' +
+      'réseau lent, cela peut prendre jusqu’à une minute.';
 
     block.appendChild(text);
-    block.appendChild(retry);
     inner.appendChild(block);
+
+    splashStalledTimer = setTimeout(function () {
+      splashStalledTimer = null;
+      if (splashDismissed) return;
+      text.textContent = 'Le chargement prend plus de temps que d’habitude.';
+      var retry = document.createElement('button');
+      retry.type = 'button';
+      retry.textContent = 'Recharger';
+      retry.addEventListener('click', function () {
+        window.location.reload();
+      });
+      block.appendChild(retry);
+    }, 30000);
   }
 
   window.addEventListener('flutter-first-frame', function () {
