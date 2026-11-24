@@ -12,18 +12,16 @@ void main() {
     ClubIdentityCache.restoredUserId = null;
   });
 
-  test('restaure nom et couleurs du compte avant le premier rendu', () async {
+  test('restaure le nom du compte, jamais d’anciennes couleurs', () async {
     await ClubIdentityCache.save(
       'u1',
       name: 'FC Test',
       shortName: 'FCT',
-      primaryHex: '#1A4AC0',
-      secondaryHex: '#FFD700',
     );
     expect(ClubIdentity.name, ClubIdentity.defaultName);
     await ClubIdentityCache.restore('u1');
     expect(ClubIdentity.name, 'FC Test');
-    expect(AppTheme.primary, isNot(AppTheme.defaultPrimary));
+    expect(AppTheme.primary, AppTheme.defaultPrimary);
     expect(ClubIdentityCache.restoredUserId, 'u1');
   });
 

@@ -371,7 +371,7 @@ class ShellNavButton extends StatelessWidget {
                 ? LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [AppTheme.primaryBright, AppTheme.primary],
+                    colors: [AppTheme.primaryLit, AppTheme.primary],
                   )
                 : null,
             color: selected ? null : AppTheme.surfaceHigh,

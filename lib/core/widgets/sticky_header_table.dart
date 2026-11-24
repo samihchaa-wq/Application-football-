@@ -30,7 +30,7 @@ const pfTableRankGap = 6.0;
 
 TextStyle pfTableHeaderTextStyle(BuildContext context, {Color? color}) {
   return TextStyle(
-    color: color ?? AppTheme.textSecondary,
+    color: color ?? AppTheme.textPrimary,
     fontSize: pfTableHeaderFontSize,
     fontWeight: FontWeight.w400,
     letterSpacing: .55,
