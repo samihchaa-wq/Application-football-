@@ -16,6 +16,7 @@
 | stripe-best-practices | github.com/stripe/ai | f10dc33 | MIT |
 | webapp-testing | github.com/anthropics/skills | e4bb5d9 | Apache-2.0 |
 | email-template-write, email-template-check | github.com/getbrevo/brevo-skills | 88db934 | MIT |
+| ponytail | github.com/DietrichGebert/ponytail | main (2026-11-24) | MIT |
 
 Copies figées : pas de mise à jour automatique. Relire avant de mettre à jour.
 

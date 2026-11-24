@@ -69,7 +69,7 @@ class MatchesRepository {
   Future<List<Map<String, dynamic>>> fetchOpponents() async {
     final response = await _client
         .from('opponents')
-        .select('id, name, address')
+        .select('id, name, address, stadium_name')
         .order('name');
     return (response as List)
         .map((row) => Map<String, dynamic>.from(row))

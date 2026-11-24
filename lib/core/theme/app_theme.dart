@@ -342,6 +342,7 @@ abstract final class AppTheme {
             final lit = primaryLit;
             return DecoratedBox(
               decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(radiusSm),
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -458,7 +459,7 @@ abstract final class AppTheme {
           foregroundColor: WidgetStateProperty.resolveWith((states) {
             return states.contains(WidgetState.selected)
                 ? primaryBright
-                : textSecondary;
+                : textPrimary;
           }),
           side: WidgetStateProperty.all(
             BorderSide(color: outline.withValues(alpha: .28)),

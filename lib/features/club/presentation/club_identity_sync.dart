@@ -70,8 +70,6 @@ final clubIdentitySyncProvider = Provider<void>((ref) {
             sessionIdentity,
             name: club.name,
             shortName: club.shortName,
-            primaryHex: club.primaryColor,
-            secondaryHex: club.secondaryColor,
             logoUrl: ref.read(clubRepositoryProvider).logoUrl(club),
           ),
         );

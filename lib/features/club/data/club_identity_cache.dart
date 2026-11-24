@@ -32,11 +32,11 @@ abstract final class ClubIdentityCache {
       final name = data['name'];
       final shortName = data['short'];
       if (name is! String || shortName is! String) return;
-      final primary = AppTheme.parseHex(data['primary'] as String?);
-      final secondary = AppTheme.parseHex(data['secondary'] as String?);
       ClubIdentity.set(name: name, shortName: shortName);
-      AppTheme.applyClubColors(primary: primary, secondary: secondary);
-      ClubKits.setClubColors(primary: primary, secondary: secondary);
+      // Tous les clubs partagent les couleurs Petit Filet : les couleurs
+      // gardées (anciennes) faisaient clignoter l'app en vert au lancement.
+      AppTheme.resetClubColors();
+      ClubKits.setClubColors();
       final logo = data['logo'];
       ClubIdentity.setLogoUrl(logo is String ? logo : null);
       restoredUserId = userId;
@@ -49,8 +49,6 @@ abstract final class ClubIdentityCache {
     String? userId, {
     required String name,
     required String shortName,
-    String? primaryHex,
-    String? secondaryHex,
     String? logoUrl,
   }) async {
     if (userId == null || userId.isEmpty) return;
@@ -61,8 +59,6 @@ abstract final class ClubIdentityCache {
         jsonEncode({
           'name': name,
           'short': shortName,
-          'primary': primaryHex,
-          'secondary': secondaryHex,
           'logo': logoUrl,
         }),
       );
