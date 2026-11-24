@@ -74,7 +74,7 @@ void main() {
     await showPicker(tester, selected: JerseyOption.orange, onChanged: (_) {});
 
     final selectedTile = find.ancestor(
-      of: find.byIcon(Icons.check_circle_rounded),
+      of: find.byIcon(Icons.check_rounded),
       matching: find.byType(JerseyOptionTile),
     );
     expect(selectedTile, findsOneWidget);
@@ -87,7 +87,7 @@ void main() {
       of: selectedTile,
       matching: find.byType(KitJersey),
     );
-    final checkRect = tester.getRect(find.byIcon(Icons.check_circle_rounded));
+    final checkRect = tester.getRect(find.byIcon(Icons.check_rounded));
     expect(tester.getRect(jersey).contains(checkRect.center), isTrue);
   });
 

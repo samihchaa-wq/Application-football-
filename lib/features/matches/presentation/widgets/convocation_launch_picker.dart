@@ -166,12 +166,10 @@ class _ChoiceButton extends StatelessWidget {
       ),
     );
     if (selected) {
+      // Texte blanc par défaut du bouton : l'orange sur fond rouge était
+      // quasi illisible (contraste inférieur à 3:1).
       return FilledButton(
-        style: style.copyWith(
-          foregroundColor: WidgetStatePropertyAll(
-            Theme.of(context).colorScheme.secondary,
-          ),
-        ),
+        style: style,
         onPressed: enabled ? onPressed : null,
         child: Text(label, maxLines: 1),
       );

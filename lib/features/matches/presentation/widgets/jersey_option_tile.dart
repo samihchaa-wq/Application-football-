@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/club/club_kits.dart';
 import 'package:petit_filet/features/matches/domain/jersey_option.dart';
 import 'package:petit_filet/features/matches/presentation/widgets/kit_jersey.dart';
@@ -81,60 +82,81 @@ class JerseyOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = Theme.of(context).colorScheme.secondary;
+    // Le maillot choisi doit se voir au premier coup d'œil, quelle que soit la
+    // couleur du maillot : cadre rouge + fond teinté autour de la tuile, et
+    // coche franche. (Avant : une petite coche orange de 20 px sur le torse,
+    // invisible sur un maillot bleu ou foncé.) La bordure garde la même
+    // épaisseur choisie ou non : rien ne bouge au toucher.
+    final accent = AppTheme.primaryBright;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
-      child: AspectRatio(
-        aspectRatio: 96 / 128,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              bottom: 20,
-              child: Center(
-                child: SizedBox(
-                  width: 88,
-                  child: Stack(
-                    children: [
-                      // Le choix concerne la tenue du match : celle des
-                      // joueurs. Le gardien porte sa déclinaison automatique.
-                      KitJersey(kit: option.kit),
-                      if (selected)
-                        Positioned(
-                          top: 35,
-                          right: 22,
-                          child: DecoratedBox(
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.check_circle_rounded,
-                              size: 20,
-                              color: accent,
+      child: Container(
+        key: selected ? const ValueKey('jersey-selected-frame') : null,
+        decoration: BoxDecoration(
+          color: selected ? AppTheme.primary.withValues(alpha: .16) : null,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            width: 2,
+            color: selected ? accent : Colors.transparent,
+          ),
+        ),
+        child: AspectRatio(
+          aspectRatio: 96 / 128,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                bottom: 20,
+                child: Center(
+                  child: SizedBox(
+                    width: 88,
+                    child: Stack(
+                      children: [
+                        // Le choix concerne la tenue du match : celle des
+                        // joueurs. Le gardien porte sa déclinaison automatique.
+                        KitJersey(kit: option.kit),
+                        if (selected)
+                          Positioned(
+                            top: 33,
+                            right: 18,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: AppTheme.primary,
+                                shape: BoxShape.circle,
+                                border:
+                                    Border.all(color: Colors.white, width: 2),
+                              ),
+                              child: const Padding(
+                                padding: EdgeInsets.all(2),
+                                child: Icon(
+                                  Icons.check_rounded,
+                                  size: 18,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Text(
-                option.label,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: selected ? accent : null,
-                    ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Text(
+                  option.label,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: selected ? accent : null,
+                      ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -127,10 +127,8 @@ class _ChoiceButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (selected) {
+      // Texte blanc par défaut : l'orange sur fond rouge était illisible.
       return FilledButton(
-        style: FilledButton.styleFrom(
-          foregroundColor: Theme.of(context).colorScheme.secondary,
-        ),
         onPressed: enabled ? onPressed : null,
         child: Text(label),
       );

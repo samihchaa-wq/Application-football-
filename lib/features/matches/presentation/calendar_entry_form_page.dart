@@ -1290,6 +1290,7 @@ class _CompactChoiceButton extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
     );
     if (selected) {
+      // Texte blanc par défaut : l'orange sur fond rouge était illisible.
       return FilledButton(
         style: style.copyWith(
           // Fond uni arrondi : le dégradé du thème ignorait les coins ronds.
