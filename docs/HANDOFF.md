@@ -27,6 +27,12 @@
 - Non fait : changements de joueurs (glisser-déposer) non testés, texte agrandi, paysage, vrai téléphone ; barre du bas qui reste sur « Calendrier » dans Paramètres.
 - Non intégré : aucune PR ouverte (une fusion sur main publie en production).
 
+## Session UI UX Pro Max, 2e lot (24/11/2026, branche claude/lucid-cannon-s0z1fc)
+
+- Fait : calendrier joueur recalé sur le prochain match quand une carte grandit après l'ouverture (vérifié avant/après sur captures) ; consignes de champs non tronquées (helperMaxLines 4 dans le thème) ; « Répète le mot de passe » ; profil sans mention en double ; page Saison réorganisée (Finir la saison secondaire, confirmation rouge) ; « Joueurs de la saison » au lieu d'un 3e « Effectif » ; bascule Manuel/Automatique des badges en rouge.
+- Test auth_register M03 : on quitte le champ e-mail avant de chercher le bouton (le focus ramenait la page vers le champ).
+- Données de test locales modifiées (match J9 remis au 29/11, match J10 du 02/12 créé) : base locale uniquement.
+
 ## Règles impératives
 
 1. **Écriture uniquement dans `samihchaa-wq/Application-football-`.** Ne jamais modifier les dépôts, données, sites ni bases Supabase d'AS Grinta original ou de Carte soirée. Le dépôt AS Grinta peut être consulté en lecture seule pour comparer ses fonctionnalités et son interface.

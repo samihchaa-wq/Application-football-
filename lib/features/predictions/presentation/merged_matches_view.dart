@@ -79,6 +79,33 @@ class _MergedMatchesViewState extends ConsumerState<MergedMatchesView> {
   bool _userHasScrolled = false;
   String? _lastRequestToken;
 
+  /// Moment où la liste a été placée sur le match mis en avant.
+  DateTime? _positionedAt;
+
+  /// Juste après l'ouverture, une carte peut encore grandir (bloc Présent /
+  /// Absent chargé après coup) et repousser le match mis en avant sous le bas
+  /// de l'écran. Pendant quelques secondes, et tant que la personne n'a pas
+  /// fait défiler, on se recale dessus.
+  bool _handleScrollMetrics(ScrollMetricsNotification notification) {
+    final placedAt = _positionedAt;
+    if (placedAt == null ||
+        _userHasScrolled ||
+        DateTime.now().difference(placedAt) > const Duration(seconds: 5)) {
+      return false;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _focusMatchKey.currentContext;
+      if (!mounted || _userHasScrolled || ctx == null || !ctx.mounted) return;
+      Scrollable.ensureVisible(
+        ctx,
+        alignment: 0,
+        alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
+        duration: Duration.zero,
+      );
+    });
+    return false;
+  }
+
   bool _handleScrollNotification(ScrollNotification notification) {
     if (notification is ScrollStartNotification &&
         notification.dragDetails != null) {
@@ -233,7 +260,10 @@ class _MergedMatchesViewState extends ConsumerState<MergedMatchesView> {
       await Future<void>.delayed(const Duration(milliseconds: 60));
     }
     // Placée et stable : la liste peut apparaître.
-    if (mounted && _lastFocusSignature == signature) _reveal();
+    if (mounted && _lastFocusSignature == signature) {
+      _positionedAt = DateTime.now();
+      _reveal();
+    }
   }
 
   @override
@@ -343,100 +373,103 @@ class _MergedMatchesViewState extends ConsumerState<MergedMatchesView> {
           duration: const Duration(milliseconds: 120),
           child: RefreshIndicator(
             onRefresh: _refresh,
-            child: NotificationListener<ScrollNotification>(
-              onNotification: _handleScrollNotification,
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  // Sur grand écran, les cartes gardent une largeur de lecture
-                  // (760 px) au lieu d'écarter les deux équipes de 1 000 px.
-                  // La marge est mise dans la liste, pas autour : la molette
-                  // fait défiler même pointée sur les côtés.
-                  final inset = ((constraints.maxWidth - _feedMaxWidth) / 2)
-                      .clamp(0.0, double.infinity);
-                  return CustomScrollView(
-                    controller: _scrollController,
-                    scrollCacheExtent:
-                        const ScrollCacheExtent.pixels(cacheExtent),
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    slivers: [
-                      SliverPadding(
-                        padding: EdgeInsets.symmetric(horizontal: inset),
-                        sliver: SliverMainAxisGroup(
-                          slivers: [
-                            const SliverToBoxAdapter(
-                              child: SizedBox(height: AppSpacing.microGap),
-                            ),
-                            if (isAdmin &&
-                                !state.isLoading &&
-                                state.error == null)
-                              SliverPadding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.screenGutter,
-                                ),
-                                sliver: SliverToBoxAdapter(
-                                  child: ClubStartGuide(
-                                    hasMatches: entries.isNotEmpty,
-                                    onCreateMatch: _openCreateMatch,
-                                  ),
-                                ),
+            child: NotificationListener<ScrollMetricsNotification>(
+              onNotification: _handleScrollMetrics,
+              child: NotificationListener<ScrollNotification>(
+                onNotification: _handleScrollNotification,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    // Sur grand écran, les cartes gardent une largeur de lecture
+                    // (760 px) au lieu d'écarter les deux équipes de 1 000 px.
+                    // La marge est mise dans la liste, pas autour : la molette
+                    // fait défiler même pointée sur les côtés.
+                    final inset = ((constraints.maxWidth - _feedMaxWidth) / 2)
+                        .clamp(0.0, double.infinity);
+                    return CustomScrollView(
+                      controller: _scrollController,
+                      scrollCacheExtent:
+                          const ScrollCacheExtent.pixels(cacheExtent),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      slivers: [
+                        SliverPadding(
+                          padding: EdgeInsets.symmetric(horizontal: inset),
+                          sliver: SliverMainAxisGroup(
+                            slivers: [
+                              const SliverToBoxAdapter(
+                                child: SizedBox(height: AppSpacing.microGap),
                               ),
-                            if (state.isLoading)
-                              const SliverPadding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.screenGutter,
-                                ),
-                                sliver:
-                                    SliverToBoxAdapter(child: _LoadingCard()),
-                              )
-                            else if (state.error != null)
-                              SliverPadding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.screenGutter,
-                                ),
-                                sliver: SliverToBoxAdapter(
-                                  child: _MessageCard(
-                                    title: 'Matchs indisponibles',
-                                    icon: Icons.wifi_off_rounded,
-                                    message: state.error!,
-                                    tone: PfEmptyTone.alert,
+                              if (isAdmin &&
+                                  !state.isLoading &&
+                                  state.error == null)
+                                SliverPadding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.screenGutter,
+                                  ),
+                                  sliver: SliverToBoxAdapter(
+                                    child: ClubStartGuide(
+                                      hasMatches: entries.isNotEmpty,
+                                      onCreateMatch: _openCreateMatch,
+                                    ),
                                   ),
                                 ),
-                              )
-                            else if (entries.isEmpty)
-                              const SliverPadding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.screenGutter,
-                                ),
-                                sliver: SliverToBoxAdapter(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      _MessageCard(
-                                        title: 'Aucun match',
-                                        message:
-                                            'Le premier match apparaîtra ici dès qu’il sera créé.',
-                                      ),
-                                    ],
+                              if (state.isLoading)
+                                const SliverPadding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.screenGutter,
                                   ),
+                                  sliver:
+                                      SliverToBoxAdapter(child: _LoadingCard()),
+                                )
+                              else if (state.error != null)
+                                SliverPadding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.screenGutter,
+                                  ),
+                                  sliver: SliverToBoxAdapter(
+                                    child: _MessageCard(
+                                      title: 'Matchs indisponibles',
+                                      icon: Icons.wifi_off_rounded,
+                                      message: state.error!,
+                                      tone: PfEmptyTone.alert,
+                                    ),
+                                  ),
+                                )
+                              else if (entries.isEmpty)
+                                const SliverPadding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.screenGutter,
+                                  ),
+                                  sliver: SliverToBoxAdapter(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: [
+                                        _MessageCard(
+                                          title: 'Aucun match',
+                                          message:
+                                              'Le premier match apparaîtra ici dès qu’il sera créé.',
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              else
+                                ..._buildFeedSlivers(
+                                  sections: feedSections,
+                                  focusKey: focusKey,
+                                  focusMatchKey: _focusMatchKey,
+                                  isAdmin: isAdmin,
+                                  now: now,
                                 ),
-                              )
-                            else
-                              ..._buildFeedSlivers(
-                                sections: feedSections,
-                                focusKey: focusKey,
-                                focusMatchKey: _focusMatchKey,
-                                isAdmin: isAdmin,
-                                now: now,
-                              ),
-                            const SliverToBoxAdapter(
-                                child: SizedBox(height: 40)),
-                          ],
+                              const SliverToBoxAdapter(
+                                  child: SizedBox(height: 40)),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  );
-                },
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
           ),
