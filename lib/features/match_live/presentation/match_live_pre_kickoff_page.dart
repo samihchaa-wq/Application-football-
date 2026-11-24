@@ -14,6 +14,8 @@ import 'package:petit_filet/features/sports_management/presentation/widgets/comp
 import 'package:petit_filet/features/sports_management/presentation/widgets/composition_kit_scope.dart';
 import 'package:petit_filet/features/sports_management/presentation/widgets/match_squad_editor.dart';
 import 'package:flutter/material.dart';
+import 'package:petit_filet/features/matches/presentation/widgets/upcoming_match_fixture_header.dart';
+import 'package:petit_filet/core/widgets/pf_empty_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Avant le coup d'envoi suivi : reprend la composition publiée, permet de
@@ -424,14 +426,22 @@ class MatchLivePreKickoffSpectatorView extends ConsumerWidget {
           child: PfLoader.page(message: 'Chargement de la composition…'),
         );
       }
+      // Une phrase seule au milieu d'un écran vide ne disait ni quoi
+      // attendre ni quoi faire : état vide complet, comme ailleurs.
+      final failed = published?.hasError == true;
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Text(
-            published?.hasError == true
+          child: PfEmptyState(
+            icon: failed ? Icons.wifi_off_rounded : Icons.groups_outlined,
+            tone: failed ? PfEmptyTone.alert : PfEmptyTone.neutral,
+            title: failed
                 ? 'Impossible de charger la composition.'
                 : 'Composition non publiée.',
-            textAlign: TextAlign.center,
+            message: failed
+                ? 'Vérifie ta connexion, puis tire l’écran vers le bas pour '
+                    'réessayer.'
+                : 'Elle s’affichera ici dès que le coach l’aura publiée.',
           ),
         ),
       );
@@ -441,6 +451,9 @@ class MatchLivePreKickoffSpectatorView extends ConsumerWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       children: [
+        // Le Live masque l'encadré du match : sans ce rappel, l'écran
+        // d'avant-match ne disait ni contre qui ni à quelle heure.
+        UpcomingMatchFixtureHeader(matchId: bundle.session.matchId),
         MediaQuery.withClampedTextScaling(
           maxScaleFactor: 1,
           child: MatchCompositionKitScope(

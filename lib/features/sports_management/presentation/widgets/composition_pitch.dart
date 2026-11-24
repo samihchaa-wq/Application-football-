@@ -190,7 +190,13 @@ class CompositionPitchWithBench extends StatelessWidget {
     required this.bench,
     this.maxWidth = 520,
     this.pitchKey,
+    this.showBenchTitle = true,
   });
+
+  /// Titre « Banc (n) » au-dessus des remplaçants. Sans lui, la colonne de
+  /// gauche ne disait pas qu'il s'agit du banc. Retiré dans la présentation
+  /// vidéo, qui a sa propre mise en scène.
+  final bool showBenchTitle;
 
   final List<MatchCompositionEntry> field;
   final List<MatchCompositionEntry> bench;
@@ -240,7 +246,11 @@ class CompositionPitchWithBench extends StatelessWidget {
                 SizedBox(
                   width: benchWidth,
                   height: _pitchHeight,
-                  child: _CompositionBench(entries: bench, columns: columns),
+                  child: _CompositionBench(
+                    entries: bench,
+                    columns: columns,
+                    showTitle: showBenchTitle,
+                  ),
                 ),
                 const SizedBox(width: _pitchGap),
                 SizedBox(
@@ -257,10 +267,15 @@ class CompositionPitchWithBench extends StatelessWidget {
 }
 
 class _CompositionBench extends StatelessWidget {
-  const _CompositionBench({required this.entries, required this.columns});
+  const _CompositionBench({
+    required this.entries,
+    required this.columns,
+    required this.showTitle,
+  });
 
   final List<MatchCompositionEntry> entries;
   final int columns;
+  final bool showTitle;
 
   @override
   Widget build(BuildContext context) {
@@ -277,6 +292,19 @@ class _CompositionBench extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (showTitle) ...[
+                Text(
+                  'Banc (${entries.length})',
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  style: const TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                const SizedBox(height: 6),
+              ],
               for (var row = 0; row < rows; row++) ...[
                 if (row > 0)
                   const SizedBox(

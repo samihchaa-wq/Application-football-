@@ -645,6 +645,7 @@ class _CompositionPresentationPageState
                           Opacity(
                             opacity: frame.handoff,
                             child: CompositionPitchWithBench(
+                              showBenchTitle: false,
                               field: data.field,
                               bench: data.bench,
                               maxWidth: 420,

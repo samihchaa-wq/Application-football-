@@ -244,13 +244,12 @@ class _PitchWithBench extends StatelessWidget {
                     // Même titre que le compte rendu : sans lui, la colonne
                     // de gauche ne disait pas qu'il s'agit des remplaçants.
                     Text(
-                      'Banc\n(${bench.length})',
+                      'Banc (${bench.length})',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: AppTheme.textSecondary,
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        height: 1.2,
                       ),
                     ),
                     const SizedBox(height: 8),
