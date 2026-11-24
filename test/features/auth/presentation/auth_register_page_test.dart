@@ -59,7 +59,7 @@ void main() {
       _password,
     );
     await tester.enterText(
-      find.widgetWithText(TextField, 'Confirme ton mot de passe'),
+      find.widgetWithText(TextField, 'Répète le mot de passe'),
       _password,
     );
     if (consent) await giveConsent(tester);
@@ -285,6 +285,10 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(email, 'karim@example.com');
 
+    // Le champ e-mail garde le focus et ramènerait la page vers lui :
+    // comme une vraie personne, on quitte le champ avant de descendre.
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
     final submit = find.widgetWithText(FilledButton, 'Créer mon compte');
     await tester.ensureVisible(submit);
     await tester.pumpAndSettle();

@@ -329,7 +329,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                       'récupération du compte.'
                   : 'Sert à retrouver ton compte si tu perds ton mot '
                       'de passe. Un lien de confirmation te sera envoyé.',
-              helperMaxLines: 2,
+              helperMaxLines: 4,
               prefixIcon: const Icon(Icons.mail_outline),
             ),
           ),
@@ -351,7 +351,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                   decoration: InputDecoration(
                     labelText: 'Mot de passe',
                     helperText: PasswordPolicy.helperText,
-                    helperMaxLines: 2,
+                    helperMaxLines: 4,
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       tooltip: _obscurePassword
@@ -375,7 +375,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                   textInputAction: TextInputAction.done,
                   onSubmitted: (_) => _submitting ? null : _submit(),
                   decoration: const InputDecoration(
-                    labelText: 'Confirme ton mot de passe',
+                    labelText: 'Répète le mot de passe',
                     prefixIcon: Icon(Icons.lock_outline),
                   ),
                 ),

@@ -401,6 +401,10 @@ abstract final class AppTheme {
       ),
       iconTheme: const IconThemeData(color: textSecondary, size: 22),
       inputDecorationTheme: InputDecorationTheme(
+        // Les consignes sous un champ (règles du mot de passe…) étaient
+        // coupées par « … » à la première ligne : elles restent lisibles.
+        helperMaxLines: 4,
+        errorMaxLines: 4,
         filled: true,
         fillColor: surface,
         contentPadding: const EdgeInsets.symmetric(

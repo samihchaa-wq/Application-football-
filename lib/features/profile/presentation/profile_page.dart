@@ -288,9 +288,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         isEmpty: _birthDate == null,
                         decoration: InputDecoration(
                           labelText: 'Date de naissance (optionnel)',
-                          helperText: 'Téléphone et date de naissance sont '
-                              'visibles par les membres de ton club.',
-                          helperMaxLines: 2,
                           isDense: true,
                           enabled: _savedDetails != null,
                           suffixIcon: _birthDate == null
@@ -327,8 +324,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                           _detailsFailed
                               ? 'Téléphone et date de naissance '
                                   'indisponibles pour le moment.'
-                              : 'Visibles par les membres du club dans '
-                                  'l’Effectif.',
+                              // Une seule mention (il y en avait deux qui
+                              // disaient la même chose l'une sous l'autre).
+                              : 'Téléphone et date de naissance sont visibles '
+                                  'par les membres du club dans l’Effectif.',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ),
@@ -560,7 +559,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         decoration: const InputDecoration(
                           labelText: 'Nouveau mot de passe',
                           helperText: PasswordPolicy.helperText,
-                          helperMaxLines: 2,
+                          helperMaxLines: 4,
                         ),
                       ),
                       const SizedBox(height: 12),

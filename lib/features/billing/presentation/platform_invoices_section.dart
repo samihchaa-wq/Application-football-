@@ -418,7 +418,7 @@ class _SellerDialogState extends State<_SellerDialog> {
                 labelText: 'Nom',
                 helperText: 'Tel qu’inscrit, suivi de « EI ». '
                     'Exemple : Prénom NOM EI – Petit Filet',
-                helperMaxLines: 2,
+                helperMaxLines: 4,
               ),
             ),
             TextField(

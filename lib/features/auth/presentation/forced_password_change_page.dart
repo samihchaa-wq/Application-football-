@@ -179,7 +179,7 @@ class _ForcedPasswordChangePageState
                               decoration: InputDecoration(
                                 labelText: 'Nouveau mot de passe',
                                 helperText: PasswordPolicy.helperText,
-                                helperMaxLines: 2,
+                                helperMaxLines: 4,
                                 prefixIcon: const Icon(Icons.lock_outline),
                                 suffixIcon: IconButton(
                                   tooltip: _obscure
