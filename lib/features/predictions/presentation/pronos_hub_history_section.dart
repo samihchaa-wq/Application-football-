@@ -205,7 +205,7 @@ class _CalendarMatchCard extends ConsumerWidget {
 
     if (match.isFinished) {
       background = const Color(0xFF1B2128);
-      outline = const Color(0xFF6B7885);
+      outline = AppTheme.outline;
       statusColor = const Color(0xFFA9B4BF);
       dateColor = const Color(0xFFA9B4BF);
       statusLabel = 'Terminé';
@@ -217,8 +217,8 @@ class _CalendarMatchCard extends ConsumerWidget {
       statusLabel = 'Prochain';
     } else {
       background = const Color(0xFF14261D);
-      outline = const Color(0xFF3FAE7A);
-      statusColor = const Color(0xFF5BDDA0);
+      outline = AppTheme.success;
+      statusColor = AppTheme.success;
       dateColor = const Color(0xFFA8D8BF);
       statusLabel = 'À venir';
     }

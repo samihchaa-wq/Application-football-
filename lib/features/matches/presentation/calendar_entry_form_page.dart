@@ -1324,20 +1324,22 @@ class _CriterionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final background = Color.alphaBlend(
-      colors.primary.withValues(alpha: lighter ? 0.14 : 0.06),
-      colors.surface,
-    );
+    // Gris-bleu comme les autres cartes de l'appli : les blocs de ce
+    // formulaire étaient teintés de bordeaux, un fond d'une autre couleur que
+    // partout ailleurs. Les deux nuances alternées gardent les blocs distincts.
+    final background = lighter
+        ? Color.alphaBlend(
+            AppTheme.surfaceHigh.withValues(alpha: .55),
+            AppTheme.surface,
+          )
+        : AppTheme.surface;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: colors.primary.withValues(alpha: lighter ? 0.28 : 0.18),
-        ),
+        border: Border.all(color: AppTheme.outline.withValues(alpha: .28)),
       ),
       child: child,
     );

@@ -250,6 +250,7 @@ class _AppShellState extends ConsumerState<AppShell>
                       children: [
                         Expanded(
                           child: ShellNavButton(
+                            icon: Icons.calendar_month_outlined,
                             label: 'Calendrier',
                             selected: _selectedIndex == 0,
                             onTap: () => _selectDestination(0),
@@ -258,6 +259,7 @@ class _AppShellState extends ConsumerState<AppShell>
                         const SizedBox(width: 12),
                         Expanded(
                           child: ShellNavButton(
+                            icon: Icons.bar_chart_outlined,
                             label: 'Statistiques',
                             selected: _selectedIndex == 1,
                             onTap: () => _selectDestination(1),
@@ -320,6 +322,7 @@ class _DesktopNavigation extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: ShellNavButton(
+              icon: Icons.calendar_month_outlined,
               label: 'Calendrier',
               selected: selectedIndex == 0,
               onTap: () => onSelected(0),
@@ -329,6 +332,7 @@ class _DesktopNavigation extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: ShellNavButton(
+              icon: Icons.bar_chart_outlined,
               label: 'Statistiques',
               selected: selectedIndex == 1,
               onTap: () => onSelected(1),
@@ -347,8 +351,12 @@ class ShellNavButton extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    this.icon,
   });
 
+  /// Une destination de navigation porte une icône ET un texte : le texte
+  /// seul se parcourt moins vite que le couple.
+  final IconData? icon;
   final String label;
   final bool selected;
   final VoidCallback onTap;
@@ -388,16 +396,31 @@ class ShellNavButton extends StatelessWidget {
             child: SizedBox(
               height: 52,
               child: Center(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontFamily: AppTheme.displayFont,
-                    fontSize: 17,
-                    letterSpacing: .6,
-                    color: selected ? Colors.white : Colors.white70,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (icon != null) ...[
+                      Icon(
+                        icon,
+                        size: 22,
+                        color: selected ? Colors.white : Colors.white70,
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    Flexible(
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: AppTheme.displayFont,
+                          fontSize: 17,
+                          letterSpacing: .6,
+                          color: selected ? Colors.white : Colors.white70,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

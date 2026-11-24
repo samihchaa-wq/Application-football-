@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'dart:io';
 
 import 'package:petit_filet/core/logging/app_logger.dart';
@@ -6,7 +7,6 @@ import 'package:petit_filet/core/utils/app_formats.dart';
 import 'package:petit_filet/core/utils/match_window.dart';
 import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:petit_filet/features/predictions/presentation/widgets/inline_match_prediction_card.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 
@@ -67,19 +67,19 @@ void main() {
     test('AS Grinta est vert à domicile comme à l’extérieur', () {
       expect(
         predictionOddAccentForSide(isHomeSide: true, isOwnHome: true),
-        const Color(0xFF1B8A4B),
+        AppTheme.success,
       );
       expect(
         predictionOddAccentForSide(isHomeSide: false, isOwnHome: false),
-        const Color(0xFF1B8A4B),
+        AppTheme.success,
       );
       expect(
         predictionOddAccentForSide(isHomeSide: false, isOwnHome: true),
-        const Color(0xFFC62A3B),
+        AppTheme.error,
       );
       expect(
         predictionOddAccentForSide(isHomeSide: true, isOwnHome: false),
-        const Color(0xFFC62A3B),
+        AppTheme.error,
       );
     });
   });

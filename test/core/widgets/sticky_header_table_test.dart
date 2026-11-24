@@ -54,4 +54,58 @@ void main() {
       expect(afterHeaderA.dx, lessThan(beforeHeaderA.dx));
     },
   );
+
+  Widget table({required double width, required double minWidth}) =>
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: width,
+            height: 300,
+            child: StickyHeaderTableCard(
+              minWidth: minWidth,
+              pinnedHeader: const Text('Joueur'),
+              scrollableHeader: const Row(
+                children: [
+                  Expanded(child: Text('A')),
+                  Expanded(child: Text('B'))
+                ],
+              ),
+              rows: [
+                StickyTableRow(
+                  pinned: const Text('Alice'),
+                  scrollable: const Row(
+                    children: [
+                      Expanded(child: Text('1')),
+                      Expanded(child: Text('2'))
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+  double hintOpacity(WidgetTester tester) => tester
+      .widget<AnimatedOpacity>(find.byKey(const ValueKey('table-scroll-hint')))
+      .opacity;
+
+  testWidgets(
+      'un tableau plus large que l’écran montre l’indice de défilement '
+      'jusqu’au bout de la dernière colonne', (tester) async {
+    await tester.pumpWidget(table(width: 360, minWidth: 700));
+    await tester.pumpAndSettle();
+    expect(hintOpacity(tester), 1);
+
+    await tester.drag(find.text('1'), const Offset(-600, 0));
+    await tester.pumpAndSettle();
+    expect(hintOpacity(tester), 0);
+  });
+
+  testWidgets('un tableau qui tient en largeur n’affiche aucun indice',
+      (tester) async {
+    await tester.pumpWidget(table(width: 600, minWidth: 300));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('table-scroll-hint')), findsNothing);
+  });
 }

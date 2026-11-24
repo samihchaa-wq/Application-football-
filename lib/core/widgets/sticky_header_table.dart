@@ -285,7 +285,9 @@ class _StickyHeaderTableCardState extends State<StickyHeaderTableCard> {
             list = RefreshIndicator(onRefresh: widget.onRefresh!, child: list);
           }
 
-          return SizedBox(
+          final overflowsSideways =
+              widget.pinnedWidth + contentWidth > constraints.maxWidth + 1;
+          final table = SizedBox(
             height: constraints.maxHeight,
             child: Column(
               children: [
@@ -325,6 +327,64 @@ class _StickyHeaderTableCardState extends State<StickyHeaderTableCard> {
                 Expanded(child: list),
               ],
             ),
+          );
+          if (!overflowsSideways) return table;
+
+          // Colonnes cachées à droite : un dégradé + une flèche au bord le
+          // disent, tant qu'il reste quelque chose à découvrir en glissant.
+          return Stack(
+            children: [
+              table,
+              Positioned(
+                top: 0,
+                bottom: 0,
+                right: 0,
+                width: 34,
+                child: ListenableBuilder(
+                  listenable: _headerController,
+                  builder: (context, _) {
+                    final position = _headerController.hasClients
+                        ? _headerController.position
+                        : null;
+                    // Avant la première mise en page, la longueur du défilement
+                    // n'est pas connue : on affiche l'indice par défaut.
+                    final more = position == null ||
+                        !position.hasContentDimensions ||
+                        position.pixels < position.maxScrollExtent - 1;
+                    return IgnorePointer(
+                      child: AnimatedOpacity(
+                        key: const ValueKey('table-scroll-hint'),
+                        duration: const Duration(milliseconds: 160),
+                        opacity: more ? 1 : 0,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: [
+                                AppTheme.surface.withValues(alpha: 0),
+                                AppTheme.surface.withValues(alpha: .92),
+                              ],
+                            ),
+                          ),
+                          child: const Align(
+                            alignment: Alignment.centerRight,
+                            child: Padding(
+                              padding: EdgeInsets.only(right: 2),
+                              child: Icon(
+                                Icons.chevron_right,
+                                size: 20,
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           );
         },
       ),

@@ -757,7 +757,7 @@ class _PredictionsTable extends StatelessWidget {
     final oneTeamExact = prediction.scoreOwn == actualOwn ||
         prediction.scoreOpponent == actualOpponent;
     if (sameGap || oneTeamExact) return AppTheme.reward;
-    return const Color(0xFF39E784);
+    return AppTheme.success;
   }
 
   Widget _predictionRow(

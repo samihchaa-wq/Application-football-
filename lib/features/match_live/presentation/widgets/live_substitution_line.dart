@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
 
 /// Un remplacement, écrit avec des flèches plutôt qu'avec « entre / sort » :
 /// flèche verte vers le haut pour l'entrant, flèche rouge vers le bas pour
@@ -17,8 +18,8 @@ class LiveSubstitutionLine extends StatelessWidget {
   /// Complément affiché à la suite, typiquement la minute (« 45' »).
   final String? trailingText;
 
-  static const _inColor = Color(0xFF27AE60);
-  static const _outColor = Color(0xFFE74C3C);
+  static const _inColor = AppTheme.success;
+  static const _outColor = AppTheme.error;
 
   /// Version texte, pour les dialogues de confirmation et l'accessibilité.
   static String describe({
