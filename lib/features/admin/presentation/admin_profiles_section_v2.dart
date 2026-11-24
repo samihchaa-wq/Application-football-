@@ -617,8 +617,13 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
                   Row(
                     children: [
                       Expanded(
+                        // Nom complet : avec le seul prénom, deux « Lina » en
+                        // attente étaient impossibles à distinguer avant de
+                        // valider (identifiant pas encore attribué).
                         child: Text(
-                          profile.displayName,
+                          profile.fullName.trim().isEmpty
+                              ? profile.displayName
+                              : profile.fullName,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                       ),

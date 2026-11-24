@@ -73,9 +73,25 @@ void main() {
     await tester.tap(find.textContaining('En attente'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Maxime'), findsOneWidget);
+    expect(find.text('Maxime Test'), findsOneWidget);
     expect(find.text('Karim'), findsNothing);
     expect(find.text('Valider ce compte'), findsOneWidget);
+  });
+
+  testWidgets(
+      'deux comptes en attente au même prénom se distinguent par leur nom',
+      (tester) async {
+    repository.profiles = [
+      _profile('p-2', 'Lina', status: 'pending', lastName: 'Martin'),
+      _profile('p-3', 'Lina', status: 'pending', lastName: 'Durand'),
+    ];
+
+    await pumpAdmin(tester);
+    await tester.tap(find.textContaining('En attente'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Lina Martin'), findsOneWidget);
+    expect(find.text('Lina Durand'), findsOneWidget);
   });
 
   testWidgets('l’administration retrouve les deux onglets d’AS Grinta',
@@ -329,11 +345,12 @@ AdminProfileItem _profile(
   String firstName, {
   required String status,
   String role = 'pronostiqueur',
+  String lastName = 'Test',
 }) =>
     AdminProfileItem(
       id: id,
       firstName: firstName,
-      lastName: 'Test',
+      lastName: lastName,
       surnom: '',
       username: firstName.toLowerCase(),
       passwordSet: true,
