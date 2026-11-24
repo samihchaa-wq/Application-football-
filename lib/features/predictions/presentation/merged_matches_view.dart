@@ -345,75 +345,98 @@ class _MergedMatchesViewState extends ConsumerState<MergedMatchesView> {
             onRefresh: _refresh,
             child: NotificationListener<ScrollNotification>(
               onNotification: _handleScrollNotification,
-              child: CustomScrollView(
-                controller: _scrollController,
-                scrollCacheExtent: const ScrollCacheExtent.pixels(cacheExtent),
-                physics: const AlwaysScrollableScrollPhysics(),
-                slivers: [
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: AppSpacing.microGap),
-                  ),
-                  if (isAdmin && !state.isLoading && state.error == null)
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.screenGutter,
-                      ),
-                      sliver: SliverToBoxAdapter(
-                        child: ClubStartGuide(
-                          hasMatches: entries.isNotEmpty,
-                          onCreateMatch: _openCreateMatch,
-                        ),
-                      ),
-                    ),
-                  if (state.isLoading)
-                    const SliverPadding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: AppSpacing.screenGutter,
-                      ),
-                      sliver: SliverToBoxAdapter(child: _LoadingCard()),
-                    )
-                  else if (state.error != null)
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.screenGutter,
-                      ),
-                      sliver: SliverToBoxAdapter(
-                        child: _MessageCard(
-                          title: 'Matchs indisponibles',
-                          icon: Icons.wifi_off_rounded,
-                          message: state.error!,
-                          tone: PfEmptyTone.alert,
-                        ),
-                      ),
-                    )
-                  else if (entries.isEmpty)
-                    const SliverPadding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: AppSpacing.screenGutter,
-                      ),
-                      sliver: SliverToBoxAdapter(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _MessageCard(
-                              title: 'Aucun match',
-                              message:
-                                  'Le premier match apparaîtra ici dès qu’il sera créé.',
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // Sur grand écran, les cartes gardent une largeur de lecture
+                  // (760 px) au lieu d'écarter les deux équipes de 1 000 px.
+                  // La marge est mise dans la liste, pas autour : la molette
+                  // fait défiler même pointée sur les côtés.
+                  final inset = ((constraints.maxWidth - _feedMaxWidth) / 2)
+                      .clamp(0.0, double.infinity);
+                  return CustomScrollView(
+                    controller: _scrollController,
+                    scrollCacheExtent:
+                        const ScrollCacheExtent.pixels(cacheExtent),
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverPadding(
+                        padding: EdgeInsets.symmetric(horizontal: inset),
+                        sliver: SliverMainAxisGroup(
+                          slivers: [
+                            const SliverToBoxAdapter(
+                              child: SizedBox(height: AppSpacing.microGap),
                             ),
+                            if (isAdmin &&
+                                !state.isLoading &&
+                                state.error == null)
+                              SliverPadding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.screenGutter,
+                                ),
+                                sliver: SliverToBoxAdapter(
+                                  child: ClubStartGuide(
+                                    hasMatches: entries.isNotEmpty,
+                                    onCreateMatch: _openCreateMatch,
+                                  ),
+                                ),
+                              ),
+                            if (state.isLoading)
+                              const SliverPadding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.screenGutter,
+                                ),
+                                sliver:
+                                    SliverToBoxAdapter(child: _LoadingCard()),
+                              )
+                            else if (state.error != null)
+                              SliverPadding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.screenGutter,
+                                ),
+                                sliver: SliverToBoxAdapter(
+                                  child: _MessageCard(
+                                    title: 'Matchs indisponibles',
+                                    icon: Icons.wifi_off_rounded,
+                                    message: state.error!,
+                                    tone: PfEmptyTone.alert,
+                                  ),
+                                ),
+                              )
+                            else if (entries.isEmpty)
+                              const SliverPadding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.screenGutter,
+                                ),
+                                sliver: SliverToBoxAdapter(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      _MessageCard(
+                                        title: 'Aucun match',
+                                        message:
+                                            'Le premier match apparaîtra ici dès qu’il sera créé.',
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            else
+                              ..._buildFeedSlivers(
+                                sections: feedSections,
+                                focusKey: focusKey,
+                                focusMatchKey: _focusMatchKey,
+                                isAdmin: isAdmin,
+                                now: now,
+                              ),
+                            const SliverToBoxAdapter(
+                                child: SizedBox(height: 40)),
                           ],
                         ),
                       ),
-                    )
-                  else
-                    ..._buildFeedSlivers(
-                      sections: feedSections,
-                      focusKey: focusKey,
-                      focusMatchKey: _focusMatchKey,
-                      isAdmin: isAdmin,
-                      now: now,
-                    ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 40)),
-                ],
+                    ],
+                  );
+                },
               ),
             ),
           ),
@@ -473,6 +496,9 @@ String _entryKey(_FeedEntry entry) {
 /// Un en-tête collant reste épinglé au bloc qui le contient : celui de la
 /// phase précédente se fait pousser hors de l'écran par le suivant au lieu de
 /// s'empiler avec lui et de rogner le haut des cartes.
+/// Largeur maximale des cartes du calendrier sur grand écran.
+const double _feedMaxWidth = 760;
+
 List<Widget> _buildFeedSlivers({
   required List<_FeedSection> sections,
   required String? focusKey,

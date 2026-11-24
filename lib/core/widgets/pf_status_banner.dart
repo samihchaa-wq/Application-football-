@@ -24,7 +24,7 @@ class PfStatusBanner extends StatelessWidget {
     final theme = Theme.of(context);
     final (accent, icon) = switch (tone) {
       PfStatusTone.info => (
-          AppTheme.primaryBright,
+          AppTheme.info,
           Icons.info_outline_rounded,
         ),
       PfStatusTone.success => (

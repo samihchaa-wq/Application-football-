@@ -18,8 +18,6 @@ class ClubSubscriptionSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Abonnement', style: theme.textTheme.titleMedium),
-        const SizedBox(height: 8),
         subscription.when(
           loading: () => const LinearProgressIndicator(),
           error: (_, __) =>

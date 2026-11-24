@@ -426,8 +426,10 @@ class _LiveScore extends StatelessWidget {
         fontFeatures: const [FontFeature.tabularFigures()],
       ),
     );
-    final buttonSize = wide ? 36.0 : 30.0;
-    final iconSize = wide ? 28.0 : 22.0;
+    // Le coach marque un but au bord du terrain, souvent d'une main : des
+    // boutons plus visibles. (La zone tactile, elle, fait déjà 48 px.)
+    final buttonSize = wide ? 44.0 : 40.0;
+    final iconSize = wide ? 30.0 : 26.0;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [

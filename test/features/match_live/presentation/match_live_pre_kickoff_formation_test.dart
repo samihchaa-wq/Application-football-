@@ -49,7 +49,7 @@ void main() {
       (tester) async {
         await _pump(tester, bundle: _bundle(fieldPlayers: 1));
 
-        expect(find.text('Dispo'), findsOneWidget);
+        expect(find.text('Système'), findsOneWidget);
         expect(
           find.byType(DropdownButtonFormField<String>),
           findsOneWidget,
@@ -87,7 +87,7 @@ void main() {
         }
         expect(
           tester.widget<TextField>(durationField).decoration?.labelText,
-          'Temps',
+          'Durée (min)',
         );
 
         // Temps et dispositif se partagent la place restante.
@@ -148,7 +148,7 @@ void main() {
           canEdit: false,
         );
 
-        expect(find.text('Dispo'), findsNothing);
+        expect(find.text('Système'), findsNothing);
         expect(find.byTooltip('Ajouter un joueur'), findsNothing);
         expect(find.byTooltip('Retirer un joueur'), findsNothing);
         expect(find.text('Démarrer le match'), findsNothing);

@@ -16,6 +16,7 @@ import 'package:petit_filet/features/sports_management/domain/match_squad_editin
 import 'package:petit_filet/features/sports_management/presentation/widgets/match_goal_actions_editor.dart';
 import 'package:petit_filet/features/sports_management/presentation/widgets/match_squad_editor.dart';
 import 'package:flutter/material.dart';
+import 'package:petit_filet/core/widgets/pf_status_banner.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Écran « Compte rendu » : deux onglets, une seule validation.
@@ -568,6 +569,21 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (!report.isEditable) const _ReadOnlyNotice(),
+        // Juste après « Fin du match », la page change sans prévenir et le
+        // bouton de validation est tout en bas : on dit où l'on est et quoi
+        // faire.
+        if (widget.embedded && _editable && !report.isCorrection)
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 10, 16, 0),
+            child: PfStatusBanner(
+              key: ValueKey('match-report-next-step'),
+              title: 'Compte rendu du match',
+              message: 'Vérifie le score, l’effectif et les buteurs, puis '
+                  'touche « Valider le compte rendu » en bas de page.',
+              tone: PfStatusTone.info,
+              compact: true,
+            ),
+          ),
         _ReportScoreHeader(
           opponentName: report.opponentName,
           scoreOwn: _scoreOwn,
@@ -578,8 +594,8 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
         ),
         TabBar(
           controller: _tabs,
-          indicatorColor: AppTheme.accent,
-          labelColor: AppTheme.accent,
+          indicatorColor: AppTheme.primaryBright,
+          labelColor: AppTheme.primaryBright,
           unselectedLabelColor: AppTheme.textSecondary,
           dividerColor: AppTheme.outline.withValues(alpha: .45),
           labelStyle: const TextStyle(
@@ -789,6 +805,7 @@ class _ScoreLine extends StatelessWidget {
           ),
         ),
         IconButton.filledTonal(
+          tooltip: 'Retirer un but à $name',
           onPressed: enabled && score > 0 ? () => onChanged(score - 1) : null,
           icon: const Icon(Icons.remove),
         ),
@@ -803,6 +820,7 @@ class _ScoreLine extends StatelessWidget {
           ),
         ),
         IconButton.filledTonal(
+          tooltip: 'Ajouter un but à $name',
           onPressed: enabled && score < 30 ? () => onChanged(score + 1) : null,
           icon: const Icon(Icons.add),
         ),

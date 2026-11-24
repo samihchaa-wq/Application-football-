@@ -41,10 +41,10 @@ void main() {
   ) async {
     await pump(tester, referrals());
     expect(
-      find.textContaining('−5 % sur son prochain renouvellement'),
+      find.textContaining('−5\u00A0% sur son prochain renouvellement'),
       findsOneWidget,
     );
-    expect(find.textContaining('jusqu’à −100 % : 20 clubs parrainés'),
+    expect(find.textContaining('jusqu’à −100\u00A0% : 20 clubs parrainés'),
         findsOneWidget);
     expect(find.text('PFABCD23'), findsOneWidget);
     expect(find.byKey(const Key('club-referral-share')), findsOneWidget);
@@ -86,12 +86,13 @@ void main() {
       ),
     );
     expect(find.text('US Filleul'), findsOneWidget);
-    expect(find.text('Abonné : −5 % acquis'), findsOneWidget);
+    expect(find.text('Abonné : −5\u00A0% acquis'), findsOneWidget);
     expect(find.text('En essai : compte dès son premier paiement'),
         findsOneWidget);
     expect(find.text('Abonné : réduction déjà utilisée'), findsOneWidget);
     expect(
-      find.text('Réduction acquise : −5 % sur le prochain renouvellement.'),
+      find.text(
+          'Réduction acquise : −5\u00A0% sur le prochain renouvellement.'),
       findsOneWidget,
     );
     expect(
@@ -114,12 +115,13 @@ void main() {
       ),
     );
     expect(
-      find.text('Ton club a été parrainé par FC Parrain : −5 % sur ta '
+      find.text('Ton club a été parrainé par FC Parrain : −5\u00A0% sur ta '
           'première année.'),
       findsOneWidget,
     );
     expect(
-      find.textContaining('Le club parrainé a lui aussi −5 % sur sa première '
+      find.textContaining(
+          'Le club parrainé a lui aussi −5\u00A0% sur sa première '
           'année.'),
       findsOneWidget,
     );
