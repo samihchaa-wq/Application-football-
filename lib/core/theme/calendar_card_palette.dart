@@ -1,32 +1,34 @@
 import 'package:flutter/material.dart';
 
 /// Couleurs des cartes du calendrier (« Défilé » et « Par mois ») :
-/// bleu = championnat, bleu ciel = amical, violet = match entre nous,
-/// or = événement.
+/// bleu foncé = championnat, bleu clair = amical, violet foncé = match entre
+/// nous, or = événement.
 ///
-/// Les fonds sont des teintes pâles de l'habillage clair, mais les
-/// familles de couleurs sont volontairement assez éloignées pour que le type
-/// de rendez-vous soit identifiable au premier coup d'œil.
+/// Le fond est une vraie teinte de la famille (et non plus un noir à peine
+/// coloré), le liseré une version claire : le type de rendez-vous se lit au
+/// premier coup d'œil. Le liseré sert aussi de couleur de texte et d'icône
+/// sur la carte : chaque paire garde un contraste d'au moins 4,5:1.
 abstract final class CalendarCardPalette {
   /// Repli pour un ancien match dont le type n'est pas encore connu.
   static const Color finishedSurface = Color(0xFF1B2128);
   static const Color finishedBorder = Color(0xFF6B7885);
 
-  /// Championnat : bleu foncé.
-  static const Color championshipSurface = Color(0xFF132033);
-  static const Color championshipBorder = Color(0xFF4C8DFF);
+  /// Championnat : bleu foncé (marine).
+  static const Color championshipSurface = Color(0xFF0F2557);
+  static const Color championshipBorder = Color(0xFF5C8DFF);
 
-  /// Amical : bleu clair, distinct du championnat.
-  static const Color friendlySurface = Color(0xFF11262C);
-  static const Color friendlyBorder = Color(0xFF3FB8D8);
+  /// Amical : bleu clair. Le fond reste assez sombre pour que le score
+  /// (vert, orange ou rouge selon le résultat) garde son contraste.
+  static const Color friendlySurface = Color(0xFF1B4F7C);
+  static const Color friendlyBorder = Color(0xFF8FD3FF);
 
   /// Match entre nous : violet foncé.
-  static const Color internalSurface = Color(0xFF221A33);
-  static const Color internalBorder = Color(0xFFA27BE8);
+  static const Color internalSurface = Color(0xFF2A1B57);
+  static const Color internalBorder = Color(0xFFA987FF);
 
   /// Événement : or.
-  static const Color eventSurface = Color(0xFF2A2312);
-  static const Color eventBorder = Color(0xFFFFB020);
+  static const Color eventSurface = Color(0xFF3D2F0A);
+  static const Color eventBorder = Color(0xFFF2C94C);
 
   /// Événement annulé : rouge.
   static const Color cancelledSurface = Color(0xFF2B161A);
