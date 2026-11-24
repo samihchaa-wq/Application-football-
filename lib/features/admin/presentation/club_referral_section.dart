@@ -61,11 +61,10 @@ class _ReferralCard extends StatelessWidget {
             Text('Parrainage', style: theme.textTheme.titleSmall),
             const SizedBox(height: 8),
             Text(
-              'Fais découvrir Petit Filet à un autre club. Pour chaque club '
-              'qui s’inscrit avec ton code et paie son abonnement, ton club '
+              'Pour chaque club qui s’inscrit avec ton code et paie, ton club '
               'gagne −$rate\u00A0% sur son prochain renouvellement, jusqu’à '
-              '−$cap\u00A0%${cap >= 100 ? ' : $maxClubs clubs parrainés, et '
-                  'l’année est offerte' : ''}. Le club parrainé a lui aussi '
+              '−$cap\u00A0%${cap >= 100 ? ' (soit $maxClubs clubs : l’année '
+                  'est offerte)' : ''}. Le club parrainé a lui aussi '
               '−$rate\u00A0% sur sa première année.',
               key: const Key('club-referral-explanation'),
             ),

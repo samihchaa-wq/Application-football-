@@ -685,13 +685,12 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
       addCard(
         ListTile(
           contentPadding: EdgeInsets.zero,
-          title: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Nombre de joueurs convoqués ${_squadSizeController.text} joueur${_squadSizeController.text == '1' ? '' : 's'}',
-              maxLines: 1,
-            ),
+          // Titre + valeur sur deux lignes, comme dans l'autre formulaire :
+          // « … convoqués 14 joueurs » répétait le mot « joueurs » sur une seule
+          // ligne réduite par un FittedBox.
+          title: const Text('Nombre de joueurs convoqués'),
+          subtitle: Text(
+            '${_squadSizeController.text} joueur${_squadSizeController.text == '1' ? '' : 's'}',
           ),
           trailing: const Icon(Icons.unfold_more_rounded),
           onTap: busy ? null : _pickSquadSize,

@@ -44,7 +44,7 @@ void main() {
       find.textContaining('−5\u00A0% sur son prochain renouvellement'),
       findsOneWidget,
     );
-    expect(find.textContaining('jusqu’à −100\u00A0% : 20 clubs parrainés'),
+    expect(find.textContaining('jusqu’à −100\u00A0% (soit 20 clubs'),
         findsOneWidget);
     expect(find.text('PFABCD23'), findsOneWidget);
     expect(find.byKey(const Key('club-referral-share')), findsOneWidget);

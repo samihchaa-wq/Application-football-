@@ -78,7 +78,7 @@ void main() {
       (tester) async {
     await pumpPage(tester);
     expect(
-      find.text('Maillot automatiquement sur les photos'),
+      find.byKey(const ValueKey('kits-photos-automatic')),
       findsOneWidget,
     );
     expect(find.byKey(const ValueKey('dress-players')), findsNothing);

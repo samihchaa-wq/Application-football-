@@ -148,9 +148,9 @@ class _MyUnavailabilitiesPanel extends ConsumerWidget {
                   icon: Icons.event_available_outlined,
                   title: 'Aucune indisponibilité',
                   message:
-                      'Déclare une période quand tu sais que tu ne seras pas '
-                      'là : tu sors de l’effectif convocable et tu ne reçois '
-                      'plus les notifications des matchs concernés.',
+                      'Déclare une période d’absence : tu ne seras pas convoqué '
+                      'et tu ne recevras plus les notifications des matchs '
+                      'concernés.',
                 );
               }
               return RefreshIndicator(

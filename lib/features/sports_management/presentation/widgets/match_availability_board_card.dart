@@ -163,25 +163,30 @@ class MatchAvailabilityBoardContent extends StatelessWidget {
               color: AppTheme.availabilityIn,
               icon: Icons.check_circle_outline,
             ),
-            if (!isInternal)
+            // Les groupes vides n'apparaissent plus (« Liste d'attente (0) —
+            // Aucun joueur. » prenait de la place sans rien dire) ; Convoqués
+            // reste toujours affiché.
+            if (!isInternal && board.waitlisted.isNotEmpty)
               _BoardGroup(
                 title: 'Liste d’attente',
                 players: board.waitlisted,
                 color: AppTheme.availabilityWaiting,
                 icon: Icons.hourglass_top_rounded,
               ),
-            _BoardGroup(
-              title: 'Absents',
-              players: absent,
-              color: AppTheme.availabilityOut,
-              icon: Icons.cancel_outlined,
-            ),
-            _BoardGroup(
-              title: 'Sans réponse',
-              players: noResponse,
-              color: AppTheme.availabilityUnknown,
-              icon: Icons.schedule_outlined,
-            ),
+            if (absent.isNotEmpty)
+              _BoardGroup(
+                title: 'Absents',
+                players: absent,
+                color: AppTheme.availabilityOut,
+                icon: Icons.cancel_outlined,
+              ),
+            if (noResponse.isNotEmpty)
+              _BoardGroup(
+                title: 'Sans réponse',
+                players: noResponse,
+                color: AppTheme.availabilityUnknown,
+                icon: Icons.schedule_outlined,
+              ),
           ],
         ),
       ],
