@@ -342,6 +342,7 @@ abstract final class AppTheme {
             final lit = primaryLit;
             return DecoratedBox(
               decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(radiusSm),
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
