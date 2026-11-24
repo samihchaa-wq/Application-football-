@@ -59,6 +59,36 @@ Deno.test("réussit au second essai après une erreur temporaire", async () => {
   assertEquals(waits[0], pushRetryDelayMs(1));
 });
 
+Deno.test("un abonnement créé avec une autre clé d'envoi est retiré", () => {
+  assertEquals(
+    classifyPushFailure(400, '{"reason":"VapidPkHashMismatch"}'),
+    "expired",
+  );
+  assertEquals(
+    classifyPushFailure(
+      403,
+      "the VAPID credentials in the authorization header do not correspond " +
+        "to the credentials used to create the subscriptions.",
+    ),
+    "expired",
+  );
+  // Les autres refus restent permanents : l'abonnement n'est pas en cause.
+  assertEquals(classifyPushFailure(400, '{"reason":"BadJwtToken"}'), "permanent");
+  assertEquals(classifyPushFailure(403, "forbidden"), "permanent");
+  assertEquals(classifyPushFailure(500, "VapidPkHashMismatch"), "retryable");
+});
+
+Deno.test("le refus Apple pour mauvaise clé supprime l'abonnement sans relance", async () => {
+  let calls = 0;
+  const outcome = await executePushDelivery(async () => {
+    calls += 1;
+    throw { statusCode: 400, body: '{"reason":"VapidPkHashMismatch"}' };
+  });
+  assertEquals(calls, 1);
+  if (outcome.success) throw new Error("Expected a failed delivery");
+  assertEquals(outcome.failureClass, "expired");
+});
+
 Deno.test("supprime sans relance un endpoint expiré", async () => {
   let calls = 0;
 
