@@ -114,6 +114,10 @@ bool isMatchLiveTooEarly(DateTime? kickoffAt, {DateTime? now}) {
 /// l'administrateur passe directement à la saisie du compte rendu.
 const Duration kMatchLiveAbandonedAfterKickoff = Duration(hours: 2);
 
+/// Délai après l'heure de fin prévue (durée du match + 15 min) au-delà duquel
+/// un direct jamais terminé est considéré comme oublié.
+const Duration kMatchLiveForgottenAfter = Duration(hours: 2);
+
 bool isMatchLiveAbandoned(DateTime? kickoffAt, {DateTime? now}) {
   if (kickoffAt == null) return false;
   final reference = (now ?? DateTime.now()).toUtc();
@@ -170,6 +174,16 @@ MatchDisplayPhase matchDisplayPhase({
   if (liveState == 'running' ||
       liveState == 'paused' ||
       liveState == 'halftime') {
+    // Direct oublié (le coach n'a pas appuyé sur « Fin du match ») : sans
+    // limite, le match restait « en direct » pour toujours et le vote de
+    // l'Homme du match ne s'ouvrait jamais. Passé ce délai, il est présenté
+    // « À valider » pour que l'admin le clôture.
+    if (!reference.isBefore(
+      matchExpectedValidationAt(kickoff, plannedDurationMinutes)
+          .add(kMatchLiveForgottenAfter),
+    )) {
+      return MatchDisplayPhase.awaitingValidation;
+    }
     return MatchDisplayPhase.live;
   }
   if (!reference.isBefore(

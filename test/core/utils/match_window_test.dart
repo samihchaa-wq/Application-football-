@@ -196,6 +196,30 @@ void main() {
       );
     });
 
+    test('un direct en cours reste « en direct » même s’il dépasse un peu', () {
+      // Coup d'envoi 18:30, fin prévue 20:00 + 15 min : un match qui
+      // déborde (prolongations, retard) reste affiché en direct.
+      expect(
+        phaseAt(DateTime.utc(2026, 8, 7, 21), liveState: 'running'),
+        MatchDisplayPhase.live,
+      );
+      expect(
+        phaseAt(DateTime.utc(2026, 8, 7, 22, 14), liveState: 'halftime'),
+        MatchDisplayPhase.live,
+      );
+    });
+
+    test('un direct oublié passe « à valider » 2 h après la fin prévue', () {
+      expect(
+        phaseAt(DateTime.utc(2026, 8, 7, 22, 15), liveState: 'running'),
+        MatchDisplayPhase.awaitingValidation,
+      );
+      expect(
+        phaseAt(DateTime.utc(2026, 8, 8, 9), liveState: 'paused'),
+        MatchDisplayPhase.awaitingValidation,
+      );
+    });
+
     test('une fin Live bascule à valider dès le coup d’envoi', () {
       expect(
         phaseAt(
