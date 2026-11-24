@@ -14,7 +14,7 @@
 //
 // La réponse à request-reset est toujours la même : elle ne révèle pas si
 // l'adresse existe.
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2.95.0/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2.95.0";
 import {
   confirmationLink,
@@ -110,6 +110,16 @@ async function secretsEqual(a: string, b: string): Promise<boolean> {
     diff |= left.charCodeAt(i) ^ right.charCodeAt(i);
   }
   return diff === 0 && a.length > 0;
+}
+
+/// Laisse une tâche se terminer après l'envoi de la réponse. Sur Supabase,
+/// EdgeRuntime.waitUntil garde la fonction active jusqu'à la fin de la
+/// tâche ; ailleurs (Deno seul, tests), la tâche continue simplement.
+function runAfterResponse(task: Promise<void>): void {
+  const runtime = (globalThis as {
+    EdgeRuntime?: { waitUntil?: (promise: Promise<unknown>) => void };
+  }).EdgeRuntime;
+  if (typeof runtime?.waitUntil === "function") runtime.waitUntil(task);
 }
 
 function requestOrigin(req: Request): string {
@@ -438,14 +448,18 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const { data: found, error: lookupError } = await admin.rpc(
-      "profile_for_recovery_email",
-      { p_email: email },
-    );
-    if (lookupError) throw lookupError;
-    const account = Array.isArray(found) ? found[0] : null;
-    if (account?.auth_email) {
-      try {
+    // Recherche du compte, lien et envoi après la réponse : sinon le temps de
+    // réponse (7 ms pour une adresse inconnue, 50 à 70 ms et plus pour un
+    // compte, mesuré en local) révélait quelles adresses ont un compte.
+    runAfterResponse(
+      (async () => {
+        const { data: found, error: lookupError } = await admin.rpc(
+          "profile_for_recovery_email",
+          { p_email: email },
+        );
+        if (lookupError) throw lookupError;
+        const account = Array.isArray(found) ? found[0] : null;
+        if (!account?.auth_email) return;
         const { data: linkData, error: linkError } =
           await admin.auth.admin.generateLink({
             type: "recovery",
@@ -457,12 +471,12 @@ Deno.serve(async (req: Request) => {
           scannerSafeRecoveryLink(linkData.properties.action_link, publicAppUrl),
         );
         await sendMail(mail, email, message.subject, message.text);
-      } catch (error) {
+      })().catch((error) => {
         // Un échec ici ne doit pas se voir de l'extérieur : il distinguerait
         // une adresse connue d'une adresse inconnue.
         console.error("account-email reset delivery failure", error);
-      }
-    }
+      }),
+    );
     return jsonResponse({ sent: true });
   } catch (error) {
     console.error("account-email failure", error);

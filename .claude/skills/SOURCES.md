@@ -13,6 +13,9 @@
 | brainstorming, diagnosing-superpowers, dispatching-parallel-agents, executing-plans, finishing-a-development-branch, receiving-code-review, requesting-code-review, subagent-driven-development, systematic-debugging, test-driven-development, using-git-worktrees, using-superpowers, verification-before-completion, writing-plans, writing-skills (Superpowers) | github.com/obra/superpowers | 22f0b46 | MIT |
 | hyperframes, hyperframes-cli, hyperframes-registry | github.com/heygen-com/hyperframes | 169af43 | Apache-2.0 |
 | skill-creator | github.com/anthropics/skills | e4bb5d9 | Apache-2.0 |
+| stripe-best-practices | github.com/stripe/ai | f10dc33 | MIT |
+| webapp-testing | github.com/anthropics/skills | e4bb5d9 | Apache-2.0 |
+| email-template-write, email-template-check | github.com/getbrevo/brevo-skills | 88db934 | MIT |
 
 Copies figées : pas de mise à jour automatique. Relire avant de mettre à jour.
 

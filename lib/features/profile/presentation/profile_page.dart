@@ -303,12 +303,21 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                       : () => setState(() => _birthDate = null),
                                 ),
                         ),
-                        child: InkWell(
-                          onTap: _savedDetails == null || busy
-                              ? null
-                              : _pickBirthDate,
-                          child: Text(
-                            _birthDate == null ? '' : formatDay(_birthDate!),
+                        // Sans nom, le lecteur d'écran annonçait un bouton
+                        // vide quand aucune date n'est choisie.
+                        child: Semantics(
+                          label: _birthDate == null
+                              ? 'Choisir la date de naissance'
+                              : 'Date de naissance : '
+                                  '${formatDay(_birthDate!)}, modifier',
+                          excludeSemantics: true,
+                          child: InkWell(
+                            onTap: _savedDetails == null || busy
+                                ? null
+                                : _pickBirthDate,
+                            child: Text(
+                              _birthDate == null ? '' : formatDay(_birthDate!),
+                            ),
                           ),
                         ),
                       ),

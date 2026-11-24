@@ -193,6 +193,29 @@ void main() {
         expect(find.text('Démarrer le match'), findsOneWidget);
       },
     );
+
+    testWidgets(
+      'un admin qui ne peut pas piloter apprend comment lancer le direct',
+      (tester) async {
+        const hint = 'Seul le coach de la saison lance le direct';
+
+        await _pump(tester, state: 'not_started', coach: false, admin: true);
+        expect(find.text(hint), findsOneWidget);
+        expect(find.textContaining('Mode live'), findsOneWidget);
+
+        // Un joueur n'a rien à régler : pas de message.
+        await _pump(tester, state: 'not_started', coach: false);
+        expect(find.text(hint), findsNothing);
+
+        // Le coach pilote : pas de message non plus.
+        await _pump(tester, state: 'not_started');
+        expect(find.text(hint), findsNothing);
+
+        // Une fois le direct lancé par quelqu'un d'autre, plus de message.
+        await _pump(tester, state: 'running', coach: false, admin: true);
+        expect(find.text(hint), findsNothing);
+      },
+    );
   });
 }
 

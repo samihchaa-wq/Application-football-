@@ -213,6 +213,7 @@ jobs:
             X-Content-Type-Options: nosniff
             Referrer-Policy: strict-origin-when-cross-origin
             X-Frame-Options: DENY
+            Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()
           /index.html
             Cache-Control: no-cache
           /sw.js
@@ -284,4 +285,5 @@ jobs:
           grep -Fq "wss://$project_host" /tmp/index.html
           curl -I -LfsS "$base" -o /tmp/headers.txt
           grep -qi '^strict-transport-security:' /tmp/headers.txt
+          grep -qi '^permissions-policy:' /tmp/headers.txt
           echo "Site publié et vérifié : $base"

@@ -91,7 +91,8 @@ void main() {
         findsOneWidget);
     expect(find.text('Abonné : réduction déjà utilisée'), findsOneWidget);
     expect(
-      find.text('Réduction acquise : −5\u00A0% sur le prochain renouvellement.'),
+      find.text(
+          'Réduction acquise : −5\u00A0% sur le prochain renouvellement.'),
       findsOneWidget,
     );
     expect(
@@ -119,7 +120,8 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.textContaining('Le club parrainé a lui aussi −5\u00A0% sur sa première '
+      find.textContaining(
+          'Le club parrainé a lui aussi −5\u00A0% sur sa première '
           'année.'),
       findsOneWidget,
     );

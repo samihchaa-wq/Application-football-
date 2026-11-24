@@ -22,7 +22,41 @@ jobs:
     timeout-minutes: 5
     env:
       DB_URL: ${{ secrets.PRODUCTION_DB_URL }}
+      APP_URL: ${{ vars.COMMERCIAL_APP_URL || 'https://app.petitfilet.fr/' }}
     steps:
+      - name: Checkout public configuration
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          sparse-checkout: config
+
+      # Ce que voient les joueurs : le site répond et le service de connexion
+      # est joignable. Sans cette étape, une panne du site ne déclenchait
+      # aucune alerte (seule la base était surveillée).
+      - name: Check the public site and the login service
+        shell: bash
+        run: |
+          set -euo pipefail
+          app_url="$(printf '%s' "$APP_URL" | tr -d '[:space:]')"
+          case "$app_url" in https://*/) ;; *) echo "::error::Adresse de l'appli invalide : $app_url"; exit 1 ;; esac
+          supabase_url="$(jq -r '.SUPABASE_URL' config/production.json | sed 's:/*$::')"
+          anon_key="$(jq -r '.SUPABASE_ANON_KEY' config/production.json)"
+          probe() {
+            local what="$1"; shift
+            for attempt in 1 2 3; do
+              if curl -fsS --max-time 20 -o /dev/null "$@"; then return 0; fi
+              sleep 20
+            done
+            echo "::error::${what} ne répond pas (3 essais)."
+            return 1
+          }
+          failed=0
+          probe "Le site de l'appli" "${app_url}?watch=$(date +%s)" || failed=1
+          probe "La version publiée de l'appli" "${app_url}build_version.js?watch=$(date +%s)" || failed=1
+          probe "Le service de connexion" -H "apikey: ${anon_key}" "${supabase_url}/auth/v1/health" || failed=1
+          if (( failed )); then exit 1; fi
+          echo "Site, version publiée et service de connexion : OK" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Require configured production database
         if: env.DB_URL == ''
         shell: bash

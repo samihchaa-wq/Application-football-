@@ -98,7 +98,8 @@ class _PushDeviceBannerState extends ConsumerState<PushDeviceBanner> {
                 : 'Notifications désactivées',
             message: blocked
                 // Court exprès : le bandeau reste en haut de chaque écran.
-                ? 'Autorise-les dans les réglages du téléphone.'
+                // « appareil » : il s'affiche aussi sur ordinateur.
+                ? 'Autorise-les dans les réglages de cet appareil.'
                 : 'Active-les pour être prévenu des convocations.',
             tone: PfStatusTone.warning,
             compact: true,

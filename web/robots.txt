@@ -1,0 +1,6 @@
+# Petit Filet : seule la page d'accueil de l'appli est utile aux moteurs de
+# recherche ; les pages techniques ne doivent pas être indexées.
+User-agent: *
+Allow: /
+Disallow: /abonnement-calendrier.html
+Disallow: /test-video.html
