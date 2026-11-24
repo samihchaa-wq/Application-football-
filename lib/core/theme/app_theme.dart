@@ -458,7 +458,7 @@ abstract final class AppTheme {
           foregroundColor: WidgetStateProperty.resolveWith((states) {
             return states.contains(WidgetState.selected)
                 ? primaryBright
-                : textSecondary;
+                : textPrimary;
           }),
           side: WidgetStateProperty.all(
             BorderSide(color: outline.withValues(alpha: .28)),
