@@ -268,6 +268,9 @@ class _OpponentStadiumLibraryPageState
                         ),
                       ),
                       trailing: PopupMenuButton<String>(
+                        // Nom propre à la ligne : sinon le lecteur d'écran
+                        // annonce « Afficher le menu » sur chaque équipe.
+                        tooltip: 'Actions pour ${item.name}',
                         enabled: !_saving,
                         onSelected: (value) {
                           if (value == 'edit') _openEditor(item);
