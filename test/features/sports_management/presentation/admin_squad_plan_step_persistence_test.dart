@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:petit_filet/core/sync/shared_data_sync.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/features/matches/presentation/widgets/upcoming_match_fixture_header.dart';
 import 'package:petit_filet/features/predictions/presentation/widgets/inline_match_prediction_card.dart';
@@ -57,18 +60,55 @@ void main() {
     expect(find.text('Prono'), findsNothing);
     expect(find.byType(InlineMatchPredictionCard), findsNothing);
   });
+
+  // Un joueur répond « Absent » pendant que le coach prépare l'effectif :
+  // l'écran ouvert doit relire les réponses, sans qu'il faille le rouvrir.
+  testWidgets('un signal sportif recharge l’effectif ouvert', (tester) async {
+    final signals = StreamController<SharedDataChangeSignal?>.broadcast();
+    addTearDown(signals.close);
+    final repository = _FakeSportWaitlistRepository(_convocations());
+    SharedDataChangeSignal signal(int sports) => SharedDataChangeSignal(
+          revision: sports,
+          profileRevision: 1,
+          sportsRevision: sports,
+          updatedAt: DateTime.utc(2026, 11, 24),
+        );
+
+    await _pump(
+      tester,
+      showPredictionStep: false,
+      repository: repository,
+      signals: signals.stream,
+    );
+    signals.add(signal(1));
+    await _settle(tester);
+    final loadsBefore = repository.convocationLoads;
+
+    signals.add(signal(2));
+    await _settle(tester);
+    expect(repository.convocationLoads, loadsBefore + 1);
+
+    // Même révision : rien ne change, aucun rechargement inutile.
+    signals.add(signal(2));
+    await _settle(tester);
+    expect(repository.convocationLoads, loadsBefore + 1);
+  });
 }
 
 Future<void> _pump(
   WidgetTester tester, {
   required bool showPredictionStep,
+  _FakeSportWaitlistRepository? repository,
+  Stream<SharedDataChangeSignal?>? signals,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         sportWaitlistRepositoryProvider.overrideWithValue(
-          _FakeSportWaitlistRepository(_convocations()),
+          repository ?? _FakeSportWaitlistRepository(_convocations()),
         ),
+        if (signals != null)
+          sharedDataSignalProvider.overrideWith((ref) => signals),
         matchCompositionRepositoryProvider.overrideWithValue(
           _FakeMatchCompositionRepository(),
         ),
@@ -170,9 +210,13 @@ class _FakeSportWaitlistRepository implements SportWaitlistRepository {
         ),
       ];
 
+  int convocationLoads = 0;
+
   @override
-  Future<MatchConvocations> fetchMatchConvocations(String matchId) async =>
-      convocations;
+  Future<MatchConvocations> fetchMatchConvocations(String matchId) async {
+    convocationLoads += 1;
+    return convocations;
+  }
 
   @override
   Future<AvailabilityReminderSummary> fetchReminderSummary(

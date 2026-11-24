@@ -367,8 +367,31 @@ class _AdminSquadPlanPageState extends ConsumerState<AdminSquadPlanPage> {
     );
   }
 
+  /// Un joueur répond « Présent » ou « Absent », un autre admin modifie
+  /// l'effectif : la base émet un signal sportif. Sans lui, l'écran ouvert
+  /// gardait les anciennes réponses jusqu'à ce qu'on le rouvre. On recharge
+  /// avec les mêmes précautions qu'au changement d'onglet : jamais pendant
+  /// un chargement, un enregistrement ou une composition en cours d'édition.
+  void _reloadAfterSportsSignal(int? previous, int? next) {
+    if (previous == null || next == null || next == previous) return;
+    final matchId = _selectedMatchId;
+    if (matchId == null ||
+        _loading ||
+        _busy ||
+        _compositionDirty ||
+        _effectifSaving ||
+        (_effectifAutosave?.isActive ?? false)) {
+      return;
+    }
+    unawaited(_loadWorkspace(matchId));
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.listen<int?>(
+      sharedDataSignalProvider.select((s) => s.valueOrNull?.sportsRevision),
+      _reloadAfterSportsSignal,
+    );
     // Pas de barre supérieure : la flèche retour se place à gauche du
     // bandeau du match. Tirer l'écran vers le bas recharge la fiche.
     return Scaffold(
