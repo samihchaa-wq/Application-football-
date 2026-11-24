@@ -269,57 +269,35 @@ class _AvailabilityPanel extends StatelessWidget {
         availability.status == MatchAvailabilityStatus.available;
     final selectedAbsent =
         availability.status == MatchAvailabilityStatus.absent;
-    // Thème sombre : sur une carte du calendrier (« embeddedOnDark »), un
-    // fond légèrement plus sombre que la carte. L'ancien blanc translucide,
-    // hérité du thème clair, formait un bandeau gris qui jurait.
     const secondary = AppTheme.textSecondary;
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: embeddedOnDark
-            ? AppTheme.background.withValues(alpha: .35)
-            : AppTheme.primary.withValues(alpha: .08),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.primary.withValues(alpha: .28)),
-      ),
+    // Plus de cadre ni de fond teinté derrière Présent / Absent : les boutons
+    // se posent directement sur la carte.
+    return Padding(
+      padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Expanded(
-                child: selectedAvailable
-                    ? FilledButton.icon(
-                        onPressed: saving ? null : onAvailable,
-                        icon: const Icon(Icons.check_circle_outline),
-                        label: const Text('Présent'),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppTheme.success,
-                        ),
-                      )
-                    : OutlinedButton.icon(
-                        onPressed: saving ? null : onAvailable,
-                        icon: const Icon(Icons.check_circle_outline),
-                        label: const Text('Présent'),
-                      ),
+                child: _AvailabilityChoice(
+                  label: 'Présent',
+                  icon: Icons.check_circle_outline,
+                  color: AppTheme.success,
+                  selected: selectedAvailable,
+                  onPressed: saving ? null : onAvailable,
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: selectedAbsent
-                    ? FilledButton.icon(
-                        onPressed: saving ? null : onAbsent,
-                        icon: const Icon(Icons.cancel_outlined),
-                        label: const Text('Absent'),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppTheme.error,
-                        ),
-                      )
-                    : OutlinedButton.icon(
-                        onPressed: saving ? null : onAbsent,
-                        icon: const Icon(Icons.cancel_outlined),
-                        label: const Text('Absent'),
-                      ),
+                child: _AvailabilityChoice(
+                  label: 'Absent',
+                  icon: Icons.cancel_outlined,
+                  color: AppTheme.error,
+                  selected: selectedAbsent,
+                  onPressed: saving ? null : onAbsent,
+                ),
               ),
             ],
           ),
@@ -368,6 +346,62 @@ class _AvailabilityPanel extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// Un des deux choix Présent / Absent. Vert pour Présent, rouge pour Absent :
+/// contour de la couleur quand il n'est pas choisi (il se voit mieux que le
+/// contour discret d'avant), plein quand il l'est.
+///
+/// Le thème peint un dégradé rouge sur tous les boutons pleins, qui écrasait
+/// le vert de « Présent » : on le remplace ici par un aplat de la couleur.
+class _AvailabilityChoice extends StatelessWidget {
+  const _AvailabilityChoice({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.selected,
+    required this.onPressed,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color color;
+  final bool selected;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    if (selected) {
+      return FilledButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon),
+        label: Text(label),
+        style: FilledButton.styleFrom(
+          foregroundColor: AppTheme.background,
+          disabledForegroundColor: AppTheme.background,
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          backgroundBuilder: (context, states, child) => DecoratedBox(
+            decoration: BoxDecoration(
+              color: color,
+              // Mêmes coins arrondis que le bouton « Absent » à côté.
+              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+            ),
+            child: child,
+          ),
+        ),
+      );
+    }
+    return OutlinedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon),
+      label: Text(label),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: color,
+        side: BorderSide(color: color, width: 1.5),
       ),
     );
   }
