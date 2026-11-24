@@ -348,7 +348,7 @@ Deno.serve(async (req: Request) => {
       global: { headers: { "x-club-id": club.id } },
     });
 
-    const { error: updateError } = await scoped
+    const { data: updatedProfiles, error: updateError } = await scoped
       .from("profiles")
       .update({
         username,
@@ -358,8 +358,15 @@ Deno.serve(async (req: Request) => {
         updated_at: new Date().toISOString(),
       })
       .eq("id", newUserId)
-      .eq("club_id", club.id);
+      .eq("club_id", club.id)
+      .select("id");
     if (updateError) throw updateError;
+    // Aucune ligne modifiée = profil absent du club annoncé : le compte
+    // aurait été créé sans identifiant ni preuve d'acceptation des
+    // conditions. On échoue ; le bloc catch supprime le compte créé.
+    if (!Array.isArray(updatedProfiles) || updatedProfiles.length !== 1) {
+      throw new Error("Signed-up profile not found in the announced club");
+    }
 
     if (mode === "create") {
       // Promotion du créateur et preuve d'acceptation du contrat du club, en
