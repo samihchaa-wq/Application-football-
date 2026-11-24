@@ -46,6 +46,35 @@ void main() {
     expect(find.text(_outcomeUnknownMessage), findsNothing);
     await _dismissSnackBar(tester);
   });
+
+  testWidgets('match fini : le pronostic fermé ne parle pas du Live', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      _FakePredictionsRepository(
+        saveError: StateError('inutile'),
+        status: 'termine',
+        untilKickoff: const Duration(hours: -5),
+      ),
+    );
+
+    expect(find.text('Pronostic fermé : match terminé.'), findsOneWidget);
+    expect(find.textContaining('Live'), findsNothing);
+  });
+
+  testWidgets('match annulé : la raison est donnée', (tester) async {
+    await _pump(
+      tester,
+      _FakePredictionsRepository(
+        saveError: StateError('inutile'),
+        status: 'annule',
+        untilKickoff: const Duration(hours: -1),
+      ),
+    );
+
+    expect(find.text('Pronostic fermé : match annulé.'), findsOneWidget);
+  });
 }
 
 Future<void> _pump(
@@ -90,9 +119,15 @@ Future<void> _dismissSnackBar(WidgetTester tester) async {
 }
 
 class _FakePredictionsRepository implements PredictionsRepository {
-  _FakePredictionsRepository({required this.saveError});
+  _FakePredictionsRepository({
+    required this.saveError,
+    this.status = 'a_venir',
+    this.untilKickoff = const Duration(days: 3),
+  });
 
   final Object saveError;
+  final String status;
+  final Duration untilKickoff;
   int saveCalls = 0;
 
   @override
@@ -100,8 +135,8 @@ class _FakePredictionsRepository implements PredictionsRepository {
     return MatchPredictionItem(
       matchId: matchId,
       opponentName: 'Olympique Test',
-      kickoffAt: DateTime.now().add(const Duration(days: 3)),
-      status: 'a_venir',
+      kickoffAt: DateTime.now().add(untilKickoff),
+      status: status,
       scoreOwn: 2,
       scoreOpponent: 1,
       isFilled: false,

@@ -5,12 +5,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  MatchModel upcomingMatch({required String matchType, String? address}) =>
+  MatchModel upcomingMatch({
+    required String matchType,
+    String? address,
+    Duration untilKickoff = const Duration(days: 20),
+    String? liveState,
+  }) =>
       MatchModel(
         id: 'match',
         seasonId: 'season',
         opponentId: matchType == 'entre_nous' ? '' : 'opponent',
-        kickoffAt: DateTime.now().add(const Duration(days: 20)),
+        kickoffAt: DateTime.now().add(untilKickoff),
+        liveState: liveState,
         isHome: true,
         plannedDurationMinutes: 90,
         status: 'a_venir',
@@ -65,5 +71,36 @@ void main() {
     await pumpCard(tester, upcomingMatch(matchType: 'amical'));
 
     expect(find.byIcon(Icons.place_outlined), findsNothing);
+  });
+
+  testWidgets('pendant le direct, la carte du calendrier dit « En direct »', (
+    tester,
+  ) async {
+    await pumpCard(
+      tester,
+      upcomingMatch(
+        matchType: 'amical',
+        untilKickoff: const Duration(minutes: -20),
+        liveState: 'running',
+      ),
+    );
+
+    expect(find.text('En direct'), findsOneWidget);
+  });
+
+  testWidgets('un direct oublié depuis des heures passe « À valider »', (
+    tester,
+  ) async {
+    await pumpCard(
+      tester,
+      upcomingMatch(
+        matchType: 'amical',
+        untilKickoff: const Duration(hours: -6),
+        liveState: 'running',
+      ),
+    );
+
+    expect(find.text('À valider'), findsOneWidget);
+    expect(find.text('En direct'), findsNothing);
   });
 }

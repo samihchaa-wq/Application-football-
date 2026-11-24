@@ -49,13 +49,18 @@ class MatchResultScoreChip extends StatelessWidget {
           ),
           if (subtitle != null) ...[
             const SizedBox(height: 2),
-            Text(
-              subtitle!,
-              maxLines: 1,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
+            // Réduite plutôt que coupée : cinq cases tiennent sur la largeur
+            // d'un téléphone, et « 18/10/26 » s'y affichait « 18/10/2 ».
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                subtitle!,
+                maxLines: 1,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
             ),
           ],
