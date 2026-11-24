@@ -62,6 +62,15 @@ Future<void> _pump(
 }
 
 void main() {
+  test('bandeau absent du poste de contrôle, du bilan et de la connexion', () {
+    expect(pushBannerAllowedOn('/control'), isFalse);
+    expect(pushBannerAllowedOn('/wrapped'), isFalse);
+    expect(pushBannerAllowedOn('/auth/accept-terms'), isFalse);
+    expect(pushBannerAllowedOn('/matches'), isTrue);
+    expect(pushBannerAllowedOn('/controle-technique'), isTrue);
+  });
+
+
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   testWidgets(
