@@ -74,6 +74,7 @@ class CalendarMatchesLocalCache {
       'result_validated_at': match.resultValidatedAt?.toUtc().toIso8601String(),
       'address': match.address,
       'match_type': match.matchType,
+      'championship_round': match.championshipRound,
       'jersey_note': match.jerseyNote,
       'created_by': match.createdBy,
       'created_at': match.createdAt?.toUtc().toIso8601String(),

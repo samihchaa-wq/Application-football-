@@ -270,15 +270,24 @@ class ClubRepository {
 
   /// Le club du compte connecté. Les règles de la base ne laissent voir que
   /// celui-là.
-  Future<Club> fetchMyClub() async {
-    final row = await _client
-        .from('clubs')
-        .select(
-          'id,name,short_name,invite_code,primary_color,secondary_color,logo_path,kits',
-        )
-        .single();
-    return Club.fromJson(row);
-  }
+  Future<Club> fetchMyClub() => _readAtStartup(() async {
+        final row = await _client
+            .from('clubs')
+            .select(
+              'id,name,short_name,invite_code,primary_color,secondary_color,logo_path,kits',
+            )
+            .single();
+        return Club.fromJson(row);
+      });
+
+  /// Lecture des réglages du club, tolérante au réveil de l'appli.
+  Future<T> _readAtStartup<T>(Future<T> Function() read) => readClubSettings(
+        read,
+        currentAccessToken: () => _client.auth.currentSession?.accessToken,
+        refreshSession: () async {
+          await _client.auth.refreshSession();
+        },
+      );
 
   /// Enregistre les maillots du club, en nombre libre. Réservé aux administrateurs.
   Future<List<ClubKit>> updateKits(List<ClubKit> kits) async {
@@ -456,9 +465,9 @@ class ClubRepository {
   }
 
   /// Les fonctionnalités activées pour le club du compte connecté.
-  Future<ClubModules> fetchModules() async {
-    return ClubModules.fromJson(await _client.rpc('get_club_modules'));
-  }
+  Future<ClubModules> fetchModules() => _readAtStartup(
+        () async => ClubModules.fromJson(await _client.rpc('get_club_modules')),
+      );
 
   /// Active ou désactive une fonctionnalité. Réservé aux administrateurs.
   Future<ClubModules> setModule(
@@ -474,7 +483,9 @@ class ClubRepository {
   }
 
   /// Les règles du club avec leur valeur actuelle.
-  Future<List<ClubRule>> fetchRules() async {
+  Future<List<ClubRule>> fetchRules() => _readAtStartup(_fetchRules);
+
+  Future<List<ClubRule>> _fetchRules() async {
     final result = await _client.rpc('get_club_rules');
     if (result is! List || result.isEmpty || result.any((row) => row is! Map)) {
       throw const FormatException('Les règles du club sont indisponibles.');
@@ -633,6 +644,43 @@ class ClubRepository {
       isActive: data['status'] == 'active',
       emailConfirmationSent: data['emailConfirmationSent'] == true,
     );
+  }
+}
+
+/// À l'ouverture, l'appli affiche le compte gardé sur le téléphone avant que
+/// la session soit renouvelée : les réglages du club partaient alors avec un
+/// jeton expiré, le bandeau « réglages indisponibles » et les couleurs par
+/// défaut s'affichaient, puis tout se corrigeait. Ici, un jeton expiré est
+/// renouvelé (sauf si quelqu'un l'a déjà fait pendant la requête) et un
+/// réseau qui se réveille a droit à un second essai.
+Future<T> readClubSettings<T>(
+  Future<T> Function() read, {
+  required String? Function() currentAccessToken,
+  required Future<void> Function() refreshSession,
+  Duration retryDelay = const Duration(milliseconds: 600),
+}) async {
+  final tokenBefore = currentAccessToken();
+  try {
+    return await read();
+  } on PostgrestException catch (error) {
+    if (!const {'PGRST301', 'PGRST302', 'PGRST303'}.contains(error.code)) {
+      rethrow;
+    }
+    final tokenNow = currentAccessToken();
+    if (tokenNow == null || tokenNow == tokenBefore) {
+      try {
+        await refreshSession();
+      } catch (_) {
+        throw error;
+      }
+    }
+    return read();
+  } on FormatException {
+    rethrow;
+  } catch (_) {
+    // Réseau lent au réveil (délai dépassé, connexion coupée) : un essai de plus.
+    await Future<void>.delayed(retryDelay);
+    return read();
   }
 }
 
