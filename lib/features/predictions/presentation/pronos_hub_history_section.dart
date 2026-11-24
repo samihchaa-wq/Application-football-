@@ -211,7 +211,7 @@ class _CalendarMatchCard extends ConsumerWidget {
       statusLabel = 'Terminé';
     } else if (isNextMatch) {
       background = const Color(0xFF2B161A);
-      outline = const Color(0xFFFF5A6A);
+      outline = AppTheme.error;
       statusColor = const Color(0xFFFF8A96);
       dateColor = const Color(0xFFE8B4BA);
       statusLabel = 'Prochain';
@@ -320,6 +320,7 @@ class _AdminMatchActions extends ConsumerWidget {
                 child: const Text('Annuler'),
               ),
               FilledButton(
+                style: PfButtonStyles.danger,
                 onPressed: () => Navigator.pop(dialogContext, true),
                 child: const Text('Supprimer'),
               ),

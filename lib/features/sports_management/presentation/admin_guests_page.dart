@@ -11,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 class AdminGuestsPage extends ConsumerStatefulWidget {
   const AdminGuestsPage({super.key, this.initialMatchId});
@@ -241,6 +242,7 @@ class _AdminGuestsPageState extends ConsumerState<AdminGuestsPage> {
                 child: const Text('Annuler'),
               ),
               FilledButton(
+                style: PfButtonStyles.danger,
                 onPressed: () => Navigator.pop(dialogContext, true),
                 child: const Text('Retirer'),
               ),

@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 class MatchAvailabilitySelector extends ConsumerStatefulWidget {
   const MatchAvailabilitySelector({
@@ -148,17 +149,16 @@ class _MatchAvailabilitySelectorState
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: Text(
-            'Veux-tu vraiment passer de « $currentLabel » '
-            'à « $targetLabel » ?',
+            'Passer de « $currentLabel » à « $targetLabel » ?',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Non'),
+              child: const Text('Annuler'),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Oui'),
+              child: Text('Passer à $targetLabel'),
             ),
           ],
         ),
@@ -379,20 +379,7 @@ class _AvailabilityChoice extends StatelessWidget {
         onPressed: onPressed,
         icon: Icon(icon),
         label: Text(label),
-        style: FilledButton.styleFrom(
-          foregroundColor: AppTheme.background,
-          disabledForegroundColor: AppTheme.background,
-          elevation: 0,
-          shadowColor: Colors.transparent,
-          backgroundBuilder: (context, states, child) => DecoratedBox(
-            decoration: BoxDecoration(
-              color: color,
-              // Mêmes coins arrondis que le bouton « Absent » à côté.
-              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-            ),
-            child: child,
-          ),
-        ),
+        style: PfButtonStyles.solid(color),
       );
     }
     return OutlinedButton.icon(

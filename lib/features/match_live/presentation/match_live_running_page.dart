@@ -31,6 +31,7 @@ import 'package:petit_filet/features/sports_management/presentation/widgets/comp
 import 'package:petit_filet/features/sports_management/presentation/widgets/formation_pitch_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 part 'match_live_running_widgets.dart';
 part 'match_live_running_journal.dart';
@@ -1026,6 +1027,7 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
             child: const Text('Annuler'),
           ),
           FilledButton(
+            style: PfButtonStyles.danger,
             onPressed: () => Navigator.of(dialogContext).pop(true),
             child: const Text('Retirer'),
           ),
@@ -1052,7 +1054,7 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Oui, mi-temps'),
+            child: const Text('Mi-temps'),
           ),
         ],
       ),
@@ -1081,7 +1083,7 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Oui, terminer'),
+            child: const Text('Terminer le match'),
           ),
         ],
       ),
@@ -1109,10 +1111,8 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
             child: const Text('Annuler'),
           ),
           FilledButton(
+            style: PfButtonStyles.danger,
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(dialogContext).colorScheme.error,
-            ),
             child: const Text('Tout effacer'),
           ),
         ],

@@ -5,13 +5,13 @@ import 'package:petit_filet/features/preferences/data/push_subscriptions_reposit
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Écrans où le bandeau n'a rien à faire : le poste de contrôle de
-/// l'exploitant (pas de convocations), le bilan de saison plein écran et les
-/// étapes de connexion ou d'acceptation des conditions.
-bool pushBannerAllowedOn(String path) => !(path == '/control' ||
-    path.startsWith('/control/') ||
-    path == '/wrapped' ||
-    path.startsWith('/auth/'));
+/// Le bandeau n'apparaît que sur le Calendrier, l'écran d'accueil de l'appli.
+///
+/// Posé au-dessus de tous les écrans, il mangeait environ 15 % de la hauteur
+/// du téléphone sur chacun d'eux (une quinzaine d'écrans, chacun avec le même
+/// message). Ailleurs, un point d'avertissement sur la cloche garde l'état
+/// visible sans prendre de place (voir `NotificationInboxButton`).
+bool pushBannerAllowedOn(String path) => path == '/matches';
 
 /// Bandeau du haut de l'application quand cet appareil ne recevra pas les
 /// notifications du club sans que le joueur l'ait choisi.

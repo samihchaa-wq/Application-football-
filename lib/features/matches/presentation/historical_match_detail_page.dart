@@ -11,6 +11,7 @@ import 'package:petit_filet/features/matches/presentation/widgets/completed_matc
 import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 /// Fiche en lecture seule d'un match de l'historique importé : même gabarit
 /// modulaire qu'un match courant terminé. Une section n'apparaît que lorsque
@@ -334,6 +335,7 @@ class _DeleteHistoricalMatchButtonState
             child: const Text('Annuler'),
           ),
           FilledButton(
+            style: PfButtonStyles.danger,
             onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Supprimer'),
           ),

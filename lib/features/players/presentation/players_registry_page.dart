@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 /// Effectif de la saison. Les membres du club y arrivent d'eux-mêmes quand
 /// leur compte est validé ; on n'ajoute ici à la main que les joueurs qui n'ont
@@ -442,6 +443,7 @@ Future<bool> _confirmUnlink(BuildContext context, RosterPlayer player) async {
               child: const Text('Annuler'),
             ),
             FilledButton(
+              style: PfButtonStyles.danger,
               onPressed: () => Navigator.pop(dialogContext, true),
               child: const Text('Supprimer la liaison'),
             ),
@@ -468,9 +470,7 @@ Future<bool> _confirmDelete(BuildContext context, RosterPlayer player) async {
               child: const Text('Annuler'),
             ),
             FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(dialogContext).colorScheme.error,
-              ),
+              style: PfButtonStyles.danger,
               onPressed: () => Navigator.pop(dialogContext, true),
               child: const Text('Supprimer'),
             ),

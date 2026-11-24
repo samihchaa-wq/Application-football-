@@ -54,7 +54,7 @@ class _SportMotmVotePageState extends ConsumerState<SportMotmVotePage> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Confirmer'),
+            child: const Text('Voter'),
           ),
         ],
       ),

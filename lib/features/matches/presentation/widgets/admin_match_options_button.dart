@@ -8,6 +8,7 @@ import 'package:petit_filet/features/matches/presentation/matches_controller.dar
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 class AdminMatchOptionsButton extends ConsumerWidget {
   const AdminMatchOptionsButton({required this.match, super.key});
@@ -45,6 +46,7 @@ class AdminMatchOptionsButton extends ConsumerWidget {
                 child: const Text('Retour'),
               ),
               FilledButton(
+                style: PfButtonStyles.danger,
                 onPressed: () => Navigator.pop(dialogContext, true),
                 child: const Text('Annuler le match'),
               ),
@@ -129,6 +131,7 @@ class AdminMatchOptionsButton extends ConsumerWidget {
                 child: const Text('Annuler'),
               ),
               FilledButton(
+                style: PfButtonStyles.danger,
                 onPressed: () => Navigator.pop(dialogContext, true),
                 child: const Text('Supprimer'),
               ),

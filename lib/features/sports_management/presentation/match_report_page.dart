@@ -18,6 +18,7 @@ import 'package:petit_filet/features/sports_management/presentation/widgets/matc
 import 'package:flutter/material.dart';
 import 'package:petit_filet/core/widgets/pf_status_banner.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 /// Écran « Compte rendu » : deux onglets, une seule validation.
 ///
@@ -306,6 +307,7 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
               child: const Text('Annuler'),
             ),
             FilledButton(
+              style: PfButtonStyles.danger,
               onPressed: selected.length == count
                   ? () => Navigator.pop(dialogContext, {...selected})
                   : null,

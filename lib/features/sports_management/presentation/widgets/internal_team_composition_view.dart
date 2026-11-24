@@ -381,7 +381,7 @@ class _InternalTeamCompositionViewState
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Valider'),
+              child: const Text('Mettre en ligne'),
             ),
           ],
         ),

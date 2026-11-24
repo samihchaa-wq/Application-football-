@@ -4,6 +4,7 @@ import 'package:petit_filet/core/widgets/pf_app_bar.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 class OpponentStadiumLibraryPage extends ConsumerStatefulWidget {
   const OpponentStadiumLibraryPage({super.key});
@@ -135,7 +136,8 @@ class _OpponentStadiumLibraryPageState
                 onPressed: () => Navigator.pop(dialogContext, false),
                 child: const Text('Annuler'),
               ),
-              FilledButton.tonal(
+              FilledButton(
+                style: PfButtonStyles.danger,
                 onPressed: () => Navigator.pop(dialogContext, true),
                 child: const Text('Supprimer'),
               ),

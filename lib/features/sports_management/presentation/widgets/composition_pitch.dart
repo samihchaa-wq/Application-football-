@@ -619,7 +619,7 @@ class GoalBadge extends StatelessWidget {
             top: -5,
             right: -6,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 0.5),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
               decoration: BoxDecoration(
                 color: const Color(0xFF2E3A59),
                 borderRadius: BorderRadius.circular(5),
@@ -629,7 +629,7 @@ class GoalBadge extends StatelessWidget {
                 '$goals',
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 8,
+                  fontSize: 11,
                   fontWeight: FontWeight.w400,
                   height: 1,
                 ),
@@ -660,7 +660,7 @@ class AssistBadge extends StatelessWidget {
             top: -5,
             right: -6,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 0.5),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
               decoration: BoxDecoration(
                 color: const Color(0xFF2E3A59),
                 borderRadius: BorderRadius.circular(5),
@@ -670,7 +670,7 @@ class AssistBadge extends StatelessWidget {
                 '$assists',
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 8,
+                  fontSize: 11,
                   fontWeight: FontWeight.w400,
                   height: 1,
                 ),
@@ -728,7 +728,7 @@ class SubstituteHistoryBadge extends StatelessWidget {
         label ?? '$count',
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 9,
+          fontSize: 11,
           fontWeight: FontWeight.w400,
           height: 1,
         ),

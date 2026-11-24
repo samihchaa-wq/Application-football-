@@ -24,6 +24,7 @@ import 'package:petit_filet/features/matches/presentation/widgets/match_meeting_
 import 'package:petit_filet/features/matches/presentation/widgets/match_wheel_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 class MatchFormPage extends ConsumerStatefulWidget {
   const MatchFormPage({super.key, this.match});
@@ -715,6 +716,7 @@ class _MatchFormPageState extends ConsumerState<MatchFormPage> {
                 child: const Text('Annuler'),
               ),
               FilledButton(
+                style: PfButtonStyles.danger,
                 onPressed: () => Navigator.pop(dialogContext, true),
                 child: const Text('Supprimer'),
               ),

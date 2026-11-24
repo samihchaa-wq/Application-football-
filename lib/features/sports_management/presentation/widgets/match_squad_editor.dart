@@ -4,6 +4,7 @@ import 'package:petit_filet/features/sports_management/domain/football_formation
 import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
 import 'package:petit_filet/features/sports_management/presentation/widgets/formation_pitch_editor.dart';
 import 'package:flutter/material.dart';
+import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 /// Terrain + dispositif + banc, en glisser-déposer.
 ///
@@ -184,6 +185,7 @@ class MatchSquadEditor extends StatelessWidget {
             child: const Text('Annuler'),
           ),
           FilledButton(
+            style: PfButtonStyles.danger,
             onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Retirer'),
           ),

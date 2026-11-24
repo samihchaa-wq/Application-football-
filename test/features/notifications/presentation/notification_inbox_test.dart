@@ -6,6 +6,7 @@ import 'package:petit_filet/features/notifications/presentation/notification_inb
 import 'package:petit_filet/features/notifications/presentation/notifications_page.dart';
 import 'package:petit_filet/features/season_wrapped/data/season_wrapped_repository.dart';
 import 'package:petit_filet/features/club/data/club_repository.dart';
+import 'package:petit_filet/features/preferences/data/push_subscriptions_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -145,7 +146,11 @@ void main() {
   });
 
   group('cloche de l’en-tête', () {
-    Future<void> pumpBell(WidgetTester tester, int unread) async {
+    Future<void> pumpBell(
+      WidgetTester tester,
+      int unread, {
+      PushDeviceAlert alert = PushDeviceAlert.none,
+    }) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -153,6 +158,7 @@ void main() {
               (ref) async => const ClubModules.allEnabled(),
             ),
             unreadNotificationCountProvider.overrideWith((ref) async => unread),
+            pushDeviceAlertProvider.overrideWith((ref) async => alert),
           ],
           child: const MaterialApp(
             home: Scaffold(body: Center(child: NotificationInboxButton())),
@@ -168,6 +174,40 @@ void main() {
       expect(
         find.byKey(const ValueKey('notification-unread-pill')),
         findsNothing,
+      );
+    });
+
+    testWidgets('point d’avertissement si l’appareil ne reçoit rien',
+        (tester) async {
+      await pumpBell(tester, 0, alert: PushDeviceAlert.blocked);
+      expect(
+        find.byKey(const ValueKey('notification-device-silent-dot')),
+        findsOneWidget,
+      );
+      expect(
+        find.bySemanticsLabel('Notifications, désactivées sur cet appareil'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('pas de point quand l’appareil reçoit les notifications',
+        (tester) async {
+      await pumpBell(tester, 0);
+      expect(
+        find.byKey(const ValueKey('notification-device-silent-dot')),
+        findsNothing,
+      );
+    });
+
+    testWidgets('le chiffre des non-lues prime sur le point', (tester) async {
+      await pumpBell(tester, 2, alert: PushDeviceAlert.notEnabled);
+      expect(
+        find.byKey(const ValueKey('notification-device-silent-dot')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('notification-unread-pill')),
+        findsOneWidget,
       );
     });
 

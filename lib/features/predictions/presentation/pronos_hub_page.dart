@@ -25,6 +25,7 @@ import 'package:petit_filet/features/statistics/data/statistics_repository.dart'
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 part 'pronos_hub_history_section.dart';
 part 'pronos_hub_ranking_sections.dart';

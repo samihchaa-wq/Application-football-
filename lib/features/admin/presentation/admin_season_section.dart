@@ -112,11 +112,9 @@ class _SeasonCard extends ConsumerWidget {
               // Action définitive : bouton rouge, comme les autres
               // suppressions de l'appli.
               FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(dialogContext).colorScheme.error,
-                ),
+                style: PfButtonStyles.danger,
                 onPressed: () => Navigator.pop(dialogContext, true),
-                child: const Text('Confirmer'),
+                child: const Text('Finir la saison'),
               ),
             ],
           ),

@@ -590,7 +590,7 @@ class _FormationPitchEditorState extends State<FormationPitchEditor> {
                           slot.label,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 9,
+                            fontSize: 11,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
