@@ -49,8 +49,6 @@ abstract final class ClubIdentityCache {
     String? userId, {
     required String name,
     required String shortName,
-    String? primaryHex,
-    String? secondaryHex,
     String? logoUrl,
   }) async {
     if (userId == null || userId.isEmpty) return;
@@ -61,8 +59,6 @@ abstract final class ClubIdentityCache {
         jsonEncode({
           'name': name,
           'short': shortName,
-          'primary': primaryHex,
-          'secondary': secondaryHex,
           'logo': logoUrl,
         }),
       );
