@@ -33,6 +33,12 @@
 - Test auth_register M03 : on quitte le champ e-mail avant de chercher le bouton (le focus ramenait la page vers le champ).
 - Données de test locales modifiées (match J9 remis au 29/11, match J10 du 02/12 créé) : base locale uniquement.
 
+## Session UI UX Pro Max, 3e lot (24/11/2026, branche claude/gifted-allen-0ofxuq)
+
+- Fait : barre du bas / barre latérale : plus aucun onglet allumé sur Paramètres, Profil, Administration… (« Calendrier » n'est allumé que sur le calendrier et ses matchs). Test ajouté.
+- Balayage du code : aucun bouton-icône sans libellé ; petits textes (8–9) seulement sur le terrain de compo et la pastille « A », laissés tels quels.
+- Non fait : captures réelles (installation de la CLI Supabase refusée par la sécurité de session) ; donc rendu non vérifié à l'écran.
+
 ## Règles impératives
 
 1. **Écriture uniquement dans `samihchaa-wq/Application-football-`.** Ne jamais modifier les dépôts, données, sites ni bases Supabase d'AS Grinta original ou de Carte soirée. Le dépôt AS Grinta peut être consulté en lecture seule pour comparer ses fonctionnalités et son interface.

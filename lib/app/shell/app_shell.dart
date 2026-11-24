@@ -30,6 +30,22 @@ bool shouldRefocusMatchesAfterRouteReturn({
   return !returnedFromModernPastMatch && !returnedFromHistoricalMatch;
 }
 
+/// Onglet à mettre en avant dans la barre de navigation.
+///
+/// La branche Calendrier héberge aussi Paramètres, Profil, Administration…
+/// Sur ces pages, aucun onglet n'est allumé : sinon « Calendrier » paraît
+/// sélectionné alors que l'écran affiché n'est pas le calendrier.
+@visibleForTesting
+int? highlightedShellIndex({
+  required int branchIndex,
+  required String locationPath,
+}) {
+  if (branchIndex != 0) return branchIndex;
+  final onCalendar =
+      locationPath == '/matches' || locationPath.startsWith('/matches/');
+  return onCalendar ? 0 : null;
+}
+
 /// Largeur maximale du contenu quand la barre latérale est affichée.
 const double _maxContentWidth = 1080;
 
@@ -65,6 +81,10 @@ class _AppShellState extends ConsumerState<AppShell>
 
   Uri get _uri => Uri.parse(widget.location);
   int get _selectedIndex => widget.navigationShell.currentIndex;
+  int? get _highlightedIndex => highlightedShellIndex(
+        branchIndex: _selectedIndex,
+        locationPath: _uri.path,
+      );
 
   @override
   void initState() {
@@ -221,7 +241,7 @@ class _AppShellState extends ConsumerState<AppShell>
                           children: [
                             if (statsEnabled) ...[
                               _DesktopNavigation(
-                                selectedIndex: _selectedIndex,
+                                selectedIndex: _highlightedIndex,
                                 extended: extendRail,
                                 onSelected: _selectDestination,
                               ),
@@ -251,7 +271,7 @@ class _AppShellState extends ConsumerState<AppShell>
                         Expanded(
                           child: ShellNavButton(
                             label: 'Calendrier',
-                            selected: _selectedIndex == 0,
+                            selected: _highlightedIndex == 0,
                             onTap: () => _selectDestination(0),
                           ),
                         ),
@@ -259,7 +279,7 @@ class _AppShellState extends ConsumerState<AppShell>
                         Expanded(
                           child: ShellNavButton(
                             label: 'Statistiques',
-                            selected: _selectedIndex == 1,
+                            selected: _highlightedIndex == 1,
                             onTap: () => _selectDestination(1),
                           ),
                         ),
@@ -280,7 +300,7 @@ class _DesktopNavigation extends StatelessWidget {
     required this.onSelected,
   });
 
-  final int selectedIndex;
+  final int? selectedIndex;
   final bool extended;
   final ValueChanged<int> onSelected;
 
