@@ -153,6 +153,16 @@ String _fromMessage(String raw) {
   ];
 
   final patterns = <String, String>{
+    // Fin de saison refusée : dire quoi faire, pas seulement « impossible ».
+    'saison ne peut pas être archivée pendant une fenêtre de correction':
+        'Un match validé il y a moins de 24 h peut encore être corrigé. '
+            'Tu pourras finir la saison une fois ce délai passé.',
+    'données de compétition ne peut pas être rouverte':
+        'Cette saison est terminée et ne peut pas être rouverte. '
+            'Choisis un autre nom pour la nouvelle saison.',
+    'matchs non terminés ne peut pas être archivée':
+        'Il reste des matchs à jouer ou à valider dans cette saison. '
+            'Valide-les ou annule-les avant de finir la saison.',
     'admin role required': 'Action réservée à l’administrateur.',
     'staff role required': 'Action réservée au staff.',
     'admin or moderator role required': 'Action réservée au staff.',

@@ -117,9 +117,8 @@ class _SeasonCard extends ConsumerWidget {
   }
 
   Future<void> _createSeason(BuildContext context, WidgetRef ref) async {
-    final now = DateTime.now();
     final controller = TextEditingController(
-      text: '${now.year}-${now.year + 1}',
+      text: suggestedNewSeasonName(dashboard.seasons, DateTime.now()),
     );
     final name = await showDialog<String>(
       context: context,

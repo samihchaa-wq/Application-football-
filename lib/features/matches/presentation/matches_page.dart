@@ -42,8 +42,15 @@ class _MatchesPageState extends ConsumerState<MatchesPage> {
     final state = ref.watch(matchesControllerProvider);
     final isAdmin = ref.watch(isAdminViewProvider);
     final now = DateTime.now();
-    final matches = [...state.matches]
-      ..sort((a, b) => a.kickoffAt.compareTo(b.kickoffAt));
+    // La liste est partagée avec le calendrier principal : une mise à jour
+    // en direct la recharge pour toutes les saisons. Sans ce filtre, la
+    // saison choisie en haut affichait alors les matchs des autres saisons.
+    final selectedSeasonId = state.selectedSeasonId;
+    final matches = [
+      for (final match in state.matches)
+        if (selectedSeasonId == null || match.seasonId == selectedSeasonId)
+          match,
+    ]..sort((a, b) => a.kickoffAt.compareTo(b.kickoffAt));
 
     MatchModel? target;
     for (final wantedPhase in const [
@@ -421,20 +428,34 @@ class _MatchCard extends StatelessWidget {
 /// Un nom d'équipe et son score forment un bloc insécable : la ligne ne peut
 /// se couper qu'autour du tiret central. Sans cela, on lisait par exemple
 /// « AS Pantin 2 - 2 AS » puis « Grinta » à la ligne.
+///
+/// Un nom trop long pour tenir sur une ligne de téléphone peut, lui, se couper
+/// entre ses mots : rendu insécable, il était coupé au milieu d'un mot
+/// (« Olympique des Coteau » puis « x »). Le score reste collé au mot voisin.
 @visibleForTesting
 String adminMatchTitle(MatchModel match) {
-  String block(String value) =>
-      value.trim().replaceAll(RegExp(r'\s+'), '\u00A0');
-  final opponent = block(match.opponentName ?? 'Adversaire');
-  final own = block(ClubIdentity.name);
+  const nbsp = '\u00A0';
+  String team(String value) {
+    final clean = value.trim().replaceAll(RegExp(r'\s+'), ' ');
+    return clean.length <= _maxUnbreakableTeamName
+        ? clean.replaceAll(' ', nbsp)
+        : clean;
+  }
+
+  final opponent = team(match.opponentName ?? 'Adversaire');
+  final own = team(ClubIdentity.name);
   if (!match.isFinished) {
     return match.isHome ? '$own – $opponent' : '$opponent – $own';
   }
   final ownScore = match.ownScore ?? 0;
   final opponentScore = match.opponentScore ?? 0;
-  final home = block('$own $ownScore');
-  final away = block('$opponentScore $opponent');
-  final homeAway = block('$opponent $opponentScore');
-  final awayOwn = block('$ownScore $own');
+  final home = '$own$nbsp$ownScore';
+  final away = '$opponentScore$nbsp$opponent';
+  final homeAway = '$opponent$nbsp$opponentScore';
+  final awayOwn = '$ownScore$nbsp$own';
   return match.isHome ? '$home - $away' : '$homeAway - $awayOwn';
 }
+
+/// Au-delà, un nom d'équipe ne tient plus sur une ligne d'un téléphone de
+/// 360 à 390 points de large dans cette liste.
+const _maxUnbreakableTeamName = 18;

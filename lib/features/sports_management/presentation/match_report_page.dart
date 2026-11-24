@@ -653,7 +653,14 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
                       child: PfProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.verified_rounded),
-              label: const Text('Valider le compte rendu'),
+              // Une fois validé, le bouton enregistre une correction (journal
+              // et nouveau calcul des statistiques) : l'ancien libellé laissait
+              // croire que la validation n'avait pas été prise en compte.
+              label: Text(
+                report.isCorrection
+                    ? 'Corriger le compte rendu'
+                    : 'Valider le compte rendu',
+              ),
             ),
           ),
         ),
@@ -804,6 +811,8 @@ class _ScoreLine extends StatelessWidget {
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w400),
           ),
         ),
+        // Nommés comme dans le direct : sans infobulle, le lecteur d'écran
+        // annonçait quatre boutons vides.
         IconButton.filledTonal(
           tooltip: 'Retirer un but à $name',
           onPressed: enabled && score > 0 ? () => onChanged(score - 1) : null,

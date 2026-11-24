@@ -225,9 +225,10 @@ class _InlineMatchPredictionCardState
                   notOpenYet
                       ? 'Disponible à partir de J−${ClubRules.featuresOpenDays} '
                           'à ${ClubRules.featuresOpenHour} h, heure de Paris.'
-                      : ClubRules.liveEnabled
-                          ? 'Pronostic fermé : le Live est désormais ouvert.'
-                          : 'Pronostic fermé.',
+                      : _closedReason(item.status) ??
+                          (ClubRules.liveEnabled
+                              ? 'Pronostic fermé : le Live est désormais ouvert.'
+                              : 'Pronostic fermé.'),
                   style: const TextStyle(
                     color: AppTheme.textSecondary,
                     fontSize: 12,
@@ -282,6 +283,14 @@ class _InlineMatchPredictionCardState
     }
   }
 }
+
+/// Raison affichée quand le pronostic est fermé parce que le match n'aura
+/// plus lieu ou est fini : « le Live est ouvert » serait faux.
+String? _closedReason(String status) => switch (status) {
+      'termine' || 'archive' => 'Pronostic fermé : match terminé.',
+      'annule' => 'Pronostic fermé : match annulé.',
+      _ => null,
+    };
 
 class _StatusChip extends StatelessWidget {
   const _StatusChip({
