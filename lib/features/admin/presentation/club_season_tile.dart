@@ -72,7 +72,12 @@ class ClubSeasonTile extends ConsumerWidget {
                 onPressed: () => Navigator.pop(dialogContext, false),
                 child: const Text('Annuler'),
               ),
+              // Action définitive : bouton rouge, comme les autres
+              // suppressions de l'appli.
               FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(dialogContext).colorScheme.error,
+                ),
                 onPressed: () => Navigator.pop(dialogContext, true),
                 child: const Text('Confirmer'),
               ),

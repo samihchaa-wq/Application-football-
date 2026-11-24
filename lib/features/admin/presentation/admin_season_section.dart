@@ -16,17 +16,59 @@ class _SeasonCard extends ConsumerWidget {
     );
     final openSeason = openSeasons.isEmpty ? null : openSeasons.first;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (openSeason != null) ...[
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
+    // La saison en cours d'abord ; l'action définitive ensuite, expliquée et
+    // en taille normale. Avant, « Finir la saison » était le plus gros
+    // élément de la page, au-dessus même du nom de la saison.
+    if (openSeason == null) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Saison', style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: () => _createSeason(context, ref),
+                icon: const Icon(Icons.add),
+                label: const Text('Créer une saison'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Saison ${openSeason.name}',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'En cours',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppTheme.success,
+                  ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'En fin de saison, l’archiver fige le classement final. Tu '
+              'pourras ensuite en créer une nouvelle.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppTheme.textSecondary,
+                  ),
+            ),
+            const SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerLeft,
               child: OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Theme.of(context).colorScheme.error,
-                  textStyle: Theme.of(context).textTheme.titleLarge,
                 ),
                 onPressed: () => _changeStatus(
                   context,
@@ -43,35 +85,9 @@ class _SeasonCard extends ConsumerWidget {
                 label: const Text('Finir la saison'),
               ),
             ),
-          ),
-          const SizedBox(height: 14),
-        ],
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: openSeason == null
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Saison',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 12),
-                      FilledButton.icon(
-                        onPressed: () => _createSeason(context, ref),
-                        icon: const Icon(Icons.add),
-                        label: const Text('Créer une saison'),
-                      ),
-                    ],
-                  )
-                : Text(
-                    'Saison ${openSeason.name}',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -93,7 +109,12 @@ class _SeasonCard extends ConsumerWidget {
                 onPressed: () => Navigator.pop(dialogContext, false),
                 child: const Text('Annuler'),
               ),
+              // Action définitive : bouton rouge, comme les autres
+              // suppressions de l'appli.
               FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(dialogContext).colorScheme.error,
+                ),
                 onPressed: () => Navigator.pop(dialogContext, true),
                 child: const Text('Confirmer'),
               ),
