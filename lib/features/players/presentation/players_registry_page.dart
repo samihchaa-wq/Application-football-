@@ -33,7 +33,7 @@ class PlayersRegistryPage extends ConsumerWidget {
           if (seasonId == null) {
             return const Center(
               child: PfEmptyState(
-                icon: Icons.calendar_month_rounded,
+                icon: Icons.calendar_month_outlined,
                 title: 'Aucune saison ouverte',
                 message: 'Crée une saison dans Administration pour définir '
                     'ton effectif.',
@@ -73,7 +73,7 @@ class _RosterList extends ConsumerWidget {
               child: FilledButton.icon(
                 onPressed: () =>
                     _showPlayerDialog(context, ref, seasonId: seasonId),
-                icon: const Icon(Icons.person_add_alt_1),
+                icon: const Icon(Icons.person_add_alt_1_outlined),
                 label: const Text('Ajouter un joueur sans compte'),
               ),
             ),
@@ -81,7 +81,7 @@ class _RosterList extends ConsumerWidget {
             if (players.isEmpty)
               const Card(
                 child: PfEmptyState(
-                  icon: Icons.groups_rounded,
+                  icon: Icons.groups_outlined,
                   title: 'Effectif vide',
                   compact: true,
                 ),

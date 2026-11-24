@@ -210,7 +210,7 @@ class AdminMatchOptionsButton extends ConsumerWidget {
           const PopupMenuItem(
             value: 'finish',
             child: ListTile(
-              leading: Icon(Icons.check_circle_outline),
+              leading: Icon(Icons.check_circle_outlined),
               title: Text('Terminer'),
               contentPadding: EdgeInsets.zero,
             ),
@@ -228,7 +228,7 @@ class AdminMatchOptionsButton extends ConsumerWidget {
           const PopupMenuItem(
             value: 'delete',
             child: ListTile(
-              leading: Icon(Icons.delete_outline),
+              leading: Icon(Icons.delete_outlined),
               title: Text('Supprimer'),
               contentPadding: EdgeInsets.zero,
             ),

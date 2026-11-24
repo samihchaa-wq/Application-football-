@@ -415,7 +415,7 @@ extension _AdminSquadPlanEffectif on _AdminSquadPlanPageState {
     final status = player.availabilityStatus;
     final updatedAt = player.availabilityUpdatedAt;
     final (availabilityLabel, availabilityIcon) = switch (status) {
-      'available' => ('Disponible', Icons.check_circle_outline),
+      'available' => ('Disponible', Icons.check_circle_outlined),
       'absent' => ('Absent', Icons.cancel_outlined),
       _ => ('Sans réponse', Icons.schedule_outlined),
     };
@@ -465,7 +465,7 @@ extension _AdminSquadPlanEffectif on _AdminSquadPlanPageState {
               if (!_isInternalMatch) ...[
                 const SizedBox(height: 12),
                 _PlayerInfoRow(
-                  icon: Icons.hourglass_top_rounded,
+                  icon: Icons.hourglass_top_outlined,
                   color: _effectifWaitlistColor,
                   title: 'Liste d’attente',
                   detail: waitlistDetail,
@@ -473,7 +473,7 @@ extension _AdminSquadPlanEffectif on _AdminSquadPlanPageState {
                 if (!player.isGuest) ...[
                   const SizedBox(height: 12),
                   _PlayerInfoRow(
-                    icon: Icons.repeat_rounded,
+                    icon: Icons.repeat_outlined,
                     color: _effectifWaitlistColor,
                     title: 'Nombre de tours en liste d’attente',
                     detail: '${player.currentSeasonWaitlistCount} fois',
@@ -657,7 +657,7 @@ extension _AdminSquadPlanEffectif on _AdminSquadPlanPageState {
                       Expanded(
                         child: _EffectifActionButton(
                           onPressed: () => context.push('/admin/waitlist'),
-                          icon: Icons.format_list_numbered_rounded,
+                          icon: Icons.format_list_numbered_outlined,
                           label: 'Liste d’attente',
                         ),
                       ),
@@ -697,7 +697,6 @@ extension _AdminSquadPlanEffectif on _AdminSquadPlanPageState {
             _EffectifAvatarColumn(
               title: 'Convoqués',
               color: _effectifConvokedColor,
-              icon: Icons.check_circle_outline,
               players: _convokedPlayers,
               acceptsDrops: true,
               draggable: true,
@@ -713,7 +712,6 @@ extension _AdminSquadPlanEffectif on _AdminSquadPlanPageState {
                     ? 'Liste d’attente'
                     : 'Non retenus',
                 color: _effectifWaitlistColor,
-                icon: Icons.hourglass_top_rounded,
                 players: _waitlistedPlayers,
                 acceptsDrops: true,
                 draggable: true,
@@ -725,7 +723,6 @@ extension _AdminSquadPlanEffectif on _AdminSquadPlanPageState {
             _EffectifAvatarColumn(
               title: 'Absents',
               color: _effectifAbsentColor,
-              icon: Icons.cancel_outlined,
               players: _absentPlayers,
               acceptsDrops: true,
               draggable: true,
@@ -737,7 +734,6 @@ extension _AdminSquadPlanEffectif on _AdminSquadPlanPageState {
               title: 'Sans réponse',
               countCoachApart: false,
               color: _effectifNoResponseColor,
-              icon: Icons.schedule_outlined,
               players: _unansweredPlayers,
               acceptsDrops: true,
               acceptsPlayer: (player) =>

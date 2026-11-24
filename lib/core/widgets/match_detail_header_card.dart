@@ -163,7 +163,7 @@ class MatchDetailHeaderCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Icon(
-                        Icons.chevron_right_rounded,
+                        Icons.chevron_right_outlined,
                         size: 18,
                         color: AppTheme.accent,
                       ),

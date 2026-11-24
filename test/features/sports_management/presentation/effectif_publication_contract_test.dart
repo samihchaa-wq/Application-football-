@@ -66,7 +66,7 @@ void main() {
     expect(effectifSource, isNot(contains('Enregistrer le brouillon')));
     expect(effectifSource, isNot(contains('Enregistrer les convocations')));
     // Plus de bouton du tout : chaque décision part d'elle-même.
-    expect(effectifSource, isNot(contains("label: const Text('Enregistrer')")));
+    expect(effectifSource, isNot(contains("const Text('Enregistrer')")));
     expect(effectifSource, contains('_scheduleEffectifSave()'));
     expect(
       effectifSource,
@@ -75,7 +75,7 @@ void main() {
     expect(effectifSource, contains('.publishEffectif('));
     expect(repositorySource, contains("'admin_publish_match_effectif'"));
 
-    expect(compositionSource, contains("label: const Text('Enregistrer')"));
+    expect(compositionSource, contains("const Text('Enregistrer')"));
     expect(
       compositionSource,
       isNot(contains('puis appuie sur Enregistrer')),

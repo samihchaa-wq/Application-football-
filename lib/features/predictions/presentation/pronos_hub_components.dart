@@ -296,7 +296,7 @@ class _LoadingCard extends StatelessWidget {
 class _MessageCard extends StatelessWidget {
   const _MessageCard({
     required this.title,
-    this.icon = Icons.scoreboard_rounded,
+    this.icon = Icons.scoreboard_outlined,
     this.message,
     this.tone = PfEmptyTone.neutral,
   });

@@ -68,7 +68,7 @@ void main() {
     // fixe en bas de l'écran sur un téléphone.
     final scorePlus = find.descendant(
       of: find.byKey(const Key('history-score-for')),
-      matching: find.byIcon(Icons.add_circle_outline),
+      matching: find.byIcon(Icons.add_circle_outlined),
     );
     await reveal(tester, scorePlus);
     await tester.drag(find.byType(ListView).first, const Offset(0, -120));

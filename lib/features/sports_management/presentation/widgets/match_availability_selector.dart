@@ -63,7 +63,7 @@ class _MatchAvailabilitySelectorState
             padding: EdgeInsets.all(14),
             child: Row(
               children: [
-                Icon(Icons.error_outline),
+                Icon(Icons.error_outlined),
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -283,7 +283,7 @@ class _AvailabilityPanel extends StatelessWidget {
               Expanded(
                 child: _AvailabilityChoice(
                   label: 'Présent',
-                  icon: Icons.check_circle_outline,
+                  icon: Icons.check_circle_outlined,
                   color: AppTheme.success,
                   selected: selectedAvailable,
                   onPressed: saving ? null : onAvailable,
@@ -328,18 +328,16 @@ class _AvailabilityPanel extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: OutlinedButton(
                     onPressed: onOpenEffectif,
-                    icon: const Icon(Icons.groups_2_outlined),
-                    label: const Text('Effectif'),
+                    child: const Text('Effectif'),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: OutlinedButton(
                     onPressed: onOpenComposition,
-                    icon: const Icon(Icons.sports_soccer_outlined),
-                    label: const Text('Compo'),
+                    child: const Text('Compo'),
                   ),
                 ),
               ],

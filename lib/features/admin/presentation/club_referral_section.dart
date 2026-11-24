@@ -86,14 +86,14 @@ class _ReferralCard extends StatelessWidget {
                   key: const Key('club-referral-copy'),
                   tooltip: 'Copier le code',
                   onPressed: () => _copy(context),
-                  icon: const Icon(Icons.copy),
+                  icon: const Icon(Icons.copy_outlined),
                 ),
                 IconButton(
                   key: const Key('club-referral-share'),
                   tooltip: 'Partager le code',
                   onPressed: () =>
                       Share.share(referralShareText(referrals.code)),
-                  icon: const Icon(Icons.share),
+                  icon: const Icon(Icons.share_outlined),
                 ),
               ],
             ),
@@ -131,8 +131,8 @@ class _ReferralCard extends StatelessWidget {
                   dense: true,
                   leading: Icon(
                     referral.state == ClubReferralState.trial
-                        ? Icons.hourglass_empty
-                        : Icons.check_circle_outline,
+                        ? Icons.hourglass_empty_outlined
+                        : Icons.check_circle_outlined,
                   ),
                   title: Text(referral.clubName),
                   subtitle: Text(_stateLabel(referral.state, rate)),

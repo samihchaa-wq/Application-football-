@@ -127,7 +127,7 @@ class _BadgeImageEditorButtonState
   Widget build(BuildContext context) {
     final hasImage = widget.badge.imageUrl?.trim().isNotEmpty == true;
     final tooltip = hasImage ? 'Recadrer l’image' : 'Ajouter une image';
-    final icon = hasImage ? Icons.crop_rounded : Icons.photo_camera_rounded;
+    final icon = hasImage ? Icons.crop_outlined : Icons.photo_camera_outlined;
 
     if (widget.compact) {
       return IconButton.filledTonal(
@@ -336,7 +336,7 @@ class _BadgeCropDialogState extends State<_BadgeCropDialog> {
                     ? Center(
                         child: FilledButton.icon(
                           onPressed: _pickImage,
-                          icon: const Icon(Icons.photo_library_rounded),
+                          icon: const Icon(Icons.photo_library_outlined),
                           label: const Text('Choisir une image'),
                         ),
                       )
@@ -404,13 +404,12 @@ class _BadgeCropDialogState extends State<_BadgeCropDialog> {
               children: [
                 TextButton.icon(
                   onPressed: _saving ? null : _pickImage,
-                  icon: const Icon(Icons.photo_library_rounded, size: 18),
+                  icon: const Icon(Icons.photo_library_outlined, size: 18),
                   label: const Text('Changer d’image'),
                 ),
-                TextButton.icon(
+                TextButton(
                   onPressed: _saving ? null : _reset,
-                  icon: const Icon(Icons.refresh_rounded, size: 18),
-                  label: const Text('Réinitialiser'),
+                  child: const Text('Réinitialiser'),
                 ),
               ],
             ),
@@ -421,11 +420,10 @@ class _BadgeCropDialogState extends State<_BadgeCropDialog> {
           onPressed: _saving ? null : () => Navigator.of(context).pop(),
           child: const Text('Annuler'),
         ),
-        FilledButton.icon(
+        FilledButton(
           onPressed:
               _saving || bytes == null || _imageError != null ? null : _confirm,
-          icon: const Icon(Icons.check_rounded),
-          label: const Text('Enregistrer'),
+          child: const Text('Enregistrer'),
         ),
       ],
     );

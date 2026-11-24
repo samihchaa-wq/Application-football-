@@ -42,7 +42,7 @@ class CalendarFeedEventCard extends ConsumerWidget {
             tooltip: 'Modifier l’événement',
             onPressed: edit,
             color: CalendarCardPalette.eventBorder,
-            icon: const Icon(Icons.edit_rounded),
+            icon: const Icon(Icons.edit_outlined),
           )
         : null;
 

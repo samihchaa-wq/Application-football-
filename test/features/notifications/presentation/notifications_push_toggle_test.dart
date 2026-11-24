@@ -111,11 +111,11 @@ void main() {
     );
     final activeBell = find.descendant(
       of: essentialCard,
-      matching: find.byIcon(Icons.notifications_rounded),
+      matching: find.byIcon(Icons.notifications_outlined),
     );
     final inactiveBell = find.descendant(
       of: essentialCard,
-      matching: find.byIcon(Icons.notifications_none_rounded),
+      matching: find.byIcon(Icons.notifications_none_outlined),
     );
 
     testWidgets('un appareil abonné affiche la cloche active', (tester) async {
@@ -213,7 +213,7 @@ void main() {
         expect(
           find.descendant(
             of: row.first,
-            matching: find.byIcon(Icons.notifications_rounded),
+            matching: find.byIcon(Icons.notifications_outlined),
           ),
           findsOneWidget,
           reason: title,
@@ -277,7 +277,7 @@ void main() {
           expect(
             find.descendant(
               of: bellRow(title),
-              matching: find.byIcon(Icons.notifications_none_rounded),
+              matching: find.byIcon(Icons.notifications_none_outlined),
             ),
             findsOneWidget,
             reason: title,
@@ -300,7 +300,7 @@ void main() {
         await tester.tap(
           find.descendant(
             of: essentialCard,
-            matching: find.byIcon(Icons.notifications_none_rounded),
+            matching: find.byIcon(Icons.notifications_none_outlined),
           ),
         );
         await tester.pumpAndSettle();
@@ -310,7 +310,7 @@ void main() {
           expect(
             find.descendant(
               of: bellRow(title),
-              matching: find.byIcon(Icons.notifications_rounded),
+              matching: find.byIcon(Icons.notifications_outlined),
             ),
             findsOneWidget,
             reason: title,

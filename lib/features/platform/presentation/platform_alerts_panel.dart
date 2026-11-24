@@ -113,7 +113,8 @@ class PlatformAlertsPanel extends ConsumerWidget {
         ),
       if (value.cardPayments7d.isNotEmpty) ...[
         ListTile(
-          leading: const Icon(Icons.credit_card, color: AppTheme.success),
+          leading:
+              const Icon(Icons.credit_card_outlined, color: AppTheme.success),
           title: Text(
             '${value.cardPayments7d.length} paiement(s) par carte cette semaine',
           ),
@@ -155,7 +156,7 @@ class PlatformAlertsPanel extends ConsumerWidget {
         ),
       if (nothing)
         const ListTile(
-          leading: Icon(Icons.check_circle_outline, color: AppTheme.success),
+          leading: Icon(Icons.check_circle_outlined, color: AppTheme.success),
           title: Text('Rien à traiter côté paiements'),
           subtitle: Text('Aucune alerte, aucun document en attente.'),
         ),

@@ -102,7 +102,9 @@ class _SubscriptionCard extends ConsumerWidget {
             _cardTitle('Abonnement'),
             ListTile(
               leading: Icon(
-                billing.isTrial ? Icons.card_giftcard : Icons.verified_outlined,
+                billing.isTrial
+                    ? Icons.card_giftcard_outlined
+                    : Icons.verified_outlined,
               ),
               title: Text(
                 billing.isTrial
@@ -131,7 +133,7 @@ class _SubscriptionCard extends ConsumerWidget {
               ),
             if (autoSuspended && suspended)
               ListTile(
-                leading: const Icon(Icons.pause_circle_outline,
+                leading: const Icon(Icons.pause_circle_outlined,
                     color: AppTheme.warning),
                 title: const Text('Suspendue automatiquement pour impayé'),
                 subtitle: Text(
@@ -141,7 +143,7 @@ class _SubscriptionCard extends ConsumerWidget {
               )
             else if (suspended)
               const ListTile(
-                leading: Icon(Icons.pause_circle_outline),
+                leading: Icon(Icons.pause_circle_outlined),
                 title: Text('Suspendue à la main'),
                 subtitle: Text(
                   'Un paiement prolonge l’abonnement mais ne rouvre pas '
@@ -187,17 +189,15 @@ class _SubscriptionCard extends ConsumerWidget {
                           : 'Offrir une période',
                     ),
                   ),
-                  OutlinedButton.icon(
+                  OutlinedButton(
                     key: const Key('platform-club-terms'),
                     onPressed: () => _terms(context, ref),
-                    icon: const Icon(Icons.sell_outlined),
-                    label: const Text('Tarif et note'),
+                    child: const Text('Tarif et note'),
                   ),
-                  OutlinedButton.icon(
+                  OutlinedButton(
                     key: const Key('platform-billing-details'),
                     onPressed: () => _billingDetails(context, ref),
-                    icon: const Icon(Icons.home_work_outlined),
-                    label: const Text('Adresse de facturation'),
+                    child: const Text('Adresse de facturation'),
                   ),
                   OutlinedButton.icon(
                     key: const Key('platform-club-access'),
@@ -206,8 +206,8 @@ class _SubscriptionCard extends ConsumerWidget {
                       foregroundColor: suspended ? null : AppTheme.error,
                     ),
                     icon: Icon(suspended
-                        ? Icons.play_circle_outline
-                        : Icons.pause_circle_outline),
+                        ? Icons.play_circle_outlined
+                        : Icons.pause_circle_outlined),
                     label: Text(
                         suspended ? 'Rouvrir l’accès' : 'Suspendre l’accès'),
                   ),
@@ -377,8 +377,8 @@ class _ContactsCard extends StatelessWidget {
                 subtitle: Text('Réglages du club › Coordonnées du club.'),
               )
             else ...[
-              line(Icons.person_outline, 'Personne à contacter', contact.name),
-              line(Icons.mail_outline, 'E-mail du club', contact.email,
+              line(Icons.person_outlined, 'Personne à contacter', contact.name),
+              line(Icons.mail_outlined, 'E-mail du club', contact.email,
                   link: contact.email == null
                       ? null
                       : Uri(scheme: 'mailto', path: contact.email)),
@@ -511,7 +511,9 @@ class _HistoryCard extends ConsumerWidget {
     return ListTile(
       key: ValueKey('platform-payment-${payment.id}'),
       leading: Icon(
-        payment.isCard ? Icons.credit_card : Icons.receipt_long_outlined,
+        payment.isCard
+            ? Icons.credit_card_outlined
+            : Icons.receipt_long_outlined,
       ),
       title: Text(
         '${formatEuros(payment.amountCents)} · ${payment.methodLabel}',

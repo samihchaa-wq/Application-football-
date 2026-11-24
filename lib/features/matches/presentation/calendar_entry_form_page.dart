@@ -233,7 +233,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
             IconButton(
               tooltip: 'Supprimer l’événement',
               onPressed: busy ? null : _confirmDeleteEvent,
-              icon: const Icon(Icons.delete_outline),
+              icon: const Icon(Icons.delete_outlined),
             ),
         ],
       ),
@@ -255,7 +255,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
             ] else if (widget.event != null) ...[
               const ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: Icon(Icons.event_rounded),
+                leading: Icon(Icons.event_outlined),
                 title: Text('Événement'),
                 subtitle: Text('Rendez-vous du club, indépendant des matchs.'),
               ),
@@ -520,7 +520,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
                           padding: EdgeInsets.zero,
                         ),
                         onPressed: busy ? null : _createOpponent,
-                        child: const Icon(Icons.add_rounded),
+                        child: const Icon(Icons.add_outlined),
                       ),
                     ),
                   ),
@@ -692,7 +692,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
           subtitle: Text(
             '${_squadSizeController.text} joueur${_squadSizeController.text == '1' ? '' : 's'}',
           ),
-          trailing: const Icon(Icons.unfold_more_rounded),
+          trailing: const Icon(Icons.unfold_more_outlined),
           onTap: busy ? null : _pickSquadSize,
         ),
       );
@@ -730,7 +730,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
         contentPadding: EdgeInsets.zero,
         title: const Text('Date'),
         subtitle: Text(_formatDate(_startsAt)),
-        trailing: const Icon(Icons.unfold_more_rounded),
+        trailing: const Icon(Icons.unfold_more_outlined),
         onTap: busy ? null : _pickDate,
       );
 
@@ -738,7 +738,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
         contentPadding: EdgeInsets.zero,
         title: const Text('Heure'),
         subtitle: Text(_formatTime(_startsAt)),
-        trailing: const Icon(Icons.unfold_more_rounded),
+        trailing: const Icon(Icons.unfold_more_outlined),
         onTap: busy ? null : _pickTime,
       );
 

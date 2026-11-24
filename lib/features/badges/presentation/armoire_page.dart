@@ -77,7 +77,7 @@ class ArmoirePage extends ConsumerWidget {
             children: [
               Card(
                 child: PfEmptyState(
-                  icon: Icons.error_outline_rounded,
+                  icon: Icons.error_outlined,
                   title: 'Collection indisponible',
                   message: humanizeError(e),
                 ),
@@ -105,7 +105,7 @@ class ArmoirePage extends ConsumerWidget {
                   _SectionTitle(
                     title: 'Débloqués',
                     count: unlocked.length,
-                    icon: Icons.workspace_premium_rounded,
+                    icon: Icons.workspace_premium_outlined,
                   ),
                   const SizedBox(height: 14),
                   _BadgeGrid(
@@ -120,7 +120,7 @@ class ArmoirePage extends ConsumerWidget {
                   _SectionTitle(
                     title: 'En progression',
                     count: armoire.inProgress.length,
-                    icon: Icons.trending_up_rounded,
+                    icon: Icons.trending_up_outlined,
                   ),
                   const SizedBox(height: 14),
                   LayoutBuilder(
@@ -145,7 +145,7 @@ class ArmoirePage extends ConsumerWidget {
                   _SectionTitle(
                     title: 'Badges mystères',
                     count: toDiscover.length,
-                    icon: Icons.lock_outline_rounded,
+                    icon: Icons.lock_outlined,
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -339,7 +339,7 @@ class _BadgeTile extends ConsumerWidget {
               ),
               alignment: Alignment.center,
               child: const Icon(
-                Icons.lock_outline_rounded,
+                Icons.lock_outlined,
                 color: AppTheme.textFaint,
                 size: 22,
               ),
@@ -627,7 +627,7 @@ class _InProgressTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.chevron_right_rounded, color: AppTheme.textFaint),
+            const Icon(Icons.chevron_right_outlined, color: AppTheme.textFaint),
           ],
         ),
       ),

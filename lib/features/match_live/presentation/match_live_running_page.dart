@@ -162,7 +162,7 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
                           ? Column(
                               children: [
                                 _BenchAction(
-                                  icon: Icons.person_add_alt_1_rounded,
+                                  icon: Icons.person_add_alt_1_outlined,
                                   label: 'Ajouter',
                                   tooltip: 'Ajouter un joueur',
                                   onPressed: setupControlsDisabled ||
@@ -177,7 +177,7 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
                                           ),
                                 ),
                                 _BenchAction(
-                                  icon: Icons.person_remove_rounded,
+                                  icon: Icons.person_remove_outlined,
                                   label: 'Retirer',
                                   tooltip: 'Retirer un joueur du banc',
                                   onPressed: setupControlsDisabled ||
@@ -452,21 +452,21 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
               children: [
                 if (canEdit) ...[
                   _MatchModeAction(
-                    icon: Icons.sports_rounded,
+                    icon: Icons.sports_outlined,
                     label: 'Mi-temps',
                     onPressed: canGoHalftime
                         ? () => _confirmHalftime(context, controller)
                         : null,
                   ),
                   _MatchModeAction(
-                    icon: Icons.flag_rounded,
+                    icon: Icons.flag_outlined,
                     label: 'Fin',
                     tooltip: 'Fin du match',
                     danger: true,
                     onPressed: () => _confirmEndMatch(context, controller),
                   ),
                   _MatchModeAction(
-                    icon: Icons.restart_alt_rounded,
+                    icon: Icons.restart_alt_outlined,
                     label: 'Reset',
                     tooltip: 'Recommencer le match',
                     onPressed: ClubRules.enabled(ClubFeature.liveRestart)
@@ -475,26 +475,26 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
                   ),
                   switch (session.state) {
                     MatchLiveState.running => _MatchModeAction(
-                        icon: Icons.pause_rounded,
+                        icon: Icons.pause_outlined,
                         label: 'Pause',
                         onPressed: ClubRules.enabled(ClubFeature.livePause)
                             ? () => controller.setClockState('pause')
                             : null,
                       ),
                     MatchLiveState.paused => _MatchModeAction(
-                        icon: Icons.play_arrow_rounded,
+                        icon: Icons.play_arrow_outlined,
                         label: 'Reprendre',
                         onPressed: () => controller.setClockState('resume'),
                       ),
                     MatchLiveState.halftime => _MatchModeAction(
-                        icon: Icons.play_arrow_rounded,
+                        icon: Icons.play_arrow_outlined,
                         label: '2e mi-temps',
                         tooltip: 'Reprendre la 2e mi-temps',
                         onPressed: () =>
                             controller.setClockState('resume_second_half'),
                       ),
                     _ => const _MatchModeAction(
-                        icon: Icons.pause_rounded,
+                        icon: Icons.pause_outlined,
                         label: 'Pause',
                         onPressed: null,
                       ),
@@ -508,7 +508,7 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
                 ] else
                   const Spacer(flex: 4),
                 _MatchModeAction(
-                  icon: Icons.receipt_long_rounded,
+                  icon: Icons.receipt_long_outlined,
                   label: 'Journal',
                   tooltip: 'Journal du match',
                   badgeCount: bundle.events.length,
@@ -517,7 +517,7 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
                 ),
                 if (canEdit)
                   _MatchModeAction(
-                    icon: Icons.grid_view_rounded,
+                    icon: Icons.grid_view_outlined,
                     label: formationForCode(lineup.formationCode).code,
                     tooltip: 'Changer de dispositif',
                     onPressed: setupControlsDisabled ||
@@ -658,7 +658,7 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
                     children: [
                       Expanded(child: Text(formation.code)),
                       if (formation.code == current)
-                        const Icon(Icons.check_rounded, size: 20),
+                        const Icon(Icons.check_outlined, size: 20),
                     ],
                   ),
                 ),

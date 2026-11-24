@@ -66,7 +66,7 @@ class _SeasonCard extends ConsumerWidget {
             const SizedBox(height: 10),
             Align(
               alignment: Alignment.centerLeft,
-              child: OutlinedButton.icon(
+              child: OutlinedButton(
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Theme.of(context).colorScheme.error,
                 ),
@@ -81,8 +81,7 @@ class _SeasonCard extends ConsumerWidget {
                       'C’est définitif. Tu pourras ensuite créer une '
                       'nouvelle saison.',
                 ),
-                icon: const Icon(Icons.flag_outlined),
-                label: const Text('Finir la saison'),
+                child: const Text('Finir la saison'),
               ),
             ),
           ],

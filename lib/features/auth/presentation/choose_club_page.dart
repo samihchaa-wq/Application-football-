@@ -198,7 +198,7 @@ class _ChooseClubPageState extends ConsumerState<ChooseClubPage> {
             textCapitalization: TextCapitalization.words,
             decoration: const InputDecoration(
               labelText: 'Prénom',
-              prefixIcon: Icon(Icons.person_outline),
+              prefixIcon: Icon(Icons.person_outlined),
             ),
           ),
           const SizedBox(height: 16),
@@ -238,7 +238,7 @@ class _ChooseClubPageState extends ConsumerState<ChooseClubPage> {
                     height: 18,
                     child: PfProgressIndicator(strokeWidth: 2),
                   )
-                : const Icon(Icons.sports_soccer),
+                : const Icon(Icons.sports_soccer_outlined),
             label: Text(
               _submitting
                   ? 'En cours…'

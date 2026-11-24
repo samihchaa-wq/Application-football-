@@ -21,12 +21,12 @@ Future<String?> pickMatchLiveScorer(
   BuildContext context, {
   required List<MatchCompositionEntry> candidates,
   String title = 'Qui a marqué ?',
-  IconData icon = Icons.sports_soccer,
+  IconData icon = Icons.sports_soccer_outlined,
   Widget? playerLeading,
   String? extraChoiceLabel,
-  IconData extraChoiceIcon = Icons.help_outline,
+  IconData extraChoiceIcon = Icons.help_outlined,
   String? clearChoiceLabel,
-  IconData clearChoiceIcon = Icons.undo_rounded,
+  IconData clearChoiceIcon = Icons.undo_outlined,
 }) {
   final sorted = [...candidates]
     ..sort((a, b) => a.displayName.toLowerCase().compareTo(
@@ -57,10 +57,9 @@ Future<String?> pickMatchLiveScorer(
                     ),
                   ),
                   const SizedBox(width: 8),
-                  TextButton.icon(
+                  TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close_rounded),
-                    label: const Text('Annuler'),
+                    child: const Text('Annuler'),
                   ),
                 ],
               ),

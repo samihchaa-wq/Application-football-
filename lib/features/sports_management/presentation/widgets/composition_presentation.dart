@@ -697,7 +697,7 @@ class _CompositionPresentationPageState
               IconButton(
                 tooltip: 'Fermer',
                 onPressed: () => Navigator.of(context).maybePop(),
-                icon: const Icon(Icons.close_rounded),
+                icon: const Icon(Icons.close_outlined),
               ),
               const SizedBox(width: 4),
               Expanded(
@@ -733,7 +733,7 @@ class _CompositionPresentationPageState
               const SizedBox(width: 8),
               FilledButton.tonalIcon(
                 onPressed: _replay,
-                icon: const Icon(Icons.replay_rounded),
+                icon: const Icon(Icons.replay_outlined),
                 label: const Text('Revoir'),
               ),
             ],

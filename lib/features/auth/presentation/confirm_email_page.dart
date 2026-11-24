@@ -64,25 +64,25 @@ class _ConfirmEmailPageState extends ConsumerState<ConfirmEmailPage> {
       _ConfirmState.checking => (
           'Confirmation en cours…',
           'Un instant.',
-          Icons.hourglass_top_rounded,
+          Icons.hourglass_top_outlined,
         ),
       _ConfirmState.confirmed => (
           'Adresse confirmée',
           'Tu pourras retrouver ton compte par e-mail si tu perds ton mot de '
               'passe.',
-          Icons.check_circle_outline_rounded,
+          Icons.check_circle_outlined,
         ),
       _ConfirmState.invalid => (
           'Lien invalide',
           'Ce lien a déjà servi, a expiré ou est incomplet. Demande un nouveau '
               'lien depuis ton profil.',
-          Icons.error_outline_rounded,
+          Icons.error_outlined,
         ),
       _ConfirmState.failed => (
           'Confirmation impossible',
           'La confirmation n’a pas pu aboutir pour l’instant. Réessaie dans un '
               'moment.',
-          Icons.cloud_off_rounded,
+          Icons.cloud_off_outlined,
         ),
     };
 

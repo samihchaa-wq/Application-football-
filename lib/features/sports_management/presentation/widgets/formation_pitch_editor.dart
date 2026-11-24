@@ -582,7 +582,7 @@ class _FormationPitchEditorState extends State<FormationPitchEditor> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          selected ? Icons.ads_click_rounded : Icons.add,
+                          selected ? Icons.ads_click_outlined : Icons.add,
                           color: Colors.white,
                           size: 18,
                         ),

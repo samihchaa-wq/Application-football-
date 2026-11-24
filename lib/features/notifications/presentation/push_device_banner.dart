@@ -253,7 +253,7 @@ class _InstallGuideSheetState extends State<_InstallGuideSheet> {
             ),
             step(
               2,
-              Icons.install_mobile,
+              Icons.install_mobile_outlined,
               'Choisis «\u00a0Installer l’application\u00a0» (ou «\u00a0Ajouter '
               'à l’écran d’accueil\u00a0»), puis confirme.',
             ),
@@ -267,7 +267,7 @@ class _InstallGuideSheetState extends State<_InstallGuideSheet> {
         : [
             step(
               1,
-              Icons.ios_share,
+              Icons.ios_share_outlined,
               'Dans Safari, touche le bouton Partager, en bas de l’écran.',
             ),
             step(
@@ -305,12 +305,12 @@ class _InstallGuideSheetState extends State<_InstallGuideSheet> {
                 segments: const [
                   ButtonSegment(
                     value: InstallPlatform.iphone,
-                    icon: Icon(Icons.phone_iphone),
+                    icon: Icon(Icons.phone_iphone_outlined),
                     label: Text('iPhone'),
                   ),
                   ButtonSegment(
                     value: InstallPlatform.android,
-                    icon: Icon(Icons.phone_android),
+                    icon: Icon(Icons.phone_android_outlined),
                     label: Text('Android'),
                   ),
                 ],
@@ -339,7 +339,7 @@ class _InstallGuideSheetState extends State<_InstallGuideSheet> {
                 child: FilledButton.icon(
                   key: const Key('install-guide-now'),
                   onPressed: _installNow,
-                  icon: const Icon(Icons.install_mobile),
+                  icon: const Icon(Icons.install_mobile_outlined),
                   label: const Text('Installer maintenant'),
                 ),
               ),

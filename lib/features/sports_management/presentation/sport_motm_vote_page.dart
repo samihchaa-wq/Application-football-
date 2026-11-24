@@ -153,7 +153,7 @@ class _SportMotmVotePageState extends ConsumerState<SportMotmVotePage> {
         if (vote.isOpen) ...[
           if (vote.hasVoted)
             const _MessageCard(
-              icon: Icons.lock_outline,
+              icon: Icons.lock_outlined,
               title: 'Vote enregistré',
               message:
                   'Ton choix est secret et irréversible. Les résultats seront '
@@ -271,7 +271,7 @@ class MatchMotmVoteCard extends ConsumerWidget {
         padding: EdgeInsets.only(bottom: bottomSpacing),
         child: const Card(
           child: ListTile(
-            leading: Icon(Icons.error_outline),
+            leading: Icon(Icons.error_outlined),
             title: Text('Vote de l’Homme du match momentanément indisponible.'),
           ),
         ),
@@ -285,7 +285,7 @@ class MatchMotmVoteCard extends ConsumerWidget {
         }
         final (icon, title, subtitle) = switch (vote.state) {
           SportMotmVoteState.open when vote.hasVoted => (
-              Icons.lock_outline,
+              Icons.lock_outlined,
               'Vote de l’Homme du match enregistré',
               'Résultats révélés après la clôture.',
             ),

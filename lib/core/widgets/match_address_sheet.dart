@@ -185,10 +185,9 @@ Future<void> showMatchAddressSheet(BuildContext context, String address) {
               label: const Text('Choisir le GPS'),
             ),
             const SizedBox(height: 10),
-            OutlinedButton.icon(
+            OutlinedButton(
               onPressed: () => copy(sheetContext),
-              icon: const Icon(Icons.copy_outlined),
-              label: const Text('Copier l’adresse'),
+              child: const Text('Copier l’adresse'),
             ),
             const SizedBox(height: 10),
             OutlinedButton.icon(

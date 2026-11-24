@@ -264,7 +264,7 @@ class _AdminNotificationPageState extends ConsumerState<AdminNotificationPage> {
                           height: 18,
                           child: PfProgressIndicator(strokeWidth: 2),
                         )
-                      : const Icon(Icons.send_rounded),
+                      : const Icon(Icons.send_outlined),
                   label: const Text('Envoyer'),
                 ),
                 const SizedBox(height: 8),

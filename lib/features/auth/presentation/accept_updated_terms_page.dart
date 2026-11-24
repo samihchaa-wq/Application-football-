@@ -106,7 +106,7 @@ class _AcceptUpdatedTermsPageState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Icon(Icons.gavel_rounded, size: 48),
+                      const Icon(Icons.gavel_outlined, size: 48),
                       const SizedBox(height: 16),
                       Text(
                         'Les conditions ont changé',
@@ -146,7 +146,7 @@ class _AcceptUpdatedTermsPageState
                                 height: 18,
                                 child: PfProgressIndicator(strokeWidth: 2),
                               )
-                            : const Icon(Icons.check_circle_outline),
+                            : const Icon(Icons.check_circle_outlined),
                         label: const Text('Accepter et continuer'),
                       ),
                       const SizedBox(height: 16),

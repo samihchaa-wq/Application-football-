@@ -170,7 +170,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                     child: Padding(
                                       padding: EdgeInsets.all(compact ? 7 : 8),
                                       child: Icon(
-                                        Icons.photo_camera_rounded,
+                                        Icons.photo_camera_outlined,
                                         size: compact ? 15 : 16,
                                         color: Colors.white,
                                       ),
@@ -206,7 +206,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                               children: [
                                 if ((profile?.username ?? '').isNotEmpty)
                                   _ProfileMetaChip(
-                                    icon: Icons.alternate_email_rounded,
+                                    icon: Icons.alternate_email_outlined,
                                     label: profile!.username!,
                                   ),
                                 _ProfileMetaChip(
@@ -294,7 +294,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                               ? const Icon(Icons.calendar_today_outlined)
                               : IconButton(
                                   tooltip: 'Effacer la date de naissance',
-                                  icon: const Icon(Icons.close_rounded),
+                                  icon: const Icon(Icons.close_outlined),
                                   onPressed: _savedDetails == null || busy
                                       ? null
                                       : () => setState(() => _birthDate = null),
@@ -336,15 +336,14 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 ),
               ),
               SizedBox(height: compact ? 10 : 12),
-              OutlinedButton.icon(
+              OutlinedButton(
                 onPressed: busy ? null : () => _changePassword(context),
-                icon: const Icon(Icons.lock_reset_rounded),
-                label: const Text('Changer le mot de passe'),
+                child: const Text('Changer le mot de passe'),
               ),
               SizedBox(height: compact ? 6 : 8),
               OutlinedButton.icon(
                 onPressed: busy ? null : () => _editEmail(context, profile),
-                icon: const Icon(Icons.mail_outline_rounded),
+                icon: const Icon(Icons.mail_outlined),
                 label: Text(_emailLabel(profile)),
               ),
               SizedBox(height: compact ? 6 : 8),
@@ -356,7 +355,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         height: 18,
                         child: PfProgressIndicator(strokeWidth: 2),
                       )
-                    : const Icon(Icons.save_rounded),
+                    : const Icon(Icons.save_outlined),
                 label: const Text('Enregistrer les modifications'),
               ),
               if (_localError != null || authState.error != null) ...[
@@ -380,7 +379,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Icon(
-                        Icons.error_outline_rounded,
+                        Icons.error_outlined,
                         size: 18,
                         color: Theme.of(context).colorScheme.error,
                       ),

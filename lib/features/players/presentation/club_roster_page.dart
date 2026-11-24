@@ -29,7 +29,7 @@ class ClubRosterPage extends ConsumerWidget {
         data: (seasonId) => seasonId == null
             ? const Center(
                 child: PfEmptyState(
-                  icon: Icons.calendar_month_rounded,
+                  icon: Icons.calendar_month_outlined,
                   title: 'Aucune saison ouverte',
                   message: 'L’effectif apparaîtra quand le club aura ouvert '
                       'une saison.',

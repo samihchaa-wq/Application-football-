@@ -410,7 +410,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('9+'), findsOneWidget);
-    expect(find.byIcon(Icons.emoji_events_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.emoji_events_outlined), findsOneWidget);
     expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
   });
 }

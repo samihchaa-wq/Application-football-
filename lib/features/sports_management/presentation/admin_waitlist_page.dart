@@ -192,7 +192,7 @@ class _AdminWaitlistPageState extends ConsumerState<AdminWaitlistPage> {
     if (waitlist == null || _entries.isEmpty) {
       return const Center(
         child: PfEmptyState(
-          icon: Icons.format_list_numbered_rounded,
+          icon: Icons.format_list_numbered_outlined,
           title: 'Aucun joueur dans la saison',
           message: 'Ajoute des joueurs à l’effectif pour construire l’ordre '
               'de la liste d’attente.',
@@ -436,7 +436,7 @@ class _WaitlistScrollableRow extends StatelessWidget {
                         key: ValueKey(
                           'waitlist-decrement-${entry.seasonPlayerId}',
                         ),
-                        icon: Icons.remove_circle_outline,
+                        icon: Icons.remove_circle_outlined,
                         onPressed: !adjustingCount && waitlistCount > 0
                             ? onDecrement
                             : null,
@@ -456,7 +456,7 @@ class _WaitlistScrollableRow extends StatelessWidget {
                         key: ValueKey(
                           'waitlist-increment-${entry.seasonPlayerId}',
                         ),
-                        icon: Icons.add_circle_outline,
+                        icon: Icons.add_circle_outlined,
                         onPressed: adjustingCount ? null : onIncrement,
                       ),
                     ],
@@ -490,7 +490,7 @@ class _CompactIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       icon: Icon(icon, size: 20),
-      tooltip: icon == Icons.add_circle_outline ? 'Ajouter' : 'Retirer',
+      tooltip: icon == Icons.add_circle_outlined ? 'Ajouter' : 'Retirer',
       onPressed: onPressed,
       visualDensity: VisualDensity.compact,
       padding: EdgeInsets.zero,

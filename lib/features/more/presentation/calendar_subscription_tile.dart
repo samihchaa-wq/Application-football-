@@ -215,35 +215,35 @@ class _CalendarSubscriptionTileState
                 ),
                 const SizedBox(height: 12),
                 ListTile(
-                  leading: const Icon(Icons.calendar_month_rounded),
+                  leading: const Icon(Icons.calendar_month_outlined),
                   title: const Text('Apple Calendrier'),
                   subtitle: const Text('iPhone, iPad et Mac'),
-                  trailing: const Icon(Icons.chevron_right_rounded),
+                  trailing: const Icon(Icons.chevron_right_outlined),
                   onTap: () => choose(() => _openAppleCalendar(httpsUri)),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.event_rounded),
+                  leading: const Icon(Icons.event_outlined),
                   title: const Text('Google Agenda'),
                   subtitle: const Text(
                     'Android : abonnement à faire sur Google Agenda en version web',
                   ),
-                  trailing: const Icon(Icons.content_copy_rounded),
+                  trailing: const Icon(Icons.content_copy_outlined),
                   onTap: () => choose(() => _useGoogleCalendar(httpsUri)),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.mail_outline_rounded),
+                  leading: const Icon(Icons.mail_outlined),
                   title: const Text('Outlook'),
                   subtitle: const Text('Outlook.com ou Outlook sur le web'),
-                  trailing: const Icon(Icons.chevron_right_rounded),
+                  trailing: const Icon(Icons.chevron_right_outlined),
                   onTap: () => choose(() => _useOutlookCalendar(httpsUri)),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.link_rounded),
+                  leading: const Icon(Icons.link_outlined),
                   title: const Text('Copier le lien du calendrier'),
                   subtitle: const Text(
                     'Pour toute autre application compatible ICS',
                   ),
-                  trailing: const Icon(Icons.content_copy_rounded),
+                  trailing: const Icon(Icons.content_copy_outlined),
                   onTap: () => choose(() async {
                     final copied = await _copyCalendarLink(httpsUri);
                     if (!mounted) return;

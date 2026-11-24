@@ -133,7 +133,7 @@ class _CalendarSectionState extends ConsumerState<_CalendarSection> {
               sliver: SliverToBoxAdapter(
                 child: _MessageCard(
                   title: 'Historique indisponible',
-                  icon: Icons.wifi_off_rounded,
+                  icon: Icons.wifi_off_outlined,
                   message: state.error!,
                   tone: PfEmptyTone.alert,
                 ),
@@ -145,7 +145,7 @@ class _CalendarSectionState extends ConsumerState<_CalendarSection> {
               sliver: SliverToBoxAdapter(
                 child: _MessageCard(
                   title: 'Aucun match joué',
-                  icon: Icons.history_rounded,
+                  icon: Icons.history_outlined,
                   message: 'Les matchs terminés et leurs pronos s’afficheront '
                       'ici.',
                 ),

@@ -213,7 +213,7 @@ class _PlatformCashSectionState extends ConsumerState<PlatformCashSection> {
   Widget _entryTile(PlatformLedgerEntry entry) {
     final (icon, color) = switch (entry.kind) {
       LedgerKind.payment => entry.method == 'carte'
-          ? (Icons.credit_card, AppTheme.success)
+          ? (Icons.credit_card_outlined, AppTheme.success)
           : (Icons.payments_outlined, AppTheme.success),
       LedgerKind.refund => (Icons.undo, AppTheme.warning),
       LedgerKind.gift => (Icons.card_giftcard_outlined, AppTheme.textFaint),

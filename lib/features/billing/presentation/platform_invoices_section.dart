@@ -84,7 +84,7 @@ class PlatformSellerCard extends ConsumerWidget {
                 key: const Key('platform-invoice-settings-status'),
               ),
               const SizedBox(height: 8),
-              OutlinedButton.icon(
+              OutlinedButton(
                 key: const Key('platform-invoice-settings-edit'),
                 onPressed: () async {
                   final saved = await showDialog<bool>(
@@ -96,8 +96,7 @@ class PlatformSellerCard extends ConsumerWidget {
                   );
                   if (saved == true) _refresh(ref);
                 },
-                icon: const Icon(Icons.edit_outlined),
-                label: const Text('Modifier'),
+                child: const Text('Modifier'),
               ),
             ],
           ],
@@ -151,11 +150,10 @@ class _InvoiceList extends ConsumerWidget {
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                       child: Align(
                         alignment: Alignment.centerLeft,
-                        child: FilledButton.icon(
+                        child: FilledButton(
                           key: const Key('platform-invoices-issue'),
                           onPressed: () => _issue(context, ref),
-                          icon: const Icon(Icons.check),
-                          label: const Text('Émettre les factures prêtes'),
+                          child: const Text('Émettre les factures prêtes'),
                         ),
                       ),
                     ),
@@ -268,7 +266,7 @@ class _PendingTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ListTile(
       key: ValueKey('platform-pending-invoice-${invoice.id}'),
-      leading: const Icon(Icons.hourglass_empty),
+      leading: const Icon(Icons.hourglass_empty_outlined),
       title: Text(
         '${invoice.buyerName ?? 'Club'} · '
         '${formatInvoiceAmount(invoice.amountCents)}',
@@ -304,7 +302,7 @@ class _PendingTile extends ConsumerWidget {
           IconButton(
             key: ValueKey('platform-invoice-discard-${invoice.id}'),
             tooltip: 'Écarter',
-            icon: const Icon(Icons.delete_outline),
+            icon: const Icon(Icons.delete_outlined),
             onPressed: () => _discard(context, ref),
           ),
         ],

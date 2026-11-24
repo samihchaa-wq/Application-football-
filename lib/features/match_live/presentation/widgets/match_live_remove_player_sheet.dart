@@ -57,7 +57,7 @@ Future<MatchCompositionEntry?> showMatchLiveRemovePlayerPicker(
                       children: [
                         for (final entry in sorted)
                           ListTile(
-                            leading: const Icon(Icons.person_remove_rounded),
+                            leading: const Icon(Icons.person_remove_outlined),
                             title: Text(entry.displayName),
                             subtitle: Text(
                               entry.zone == MatchCompositionZone.field

@@ -370,7 +370,7 @@ class _DeleteHistoricalMatchButtonState
         child: TextButton.icon(
           key: const Key('historical-match-delete'),
           onPressed: _busy ? null : _delete,
-          icon: const Icon(Icons.delete_outline),
+          icon: const Icon(Icons.delete_outlined),
           label: const Text('Supprimer ce match de l’historique'),
         ),
       ),

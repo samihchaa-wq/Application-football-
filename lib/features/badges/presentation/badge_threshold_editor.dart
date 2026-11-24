@@ -127,11 +127,10 @@ class _BadgeThresholdDialogState extends ConsumerState<_BadgeThresholdDialog> {
           onPressed: _saving ? null : () => Navigator.of(context).pop(),
           child: const Text('Annuler'),
         ),
-        FilledButton.icon(
+        FilledButton(
           key: const Key('badge-threshold-save'),
           onPressed: _canSave ? _save : null,
-          icon: const Icon(Icons.check_rounded),
-          label: const Text('Enregistrer'),
+          child: const Text('Enregistrer'),
         ),
       ],
     );

@@ -251,10 +251,9 @@ class _PostgameAdminActions extends ConsumerWidget {
   Widget _actions(BuildContext context, DateTime deadline) {
     return _PostgameDeadlineGate(
       deadline: deadline,
-      child: FilledButton.icon(
+      child: FilledButton(
         onPressed: () => context.push('/matches/$matchId/finalize'),
-        icon: const Icon(Icons.edit_note_outlined),
-        label: const Text('Modifier les statistiques'),
+        child: const Text('Modifier les statistiques'),
       ),
     );
   }
@@ -413,7 +412,7 @@ class _UpcomingModules extends ConsumerWidget {
     }
     final live = liveOpen
         ? _MatchModule(
-            icon: Icons.sensors_rounded,
+            icon: Icons.sensors_outlined,
             title: 'Suivre le direct',
             onTap: () => context.push(
               isAdmin

@@ -202,12 +202,11 @@ class MatchLineupPage extends ConsumerWidget {
                     if (showEffectif)
                       Align(
                         alignment: Alignment.centerRight,
-                        child: TextButton.icon(
+                        child: TextButton(
                           key: const ValueKey(
                               'match-effectif-waitlist-readonly'),
                           onPressed: () => context.push('/waitlist'),
-                          icon: const Icon(Icons.format_list_numbered),
-                          label: const Text('Voir la liste d’attente'),
+                          child: const Text('Voir la liste d’attente'),
                         ),
                       ),
                     if (showComposition && isInternal)
@@ -524,7 +523,7 @@ class _MatchModuleError extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.cardPadding),
         child: Row(
           children: [
-            const Icon(Icons.error_outline),
+            const Icon(Icons.error_outlined),
             const SizedBox(width: AppSpacing.contentGap),
             Expanded(child: Text(message)),
           ],

@@ -254,7 +254,7 @@ class _PlayerCompositionTabState extends ConsumerState<PlayerCompositionTab> {
                       primeStadiumVideo();
                       unawaited(_play(composition));
                     },
-              icon: const Icon(Icons.play_circle_outline_rounded),
+              icon: const Icon(Icons.play_circle_outlined),
               label: const Text('Aperçu de la vidéo'),
             ),
           ),

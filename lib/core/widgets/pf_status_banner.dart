@@ -25,19 +25,19 @@ class PfStatusBanner extends StatelessWidget {
     final (accent, icon) = switch (tone) {
       PfStatusTone.info => (
           AppTheme.info,
-          Icons.info_outline_rounded,
+          Icons.info_outlined,
         ),
       PfStatusTone.success => (
           AppTheme.success,
-          Icons.check_circle_outline_rounded,
+          Icons.check_circle_outlined,
         ),
       PfStatusTone.warning => (
           AppTheme.warning,
-          Icons.warning_amber_rounded,
+          Icons.warning_amber_outlined,
         ),
       PfStatusTone.error => (
           theme.colorScheme.error,
-          Icons.error_outline_rounded,
+          Icons.error_outlined,
         ),
     };
 

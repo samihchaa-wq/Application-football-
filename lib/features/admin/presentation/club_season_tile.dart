@@ -36,7 +36,7 @@ class ClubSeasonTile extends ConsumerWidget {
         final openSeason = current;
         if (openSeason == null) {
           return ListTile(
-            leading: const Icon(Icons.add_circle_outline),
+            leading: const Icon(Icons.add_circle_outlined),
             title: const Text('Créer une saison'),
             onTap: () => _createSeason(context, ref),
           );

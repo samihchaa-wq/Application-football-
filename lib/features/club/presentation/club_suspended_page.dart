@@ -31,7 +31,7 @@ class ClubSuspendedPage extends ConsumerWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.pause_circle_outline, size: 56),
+                    const Icon(Icons.pause_circle_outlined, size: 56),
                     const SizedBox(height: 16),
                     Text(
                       'L’accès de ton club est suspendu',
@@ -51,11 +51,10 @@ class ClubSuspendedPage extends ConsumerWidget {
                       // Le paiement rouvre le club tout de suite.
                       const CardPaymentButton(),
                       const SizedBox(height: 8),
-                      TextButton.icon(
+                      TextButton(
                         key: const Key('club-suspended-refresh'),
                         onPressed: () => ref.invalidate(myClubAccessProvider),
-                        icon: const Icon(Icons.refresh_rounded),
-                        label: const Text('J’ai payé : actualiser'),
+                        child: const Text('J’ai payé : actualiser'),
                       ),
                       const SizedBox(height: 12),
                     ],

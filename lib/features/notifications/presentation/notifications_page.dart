@@ -565,7 +565,7 @@ class _TestPushButtonState extends ConsumerState<_TestPushButton> {
                     children: [
                       Text('Test'),
                       SizedBox(width: 4),
-                      Icon(Icons.arrow_drop_down_rounded, size: 20),
+                      Icon(Icons.arrow_drop_down_outlined, size: 20),
                     ],
                   ),
           ),

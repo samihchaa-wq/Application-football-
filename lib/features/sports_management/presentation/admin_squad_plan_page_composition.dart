@@ -533,7 +533,7 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
                   Row(
                     children: [
                       Icon(
-                        Icons.lock_clock_rounded,
+                        Icons.lock_clock_outlined,
                         color:
                             Theme.of(context).colorScheme.onSecondaryContainer,
                       ),
@@ -556,7 +556,7 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
                   FilledButton.icon(
                     onPressed: () =>
                         _updateState(() => _step = _AdminStep.live),
-                    icon: const Icon(Icons.sports_soccer_rounded),
+                    icon: const Icon(Icons.sports_soccer_outlined),
                     label: const Text('Ouvrir le Live'),
                   ),
                 ],
@@ -595,16 +595,15 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
                         bench,
                         landing: _publishedLanding,
                       ),
-          icon: const Icon(Icons.play_circle_outline_rounded),
+          icon: const Icon(Icons.play_circle_outlined),
           label: const Text('Aperçu de la vidéo'),
         ),
         if (!_compositionLocked) ...[
           const SizedBox(height: 12),
-          OutlinedButton.icon(
+          OutlinedButton(
             onPressed: () =>
                 _updateState(() => _editingPublishedComposition = true),
-            icon: const Icon(Icons.edit_outlined),
-            label: const Text('Modifier la composition'),
+            child: const Text('Modifier la composition'),
           ),
         ],
       ],
@@ -748,7 +747,7 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
                   Row(
                     children: [
                       Icon(
-                        Icons.lock_clock_rounded,
+                        Icons.lock_clock_outlined,
                         color:
                             Theme.of(context).colorScheme.onSecondaryContainer,
                       ),
@@ -771,7 +770,7 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
                   FilledButton.icon(
                     onPressed: () =>
                         _updateState(() => _step = _AdminStep.live),
-                    icon: const Icon(Icons.sports_soccer_rounded),
+                    icon: const Icon(Icons.sports_soccer_outlined),
                     label: const Text('Ouvrir le Live'),
                   ),
                 ],
@@ -908,18 +907,17 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
                           bench,
                           returnToPage: true,
                         ),
-                icon: const Icon(Icons.play_circle_outline_rounded),
+                icon: const Icon(Icons.play_circle_outlined),
                 label: const Text('Aperçu'),
               ),
               const SizedBox(width: 12),
             ],
             Expanded(
-              child: FilledButton.icon(
+              child: FilledButton(
                 onPressed: _compositionLocked || !_compositionDirty
                     ? null
                     : _persistComposition,
-                icon: const Icon(Icons.save_outlined),
-                label: const Text('Enregistrer'),
+                child: const Text('Enregistrer'),
               ),
             ),
           ],

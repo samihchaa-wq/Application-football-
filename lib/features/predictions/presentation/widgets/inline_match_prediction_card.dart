@@ -432,7 +432,7 @@ class _ScorePicker extends StatelessWidget {
               constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
               padding: EdgeInsets.zero,
               onPressed: enabled && value > 0 ? onMinus : null,
-              icon: const Icon(Icons.remove_circle_outline),
+              icon: const Icon(Icons.remove_circle_outlined),
             ),
             Text(
               '$value',
@@ -447,7 +447,7 @@ class _ScorePicker extends StatelessWidget {
               constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
               padding: EdgeInsets.zero,
               onPressed: enabled && value < 99 ? onPlus : null,
-              icon: const Icon(Icons.add_circle_outline),
+              icon: const Icon(Icons.add_circle_outlined),
             ),
           ],
         ),

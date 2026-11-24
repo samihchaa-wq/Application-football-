@@ -94,7 +94,7 @@ class HomeNextMatchCard extends ConsumerWidget {
                 ),
         ),
         const Icon(
-          Icons.arrow_forward_ios_rounded,
+          Icons.arrow_forward_ios_outlined,
           size: 14,
           color: AppTheme.textFaint,
         ),

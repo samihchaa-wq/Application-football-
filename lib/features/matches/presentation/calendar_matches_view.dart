@@ -208,7 +208,7 @@ class _CalendarMatchesViewState extends ConsumerState<CalendarMatchesView> {
         padding: const EdgeInsets.all(AppSpacing.screenGutter),
         children: [
           PfEmptyState(
-            icon: Icons.wifi_off_rounded,
+            icon: Icons.wifi_off_outlined,
             title: 'Calendrier indisponible',
             message: state.error!,
             tone: PfEmptyTone.alert,

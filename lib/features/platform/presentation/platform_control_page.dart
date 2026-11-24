@@ -149,7 +149,7 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                 ),
                 IconButton(
                   tooltip: 'Se déconnecter',
-                  icon: const Icon(Icons.logout),
+                  icon: const Icon(Icons.logout_outlined),
                   onPressed: () => confirmAndSignOut(context, ref),
                 ),
               ],
@@ -211,8 +211,8 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
             children: [
               Icon(
                 error is PlatformAccessDenied
-                    ? Icons.lock_outline
-                    : Icons.cloud_off,
+                    ? Icons.lock_outlined
+                    : Icons.cloud_off_outlined,
                 size: 40,
               ),
               const SizedBox(height: 16),
@@ -230,10 +230,9 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-              OutlinedButton.icon(
+              OutlinedButton(
                 onPressed: () => ref.invalidate(platformSnapshotProvider),
-                icon: const Icon(Icons.refresh),
-                label: const Text('Réessayer'),
+                child: const Text('Réessayer'),
               ),
             ],
           ),
@@ -400,7 +399,7 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
           if ((totals.trialsEnding7d ?? 0) > 0)
             _actionTile(
               key: 'platform-todo-trials',
-              icon: Icons.hourglass_bottom,
+              icon: Icons.hourglass_bottom_outlined,
               color: AppTheme.warning,
               title:
                   '${totals.trialsEnding7d} mois gratuit(s) finissent cette semaine',
@@ -432,7 +431,7 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
           if ((totals.suspended ?? 0) > 0)
             _actionTile(
               key: 'platform-todo-suspended',
-              icon: Icons.pause_circle_outline,
+              icon: Icons.pause_circle_outlined,
               color: AppTheme.error,
               title: '${totals.suspended} club(s) suspendu(s)',
               subtitle:
@@ -442,7 +441,7 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
           if (toDelete.isNotEmpty)
             _actionTile(
               key: 'platform-todo-delete',
-              icon: Icons.delete_outline,
+              icon: Icons.delete_outlined,
               color: AppTheme.error,
               title:
                   '${toDelete.length} club(s) effacé(s) dans moins de 90 jours',
@@ -491,7 +490,7 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
           if (health?.failedJobs == 0 && health?.failedPush == 0)
             const ListTile(
               leading: Icon(
-                Icons.check_circle_outline,
+                Icons.check_circle_outlined,
                 color: AppTheme.success,
               ),
               title: Text('Aucun échec technique sur la dernière heure'),
@@ -538,7 +537,9 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
   Widget _dueTile(PlatformTeam team, DateTime now) => ListTile(
         key: ValueKey('platform-due-${team.id}'),
         leading: Icon(
-          team.isTrial ? Icons.card_giftcard : Icons.autorenew,
+          team.isTrial
+              ? Icons.card_giftcard_outlined
+              : Icons.autorenew_outlined,
           color: _dueColor(team.daysUntilDue(now)),
         ),
         title: Text(team.name),
@@ -775,10 +776,9 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
         children: [
           Align(
             alignment: Alignment.centerLeft,
-            child: TextButton.icon(
+            child: TextButton(
               onPressed: () => setState(() => _selectedTeamId = null),
-              icon: const Icon(Icons.arrow_back),
-              label: const Text('Retour à la liste'),
+              child: const Text('Retour à la liste'),
             ),
           ),
           _metrics([
@@ -875,21 +875,21 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
         const SizedBox(height: 20),
         _panel('Tâches automatiques', const [
           ListTile(
-            leading: Icon(Icons.mail_outline),
+            leading: Icon(Icons.mail_outlined),
             title: Text('Rappel d’échéance, chaque matin'),
             subtitle: Text(
               'E-mail aux administrateurs 10 jours avant la fin du mois gratuit ou de l’année payée.',
             ),
           ),
           ListTile(
-            leading: Icon(Icons.pause_circle_outline),
+            leading: Icon(Icons.pause_circle_outlined),
             title: Text('Suspension le jour de l’échéance'),
             subtitle: Text(
               'Sans paiement noté. Un paiement rouvre l’accès, données intactes.',
             ),
           ),
           ListTile(
-            leading: Icon(Icons.delete_outline),
+            leading: Icon(Icons.delete_outlined),
             title: Text('Effacement après 3 ans d’impayé, chaque nuit'),
             subtitle: Text(
               'Club, données et comptes. Jamais un club suspendu à la main.',

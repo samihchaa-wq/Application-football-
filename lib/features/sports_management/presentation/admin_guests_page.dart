@@ -549,7 +549,7 @@ class _AdminGuestsPageState extends ConsumerState<AdminGuestsPage> {
                                         _busy || assignedIds.contains(guest.id)
                                             ? null
                                             : () => _addExisting(guest),
-                                    icon: const Icon(Icons.add_circle_outline),
+                                    icon: const Icon(Icons.add_circle_outlined),
                                   ),
                                   IconButton(
                                     tooltip: 'Archiver',

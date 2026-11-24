@@ -100,7 +100,7 @@ class _MatchLiveAddPlayerSheetState
                 IconButton(
                   tooltip: 'Fermer',
                   onPressed: _busy ? null : () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close_rounded),
+                  icon: const Icon(Icons.close_outlined),
                 ),
               ],
             ),
@@ -121,7 +121,7 @@ class _MatchLiveAddPlayerSheetState
                 ButtonSegment<int>(
                   value: 1,
                   label: Text('Invité'),
-                  icon: Icon(Icons.person_add_alt_1_rounded),
+                  icon: Icon(Icons.person_add_alt_1_outlined),
                 ),
               ],
               selected: {_tab},
@@ -205,7 +205,7 @@ class _MatchLiveAddPlayerSheetState
             const SizedBox(height: 10),
             FilledButton.icon(
               onPressed: _busy ? null : _submit,
-              icon: const Icon(Icons.add_rounded),
+              icon: const Icon(Icons.add_outlined),
               label: Text(_submitLabel),
             ),
           ],
@@ -485,10 +485,9 @@ class _LoadError extends StatelessWidget {
         children: [
           Text(message, textAlign: TextAlign.center),
           const SizedBox(height: 8),
-          TextButton.icon(
+          TextButton(
             onPressed: onRetry,
-            icon: const Icon(Icons.refresh_rounded),
-            label: const Text('Réessayer'),
+            child: const Text('Réessayer'),
           ),
         ],
       ),

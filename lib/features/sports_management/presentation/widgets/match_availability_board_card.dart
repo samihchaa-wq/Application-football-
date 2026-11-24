@@ -42,7 +42,7 @@ class MatchAvailabilityBoardCard extends ConsumerWidget {
             padding: EdgeInsets.all(16),
             child: Row(
               children: [
-                Icon(Icons.error_outline),
+                Icon(Icons.error_outlined),
                 SizedBox(width: 10),
                 Expanded(child: Text('Effectif momentanément indisponible.')),
               ],
@@ -131,7 +131,7 @@ class MatchAvailabilityBoardContent extends StatelessWidget {
                       const Tooltip(
                         message: 'La limite indicative est dépassée',
                         child: Icon(
-                          Icons.warning_amber_rounded,
+                          Icons.warning_amber_outlined,
                           color: Colors.orange,
                         ),
                       ),
@@ -161,7 +161,6 @@ class MatchAvailabilityBoardContent extends StatelessWidget {
               ),
               players: convoked,
               color: AppTheme.availabilityIn,
-              icon: Icons.check_circle_outline,
             ),
             // Les groupes vides n'apparaissent plus (« Liste d'attente (0) —
             // Aucun joueur. » prenait de la place sans rien dire) ; Convoqués
@@ -171,21 +170,18 @@ class MatchAvailabilityBoardContent extends StatelessWidget {
                 title: 'Liste d’attente',
                 players: board.waitlisted,
                 color: AppTheme.availabilityWaiting,
-                icon: Icons.hourglass_top_rounded,
               ),
             if (absent.isNotEmpty)
               _BoardGroup(
                 title: 'Absents',
                 players: absent,
                 color: AppTheme.availabilityOut,
-                icon: Icons.cancel_outlined,
               ),
             if (noResponse.isNotEmpty)
               _BoardGroup(
                 title: 'Sans réponse',
                 players: noResponse,
                 color: AppTheme.availabilityUnknown,
-                icon: Icons.schedule_outlined,
               ),
           ],
         ),
@@ -199,14 +195,12 @@ class _BoardGroup extends StatelessWidget {
     required this.title,
     required this.players,
     required this.color,
-    required this.icon,
     this.countLabel,
   });
 
   final String title;
   final List<MatchAvailabilityBoardPlayer> players;
   final Color color;
-  final IconData icon;
 
   /// Par défaut, le simple nombre de joueurs.
   final String? countLabel;
@@ -226,7 +220,6 @@ class _BoardGroup extends StatelessWidget {
       title: title,
       countLabel: countLabel ?? '${players.length}',
       color: color,
-      icon: icon,
       child: players.isEmpty
           ? const EffectifEmptyLabel()
           : EffectifAvatarGrid(

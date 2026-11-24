@@ -61,10 +61,9 @@ class _RegistrationSuccessDialogState extends State<RegistrationSuccessDialog> {
             widget.username,
             style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 20),
           ),
-          TextButton.icon(
+          TextButton(
             onPressed: _copying ? null : _copyUsername,
-            icon: const Icon(Icons.copy_outlined),
-            label: const Text('Copier mon identifiant'),
+            child: const Text('Copier mon identifiant'),
           ),
           if (_copyStatus != null)
             Semantics(liveRegion: true, child: Text(_copyStatus!)),

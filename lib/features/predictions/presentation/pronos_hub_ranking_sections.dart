@@ -27,7 +27,7 @@ class _GeneralRankingsSection extends ConsumerWidget {
       ),
       error: (_, __) => const _MessageCard(
         title: 'Classement indisponible',
-        icon: Icons.wifi_off_rounded,
+        icon: Icons.wifi_off_outlined,
         message: 'Le classement des matchs n’a pas pu être chargé.',
         tone: PfEmptyTone.alert,
       ),

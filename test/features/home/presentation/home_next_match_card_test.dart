@@ -112,11 +112,11 @@ void main() {
           .first,
     );
     final bell = tester.getRect(
-      find.byIcon(Icons.notifications_none_rounded),
+      find.byIcon(Icons.notifications_none_outlined),
     );
     final edit = tester.getRect(find.byIcon(Icons.edit_outlined));
     final arrow = tester.getRect(
-      find.byIcon(Icons.arrow_forward_ios_rounded),
+      find.byIcon(Icons.arrow_forward_ios_outlined),
     );
 
     expect((bell.center.dy - date.center.dy).abs(), lessThan(18));
@@ -144,7 +144,7 @@ void main() {
           )
           .first,
     );
-    final bell = tester.getRect(find.byIcon(Icons.notifications_none_rounded));
+    final bell = tester.getRect(find.byIcon(Icons.notifications_none_outlined));
     expect(date.right, lessThanOrEqualTo(bell.left));
     expect(tester.takeException(), isNull);
   });
@@ -153,9 +153,9 @@ void main() {
     tester,
   ) async {
     await pumpCard(tester, isAdmin: false, eligible: false);
-    expect(find.byIcon(Icons.notifications_none_rounded), findsNothing);
+    expect(find.byIcon(Icons.notifications_none_outlined), findsNothing);
     expect(find.byIcon(Icons.edit_outlined), findsNothing);
-    expect(find.byIcon(Icons.arrow_forward_ios_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_forward_ios_outlined), findsOneWidget);
     final fixture = tester.widget<CalendarScoreline>(
       find.byType(CalendarScoreline),
     );

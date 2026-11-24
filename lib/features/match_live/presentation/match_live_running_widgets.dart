@@ -61,7 +61,7 @@ class _LiveHeaderBar extends ConsumerWidget {
     final firstAction = switch (session.state) {
       MatchLiveState.running => (
           tooltip: 'Pause',
-          icon: Icons.pause_rounded,
+          icon: Icons.pause_outlined,
           callback: ClubRules.enabled(ClubFeature.livePause)
               ? onPause as VoidCallback?
               : null,
@@ -69,19 +69,19 @@ class _LiveHeaderBar extends ConsumerWidget {
         ),
       MatchLiveState.paused => (
           tooltip: 'Reprendre',
-          icon: Icons.play_arrow_rounded,
+          icon: Icons.play_arrow_outlined,
           callback: onResume as VoidCallback?,
           filled: false,
         ),
       MatchLiveState.halftime => (
           tooltip: 'Reprendre la 2e mi-temps',
-          icon: Icons.play_arrow_rounded,
+          icon: Icons.play_arrow_outlined,
           callback: onResumeSecondHalf as VoidCallback?,
           filled: true,
         ),
       _ => (
           tooltip: 'Pause',
-          icon: Icons.pause_rounded,
+          icon: Icons.pause_outlined,
           callback: null,
           filled: false,
         ),
@@ -193,19 +193,19 @@ class _LiveHeaderBar extends ConsumerWidget {
                       if (!onlyClockAction) ...[
                         action(
                           tooltip: 'Mi-temps',
-                          icon: Icons.sports_rounded,
+                          icon: Icons.sports_outlined,
                           onPressed: canGoHalftime ? onHalftime : null,
                         ),
                         action(
                           tooltip: 'Recommencer',
-                          icon: Icons.restart_alt_rounded,
+                          icon: Icons.restart_alt_outlined,
                           onPressed: ClubRules.enabled(ClubFeature.liveRestart)
                               ? onRestart
                               : null,
                         ),
                         action(
                           tooltip: 'Fin du match',
-                          icon: Icons.flag_rounded,
+                          icon: Icons.flag_outlined,
                           onPressed: onEndMatch,
                           danger: true,
                         ),
@@ -304,7 +304,7 @@ class _GoalToAttributeBar extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
         child: Row(
           children: [
-            const Icon(Icons.sports_soccer_rounded),
+            const Icon(Icons.sports_soccer_outlined),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -465,7 +465,7 @@ class _LiveScore extends StatelessWidget {
                   height: buttonSize,
                 ),
                 iconSize: iconSize,
-                icon: const Icon(Icons.remove_circle_outline_rounded),
+                icon: const Icon(Icons.remove_circle_outlined),
               ),
             // Le score rétrécit plutôt que de déborder si la place manque.
             Flexible(
@@ -487,7 +487,7 @@ class _LiveScore extends StatelessWidget {
                   height: buttonSize,
                 ),
                 iconSize: iconSize,
-                icon: const Icon(Icons.add_circle_outline_rounded),
+                icon: const Icon(Icons.add_circle_outlined),
               ),
           ],
         ),
@@ -632,7 +632,7 @@ class _PendingSubstitutions extends StatelessWidget {
             Row(
               children: [
                 Icon(
-                  Icons.swap_horiz_rounded,
+                  Icons.swap_horiz_outlined,
                   color: theme.colorScheme.onPrimaryContainer,
                 ),
                 const SizedBox(width: AppSpacing.contentGap),
@@ -662,7 +662,7 @@ class _PendingSubstitutions extends StatelessWidget {
                   IconButton(
                     tooltip: 'Annuler ce changement',
                     visualDensity: VisualDensity.compact,
-                    icon: const Icon(Icons.undo_rounded),
+                    icon: const Icon(Icons.undo_outlined),
                     onPressed: busy ? null : () => onRemove(pair),
                   ),
                 ],
@@ -687,7 +687,7 @@ class _PendingSubstitutions extends StatelessWidget {
                             height: 18,
                             child: PfProgressIndicator(strokeWidth: 2),
                           )
-                        : const Icon(Icons.check_rounded),
+                        : const Icon(Icons.check_outlined),
                     label: Text(
                       pending.length == 1
                           ? 'Valider'

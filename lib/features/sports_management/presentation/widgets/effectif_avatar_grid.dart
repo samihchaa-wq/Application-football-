@@ -17,7 +17,6 @@ class EffectifSectionFrame extends StatelessWidget {
     required this.title,
     required this.countLabel,
     required this.color,
-    required this.icon,
     required this.child,
     this.highlighted = false,
     this.trailing,
@@ -28,7 +27,6 @@ class EffectifSectionFrame extends StatelessWidget {
   /// Le nombre affiché après le titre, par exemple « 14 + coach ».
   final String countLabel;
   final Color color;
-  final IconData icon;
   final Widget child;
 
   /// Vrai quand un joueur peut être déposé ici (admin seulement).
@@ -60,8 +58,6 @@ class EffectifSectionFrame extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 18, color: color),
-              const SizedBox(width: 7),
               Expanded(
                 child: Text(
                   '$title ($countLabel)',

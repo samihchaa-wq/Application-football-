@@ -46,13 +46,13 @@ class LiveSubstitutionLine extends StatelessWidget {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             _Side(
-              icon: Icons.arrow_upward_rounded,
+              icon: Icons.arrow_upward_outlined,
               color: _inColor,
               name: playerInName,
               style: style,
             ),
             _Side(
-              icon: Icons.arrow_downward_rounded,
+              icon: Icons.arrow_downward_outlined,
               color: _outColor,
               name: playerOutName,
               style: style,

@@ -362,7 +362,7 @@ class _WrappedStoryState extends ConsumerState<_WrappedStory>
                   style: WrappedType.body(AppTheme.textFaint, size: 12),
                 ),
                 trailing: Icon(
-                  Icons.ios_share,
+                  Icons.ios_share_outlined,
                   color: AppTheme.accent,
                   size: 20,
                 ),
@@ -615,7 +615,8 @@ class _StoryControls extends StatelessWidget {
               onPressed: onToggleMute,
               iconSize: 20,
               color: color,
-              icon: Icon(muted ? Icons.volume_off : Icons.volume_up),
+              icon: Icon(
+                  muted ? Icons.volume_off_outlined : Icons.volume_up_outlined),
             ),
           IconButton(
             key: const ValueKey('wrapped-close-button'),

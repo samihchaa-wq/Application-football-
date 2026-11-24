@@ -23,12 +23,12 @@ void main() {
       child: const MaterialApp(home: Scaffold(body: BadgeTrophyButton())),
     ));
     await tester.pump();
-    expect(find.byIcon(Icons.emoji_events_rounded), findsNothing);
+    expect(find.byIcon(Icons.emoji_events_outlined), findsNothing);
     expect(badgeReads, 0);
 
     modules.complete(const ClubModules.allEnabled());
     await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.emoji_events_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.emoji_events_outlined), findsOneWidget);
     expect(badgeReads, 1);
   });
 
@@ -48,7 +48,7 @@ void main() {
       child: const MaterialApp(home: Scaffold(body: BadgeTrophyButton())),
     ));
     await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.emoji_events_rounded), findsNothing);
+    expect(find.byIcon(Icons.emoji_events_outlined), findsNothing);
     expect(badgeReads, 0);
   });
 
@@ -70,7 +70,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.emoji_events_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.emoji_events_outlined), findsOneWidget);
       expect(
         find.byKey(const ValueKey('badge-unseen-indicator')),
         findsOneWidget,
@@ -94,7 +94,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byIcon(Icons.emoji_events_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.emoji_events_outlined), findsOneWidget);
     expect(find.byKey(const ValueKey('badge-unseen-indicator')), findsNothing);
   });
 }

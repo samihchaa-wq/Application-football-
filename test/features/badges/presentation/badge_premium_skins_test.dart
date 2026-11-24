@@ -63,7 +63,7 @@ void main() {
             skin: BadgePremiumSkin.navy,
             descriptor: BadgeDescriptor('MATCHS', 'SAISON'),
             value: '25',
-            child: Icon(Icons.sports_soccer),
+            child: Icon(Icons.sports_soccer_outlined),
           ),
         ),
       ),

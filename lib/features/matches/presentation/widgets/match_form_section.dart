@@ -141,7 +141,7 @@ class MatchFormPickerTile extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const Icon(Icons.unfold_more_rounded, size: 18),
+                  const Icon(Icons.unfold_more_outlined, size: 18),
                 ],
               ),
             ],

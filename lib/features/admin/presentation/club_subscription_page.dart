@@ -86,8 +86,8 @@ class _ClubSubscriptionPageState extends ConsumerState<ClubSubscriptionPage> {
                 child: ListTile(
                   leading: Icon(
                     widget.paymentReturn == PaymentReturn.paid
-                        ? Icons.check_circle_outline
-                        : Icons.info_outline,
+                        ? Icons.check_circle_outlined
+                        : Icons.info_outlined,
                     color: scheme.onSecondaryContainer,
                   ),
                   title: Text(
@@ -97,7 +97,7 @@ class _ClubSubscriptionPageState extends ConsumerState<ClubSubscriptionPage> {
                   trailing: widget.paymentReturn == PaymentReturn.paid
                       ? IconButton(
                           tooltip: 'Actualiser',
-                          icon: const Icon(Icons.refresh_rounded),
+                          icon: const Icon(Icons.refresh_outlined),
                           color: scheme.onSecondaryContainer,
                           onPressed: _reload,
                         )

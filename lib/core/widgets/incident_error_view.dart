@@ -34,7 +34,7 @@ class IncidentErrorView extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.error_outline, size: 48),
+                    const Icon(Icons.error_outlined, size: 48),
                     const SizedBox(height: 16),
                     Text(
                       title,
@@ -53,10 +53,9 @@ class IncidentErrorView extends StatelessWidget {
                     ),
                     if (onRetry != null) ...[
                       const SizedBox(height: 20),
-                      FilledButton.icon(
+                      FilledButton(
                         onPressed: onRetry,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Réessayer'),
+                        child: const Text('Réessayer'),
                       ),
                     ],
                   ],

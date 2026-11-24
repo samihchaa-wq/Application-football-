@@ -79,7 +79,7 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
             autofillHints: const [AutofillHints.username],
             decoration: const InputDecoration(
               labelText: 'Identifiant',
-              prefixIcon: Icon(Icons.person_outline),
+              prefixIcon: Icon(Icons.person_outlined),
             ),
           ),
           const SizedBox(height: 16),
@@ -93,7 +93,7 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
             },
             decoration: InputDecoration(
               labelText: 'Mot de passe',
-              prefixIcon: const Icon(Icons.lock_outline),
+              prefixIcon: const Icon(Icons.lock_outlined),
               suffixIcon: IconButton(
                 tooltip: _obscurePassword
                     ? 'Afficher le mot de passe'
@@ -122,7 +122,7 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
                     dimension: 18,
                     child: PfProgressIndicator(strokeWidth: 2),
                   )
-                : const Icon(Icons.login_rounded),
+                : const Icon(Icons.login_outlined),
             label: Text(authState.isLoading ? 'Connexion…' : 'Se connecter'),
           ),
           const SizedBox(height: 12),

@@ -464,7 +464,7 @@ class _PanelMessage extends StatelessWidget {
       children: [
         const SizedBox(height: 24),
         PfEmptyState(
-          icon: Icons.error_outline,
+          icon: Icons.error_outlined,
           title: 'Chargement impossible',
           message: message,
           tone: PfEmptyTone.alert,

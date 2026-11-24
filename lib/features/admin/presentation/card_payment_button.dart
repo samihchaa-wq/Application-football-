@@ -80,14 +80,14 @@ class _CardPaymentButtonState extends ConsumerState<CardPaymentButton> {
       return FilledButton.icon(
         key: const Key('club-claim-free-year'),
         onPressed: _busy ? null : _claimFreeYear,
-        icon: const Icon(Icons.card_giftcard_rounded),
+        icon: const Icon(Icons.card_giftcard_outlined),
         label: Text(_busy ? 'Activation…' : 'Activer mon année offerte'),
       );
     }
     return FilledButton.icon(
       key: const Key('club-pay-by-card'),
       onPressed: _busy ? null : () => unawaited(_pay()),
-      icon: const Icon(Icons.credit_card_rounded),
+      icon: const Icon(Icons.credit_card_outlined),
       label: Text(
         _busy
             ? 'Ouverture du paiement…'

@@ -190,7 +190,7 @@ class _Step extends StatelessWidget {
             : null,
       ),
       subtitle: Text(subtitle),
-      trailing: done ? null : const Icon(Icons.chevron_right_rounded),
+      trailing: done ? null : const Icon(Icons.chevron_right_outlined),
       onTap: done || !enabled ? null : onTap,
     );
   }

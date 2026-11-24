@@ -141,7 +141,7 @@ class _FactLine extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (!isAway) ...[
-            const Icon(Icons.sports_soccer_rounded, size: 16),
+            const Icon(Icons.sports_soccer_outlined, size: 16),
             const SizedBox(width: 6),
           ],
           Text(
@@ -150,7 +150,7 @@ class _FactLine extends StatelessWidget {
           ),
           if (isAway) ...[
             const SizedBox(width: 6),
-            const Icon(Icons.sports_soccer_rounded, size: 16),
+            const Icon(Icons.sports_soccer_outlined, size: 16),
           ],
         ],
       ),

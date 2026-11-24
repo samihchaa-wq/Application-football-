@@ -153,7 +153,7 @@ class _StepNavigator extends StatelessWidget {
           IconButton(
             tooltip: previousTooltip,
             onPressed: onPrevious,
-            icon: const Icon(Icons.chevron_left_rounded),
+            icon: const Icon(Icons.chevron_left_outlined),
           ),
           Expanded(
             child: Text(
@@ -167,7 +167,7 @@ class _StepNavigator extends StatelessWidget {
           IconButton(
             tooltip: nextTooltip,
             onPressed: onNext,
-            icon: const Icon(Icons.chevron_right_rounded),
+            icon: const Icon(Icons.chevron_right_outlined),
           ),
         ],
       ),
@@ -320,7 +320,7 @@ class _HistoricalMonthView extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.screenGutter),
               children: [
                 PfEmptyState(
-                  icon: Icons.history_toggle_off_rounded,
+                  icon: Icons.history_toggle_off_outlined,
                   title: 'Historique indisponible',
                   message: humanizeError(snapshot.error!),
                   tone: PfEmptyTone.alert,
@@ -419,7 +419,7 @@ class ClubEventCard extends ConsumerWidget {
             tooltip: 'Modifier l’événement',
             onPressed: edit,
             color: CalendarCardPalette.eventBorder,
-            icon: const Icon(Icons.edit_rounded),
+            icon: const Icon(Icons.edit_outlined),
           )
         : null;
 
@@ -608,7 +608,7 @@ class _MonthEmptyState extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.screenGutter),
         child: PfEmptyState(
-          icon: Icons.event_busy_rounded,
+          icon: Icons.event_busy_outlined,
           title: title,
           compact: true,
         ),

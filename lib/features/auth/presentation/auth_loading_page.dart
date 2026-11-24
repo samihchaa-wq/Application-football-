@@ -51,7 +51,7 @@ class _AuthLoadingPageState extends ConsumerState<AuthLoadingPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.cloud_off_rounded, size: 58),
+                    const Icon(Icons.cloud_off_outlined, size: 58),
                     const SizedBox(height: 20),
                     Text(
                       'Connexion temporairement indisponible',
@@ -81,7 +81,7 @@ class _AuthLoadingPageState extends ConsumerState<AuthLoadingPage> {
                               height: 18,
                               child: PfProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.refresh_rounded),
+                          : const Icon(Icons.refresh_outlined),
                       label: const Text('Réessayer'),
                     ),
                     const SizedBox(height: 8),
@@ -123,7 +123,7 @@ class _AuthLoadingPageState extends ConsumerState<AuthLoadingPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.hourglass_top_rounded, size: 58),
+                  const Icon(Icons.hourglass_top_outlined, size: 58),
                   const SizedBox(height: 20),
                   Text(
                     'Compte en attente de validation',
@@ -152,7 +152,7 @@ class _AuthLoadingPageState extends ConsumerState<AuthLoadingPage> {
                             height: 18,
                             child: PfProgressIndicator(strokeWidth: 2),
                           )
-                        : const Icon(Icons.refresh_rounded),
+                        : const Icon(Icons.refresh_outlined),
                     label: const Text('Vérifier maintenant'),
                   ),
                   const SizedBox(height: 8),

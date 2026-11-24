@@ -161,19 +161,19 @@ class _WeatherBody extends StatelessWidget {
                         ),
                       if (weather.windSpeed case final wind?)
                         _Metric(
-                          icon: Icons.air_rounded,
+                          icon: Icons.air_outlined,
                           label: 'Vent',
                           value: '${_number(wind)} km/h',
                         ),
                       if (weather.humidity case final humidity?)
                         _Metric(
-                          icon: Icons.opacity_rounded,
+                          icon: Icons.opacity_outlined,
                           label: 'Humidité',
                           value: '$humidity %',
                         ),
                       if (weather.windGusts case final gusts?)
                         _Metric(
-                          icon: Icons.speed_rounded,
+                          icon: Icons.speed_outlined,
                           label: 'Rafales',
                           value: '${_number(gusts)} km/h',
                         ),
@@ -233,9 +233,9 @@ IconData _weatherIcon(int? code) {
   if (code == 0 || code == 1) return Icons.wb_sunny_outlined;
   if (code == 2 || code == 3) return Icons.cloud_outlined;
   if (code == 45 || code == 48) return Icons.foggy;
-  if (_isRain(code)) return Icons.grain_rounded;
+  if (_isRain(code)) return Icons.grain_outlined;
   if ((code >= 71 && code <= 77) || code == 85 || code == 86) {
-    return Icons.ac_unit_rounded;
+    return Icons.ac_unit_outlined;
   }
   if (code >= 95) return Icons.thunderstorm_outlined;
   return Icons.cloud_outlined;

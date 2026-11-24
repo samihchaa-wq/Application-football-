@@ -87,7 +87,7 @@ class _OfferCard extends ConsumerWidget {
                 style: TextStyle(fontSize: 12, color: AppTheme.textFaint),
               ),
               const SizedBox(height: 8),
-              OutlinedButton.icon(
+              OutlinedButton(
                 key: const Key('platform-offer-edit'),
                 onPressed: () async {
                   final saved = await showDialog<bool>(
@@ -101,8 +101,7 @@ class _OfferCard extends ConsumerWidget {
                     ref.invalidate(platformBillingSettingsProvider);
                   }
                 },
-                icon: const Icon(Icons.edit_outlined),
-                label: const Text('Modifier'),
+                child: const Text('Modifier'),
               ),
             ],
           ),

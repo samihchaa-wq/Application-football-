@@ -185,7 +185,7 @@ class _ClubKitsPageState extends ConsumerState<ClubKitsPage> {
                 child: TextButton.icon(
                   key: ValueKey('kit-archive-${_kits[i].slot.id}'),
                   onPressed: _saving ? null : () => _archive(i),
-                  icon: const Icon(Icons.delete_outline),
+                  icon: const Icon(Icons.delete_outlined),
                   label: const Text('Supprimer ce maillot'),
                 ),
               ),
