@@ -86,3 +86,9 @@ Restent à vérifier sur GitHub avant intégration : PR #69 (+1 manuel), #72 (é
 - Écarté après mesure : découper le code (Flutter + Dart = 2/3 du poids, gain ~1 s sur 19 en réseau faible).
 - Suite pgTAP complète rejouée en local : écarts = version pgTAP locale (codes d'erreur corrects, texte attendu différent) et données de démo ; aucun fichier en échec ne touche aux fonctions modifiées. La CI fait foi.
 - Reste à la propriétaire : secret GitHub DEMO_PASSWORD ; Web Analytics Cloudflare (couper, ou l'autoriser dans la CSP) ; Riverpod 3 et mises à jour majeures (go_router, share_plus, connectivity_plus) = chantier séparé.
+
+## 24/11/2026 — Audit, 3e passe (parcours complets en local, PR #231)
+- Testé de bout en bout sur copie locale (fonctions lancées avec Deno, e-mails capturés par un faux service) : inscription (cas d'erreur clairs ; e-mail obligatoire ; limites de fréquence ; code d'invitation non devinable), confirmation d'e-mail (2e compte même adresse refusé), mot de passe oublié (seulement compte validé), validation par l'admin, 1re connexion, photo (« Autre » ; « Type joueur » exige un PNG détouré), export « mes données » (rien d'un autre membre), suppression de compte, réponse Présent/Absent vue par l'admin, version ordinateur 1280/1920 px.
+- Corrigé : fuite par le temps de réponse de « mot de passe oublié » (envoi après la réponse) ; inscription sans preuve de consentement possible si profil hors du club annoncé (échoue et supprime) ; noms complets dans « En attente » ; écran admin d'un match rafraîchi en direct sur signal sportif ; en-têtes de statistiques nommés ; « Cet appareil » dans le bandeau ; Permissions-Policy ; versions épinglées des types Edge Runtime.
+- Non testé de bout en bout : le direct (exige réponses, convocations, compo publiée) ; e-mails réels via Brevo ; vrai téléphone.
+- Base locale : `private.local_default_club` capte les inscriptions (normal en local, absent en production — vérifié).
