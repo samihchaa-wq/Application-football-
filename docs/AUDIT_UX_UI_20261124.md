@@ -8,7 +8,7 @@ Version analysée : `main` au 24/11/2026 (après les PR #234, #239, #242). Méth
 2. **Les boutons de suppression ressemblent aux boutons normaux.** Le thème peint un dégradé rouge sur tous les boutons pleins : la couleur « danger » prévue pour au moins 5 confirmations (finir la saison, supprimer un joueur, tout effacer au live, etc.) est écrasée. « Confirmer » et « Supprimer définitivement » ont le même aspect.
 3. **Le rouge veut tout dire** : bouton principal, danger, erreur, onglet sélectionné, Absent, marque. Impossible de savoir au premier coup d'œil si un rouge est « valider » ou « attention ».
 4. **Deux verts, deux jaunes, deux rouges pour les résultats.** Les scores du calendrier reprennent les couleurs du thème (copiées en dur dans le code) ; le camembert et les pastilles V/N/D des statistiques utilisent d'autres couleurs, écrites en dur.
-5. **Texte trop petit** : 8 et 9 px sur les noms des joueurs du terrain, 9 px sur le bouton « Ma saison », 10 px sur le compteur de notifications (minimum recommandé : 11 à 12 px).
+5. **Texte trop petit** : 8 et 9 px sur les pastilles des joueurs du terrain (buts, passes, remplacements) et sur le « A » du bouton « Ma saison », 10 px sur le compteur de notifications (minimum recommandé : 11 px). Les noms des joueurs, eux, étaient déjà à une taille correcte.
 6. **Icônes en 4 styles mélangés** (contour, arrondi, trait fin, plein) et la même action change d'icône selon l'écran : « Enregistrer » a 3 icônes différentes, « Réessayer » 2, « Ajouter » 3.
 7. **Textes explicatifs trop longs sur les écrans** : 89 textes de plus de 110 caractères dans l'appli, dont une quinzaine affichés en permanence (liste d'attente, maillots, parrainage, abonnement au calendrier…).
 8. **Chiffres sans légende** : la carte Prono affiche « 1 124 / N 933 / 2 1120 » (les points de chaque résultat, multipliés par 100) sans dire ce que c'est.
@@ -30,7 +30,7 @@ Chiffres : 159 boutons pleins, 72 à contour, 122 boutons texte, 82 boutons-icô
 
 - **Rouge surchargé** (constat 3). Proposition : le rouge = action principale et danger ; les onglets sélectionnés en blanc (ou une teinte neutre) avec un trait de couleur dessous ; l'erreur garde son rouge, avec une icône.
 - **Résultats : un seul jeu de couleurs** (constat 4). Reprendre `success` (vert), `warning` (jaune) et `error` (rouge) du thème pour le camembert et les pastilles.
-- **Couleurs écrites en dur** : 184 couleurs hors du fichier de thème, 60 « blanc » en dur, 14 couleurs standard (rouge, orange…). Chaque changement de thème oblige à les chercher une par une. Proposition : les ramener au thème, sauf les maillots et les badges (couleurs voulues).
+- **Couleurs écrites en dur** : 195 couleurs hors du fichier de thème, mais après vérification la quasi-totalité sont des palettes voulues (maillots, badges premium, dessin du terrain, bilan de saison, vidéo de composition). Seules une quinzaine étaient de vraies dérives (verts et rouges foncés hérités du thème clair dans les pronostics, le direct et l'historique) ; elles ont été ramenées au thème.
 - **Orange/jaune à plusieurs sens** : alerte, trophée, « Points » trié, résultat nul, liste d'attente, « N » sélectionné au prono. Proposition : jaune = attention ou nul seulement.
 - **Cartes bordeaux du formulaire « Ajouter »** (constat 10) : reprendre le gris-bleu des autres cartes.
 - **Contrastes** : texte sur fond OK partout où j'ai mesuré (les paires de couleurs des matchs sont testées automatiquement depuis la PR #242). Les noms de joueurs sur le terrain à 8-9 px restent le point faible.
@@ -41,7 +41,7 @@ Chiffres : 159 boutons pleins, 72 à contour, 122 boutons texte, 82 boutons-icô
 - **Bandeau global** (constat 1). Proposition : l'afficher une seule fois sur le Calendrier, puis un petit point sur la cloche.
 - **Marges de page** : 8, 12, 14, 16, 18, 20 ou 24 px selon l'écran. J'ai essayé de tout mettre à 16 px : plusieurs blocs débordaient (fiche joueur notamment). À faire écran par écran, pas d'un coup.
 - **Statistiques** (constat 9). Proposition : un seul étage (la saison dans un menu déroulant) et un indice visuel quand le tableau défile (dégradé à droite).
-- **Fiche d'un match, onglet Info** : presque vide (« Rendez-vous 13h30 » et trois pastilles de scores sans nom d'adversaire). Proposition : adresse, météo, ou masquer l'onglet quand il n'y a rien.
+- **Fiche d'un match, onglet Info** : correction après vérification dans le code : il n'est pas vide, il est complet quand le match a une adresse (rendez-vous, maillot, météo, dernières rencontres contre le même adversaire). Il paraissait vide dans mon club de démo, sans adresse. Aucun changement nécessaire.
 - **Fiche d'un match, onglet Effectif** : trois sections colorées (Convoqués, Liste d'attente, Absents) dont une « Aucun joueur. » : masquer les sections vides.
 - **Pages d'administration** : « Réglages du club » = 10 sections repliables + une barre de recherche + un (i) par réglage. La structure est correcte pour le volume, mais le (i) réduit la largeur des libellés (« Délai de correction du résultat » est coupé).
 - **Boutons du bas** « Calendrier / Statistiques » : très hauts (environ 70 px avec marges), alors qu'il n'y a que deux destinations.
@@ -99,3 +99,29 @@ Recommandation : A puis B (une seule PR chacun), les autres ensuite.
 - Écrans de plateforme (console gestionnaire, facturation) : mesurés dans le code, pas capturés.
 - Vidéo de composition et « Ma saison » (Wrapped).
 - Le mode clair n'existe plus (thème unique sombre) : aucun contrôle de ce côté.
+
+## 9. Suite donnée (PR du 24/11/2026, lots A à E)
+
+Fait et vérifié (tests + captures téléphone 375 px, ordinateur 1280 px, paysage 812 × 375) :
+
+- **Bandeau notifications** : Calendrier seulement, plus un point jaune sur la cloche ; absent quand l'écran est peu haut (téléphone couché). Constat 1.
+- **Danger** : `PfButtonStyles.danger` (aplat rouge d'erreur, texte sombre) sur 19 confirmations destructives ; les confirmations nomment l'action (« Terminer le match », « Voter », « Passer à Absent », « Finir la saison »). Constat 2.
+- **Résultats** : un seul vert / jaune / rouge (`AppTheme.resultWin/Draw/Loss`) pour les scores, le camembert et les pastilles V/N/D. Constat 4.
+- **Texte** : pastilles à 11 px, compteur de la cloche à 11 px. Constat 5.
+- **Icônes** : 330 icônes ramenées à la famille « contour » ; 32 icônes redondantes retirées des boutons ; plus d'icône devant les lignes légales, les 10 sections des Réglages du club, ni dans l'Effectif d'un match. Constat 6.
+- **Textes** : liste d'attente, maillots, parrainage, abonnement au calendrier, indisponibilité, « Nombre de joueurs convoqués 14 joueurs », groupes vides de l'Effectif, date des cartes (« Dim. 22 nov. 2026 »). Constat 7.
+- **Statistiques** : dégradé + flèche au bord tant qu'il reste des colonnes cachées. Constat 9 (partiel).
+- **Barre du bas** : icône + texte (règle « navigation = icône + libellé » du skill).
+- **Formulaire « Ajouter »** : cartes gris-bleu comme le reste. Constat 10.
+- **Paysage** : barre latérale à la place de la barre du bas quand l'écran fait moins de 500 px de haut.
+- **Pronostics, direct, historique** : couleurs du thème ; le texte « Enregistré » passe de 2,5:1 à plus de 7:1.
+
+Pas fait, et pourquoi :
+
+- **Libellés des réglages en double** (« Notification : match annulé ou déplacé » / « … annulation ») : ils viennent de la base de données ; les changer demande une migration, donc ton accord.
+- **Chiffres du Prono (124 / 933 / 1120)** : le sens exact (points × 100) doit être confirmé avant d'ajouter une légende.
+- **Étages de choix des statistiques** : garder deux rangées d'onglets est un choix de conception à trancher avec toi.
+- **Paysage, page Statistiques** : une seule ligne de tableau tient encore ; il faudrait faire défiler toute la page.
+- **Badges** : « 0 / MATCHS SAISON » est dessiné dans l'image du badge ; je n'y touche pas.
+- **Boutons à icône conservée** : les boutons principaux qui affichent un indicateur de chargement gardent leur icône (18) ; à unifier plus tard avec un composant commun.
+- **Marge de page unique** : à faire écran par écran (l'essai global avait fait déborder la fiche joueur).

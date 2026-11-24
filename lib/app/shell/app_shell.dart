@@ -194,7 +194,12 @@ class _AppShellState extends ConsumerState<AppShell>
         // barre de navigation.
         final statsEnabled =
             ref.watch(clubModuleEnabledProvider(ClubModule.statistics));
-        final useRail = constraints.maxWidth >= 840;
+        // Téléphone couché (812 × 375) : la barre du bas et l'en-tête prenaient
+        // presque toute la hauteur et plus aucune ligne de tableau ne tenait.
+        // Peu de hauteur et assez de largeur : navigation sur le côté.
+        final shortAndWide =
+            constraints.maxHeight < 500 && constraints.maxWidth >= 600;
+        final useRail = constraints.maxWidth >= 840 || shortAndWide;
         final extendRail = constraints.maxWidth >= 1180;
         final content = Theme(data: moduleTheme, child: widget.navigationShell);
         // Sur grand écran, le contenu garde une largeur de lecture : des

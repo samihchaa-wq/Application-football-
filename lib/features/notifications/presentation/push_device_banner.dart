@@ -84,6 +84,9 @@ class _PushDeviceBannerState extends ConsumerState<PushDeviceBanner> {
     if (alert == null || alert == PushDeviceAlert.none) {
       return const SizedBox.shrink();
     }
+    // Écran peu haut (téléphone couché) : pas de bandeau, il couvrirait le
+    // tiers de l'écran ; le point d'avertissement de la cloche reste.
+    if (MediaQuery.sizeOf(context).height < 500) return const SizedBox.shrink();
     if (alert == PushDeviceAlert.needsInstall) {
       return _InstallBanner(
         onHowTo: () => showHomeScreenInstallGuide(
