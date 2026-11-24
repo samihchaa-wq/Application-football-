@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:petit_filet/core/utils/match_window.dart';
 import 'package:petit_filet/core/widgets/pf_app_bar.dart';
@@ -1272,9 +1273,15 @@ class _CompactChoiceButton extends StatelessWidget {
     if (selected) {
       return FilledButton(
         style: style.copyWith(
-          foregroundColor: WidgetStatePropertyAll(
-            Theme.of(context).colorScheme.secondary,
+          // Fond uni arrondi : le dégradé du thème ignorait les coins ronds.
+          backgroundBuilder: (context, states, child) => child!,
+          elevation: const WidgetStatePropertyAll(0),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+            ),
           ),
+          foregroundColor: const WidgetStatePropertyAll(Colors.white),
         ),
         onPressed: enabled ? onPressed : null,
         child: child,
