@@ -154,6 +154,9 @@ class _MatchLivePreKickoffPageState
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       children: [
+        // Le Live masque l'encadré du match : rappel de l'adversaire et de
+        // l'heure avant de lancer le chrono.
+        UpcomingMatchFixtureHeader(matchId: widget.matchId),
         // Exactement le même bloc terrain/banc que le compte rendu
         // d'après-match : un seul éditeur d'effectif dans toute l'application.
         MatchSquadEditor(
@@ -215,7 +218,7 @@ class _MatchLivePreKickoffPageState
             controller: _durationController,
             keyboardType: TextInputType.number,
             enabled: !_busy,
-            decoration: decoration('Temps'),
+            decoration: decoration('Durée (min)'),
           ),
         ),
         const SizedBox(width: 8),
@@ -224,7 +227,7 @@ class _MatchLivePreKickoffPageState
             key: ValueKey('squad-formation-${lineup.formationCode}'),
             initialValue: formation.code,
             isExpanded: true,
-            decoration: decoration('Dispo'),
+            decoration: decoration('Système'),
             items: [
               for (final item in footballFormations)
                 DropdownMenuItem(value: item.code, child: Text(item.code)),

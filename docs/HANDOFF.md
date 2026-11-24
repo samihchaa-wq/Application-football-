@@ -22,7 +22,8 @@
 - Fait (thème sombre actuel) : bandeau notifications raccourci, alertes rouges lisibles, légende du tableau des stats, onglets sélectionnés d'un seul rouge, fin des fonds gris hérités du thème clair, calendrier limité à 760 px sur ordinateur, titre « Banc (n) » sur toutes les compositions (sauf vidéo), en-tête de match compact partout, état vide + rappel du match avant le coup d'envoi, petits textes (Abonnement, −5 %, Changer ma photo, Convoqués).
 - Vérifié : analyze propre, 1514 tests verts, captures locales (téléphone 375 px et ordinateur 1280 px) sur Supabase local + club de démo.
 - Essayé puis annulé : marge latérale 16 px (débordements fiche joueur). Les marges restent 8 px (pages communes) ou 16 px (pages codées à la main).
-- Non fait : Live en cours de match (pilote), texte agrandi, paysage, vrai téléphone ; barre du bas qui reste sur « Calendrier » dans Paramètres.
+- Live (ajout) : rappel du match avant le coup d'envoi côté coach, libellés « Durée (min) » / « Système », boutons +/− du score plus visibles (zone tactile déjà 48 px, mesurée).
+- Non fait : texte agrandi, paysage, vrai téléphone ; barre du bas qui reste sur « Calendrier » dans Paramètres.
 - Non intégré : aucune PR ouverte (une fusion sur main publie en production).
 
 ## Règles impératives
