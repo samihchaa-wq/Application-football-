@@ -1,7 +1,7 @@
 // Rattacher à un club un compte déjà connecté (par exemple via Facebook) qui
 // n'en a pas encore : rejoindre avec un code d'invitation, ou créer un club.
 // Le club n'est jamais choisi par le client autrement que par un code valide.
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2.95.0/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2.95.0";
 import { parseClubContractVersion, parseConsent } from "./consent.ts";
 import { isDuplicateError, reserveUsername } from "./username.ts";
