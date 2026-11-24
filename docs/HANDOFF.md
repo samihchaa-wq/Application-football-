@@ -23,7 +23,8 @@
 - Vérifié : analyze propre, 1514 tests verts, captures locales (téléphone 375 px et ordinateur 1280 px) sur Supabase local + club de démo.
 - Essayé puis annulé : marge latérale 16 px (débordements fiche joueur). Les marges restent 8 px (pages communes) ou 16 px (pages codées à la main).
 - Live (ajout) : rappel du match avant le coup d'envoi côté coach, libellés « Durée (min) » / « Système », boutons +/− du score plus visibles (zone tactile déjà 48 px, mesurée).
-- Non fait : texte agrandi, paysage, vrai téléphone ; barre du bas qui reste sur « Calendrier » dans Paramètres.
+- Live (déroulé testé en local : but, buteur, fin de match) : bandeau « buteur à désigner » remonté sous le score (il était hors écran), confirmations Fin / Recommencer expliquées, bandeau « Compte rendu du match » après la fin, messages d'information en bleu (AppTheme.info) au lieu du rouge des erreurs.
+- Non fait : changements de joueurs (glisser-déposer) non testés, texte agrandi, paysage, vrai téléphone ; barre du bas qui reste sur « Calendrier » dans Paramètres.
 - Non intégré : aucune PR ouverte (une fusion sur main publie en production).
 
 ## Règles impératives

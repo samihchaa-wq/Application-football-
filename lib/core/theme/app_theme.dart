@@ -139,6 +139,10 @@ abstract final class AppTheme {
   static const Color warning = Color(0xFFFFB020);
   static const Color admin = Color(0xFF9AA8B5);
   static const Color error = Color(0xFFFF5A6A);
+
+  /// Messages d'information : bleu du calendrier, pour ne pas se confondre
+  /// avec le rouge de la marque, qui sert aussi aux erreurs.
+  static const Color info = Color(0xFF6EA8FF);
   static const Color errorContainer = Color(0xFF3B1A21);
   static const Color onErrorContainer = Color(0xFFFFD9DE);
   static const Color textPrimary = Color(0xFFF2F4F7);
