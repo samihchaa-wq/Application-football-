@@ -31,9 +31,13 @@ class _CalendarToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
+        // En liste, même largeur que les cartes du calendrier (760 px) :
+        // le bouton « Nouvel événement » s'aligne sur leur bord droit.
+        final maxContent =
+            displayMode == _CalendarDisplayMode.month ? 1120.0 : 760.0;
         final outerInset = math.max(
           AppSpacing.screenGutter,
-          (constraints.maxWidth - 1120) / 2 + AppSpacing.screenGutter,
+          (constraints.maxWidth - maxContent) / 2 + AppSpacing.screenGutter,
         );
         final compact = constraints.maxWidth < 720;
 
