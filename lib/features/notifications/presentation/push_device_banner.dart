@@ -97,7 +97,8 @@ class _PushDeviceBannerState extends ConsumerState<PushDeviceBanner> {
                 ? 'Notifications bloquées'
                 : 'Notifications désactivées',
             message: blocked
-                ? 'Ton téléphone n’affiche pas les notifications du club. '
+                // « appareil » : le bandeau s'affiche aussi sur ordinateur.
+                ? 'Cet appareil n’affiche pas les notifications du club. '
                     'Autorise-les dans ses réglages pour être prévenu des '
                     'disponibilités et des convocations.'
                 : 'Tu ne reçois pas les notifications du club sur cet '
