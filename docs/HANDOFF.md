@@ -108,3 +108,9 @@ Restent à vérifier sur GitHub avant intégration : PR #69 (+1 manuel), #72 (é
 - Corrigé : fuite par le temps de réponse de « mot de passe oublié » (envoi après la réponse) ; inscription sans preuve de consentement possible si profil hors du club annoncé (échoue et supprime) ; noms complets dans « En attente » ; écran admin d'un match rafraîchi en direct sur signal sportif ; en-têtes de statistiques nommés ; « Cet appareil » dans le bandeau ; Permissions-Policy ; versions épinglées des types Edge Runtime.
 - Non testé de bout en bout : le direct (exige réponses, convocations, compo publiée) ; e-mails réels via Brevo ; vrai téléphone.
 - Base locale : `private.local_default_club` capte les inscriptions (normal en local, absent en production — vérifié).
+
+## 24/11/2026 — Audit, 4e passe (après-match, saison, démo — PR #236)
+- Testé en local : points des pronostics (serveur = écran, au centime) ; liste d'attente ; armoire à badges ; fin de saison puis bilan (calculé par la tâche de 5 min, bouton « Ma saison » ensuite) ; création de la saison suivante ; création d'un match ; indisponibilité (le joueur passe absent sur le match couvert) ; poste de contrôle.
+- Corrigé : pronostic fermé d'un match fini/annulé (« le Live est ouvert » était faux) ; dates des confrontations coupées ; nom de nouvelle saison déjà pris (refus serveur) ; refus de fin de saison expliqués (24 h de correction, matchs restants) ; bandeau notifications sur poste de contrôle / bilan / connexion ; calendrier admin montrant les autres saisons après une mise à jour en direct ; noms longs coupés au milieu d'un mot ; adversaires de la démo en double (vérifié en ligne : 6 doublons, corrigé à la prochaine remise à zéro nocturne).
+- Copie locale instable : chaque redémarrage du poste coupe Docker (relancer `dockerd`, puis `docker start` de la base ; si le réseau manque, refaire `supabase stop/start`).
+

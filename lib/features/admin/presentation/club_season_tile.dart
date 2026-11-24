@@ -102,8 +102,9 @@ class ClubSeasonTile extends ConsumerWidget {
   }
 
   Future<void> _createSeason(BuildContext context, WidgetRef ref) async {
-    final now = DateTime.now();
-    var enteredName = '${now.year}-${now.year + 1}';
+    final seasons =
+        ref.read(adminDashboardProvider).valueOrNull?.seasons ?? const [];
+    var enteredName = suggestedNewSeasonName(seasons, DateTime.now());
     final name = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(

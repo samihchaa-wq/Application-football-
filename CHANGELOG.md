@@ -23,6 +23,16 @@ Toutes les évolutions notables d’AS Grinta sont documentées ici.
 
 ### Produit
 
+- après-match et saison : un pronostic fermé sur un match fini ou annulé le
+  dit (au lieu de « le Live est ouvert ») ; les dates des confrontations ne
+  sont plus coupées ; le nom proposé pour la nouvelle saison n'est jamais
+  celui d'une saison existante ; les refus de « Finir la saison » disent quoi
+  faire ;
+- calendrier admin : seule la saison choisie est listée, même après une mise
+  à jour en direct ; un nom d'adversaire long se coupe entre deux mots ;
+- le bandeau des notifications ne s'affiche plus sur le poste de contrôle,
+  le bilan de saison ni pendant la connexion ;
+- démo : chaque adversaire n'existe qu'une fois (ils étaient en double).
 - fiche d'un match à venir : « Gestion sportive indisponible » ne s'affiche
   plus au retour dans l'application, à l'ouverture depuis une notification
   ni en tirant pour actualiser. La relecture des réglages du club garde la

@@ -33,6 +33,16 @@ void main() {
     expect(find.text('Statistiques'), findsNothing);
   });
 
+  testWidgets('les boutons du score sont nommés pour les lecteurs d’écran', (
+    tester,
+  ) async {
+    await _pump(tester, _repository(_report()));
+
+    // Un « + » et un « − » par équipe, chacun avec son nom.
+    expect(find.byTooltip(RegExp(r'^Ajouter un but à .+')), findsNWidgets(2));
+    expect(find.byTooltip(RegExp(r'^Retirer un but à .+')), findsNWidgets(2));
+  });
+
   testWidgets('sans composition, tout l’effectif est sur le banc', (
     tester,
   ) async {
@@ -128,7 +138,7 @@ void main() {
       findsOneWidget,
     );
     final button = tester.widget<FilledButton>(
-      find.widgetWithText(FilledButton, 'Valider le compte rendu'),
+      find.widgetWithText(FilledButton, 'Corriger le compte rendu'),
     );
     expect(button.onPressed, isNull);
   });
@@ -158,7 +168,9 @@ void main() {
     final repository = _repository(_report(isCorrection: true));
     await _pump(tester, repository);
 
-    await tester.tap(find.text('Valider le compte rendu'));
+    // Un match déjà validé se corrige : le bouton le dit.
+    expect(find.text('Valider le compte rendu'), findsNothing);
+    await tester.tap(find.text('Corriger le compte rendu'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Corriger'));
     await tester.pumpAndSettle();

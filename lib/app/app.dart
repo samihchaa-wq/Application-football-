@@ -212,9 +212,16 @@ class _PetitFiletAppState extends ConsumerState<PetitFiletApp>
                     ),
                   if (isAuthenticated) const ClubConfigurationStatusBanner(),
                   if (isAuthenticated)
-                    PushDeviceBanner(
-                      navigatorContext: () =>
-                          router.routerDelegate.navigatorKey.currentContext,
+                    ListenableBuilder(
+                      listenable: router.routerDelegate,
+                      builder: (context, _) => pushBannerAllowedOn(
+                        router.routerDelegate.currentConfiguration.uri.path,
+                      )
+                          ? PushDeviceBanner(
+                              navigatorContext: () => router
+                                  .routerDelegate.navigatorKey.currentContext,
+                            )
+                          : const SizedBox.shrink(),
                     ),
                   Expanded(
                     // Quand le nom du club arrive ou change, les écrans déjà

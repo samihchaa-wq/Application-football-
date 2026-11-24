@@ -5,6 +5,14 @@ import 'package:petit_filet/features/preferences/data/push_subscriptions_reposit
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+/// Écrans où le bandeau n'a rien à faire : le poste de contrôle de
+/// l'exploitant (pas de convocations), le bilan de saison plein écran et les
+/// étapes de connexion ou d'acceptation des conditions.
+bool pushBannerAllowedOn(String path) => !(path == '/control' ||
+    path.startsWith('/control/') ||
+    path == '/wrapped' ||
+    path.startsWith('/auth/'));
+
 /// Bandeau du haut de l'application quand cet appareil ne recevra pas les
 /// notifications du club sans que le joueur l'ait choisi.
 ///
