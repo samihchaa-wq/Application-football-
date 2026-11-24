@@ -376,6 +376,9 @@ class _UpcomingHeader extends StatelessWidget {
         details.championshipRound,
       ),
       address: details.address,
+      // Même taille que sur les pages Effectif et Composition ouvertes
+      // depuis cette fiche : l'encadré ne grossit plus d'une page à l'autre.
+      compact: true,
     );
   }
 }

@@ -97,12 +97,10 @@ class _PushDeviceBannerState extends ConsumerState<PushDeviceBanner> {
                 ? 'Notifications bloquées'
                 : 'Notifications désactivées',
             message: blocked
-                // « appareil » : le bandeau s'affiche aussi sur ordinateur.
-                ? 'Cet appareil n’affiche pas les notifications du club. '
-                    'Autorise-les dans ses réglages pour être prévenu des '
-                    'disponibilités et des convocations.'
-                : 'Tu ne reçois pas les notifications du club sur cet '
-                    'appareil : ouverture des disponibilités, convocations.',
+                // Court exprès : le bandeau reste en haut de chaque écran.
+                // « appareil » : il s'affiche aussi sur ordinateur.
+                ? 'Autorise-les dans les réglages de cet appareil.'
+                : 'Active-les pour être prévenu des convocations.',
             tone: PfStatusTone.warning,
             compact: true,
             action: Wrap(
@@ -110,7 +108,7 @@ class _PushDeviceBannerState extends ConsumerState<PushDeviceBanner> {
               children: [
                 TextButton(
                   onPressed: _busy ? null : (blocked ? _recheck : _enable),
-                  child: Text(blocked ? 'C’est fait' : 'Activer'),
+                  child: Text(blocked ? 'J’ai autorisé' : 'Activer'),
                 ),
                 TextButton(
                   onPressed: _busy ? null : _decline,

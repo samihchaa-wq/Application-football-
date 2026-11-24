@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:petit_filet/core/utils/app_formats.dart';
 import 'package:petit_filet/core/widgets/pf_app_bar.dart';
@@ -359,8 +360,9 @@ class _SegmentedBar<T> extends StatelessWidget {
                           fontWeight: selected == items[index].$1
                               ? FontWeight.w400
                               : FontWeight.w400,
+                          // Même rouge que tous les onglets de l'appli.
                           color: selected == items[index].$1
-                              ? scheme.secondary
+                              ? AppTheme.primaryBright
                               : scheme.onSurfaceVariant,
                         ),
                   ),

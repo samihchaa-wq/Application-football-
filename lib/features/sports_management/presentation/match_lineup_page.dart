@@ -489,7 +489,7 @@ class PublishedLineupPreview extends ConsumerWidget {
             return Container(
               padding: const EdgeInsets.all(AppSpacing.cardPadding),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: .6),
+                color: AppTheme.background.withValues(alpha: .35),
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(
                   color: AppTheme.primary.withValues(alpha: .28),

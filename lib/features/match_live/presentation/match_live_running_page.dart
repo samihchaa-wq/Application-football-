@@ -533,6 +533,22 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
             ),
           ),
         ),
+        // Juste sous le score : un but sans buteur. Placé sous le terrain,
+        // il sortait de l'écran du téléphone et passait inaperçu.
+        if (canEdit)
+          for (final event in goalsToAttribute)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 10, 8, 0),
+              child: _GoalToAttributeBar(
+                event: event,
+                onChoose: () => _pickGoalScorer(
+                  context,
+                  controller,
+                  event,
+                  scorerCandidates,
+                ),
+              ),
+            ),
         Padding(
           padding: const EdgeInsets.fromLTRB(8, 10, 8, 0),
           child: pitchArea,
@@ -554,8 +570,8 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
                   _confirmDeleteEvent(context, controller, event),
             ),
           ),
-        // Sous le terrain : buts à attribuer et changements en attente.
-        if (canEdit && (_pending.isNotEmpty || goalsToAttribute.isNotEmpty))
+        // Sous le terrain : changements en attente.
+        if (canEdit && _pending.isNotEmpty)
           Material(
             color: Colors.transparent,
             child: SafeArea(
@@ -565,21 +581,6 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Buts de l'équipe sans buteur : un appui pour désigner
-                    // le buteur puis le passeur.
-                    for (final event in goalsToAttribute)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: _GoalToAttributeBar(
-                          event: event,
-                          onChoose: () => _pickGoalScorer(
-                            context,
-                            controller,
-                            event,
-                            scorerCandidates,
-                          ),
-                        ),
-                      ),
                     if (_pending.isNotEmpty)
                       _PendingSubstitutions(
                         pending: _pending,
@@ -906,7 +907,7 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
       context,
       candidates: candidates,
       title:
-          'Qui a marqué à la ${AppFormats.ordinalFeminine(event.minute)} minute ?',
+          'Qui a marqué à la ${AppFormats.ordinalFeminine(event.minute)} minute\u00A0?',
       extraChoiceLabel:
           ClubRules.enabled(ClubFeature.liveOwnGoals) ? 'CSC adverse' : null,
       extraChoiceIcon: Icons.shield_moon_outlined,
@@ -994,7 +995,7 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
           if (entry.participantId != scorerParticipantId) entry,
       ],
       title: 'Passe décisive sur le but de la '
-          '${AppFormats.ordinalFeminine(minute)} minute ?',
+          '${AppFormats.ordinalFeminine(minute)} minute\u00A0?',
       icon: Icons.emoji_events_outlined,
       extraChoiceLabel: 'Aucune passe décisive',
       extraChoiceIcon: Icons.block_outlined,
@@ -1069,6 +1070,10 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Fin du match ?'),
+        // Le titre seul ne disait pas ce que l'appui déclenche.
+        content: const Text(
+          'Le chrono s’arrête et le score final est enregistré.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -1094,6 +1099,10 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Recommencer le match ?'),
+        content: const Text(
+          'Le chrono revient à zéro, et les buts et changements de ce '
+          'direct sont effacés.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),

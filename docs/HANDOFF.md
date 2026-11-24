@@ -17,6 +17,16 @@
 - Non résolu : déconnexion gestionnaire (non reproduite), « Gestion sportive indisponible » sur lien direct quand le temps réel est coupé (docs/KYKY_A_TRAITER.md), remboursement total (Q5).
 - Non fait : Edge Functions Stripe non exécutées (edge-runtime non démarré), compositions/live en édition non capturés, migration Riverpod 3, nettoyage poussé (aucun fichier orphelin trouvé).
 
+## Session UI UX Pro Max du 24/11/2026 (branche claude/lucid-cannon-s0z1fc)
+
+- Fait (thème sombre actuel) : bandeau notifications raccourci, alertes rouges lisibles, légende du tableau des stats, onglets sélectionnés d'un seul rouge, fin des fonds gris hérités du thème clair, calendrier limité à 760 px sur ordinateur, titre « Banc (n) » sur toutes les compositions (sauf vidéo), en-tête de match compact partout, état vide + rappel du match avant le coup d'envoi, petits textes (Abonnement, −5 %, Changer ma photo, Convoqués).
+- Vérifié : analyze propre, 1514 tests verts, captures locales (téléphone 375 px et ordinateur 1280 px) sur Supabase local + club de démo.
+- Essayé puis annulé : marge latérale 16 px (débordements fiche joueur). Les marges restent 8 px (pages communes) ou 16 px (pages codées à la main).
+- Live (ajout) : rappel du match avant le coup d'envoi côté coach, libellés « Durée (min) » / « Système », boutons +/− du score plus visibles (zone tactile déjà 48 px, mesurée).
+- Live (déroulé testé en local : but, buteur, fin de match) : bandeau « buteur à désigner » remonté sous le score (il était hors écran), confirmations Fin / Recommencer expliquées, bandeau « Compte rendu du match » après la fin, messages d'information en bleu (AppTheme.info) au lieu du rouge des erreurs.
+- Non fait : changements de joueurs (glisser-déposer) non testés, texte agrandi, paysage, vrai téléphone ; barre du bas qui reste sur « Calendrier » dans Paramètres.
+- Non intégré : aucune PR ouverte (une fusion sur main publie en production).
+
 ## Règles impératives
 
 1. **Écriture uniquement dans `samihchaa-wq/Application-football-`.** Ne jamais modifier les dépôts, données, sites ni bases Supabase d'AS Grinta original ou de Carte soirée. Le dépôt AS Grinta peut être consulté en lecture seule pour comparer ses fonctionnalités et son interface.
