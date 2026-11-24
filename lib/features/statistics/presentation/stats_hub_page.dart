@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/app/shell/module_navigation.dart';
 import 'package:petit_filet/core/theme/app_spacing.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
@@ -293,33 +294,50 @@ class _PlayersPanelState extends ConsumerState<_PlayersPanel> {
             AppSpacing.screenGutter,
             32,
           ),
-          child: StickyHeaderTableCard(
-            onRefresh: _refresh,
-            pinnedWidth: pinnedWidth,
-            minWidth: pinnedWidth +
-                (_playerColumnCountWithoutAssists + (showsAssists ? 1 : 0)) *
-                    _playerColumnWidth,
-            pinnedHeader: _PlayersPinnedHeader(
-              sort: sort,
-              descending: _descending,
-              onSort: _onSort,
-            ),
-            scrollableHeader: _PlayersScrollableHeader(
-              sort: sort,
-              descending: _descending,
-              onSort: _onSort,
-              showsAssists: showsAssists,
-            ),
-            rows: [
-              for (var index = 0; index < players.length; index++)
-                _playersRow(
-                  context,
-                  rank: ranks[index],
-                  player: players[index],
-                  isCurrentUser: currentProfileId != null &&
-                      players[index].profileId == currentProfileId,
-                  showsAssists: showsAssists,
+          child: Column(
+            children: [
+              Expanded(
+                child: StickyHeaderTableCard(
+                  onRefresh: _refresh,
+                  pinnedWidth: pinnedWidth,
+                  minWidth: pinnedWidth +
+                      (_playerColumnCountWithoutAssists +
+                              (showsAssists ? 1 : 0)) *
+                          _playerColumnWidth,
+                  pinnedHeader: _PlayersPinnedHeader(
+                    sort: sort,
+                    descending: _descending,
+                    onSort: _onSort,
+                  ),
+                  scrollableHeader: _PlayersScrollableHeader(
+                    sort: sort,
+                    descending: _descending,
+                    onSort: _onSort,
+                    showsAssists: showsAssists,
+                  ),
+                  rows: [
+                    for (var index = 0; index < players.length; index++)
+                      _playersRow(
+                        context,
+                        rank: ranks[index],
+                        player: players[index],
+                        isCurrentUser: currentProfileId != null &&
+                            players[index].profileId == currentProfileId,
+                        showsAssists: showsAssists,
+                      ),
+                  ],
                 ),
+              ),
+              Padding(
+                key: const ValueKey('stats-columns-legend'),
+                padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
+                child: Text(
+                  _playerColumnsLegend(showsAssists: showsAssists),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppTheme.textSecondary,
+                      ),
+                ),
+              ),
             ],
           ),
         );
@@ -362,6 +380,24 @@ class _PlayersPinnedHeader extends StatelessWidget {
   }
 }
 
+/// Nom complet de chaque colonne abrégée du tableau des joueurs.
+const _playerColumnNames = <String, String>{
+  'J': 'Matchs joués',
+  'B': 'Buts',
+  'PD': 'Passes décisives',
+  'CS': 'Matchs sans but encaissé',
+  'HDM': 'Homme du match',
+  'G': 'Gagnés',
+  'N': 'Nuls',
+  'P': 'Perdus',
+};
+
+/// Légende sous le tableau : sans elle, les abréviations restaient à deviner.
+String _playerColumnsLegend({required bool showsAssists}) => [
+      for (final entry in _playerColumnNames.entries)
+        if (showsAssists || entry.key != 'PD') '${entry.key} ${entry.value}',
+    ].join(' · ');
+
 class _PlayersScrollableHeader extends StatelessWidget {
   const _PlayersScrollableHeader({
     required this.sort,
@@ -382,6 +418,7 @@ class _PlayersScrollableHeader extends StatelessWidget {
     Widget valueCell(String label, _PlayerStatCol column) {
       return SortableHeaderCell(
         label: label,
+        tooltip: _playerColumnNames[label],
         flex: _playerValueFlex,
         active: sort == column,
         descending: descending,

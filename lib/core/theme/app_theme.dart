@@ -139,6 +139,8 @@ abstract final class AppTheme {
   static const Color warning = Color(0xFFFFB020);
   static const Color admin = Color(0xFF9AA8B5);
   static const Color error = Color(0xFFFF5A6A);
+  static const Color errorContainer = Color(0xFF3B1A21);
+  static const Color onErrorContainer = Color(0xFFFFD9DE);
   static const Color textPrimary = Color(0xFFF2F4F7);
   static const Color textSecondary = Color(0xFFC3CBD4);
   static const Color textFaint = Color(0xFF93A0AD);
@@ -224,6 +226,10 @@ abstract final class AppTheme {
       surfaceContainerHighest: surfaceHigh,
       error: error,
       onError: Colors.white,
+      // Fond d'alerte sombre teinté de rouge : le texte clair y reste lisible
+      // (sinon Flutter reprend [error] avec du blanc, contraste 3:1).
+      errorContainer: errorContainer,
+      onErrorContainer: onErrorContainer,
       outline: outline,
       outlineVariant: const Color(0xFF2A3440),
     );

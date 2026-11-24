@@ -59,7 +59,9 @@ class PfSecondaryTabs<T> extends StatelessWidget {
               }),
               foregroundColor: WidgetStateProperty.resolveWith((states) {
                 return states.contains(WidgetState.selected)
-                    ? AppTheme.accent
+                    // Même couleur que les onglets principaux : seule la
+                    // taille distingue les deux niveaux.
+                    ? AppTheme.primaryBright
                     : AppTheme.textFaint;
               }),
               overlayColor: WidgetStatePropertyAll(

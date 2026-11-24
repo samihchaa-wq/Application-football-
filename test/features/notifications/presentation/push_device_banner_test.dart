@@ -138,7 +138,7 @@ void main() {
       expect(find.text('Notifications bloquées'), findsOneWidget);
       expect(find.text('Activer'), findsNothing);
 
-      await tester.tap(find.text('C’est fait'));
+      await tester.tap(find.text('J’ai autorisé'));
       await tester.pumpAndSettle();
 
       expect(find.textContaining('Toujours bloquées'), findsOneWidget);

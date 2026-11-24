@@ -269,15 +269,16 @@ class _AvailabilityPanel extends StatelessWidget {
         availability.status == MatchAvailabilityStatus.available;
     final selectedAbsent =
         availability.status == MatchAvailabilityStatus.absent;
-    // Les cartes du calendrier sont désormais claires : la variante
-    // « embeddedOnDark » ne change plus que le fond (blanc translucide).
+    // Thème sombre : sur une carte du calendrier (« embeddedOnDark »), un
+    // fond légèrement plus sombre que la carte. L'ancien blanc translucide,
+    // hérité du thème clair, formait un bandeau gris qui jurait.
     const secondary = AppTheme.textSecondary;
 
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: embeddedOnDark
-            ? Colors.white.withValues(alpha: .6)
+            ? AppTheme.background.withValues(alpha: .35)
             : AppTheme.primary.withValues(alpha: .08),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.primary.withValues(alpha: .28)),

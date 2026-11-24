@@ -578,8 +578,8 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
         ),
         TabBar(
           controller: _tabs,
-          indicatorColor: AppTheme.accent,
-          labelColor: AppTheme.accent,
+          indicatorColor: AppTheme.primaryBright,
+          labelColor: AppTheme.primaryBright,
           unselectedLabelColor: AppTheme.textSecondary,
           dividerColor: AppTheme.outline.withValues(alpha: .45),
           labelStyle: const TextStyle(
@@ -789,6 +789,7 @@ class _ScoreLine extends StatelessWidget {
           ),
         ),
         IconButton.filledTonal(
+          tooltip: 'Retirer un but à $name',
           onPressed: enabled && score > 0 ? () => onChanged(score - 1) : null,
           icon: const Icon(Icons.remove),
         ),
@@ -803,6 +804,7 @@ class _ScoreLine extends StatelessWidget {
           ),
         ),
         IconButton.filledTonal(
+          tooltip: 'Ajouter un but à $name',
           onPressed: enabled && score < 30 ? () => onChanged(score + 1) : null,
           icon: const Icon(Icons.add),
         ),

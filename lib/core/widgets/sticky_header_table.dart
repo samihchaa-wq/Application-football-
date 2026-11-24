@@ -399,10 +399,15 @@ class SortableHeaderCell extends StatelessWidget {
     this.flex,
     this.align = TextAlign.center,
     this.style,
+    this.tooltip,
     super.key,
   });
 
   final String label;
+
+  /// Nom complet d'une colonne abrégée (« B » → « Buts »), affiché au survol
+  /// ou à l'appui long et lu par les lecteurs d'écran.
+  final String? tooltip;
   final int? flex;
   final bool active;
   final bool descending;
@@ -437,7 +442,9 @@ class SortableHeaderCell extends StatelessWidget {
     // Les en-têtes de tri sont l'interaction principale de l'écran
     // Statistiques : avec 4 px de marge verticale ils ne faisaient que 21 px
     // de haut, loin des 44 px minimum d'une cible tactile.
-    final cell = Semantics(
+    final help = tooltip;
+    final Widget cell = Semantics(
+      label: help,
       value: active ? (descending ? 'tri décroissant' : 'tri croissant') : null,
       child: InkWell(
         onTap: onTap,
@@ -452,8 +459,11 @@ class SortableHeaderCell extends StatelessWidget {
       ),
     );
 
+    final shown = help == null
+        ? cell
+        : Tooltip(message: help, excludeFromSemantics: true, child: cell);
     final flexValue = flex;
-    if (flexValue == null) return cell;
-    return Expanded(flex: flexValue, child: cell);
+    if (flexValue == null) return shown;
+    return Expanded(flex: flexValue, child: shown);
   }
 }

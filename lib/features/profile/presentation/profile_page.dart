@@ -227,9 +227,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               TextButton.icon(
                 onPressed: busy ? null : _pickAndUploadPhoto,
                 icon: const Icon(Icons.photo_camera_outlined),
-                label: Text(
-                  'Photo : ${PlayerPhotoMode.fromPhotoUrl(profile?.photoUrl).label}',
-                ),
+                // « Photo : Type joueur » ne disait pas que le bouton sert à
+                // changer de photo.
+                label: const Text('Changer ma photo'),
               ),
               SizedBox(height: sectionGap),
               Card(

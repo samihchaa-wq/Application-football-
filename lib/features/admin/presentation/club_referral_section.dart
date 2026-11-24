@@ -63,10 +63,10 @@ class _ReferralCard extends StatelessWidget {
             Text(
               'Fais découvrir Petit Filet à un autre club. Pour chaque club '
               'qui s’inscrit avec ton code et paie son abonnement, ton club '
-              'gagne −$rate % sur son prochain renouvellement, jusqu’à '
-              '−$cap %${cap >= 100 ? ' : $maxClubs clubs parrainés, et '
+              'gagne −$rate\u00A0% sur son prochain renouvellement, jusqu’à '
+              '−$cap\u00A0%${cap >= 100 ? ' : $maxClubs clubs parrainés, et '
                   'l’année est offerte' : ''}. Le club parrainé a lui aussi '
-              '−$rate % sur sa première année.',
+              '−$rate\u00A0% sur sa première année.',
               key: const Key('club-referral-explanation'),
             ),
             const SizedBox(height: 12),
@@ -101,7 +101,7 @@ class _ReferralCard extends StatelessWidget {
             if (referrals.discountPercent > 0) ...[
               const SizedBox(height: 8),
               Text(
-                'Réduction acquise : −${referrals.discountPercent} % sur le '
+                'Réduction acquise : −${referrals.discountPercent}\u00A0% sur le '
                 'prochain renouvellement.',
                 key: const Key('club-referral-discount'),
                 style: theme.textTheme.titleSmall,
@@ -112,7 +112,7 @@ class _ReferralCard extends StatelessWidget {
               Text(
                 referrals.welcomePercent > 0
                     ? 'Ton club a été parrainé par ${referrals.referredBy} : '
-                        '−${referrals.welcomePercent} % sur ta première année.'
+                        '−${referrals.welcomePercent}\u00A0% sur ta première année.'
                     : 'Ton club a été parrainé par ${referrals.referredBy}.',
                 key: const Key('club-referral-referred-by'),
               ),
@@ -147,6 +147,6 @@ class _ReferralCard extends StatelessWidget {
 
 String _stateLabel(ClubReferralState state, int rate) => switch (state) {
       ClubReferralState.trial => 'En essai : compte dès son premier paiement',
-      ClubReferralState.paid => 'Abonné : −$rate % acquis',
+      ClubReferralState.paid => 'Abonné : −$rate\u00A0% acquis',
       ClubReferralState.used => 'Abonné : réduction déjà utilisée',
     };

@@ -634,6 +634,13 @@ extension _AdminSquadPlanEffectif on _AdminSquadPlanPageState {
                           textAlign: TextAlign.center,
                           decoration: InputDecoration(
                             labelText: 'Convoqués',
+                            // Champ étroit : sans cela le libellé était
+                            // coupé en « Convoqu… ».
+                            floatingLabelStyle: const TextStyle(fontSize: 12),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 12,
+                            ),
                             border: const OutlineInputBorder(),
                             errorText:
                                 _validatedSquadLimit(showError: false) == null
