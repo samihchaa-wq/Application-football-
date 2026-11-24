@@ -70,7 +70,6 @@ void main() {
     expect(pushBannerAllowedOn('/controle-technique'), isTrue);
   });
 
-
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   testWidgets(
