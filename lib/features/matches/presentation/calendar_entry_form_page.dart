@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:petit_filet/core/utils/match_window.dart';
 import 'package:petit_filet/core/widgets/pf_app_bar.dart';
@@ -115,6 +116,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _eventTitleController = TextEditingController();
   final _addressController = TextEditingController();
+  final _stadiumNameController = TextEditingController();
   final _squadSizeController = TextEditingController(text: '14');
 
   late _CalendarEntryKind _kind;
@@ -184,6 +186,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
   void dispose() {
     _eventTitleController.dispose();
     _addressController.dispose();
+    _stadiumNameController.dispose();
     _squadSizeController.dispose();
     super.dispose();
   }
@@ -426,6 +429,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Expanded(
+                    flex: 2,
                     child: Autocomplete<Map<String, dynamic>>(
                       initialValue:
                           TextEditingValue(text: selectedOpponentName),
@@ -507,16 +511,15 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size.fromHeight(56),
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                      ),
-                      onPressed: busy ? null : _createOpponent,
-                      icon: const Icon(Icons.add_rounded),
-                      label: const Text(
-                        'Ajouter un adversaire',
-                        textAlign: TextAlign.center,
+                    child: Tooltip(
+                      message: 'Ajouter un adversaire',
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(56),
+                          padding: EdgeInsets.zero,
+                        ),
+                        onPressed: busy ? null : _createOpponent,
+                        child: const Icon(Icons.add_rounded),
                       ),
                     ),
                   ),
@@ -571,6 +574,19 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
       Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (!_isEvent) ...[
+            TextFormField(
+              controller: _stadiumNameController,
+              enabled: !busy,
+              textCapitalization: TextCapitalization.words,
+              textInputAction: TextInputAction.next,
+              maxLength: 120,
+              decoration: const InputDecoration(
+                labelText: 'Nom du stade (facultatif)',
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
           TextFormField(
             controller: _addressController,
             enabled: !busy,
@@ -740,6 +756,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
       }
       if (_isEvent) {
         _addressController.clear();
+        _stadiumNameController.clear();
         _meetingAt = null;
       } else {
         _applyRememberedAddress();
@@ -799,6 +816,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
   void _applyRememberedAddress() {
     if (_isEvent) return;
     String? remembered;
+    String? stadium;
     if (_isHome) {
       remembered = _clubHomeAddress;
     } else if (_opponentId.isNotEmpty) {
@@ -807,8 +825,10 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
             orElse: () => const <String, dynamic>{},
           );
       remembered = opponent['address']?.toString().trim();
+      stadium = opponent['stadium_name']?.toString().trim();
     }
     _addressController.text = remembered ?? '';
+    _stadiumNameController.text = stadium ?? '';
   }
 
   Future<void> _createOpponent() async {
@@ -1272,9 +1292,15 @@ class _CompactChoiceButton extends StatelessWidget {
     if (selected) {
       return FilledButton(
         style: style.copyWith(
-          foregroundColor: WidgetStatePropertyAll(
-            Theme.of(context).colorScheme.secondary,
+          // Fond uni arrondi : le dégradé du thème ignorait les coins ronds.
+          backgroundBuilder: (context, states, child) => child!,
+          elevation: const WidgetStatePropertyAll(0),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+            ),
           ),
+          foregroundColor: const WidgetStatePropertyAll(Colors.white),
         ),
         onPressed: enabled ? onPressed : null,
         child: child,
