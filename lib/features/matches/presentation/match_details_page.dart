@@ -2,6 +2,7 @@ import 'package:petit_filet/core/club/club_rules.dart';
 import 'package:petit_filet/core/club/club_identity.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
+import 'package:petit_filet/core/utils/match_window.dart';
 import 'package:petit_filet/core/widgets/collapsible_section_card.dart';
 import 'package:petit_filet/core/widgets/match_detail_header_card.dart';
 import 'package:petit_filet/core/widgets/match_sheet_top_row.dart';
@@ -131,7 +132,12 @@ class MatchDetailsPage extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16),
                     if (sportsEnabled)
-                      _UpcomingModules(matchId: matchId, isAdmin: isAdmin)
+                      _UpcomingModules(
+                        matchId: matchId,
+                        isAdmin: isAdmin,
+                        liveOpen: details.matchType != 'entre_nous' &&
+                            !isMatchLiveTooEarly(details.kickoffAt),
+                      )
                     else if (!sportsKnown)
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 24),
@@ -375,10 +381,19 @@ class _UpcomingHeader extends StatelessWidget {
 }
 
 class _UpcomingModules extends ConsumerWidget {
-  const _UpcomingModules({required this.matchId, required this.isAdmin});
+  const _UpcomingModules({
+    required this.matchId,
+    required this.isAdmin,
+    this.liveOpen = false,
+  });
 
   final String matchId;
   final bool isAdmin;
+
+  /// Direct ouvert (à partir de T-15) : pendant le match, la fiche ne
+  /// montrait ni score ni accès au direct ; il fallait deviner qu'il se
+  /// trouvait derrière « Composition ».
+  final bool liveOpen;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -393,9 +408,22 @@ class _UpcomingModules extends ConsumerWidget {
       showEffectif = published.effectif;
       showComposition = published.composition;
     }
-    if (!showEffectif && !showComposition) return const SizedBox.shrink();
+    final live = liveOpen
+        ? _MatchModule(
+            icon: Icons.sensors_rounded,
+            title: 'Suivre le direct',
+            onTap: () => context.push(
+              isAdmin
+                  ? '/matches/$matchId/composition?step=live'
+                  : '/matches/$matchId/lineup?section=live',
+            ),
+          )
+        : null;
+    if (!showEffectif && !showComposition) {
+      return live ?? const SizedBox.shrink();
+    }
 
-    return LayoutBuilder(
+    final modulesView = LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 520;
         final effectif = _MatchModule(
@@ -445,6 +473,11 @@ class _UpcomingModules extends ConsumerWidget {
           ],
         );
       },
+    );
+    if (live == null) return modulesView;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [live, const SizedBox(height: 12), modulesView],
     );
   }
 }
