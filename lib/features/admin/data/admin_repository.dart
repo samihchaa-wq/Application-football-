@@ -65,6 +65,24 @@ class AdminSeasonItem {
   final String status;
 }
 
+/// Nom proposé pour la prochaine saison : l'année en cours, sans jamais
+/// reprendre le nom d'une saison existante. Finir « 2026-2027 » en novembre
+/// 2026 proposait encore « 2026-2027 », que le serveur refuse de rouvrir.
+String suggestedNewSeasonName(
+  Iterable<AdminSeasonItem> seasons,
+  DateTime now,
+) {
+  var start = now.year;
+  for (final season in seasons) {
+    final match = RegExp(r'^(\d{4})-\d{4}$').firstMatch(season.name.trim());
+    final existingStart = match == null ? null : int.parse(match.group(1)!);
+    if (existingStart != null && existingStart >= start) {
+      start = existingStart + 1;
+    }
+  }
+  return '$start-${start + 1}';
+}
+
 class AdminDashboardData {
   const AdminDashboardData({
     required this.profiles,
