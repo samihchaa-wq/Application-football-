@@ -1,5 +1,6 @@
 import 'package:petit_filet/core/club/club_kits.dart';
 import 'package:petit_filet/core/widgets/kit_pattern_paint.dart';
+import 'package:petit_filet/core/widgets/kit_portrait.dart';
 import 'package:flutter/material.dart';
 
 /// Pictogramme simple et lisible pour « Info maillots », le choix du match
@@ -29,7 +30,9 @@ class KitJersey extends StatelessWidget {
         aspectRatio: _KitJerseyPainter.width / _KitJerseyPainter.height,
         child: CustomPaint(
           painter: _KitJerseyPainter(
-            body: isGoalkeeper ? kit.goalkeeperBody : kit.body,
+            body: PortraitJerseyPainter.visibleBody(
+              isGoalkeeper ? kit.goalkeeperBody : kit.body,
+            ),
             trim: isGoalkeeper ? kit.goalkeeperTrim : kit.trim,
             pattern: isGoalkeeper ? kit.goalkeeperPattern : kit.pattern,
           ),

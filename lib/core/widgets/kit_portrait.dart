@@ -203,6 +203,16 @@ class PortraitJerseyPainter extends CustomPainter {
   /// la couleur de la tenue.
   static const _lift = 1.18;
 
+  /// Un noir pur multiplié par la carte de lumière reste un aplat noir : plis
+  /// et coutures disparaissent et le maillot paraît faux. Les tenues très
+  /// sombres sont donc ramenées vers un gris anthracite avant la lumière.
+  static Color visibleBody(Color c) {
+    final luminance = c.computeLuminance();
+    if (luminance >= .06) return c;
+    final amount = ((.06 - luminance) / .06).clamp(0.0, 1.0) * .8;
+    return Color.lerp(c, const Color(0xFF4B5262), amount)!;
+  }
+
   static Color _lifted(Color c) => Color.from(
         alpha: 1,
         red: (c.r * _lift).clamp(0.0, 1.0),
@@ -228,7 +238,7 @@ class PortraitJerseyPainter extends CustomPainter {
     final collar = this.collar;
     if (luma != null && collar != null) {
       canvas.saveLayer(area, Paint());
-      canvas.drawRect(area, Paint()..color = _lifted(body));
+      canvas.drawRect(area, Paint()..color = _lifted(visibleBody(body)));
       paintKitPattern(
         canvas,
         const Rect.fromLTWH(0, .64, 1, .38),
@@ -268,7 +278,7 @@ class PortraitJerseyPainter extends CustomPainter {
       final shirt = _PortraitGeometry.shirt();
       canvas.save();
       canvas.clipPath(shirt);
-      canvas.drawPath(shirt, Paint()..color = body);
+      canvas.drawPath(shirt, Paint()..color = visibleBody(body));
       paintKitPattern(
         canvas,
         const Rect.fromLTWH(0, .64, 1, .38),
