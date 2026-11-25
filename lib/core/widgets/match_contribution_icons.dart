@@ -85,22 +85,62 @@ class AssistBootIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Le cercle blanc du dessin occupe toute l'image : le disque noir, de la
-    // même taille, ne déborde pas autour.
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: Colors.black,
-        shape: BoxShape.circle,
-        border: Border.fromBorderSide(
-          BorderSide(color: Colors.white70, width: 0.5),
-        ),
-      ),
-      child: Image.asset(
-        'assets/images/icons/assist_boot.png',
-        width: size,
-        height: size,
-        filterQuality: FilterQuality.medium,
-      ),
+    // Dessiné en vectoriel : net à toutes les tailles, sans image à charger.
+    return SizedBox.square(
+      dimension: size,
+      child: const CustomPaint(painter: _BootPainter()),
     );
   }
+}
+
+class _BootPainter extends CustomPainter {
+  const _BootPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.width / 100;
+    final c = Offset(size.width / 2, size.height / 2);
+    canvas.drawCircle(c, size.width / 2, Paint()..color = Colors.black);
+    canvas.drawCircle(
+      c,
+      size.width / 2 - 3 * s,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5 * s,
+    );
+    final white = Paint()..color = Colors.white;
+    // Chaussure : tige, pointe et semelle.
+    final boot = Path()
+      ..moveTo(26 * s, 34 * s)
+      ..lineTo(40 * s, 34 * s)
+      ..cubicTo(44 * s, 44 * s, 56 * s, 48 * s, 66 * s, 52 * s)
+      ..cubicTo(76 * s, 55 * s, 80 * s, 60 * s, 80 * s, 65 * s)
+      ..lineTo(80 * s, 68 * s)
+      ..lineTo(26 * s, 68 * s)
+      ..close();
+    canvas.drawPath(boot, white);
+    // Crampons sous la semelle.
+    for (final x in [32.0, 46.0, 60.0, 72.0]) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH((x - 3) * s, 68 * s, 6 * s, 8 * s),
+          Radius.circular(2 * s),
+        ),
+        white,
+      );
+    }
+    // Lacets.
+    final lace = Paint()
+      ..color = Colors.black
+      ..strokeWidth = 2.2 * s
+      ..strokeCap = StrokeCap.round;
+    for (final x in [44.0, 52.0, 60.0]) {
+      canvas.drawLine(Offset(x * s, (x - 6) * s + 4 * s),
+          Offset((x + 4) * s, (x - 6) * s + 10 * s), lace);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => false;
 }
