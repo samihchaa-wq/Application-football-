@@ -116,3 +116,19 @@ aucun effet).
 - Un vrai paiement de bout en bout (même en mode test) : exige la clé
   secrète Stripe, absente d'ici.
 - Les tests de la base (pgTAP) sur ces fonctions.
+
+### Correction du problème 1 (double paiement) — faite, accord reçu
+- Base (`20261206000000_paiement_carte_sans_doublon.sql`) : un paiement en
+  attente de moins de 30 min, même club, même montant et mêmes réductions,
+  est réutilisé ; verrou par club contre les appels simultanés.
+- Fonction `stripe-checkout` : la page de paiement expire 32 min après la
+  création ; deux appels pour le même paiement envoient des paramètres
+  identiques, donc Stripe renvoie la même page (clé d'idempotence).
+- Vérifié : 28 tests des fonctions Stripe réussis ; logique SQL rejouée dans
+  une base jetable (réutilisation, montant changé, plus de 30 min, déjà payé,
+  6 appels simultanés = 1 seule ligne).
+- **Non vérifié** : test pgTAP ajouté (lancé par la CI seulement) ; vrai
+  comportement de Stripe sur un appel répété (la réponse identique pour des
+  paramètres identiques est documentée par Stripe, mais je n'ai pas de clé
+  pour l'essayer) ; **migration non appliquée à la production** (elle part à
+  la publication automatique, après fusion).

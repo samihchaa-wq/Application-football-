@@ -28,7 +28,15 @@ interface PreparedPayment {
   club_id: string;
   club_name: string;
   amount_cents: number;
+  // Heure de création du paiement (secondes) ; absente d'une ancienne base.
+  created_at_epoch?: number;
 }
+
+// La page de paiement expire 32 minutes après la création du paiement. La base
+// réutilise un paiement en attente pendant 30 minutes seulement : une page
+// ouverte ne reste donc pas payable à côté d'une nouvelle (Stripe exige au
+// moins 30 minutes de validité à la création).
+const CHECKOUT_LIFETIME_SECONDS = 32 * 60;
 
 export function createStripeCheckoutHandler({
   createClient,
@@ -88,9 +96,16 @@ export function createStripeCheckoutHandler({
     }
 
     const returnUrl = `${publicAppUrl}/#/admin/abonnement`;
+    // Dérivée de la création du paiement (et non de l'heure de l'appel) : un
+    // appel répété pour le même paiement envoie des paramètres identiques et
+    // Stripe renvoie la même page grâce à la clé d'idempotence.
+    const createdAt = Number.isInteger(prepared.created_at_epoch)
+      ? prepared.created_at_epoch!
+      : Math.floor(Date.now() / 1000);
     const form = new URLSearchParams({
       mode: "payment",
       locale: "fr",
+      expires_at: String(createdAt + CHECKOUT_LIFETIME_SECONDS),
       client_reference_id: prepared.checkout_id,
       success_url: `${returnUrl}?paiement=merci`,
       cancel_url: `${returnUrl}?paiement=annule`,
@@ -110,7 +125,8 @@ export function createStripeCheckoutHandler({
       headers: {
         Authorization: `Bearer ${stripeKey}`,
         "Content-Type": "application/x-www-form-urlencoded",
-        // Un double appui ne crée pas deux sessions pour le même paiement.
+        // Un double appui renvoie la même session : la base réutilise le
+        // paiement en attente, donc la même clé et les mêmes paramètres.
         "Idempotency-Key": `checkout-${prepared.checkout_id}`,
       },
       body: form.toString(),
