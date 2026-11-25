@@ -52,7 +52,7 @@ class MatchInfoTab extends ConsumerWidget {
                             AppFormats.time(info.effectiveMeetingAt!),
                             style: const TextStyle(
                               fontSize: 34,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w400,
                               height: 1.1,
                             ),
                           ),
@@ -242,7 +242,7 @@ class _EncounterChip extends StatelessWidget {
               maxLines: 1,
               style: TextStyle(
                 color: color,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w400,
                 fontSize: 20,
               ),
             ),
