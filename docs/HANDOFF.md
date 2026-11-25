@@ -2,6 +2,12 @@
 
 **Actualisé le 17 novembre 2026 (correctif de gouvernance publication).** Source de vérité opérationnelle : branche `main`, PR ouvertes et contrôles GitHub sur le dernier SHA ; les états ci-dessous peuvent évoluer.
 
+## Audit UX/UI du 25/11/2026 (branche claude/elegant-knuth-jja248)
+
+- Fait : audit écran par écran (211 fichiers lus) → docs/AUDIT_UX_ECRAN_PAR_ECRAN_20261125.md (+ rapports détaillés dans docs/audit_ecrans_20261125/). Corrigé : lots 1-3 partiels (nom du stade non enregistré, « Aucun match » sur erreur réseau, console plateforme qui se vidait, direct : relecture ratée + double but, « Réessayer » sur 6 écrans, erreurs traduites, feuille d'indisponibilité). Composant PfErrorRetry / PfInlineErrorRetry.
+- Vérifié : analyze propre, 1556 tests verts. Non vérifié : rendu réel (pas de Supabase local ni Docker).
+- Reste à faire : décision sur l'indicateur de chargement (PfLoader/PfSkeleton ne dessinent rien, choix assumé) ; saisie perdue dans les formulaires de match (adresse écrasée, dispositif tactique, PopScope) ; anti double appui et retour d'action (joueurs, saison, direct) ; confirmations d'actions lourdes (factures, rôle Admin) ; accessibilité (clavier composition/bilan, zones de toucher) ; petits textes ; page d'erreur de navigation.
+
 ## Session Kyky du 22/11/2026 (branche claude/gallant-babbage-2iz44v)
 
 - Fait : flash au lancement corrigé (copie locale de l'habillage du club relue avant le 1er rendu ; test ajouté). Console gestionnaire : plus de second renouvellement de session concurrent (test ajouté). 3 maquettes dans docs/maquettes/.
