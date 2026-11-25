@@ -186,8 +186,10 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                   child: _obscured || !auth.hasSession || auth.isLoading
                       ? const Center(child: Text('Vérification de l’accès…'))
                       : ref.watch(platformSnapshotProvider).when(
-                            skipLoadingOnRefresh: false,
-                            skipLoadingOnReload: false,
+                            // Le rafraîchissement automatique (chaque minute,
+                            // retour d'onglet) garde la page affichée.
+                            skipLoadingOnRefresh: true,
+                            skipLoadingOnReload: true,
                             loading: () => const Center(
                               child: CircularProgressIndicator(),
                             ),

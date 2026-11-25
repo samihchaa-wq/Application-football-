@@ -81,34 +81,39 @@ void main() {
     expect(repository.requestedPlayers, [StatisticsPeriod.current]);
     expect(find.text('Karim'), findsOneWidget);
     expect(find.text('Maxime'), findsOneWidget);
-    // Classement par buts par défaut : le chiffre vedette est le nombre de buts.
+    expect(find.text('12'), findsOneWidget);
     expect(find.text('7'), findsOneWidget);
-    expect(find.text('12 matchs'), findsOneWidget);
-    expect(find.text('3 passes décisives'), findsOneWidget);
-    // La saison en cours propose toujours le classement par passes décisives.
-    expect(find.text('Passes décisives'), findsOneWidget);
+    expect(find.text('HDM'), findsOneWidget);
+    // La saison en cours montre toujours la colonne des passes décisives.
+    expect(find.text('PD'), findsOneWidget);
   });
 
-  testWidgets('les critères de classement sont écrits en toutes lettres',
-      (tester) async {
+  testWidgets('chaque colonne abrégée donne son nom complet', (tester) async {
     repository.players[StatisticsPeriod.current] = [
       _player('Karim', played: 12, goals: 7, assists: 3),
     ];
 
     await pumpStats(tester);
 
-    for (final label in [
+    for (final fullName in [
+      'Matchs joués',
       'Buts',
       'Passes décisives',
-      'Matchs',
+      'Clean sheets : matchs sans but encaissé',
       'Homme du match',
-      'Victoires',
+      'Matchs gagnés',
+      'Matchs nuls',
+      'Matchs perdus',
     ]) {
-      expect(find.text(label), findsOneWidget, reason: label);
+      expect(
+        find.byWidgetPredicate((w) => w is Tooltip && w.message == fullName),
+        findsOneWidget,
+        reason: fullName,
+      );
     }
   });
 
-  testWidgets('choisir un critère range les joueurs du meilleur au moins bon',
+  testWidgets('trier par buts range les joueurs du meilleur au moins bon',
       (tester) async {
     repository.players[StatisticsPeriod.current] = [
       _player('Karim', played: 12, goals: 1),
@@ -117,17 +122,21 @@ void main() {
     ];
 
     await pumpStats(tester);
-    // Par défaut : classement par buts.
+    expect(playerOrder(tester), ['Karim', 'Maxime', 'Julien']);
+
+    await tester.tap(find.text('B'));
+    await tester.pumpAndSettle();
     expect(playerOrder(tester), ['Maxime', 'Julien', 'Karim']);
 
-    await tester.tap(find.text('Matchs'));
+    // Un second appui inverse l'ordre.
+    await tester.tap(find.text('B'));
     await tester.pumpAndSettle();
-    expect(playerOrder(tester), ['Karim', 'Maxime', 'Julien']);
+    expect(playerOrder(tester), ['Karim', 'Julien', 'Maxime']);
   });
 
   testWidgets(
       'toucher l’onglet Statistiques ramène à Joueurs, saison actuelle, '
-      'classement par buts', (tester) async {
+      'sans tri', (tester) async {
     repository.players[StatisticsPeriod.current] = [
       _player('Karim', played: 12, goals: 1),
       _player('Maxime', played: 10, goals: 9),
@@ -138,7 +147,7 @@ void main() {
     ];
 
     await pumpStats(tester);
-    await tester.tap(find.text('Matchs'));
+    await tester.tap(find.text('B'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Précédente'));
     await tester.pumpAndSettle();
@@ -150,8 +159,8 @@ void main() {
     container.read(statsResetRequestProvider.notifier).state++;
     await tester.pumpAndSettle();
 
-    // Saison actuelle, classement par buts : le critère choisi est oublié.
-    expect(playerOrder(tester), ['Maxime', 'Julien', 'Karim']);
+    // Saison actuelle, ordre d'origine : le tri par buts a été oublié.
+    expect(playerOrder(tester), ['Karim', 'Maxime', 'Julien']);
   });
 
   testWidgets('une saison sans match validé l’annonce clairement',

@@ -122,6 +122,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
 
   late _CalendarEntryKind _kind;
   late DateTime _startsAt;
+  late final DateTime _initialStartsAt;
   String _seasonId = '';
   String _opponentId = '';
   bool _isHome = true;
@@ -165,6 +166,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
         : _CalendarEntryKind.event;
     _startsAt = event?.startsAt ??
         DateTime(tomorrow.year, tomorrow.month, tomorrow.day, 21);
+    _initialStartsAt = _startsAt;
     _seasonId = event?.seasonId ?? '';
     _eventTitleController.text = event?.title ?? '';
     _addressController.text = event?.location ?? '';
@@ -190,6 +192,42 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
     _stadiumNameController.dispose();
     _squadSizeController.dispose();
     super.dispose();
+  }
+
+  /// Vrai si la personne a déjà saisi quelque chose dans un nouvel ajout.
+  /// Sert à ne pas perdre la saisie d'un retour arrière involontaire.
+  bool get _hasUnsavedInput =>
+      widget.event == null &&
+      (_eventTitleController.text.trim().isNotEmpty ||
+          _addressEditedByUser ||
+          _opponentId.isNotEmpty ||
+          _startsAt != _initialStartsAt);
+
+  Future<void> _onBackRequested(bool didPop, Object? result) async {
+    if (didPop || _saving) return;
+    if (!_hasUnsavedInput) {
+      Navigator.of(context).pop();
+      return;
+    }
+    final leave = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Quitter sans enregistrer ?'),
+            content: const Text('Ce que tu as saisi sera perdu.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text('Continuer la saisie'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: const Text('Quitter'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+    if (leave && mounted) Navigator.of(context).pop();
   }
 
   @override
@@ -225,94 +263,102 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
 
     final busy = _saving || state.isLoading;
 
-    return Scaffold(
-      appBar: PfAppBar(
-        title: Text(widget.event == null ? 'Ajouter' : 'Modifier l’événement'),
-        actions: [
-          if (widget.event != null && isAdmin)
-            IconButton(
-              tooltip: 'Supprimer l’événement',
-              onPressed: busy ? null : _confirmDeleteEvent,
-              icon: const Icon(Icons.delete_outlined),
-            ),
-        ],
-      ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 96),
-          children: [
-            if (widget.event == null && _isEvent) ...[
-              _CriterionCard(
-                lighter: false,
-                child: _EntryKindPicker(
-                  value: _kind,
-                  enabled: !busy,
-                  onChanged: _changeKind,
-                ),
-              ),
-              const SizedBox(height: 18),
-            ] else if (widget.event != null) ...[
-              const ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Icon(Icons.event_outlined),
-                title: Text('Événement'),
-                subtitle: Text('Rendez-vous du club, indépendant des matchs.'),
-              ),
-              const SizedBox(height: 10),
-              DropdownButtonFormField<String>(
-                initialValue: _seasonId.isEmpty ? null : _seasonId,
-                decoration: const InputDecoration(labelText: 'Saison'),
-                items: seasons
-                    .map(
-                      (season) => DropdownMenuItem<String>(
-                        value: season['id'].toString(),
-                        child: Text(season['name'].toString()),
-                      ),
-                    )
-                    .toList(growable: false),
-                onChanged: busy
-                    ? null
-                    : (value) => setState(() => _seasonId = value ?? ''),
-                validator: (value) => value == null || value.isEmpty
-                    ? 'Sélectionne une saison'
-                    : null,
-              ),
-              const SizedBox(height: 18),
-            ],
-            if (_isEvent)
-              ..._buildEventFields(busy: busy)
-            else
-              ..._buildMatchFields(
-                opponents: opponents,
-                seasonRounds: seasonRounds,
-                sportsEnabled: sportsEnabled,
-                busy: busy,
-              ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: isAdmin && !busy ? _submit : null,
-              icon: busy
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: PfProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.save_outlined),
-              label: Text(widget.event == null ? 'Ajouter' : 'Enregistrer'),
-            ),
-            if (widget.event != null && isAdmin) ...[
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.error,
-                ),
+    return PopScope(
+      // Création : le retour passe par la confirmation ci-dessus si une saisie
+      // existe déjà. Modification d'un événement : retour normal.
+      canPop: widget.event != null,
+      onPopInvokedWithResult: _onBackRequested,
+      child: Scaffold(
+        appBar: PfAppBar(
+          title:
+              Text(widget.event == null ? 'Ajouter' : 'Modifier l’événement'),
+          actions: [
+            if (widget.event != null && isAdmin)
+              IconButton(
+                tooltip: 'Supprimer l’événement',
                 onPressed: busy ? null : _confirmDeleteEvent,
-                icon: const Icon(Icons.delete_forever_outlined),
-                label: const Text('Supprimer définitivement l’événement'),
+                icon: const Icon(Icons.delete_outlined),
               ),
-            ],
           ],
+        ),
+        body: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 96),
+            children: [
+              if (widget.event == null && _isEvent) ...[
+                _CriterionCard(
+                  lighter: false,
+                  child: _EntryKindPicker(
+                    value: _kind,
+                    enabled: !busy,
+                    onChanged: _changeKind,
+                  ),
+                ),
+                const SizedBox(height: 18),
+              ] else if (widget.event != null) ...[
+                const ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.event_outlined),
+                  title: Text('Événement'),
+                  subtitle:
+                      Text('Rendez-vous du club, indépendant des matchs.'),
+                ),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  initialValue: _seasonId.isEmpty ? null : _seasonId,
+                  decoration: const InputDecoration(labelText: 'Saison'),
+                  items: seasons
+                      .map(
+                        (season) => DropdownMenuItem<String>(
+                          value: season['id'].toString(),
+                          child: Text(season['name'].toString()),
+                        ),
+                      )
+                      .toList(growable: false),
+                  onChanged: busy
+                      ? null
+                      : (value) => setState(() => _seasonId = value ?? ''),
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Sélectionne une saison'
+                      : null,
+                ),
+                const SizedBox(height: 18),
+              ],
+              if (_isEvent)
+                ..._buildEventFields(busy: busy)
+              else
+                ..._buildMatchFields(
+                  opponents: opponents,
+                  seasonRounds: seasonRounds,
+                  sportsEnabled: sportsEnabled,
+                  busy: busy,
+                ),
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: isAdmin && !busy ? _submit : null,
+                icon: busy
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: PfProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.save_outlined),
+                label: Text(widget.event == null ? 'Ajouter' : 'Enregistrer'),
+              ),
+              if (widget.event != null && isAdmin) ...[
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.error,
+                  ),
+                  onPressed: busy ? null : _confirmDeleteEvent,
+                  icon: const Icon(Icons.delete_forever_outlined),
+                  label: const Text('Supprimer définitivement l’événement'),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -578,12 +624,15 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
           if (!_isEvent) ...[
             TextFormField(
               controller: _stadiumNameController,
+              // Le nom du stade vient de la fiche de l'adversaire : le
+              // formulaire ne l'enregistre pas. Le rendre modifiable faisait
+              // perdre la saisie en silence.
+              readOnly: true,
               enabled: !busy,
-              textCapitalization: TextCapitalization.words,
-              textInputAction: TextInputAction.next,
-              maxLength: 120,
               decoration: const InputDecoration(
-                labelText: 'Nom du stade (facultatif)',
+                labelText: 'Stade de l’adversaire',
+                helperText:
+                    'Repris de la fiche de l’adversaire (Bibliothèque des stades).',
               ),
             ),
             const SizedBox(height: 8),
@@ -591,6 +640,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
           TextFormField(
             controller: _addressController,
             enabled: !busy,
+            onChanged: (_) => _addressEditedByUser = true,
             textCapitalization: TextCapitalization.words,
             keyboardType: TextInputType.multiline,
             minLines: 2,
@@ -756,6 +806,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
       }
       if (_isEvent) {
         _addressController.clear();
+        _addressEditedByUser = false;
         _stadiumNameController.clear();
         _meetingAt = null;
       } else {
@@ -811,10 +862,17 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
     _applyRememberedAddress();
   }
 
+  /// Vrai dès que la personne a tapé dans le champ adresse : on ne l'écrase
+  /// plus quand elle change d'adversaire ou de lieu.
+  bool _addressEditedByUser = false;
+
   void _refreshAddressForSelection() => _applyRememberedAddress();
 
   void _applyRememberedAddress() {
     if (_isEvent) return;
+    if (_addressEditedByUser && _addressController.text.trim().isNotEmpty) {
+      return;
+    }
     String? remembered;
     String? stadium;
     if (_isHome) {

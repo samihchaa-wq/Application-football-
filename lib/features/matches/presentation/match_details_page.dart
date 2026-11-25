@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/widgets/pf_error_retry.dart';
 import 'package:petit_filet/core/club/club_rules.dart';
 import 'package:petit_filet/core/club/club_identity.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
@@ -113,11 +114,9 @@ class MatchDetailsPage extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               children: [
                 const MatchSheetTopRow(),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Text(humanizeError(error)),
-                  ),
+                PfInlineErrorRetry(
+                  message: humanizeError(error),
+                  onRetry: () => ref.invalidate(matchDetailsProvider(matchId)),
                 ),
               ],
             ),

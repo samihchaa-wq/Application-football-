@@ -288,7 +288,7 @@ class _BadgeTile extends ConsumerWidget {
       // et sous cadenas, et on peut l'ouvrir pour lire sa condition.
       return SizedBox(
         width: tile,
-        child: GestureDetector(
+        child: InkWell(
           onTap: () => showBadgeDetailSheet(
             context,
             badge.def,
@@ -364,7 +364,7 @@ class _BadgeTile extends ConsumerWidget {
       width: tile,
       child: Column(
         children: [
-          GestureDetector(
+          InkWell(
             onTap: () {
               if (badge.isNew) {
                 final uid =
@@ -559,7 +559,7 @@ class _InProgressTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final showProgress = badge.target != null;
-    return GestureDetector(
+    return InkWell(
       onTap: () => showBadgeDetailSheet(context, badge.def),
       child: Container(
         padding: const EdgeInsets.all(_tilePadding),

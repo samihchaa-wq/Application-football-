@@ -666,16 +666,24 @@ class RosterPlayerMenu extends ConsumerWidget {
             }
             return;
           }
+          String? done;
           if (action == 'delete') {
             final confirmed = await _confirmDelete(context, player);
             if (!confirmed) return;
             await repo.deletePlayer(player.id);
+            done = 'Joueur supprimé.';
           } else if (action == 'archive') {
             await repo.setActive(id: player.id, active: false);
+            done = 'Joueur retiré de l’effectif.';
           } else if (action == 'restore') {
             await repo.setActive(id: player.id, active: true);
+            done = 'Joueur remis dans l’effectif.';
           }
           ref.invalidate(rosterProvider(seasonId));
+          if (done != null && context.mounted) {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(done)));
+          }
         } catch (error) {
           if (context.mounted) {
             ScaffoldMessenger.of(context)

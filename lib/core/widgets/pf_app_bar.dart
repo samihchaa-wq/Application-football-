@@ -174,7 +174,7 @@ List<Widget> pfHomeActions(BuildContext context) => [
         iconSize: 27,
         visualDensity: VisualDensity.compact,
         padding: const EdgeInsets.all(7),
-        constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
         style: IconButton.styleFrom(
           foregroundColor: AppTheme.textSecondary,
           backgroundColor: AppTheme.surfaceHigh.withValues(alpha: .46),

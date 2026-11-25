@@ -34,7 +34,7 @@ class NotificationInboxButton extends ConsumerWidget {
         tooltip: 'Notifications',
         visualDensity: VisualDensity.compact,
         padding: const EdgeInsets.all(4),
-        constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
         style: IconButton.styleFrom(
           foregroundColor: AppTheme.primaryBright,
           backgroundColor: AppTheme.primaryBright.withValues(alpha: .08),

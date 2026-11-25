@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:petit_filet/core/widgets/pf_empty_state.dart';
 import 'package:petit_filet/app/router/auth_redirect.dart';
 import 'package:petit_filet/app/router/deferred_route_page.dart';
 import 'package:petit_filet/app/router/initial_app_location.dart';
@@ -104,6 +105,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: initialAppLocation(),
     overridePlatformDefaultLocation: kIsWeb,
     refreshListenable: refreshNotifier,
+    // Adresse inconnue : page en français avec retour, au lieu de la page
+    // d'erreur anglaise par défaut.
+    errorBuilder: (context, state) => Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: PfEmptyState(
+            icon: Icons.explore_off_outlined,
+            title: 'Page introuvable',
+            message: 'Cette adresse n’existe pas ou n’est plus disponible.',
+            action: FilledButton(
+              onPressed: () => context.go('/matches'),
+              child: const Text('Retour au calendrier'),
+            ),
+          ),
+        ),
+      ),
+    ),
     redirect: (context, state) => resolveAuthRedirect(
       authState: ref.read(authControllerProvider),
       uri: state.uri,

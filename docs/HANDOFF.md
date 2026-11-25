@@ -2,6 +2,13 @@
 
 **Actualisé le 25 novembre 2026 (audit complet, voir plus bas ; sections datées du 17 au 25/11 ci-dessous).** Source de vérité opérationnelle : branche `main`, PR ouvertes et contrôles GitHub sur le dernier SHA ; les états ci-dessous peuvent évoluer.
 
+## Audit UX/UI du 25/11/2026 (branche claude/elegant-knuth-jja248)
+
+- Fait : audit écran par écran (211 fichiers lus) → docs/AUDIT_UX_ECRAN_PAR_ECRAN_20261125.md (+ rapports détaillés dans docs/audit_ecrans_20261125/). Corrigé : lots 1-3 partiels (nom du stade non enregistré, « Aucun match » sur erreur réseau, console plateforme qui se vidait, direct : relecture ratée + double but, « Réessayer » sur 6 écrans, erreurs traduites, feuille d'indisponibilité). Composant PfErrorRetry / PfInlineErrorRetry.
+- Suite (même jour) : adresse tapée non écrasée au changement d'adversaire/lieu (2 formulaires de match), confirmation avant de changer le dispositif tactique d'un match d'historique, messages « Match annulé/supprimé », confirmation avant l'émission des factures, confirmation avant « Traitée » (alerte de paiement) et avant de donner/retirer le rôle Admin, page « Page introuvable » (adresse inconnue). Accessibilité : bilan de saison au clavier (flèches, Espace, Échap) et sans avance automatique si « réduire les animations » (non couvert par un test), boutons d'en-tête à 44 px, cases de badge de l'armoire focalisables (InkWell). Messages de réussite (saison terminée, joueur retiré/remis/supprimé), nom de saison vide signalé, confirmation « Quitter sans enregistrer ? » à l'ajout au calendrier (non couverte par un test).
+- Vérifié : analyze propre, tests verts. Non vérifié : rendu réel (pas de Supabase local ni Docker).
+- Reste à faire : décision sur l'indicateur de chargement (PfLoader/PfSkeleton ne dessinent rien, choix assumé) ; confirmation de sortie du formulaire de modification d'un match (match_form_page) ; fermeture du contrôleur du champ « Prénom » juste après la fermeture de la fenêtre (players_registry_page, à confirmer à l'écran) ; accessibilité (clavier sur la composition et l'effectif, boutons +/− de la liste d'attente 34 px, roues de sélection) ; petits textes ; page d'erreur de navigation.
+
 ## Session Kyky du 22/11/2026 (branche claude/gallant-babbage-2iz44v)
 
 - Fait : flash au lancement corrigé (copie locale de l'habillage du club relue avant le 1er rendu ; test ajouté). Console gestionnaire : plus de second renouvellement de session concurrent (test ajouté). 3 maquettes dans docs/maquettes/.
