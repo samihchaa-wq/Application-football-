@@ -421,19 +421,24 @@ class _NotificationActionsRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isAdmin = ref.watch(isAdminViewProvider);
 
-    // Deux boutons l'un sous l'autre : côte à côte, « Envoyer une
-    // notification » était coupé en « Envoyer une noti… ».
+    // Test = 1/3 de la largeur, « Envoyer une notification » = 2/3.
     return Padding(
       padding: const EdgeInsets.only(top: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: Row(
         children: [
-          const _TestPushButton(),
+          const Expanded(flex: 1, child: _TestPushButton()),
           if (isAdmin) ...[
-            const SizedBox(height: 8),
-            OutlinedButton(
-              onPressed: () => context.push('/admin/notification'),
-              child: const Text('Envoyer une notification'),
+            const SizedBox(width: 8),
+            Expanded(
+              flex: 2,
+              child: OutlinedButton(
+                onPressed: () => context.push('/admin/notification'),
+                child: const Text(
+                  'Envoyer une notification',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ),
           ],
         ],
@@ -441,50 +446,6 @@ class _NotificationActionsRow extends ConsumerWidget {
     );
   }
 }
-
-class _TestNotificationOption {
-  const _TestNotificationOption(
-    this.kind,
-    this.label, {
-    this.adminOnly = false,
-  });
-
-  final String kind;
-  final String label;
-  final bool adminOnly;
-}
-
-const _testNotificationOptions = <_TestNotificationOption>[
-  _TestNotificationOption('test', 'Test technique'),
-  _TestNotificationOption('availability_open', 'Disponibilités ouvertes'),
-  _TestNotificationOption('availability_manual', 'Relance disponibilité'),
-  _TestNotificationOption('convocation_promoted', 'Passage en convoqué'),
-  _TestNotificationOption(
-    'convocation_demoted',
-    'Passage en liste d’attente',
-  ),
-  _TestNotificationOption('composition_published', 'Composition en ligne'),
-  _TestNotificationOption('prediction_j5', 'Pronostic'),
-  _TestNotificationOption('match_cancelled', 'Match annulé'),
-  _TestNotificationOption('match_rescheduled_date', 'Match reporté'),
-  _TestNotificationOption('match_rescheduled_time', 'Horaire modifié'),
-  _TestNotificationOption('motm_open', 'Vote de l’Homme du match'),
-  _TestNotificationOption(
-      'motm_result_general', 'Résultat de l’Homme du match'),
-  _TestNotificationOption('motm_result_winner', 'Tu es l’Homme du match'),
-  _TestNotificationOption('badge_unlocked', 'Badge débloqué'),
-  _TestNotificationOption('badges_unlocked', 'Plusieurs badges débloqués'),
-  _TestNotificationOption(
-    'admin_pending_signup',
-    'Nouveau compte en attente',
-    adminOnly: true,
-  ),
-  _TestNotificationOption(
-    'admin_availability_change',
-    'Changement de disponibilité',
-    adminOnly: true,
-  ),
-];
 
 class _TestPushButton extends ConsumerStatefulWidget {
   const _TestPushButton();
@@ -496,14 +457,13 @@ class _TestPushButton extends ConsumerStatefulWidget {
 class _TestPushButtonState extends ConsumerState<_TestPushButton> {
   bool _sending = false;
 
-  Future<void> _send(_TestNotificationOption option) async {
+  Future<void> _send() async {
     setState(() => _sending = true);
-    var message =
-        'Test « ${option.label} » envoyé — regarde tes notifications.';
+    var message = 'Test envoyé — regarde tes notifications.';
     try {
       final result = await ref
           .read(supabaseClientProvider)
-          .rpc('send_test_push_kind', params: {'p_kind': option.kind});
+          .rpc('send_test_push_kind', params: {'p_kind': 'test'});
       final data = result is Map ? Map<String, dynamic>.from(result) : null;
       if (data != null && data['sent'] != true) {
         message = switch (data['reason']?.toString()) {
@@ -528,46 +488,15 @@ class _TestPushButtonState extends ConsumerState<_TestPushButton> {
 
   @override
   Widget build(BuildContext context) {
-    final isAdmin = ref.watch(isAdminViewProvider);
-    final options = [
-      for (final option in _testNotificationOptions)
-        if (!option.adminOnly || isAdmin) option,
-    ];
-
-    return PopupMenuButton<_TestNotificationOption>(
-      enabled: !_sending,
-      tooltip: 'Choisir une notification à tester',
-      onSelected: _send,
-      itemBuilder: (context) => [
-        for (final option in options)
-          PopupMenuItem<_TestNotificationOption>(
-            value: option,
-            child: Text(option.label),
-          ),
-      ],
-      child: IgnorePointer(
-        child: SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(
-            onPressed: _sending ? null : () {},
-            child: _sending
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: PfProgressIndicator(strokeWidth: 2),
-                  )
-                : const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Test'),
-                      SizedBox(width: 4),
-                      Icon(Icons.arrow_drop_down_outlined, size: 20),
-                    ],
-                  ),
-          ),
-        ),
-      ),
+    return OutlinedButton(
+      onPressed: _sending ? null : _send,
+      child: _sending
+          ? const SizedBox(
+              width: 18,
+              height: 18,
+              child: PfProgressIndicator(strokeWidth: 2),
+            )
+          : const Text('Test'),
     );
   }
 }
