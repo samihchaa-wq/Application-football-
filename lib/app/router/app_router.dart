@@ -47,6 +47,8 @@ import 'package:petit_filet/features/predictions/presentation/pronos_hub_page.da
 import 'package:petit_filet/features/profile/presentation/profile_page.dart';
 import 'package:petit_filet/features/platform/presentation/platform_control_page.dart'
     deferred as platform_control;
+import 'package:petit_filet/features/license/presentation/license_page.dart'
+    deferred as license_page;
 import 'package:petit_filet/features/season_wrapped/presentation/season_wrapped_page.dart'
     deferred as season_wrapped;
 import 'package:petit_filet/features/sports_management/presentation/admin_guests_page.dart'
@@ -291,6 +293,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/admin/club',
                 builder: (_, __) => const ClubSettingsPage(),
+              ),
+              GoRoute(
+                path: '/admin/licence',
+                builder: (_, __) => DeferredRoutePage(
+                  load: license_page.loadLibrary,
+                  builder: (_) => license_page.LicensePage(),
+                ),
               ),
               GoRoute(
                 path: '/admin/club/maillots',

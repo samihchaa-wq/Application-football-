@@ -113,6 +113,11 @@ class MorePage extends ConsumerWidget {
                   onTap: () => context.push('/admin/history'),
                 ),
                 _SettingsTile(
+                  icon: Icons.badge_outlined,
+                  title: 'Licence',
+                  onTap: () => context.push('/admin/licence'),
+                ),
+                _SettingsTile(
                   icon: Icons.credit_card_outlined,
                   title: 'Abonnement',
                   onTap: () => context.push('/admin/abonnement'),
