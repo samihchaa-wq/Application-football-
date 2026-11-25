@@ -94,10 +94,8 @@ class _LeaderboardCardState extends ConsumerState<_LeaderboardCard> {
         ? [for (var index = 0; index < sorted.length; index++) index + 1]
         : competitionRanks(sorted, _sortedColumnValue);
 
-    final style = pfTableHeaderTextStyle(
-      context,
-      color: AppTheme.textSecondary,
-    );
+    // Titres de colonnes en blanc, comme le tableau des joueurs.
+    final style = pfTableHeaderTextStyle(context);
     final inStatistics = BadgeDisplayScope.of(context);
     final requestedBadgeSize = widget.badgeSize ?? nameWithBadgesMinimumSize;
     final effectiveBadgeSize = requestedBadgeSize < nameWithBadgesMinimumSize

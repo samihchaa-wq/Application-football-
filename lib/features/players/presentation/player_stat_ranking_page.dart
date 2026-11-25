@@ -251,7 +251,7 @@ class _HeaderCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final style = pfTableHeaderTextStyle(
       context,
-      color: active ? AppTheme.accent : null,
+      color: active ? AppTheme.primaryBright : null,
     );
     return Expanded(
       child: ConstrainedBox(

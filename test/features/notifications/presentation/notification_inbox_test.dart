@@ -280,13 +280,13 @@ void main() {
       },
     );
 
-    testWidgets('glisser vers la gauche supprime la notification', (
+    testWidgets('le bouton corbeille supprime la notification', (
       tester,
     ) async {
       final inbox = _FakeInbox([_entry(1, 'À supprimer'), _entry(2, 'Garde')]);
       await _pumpHistory(tester, inbox);
 
-      await tester.drag(find.text('À supprimer'), const Offset(-600, 0));
+      await tester.tap(find.byTooltip('Supprimer cette notification').first);
       await tester.pumpAndSettle();
 
       expect(find.text('À supprimer'), findsNothing);
@@ -300,7 +300,7 @@ void main() {
       final inbox = _FakeInbox([_entry(1, 'Reste là')])..failDelete = true;
       await _pumpHistory(tester, inbox);
 
-      await tester.drag(find.text('Reste là'), const Offset(-600, 0));
+      await tester.tap(find.byTooltip('Supprimer cette notification'));
       await tester.pumpAndSettle();
 
       expect(find.text('Reste là'), findsOneWidget);

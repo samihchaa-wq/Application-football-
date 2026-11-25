@@ -421,22 +421,19 @@ class _NotificationActionsRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isAdmin = ref.watch(isAdminViewProvider);
 
+    // Deux boutons l'un sous l'autre : côte à côte, « Envoyer une
+    // notification » était coupé en « Envoyer une noti… ».
     return Padding(
       padding: const EdgeInsets.only(top: 12),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Expanded(child: _TestPushButton()),
+          const _TestPushButton(),
           if (isAdmin) ...[
-            const SizedBox(width: 8),
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => context.push('/admin/notification'),
-                child: const Text(
-                  'Envoyer une notification',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: () => context.push('/admin/notification'),
+              child: const Text('Envoyer une notification'),
             ),
           ],
         ],
