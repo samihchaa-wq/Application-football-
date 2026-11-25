@@ -45,13 +45,29 @@ rng = np.random.default_rng(7)
 twill = 0.5 + 0.5 * np.sin((xx + yy * 1.0) * 2.1)
 grain = rng.normal(0, 1, (H, W)).astype(np.float32)
 grain = np.array(Image.fromarray(((grain - grain.min()) / (grain.max() - grain.min()) * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(0.6))).astype(np.float32) / 255
-cloth = 0.80 + 0.12 * twill + 0.14 * (grain - 0.5)
-light = (fold ** 1.9) * 1.25 + 0.22
-base = np.array([30, 41, 70], np.float32)
+cloth = 0.84 + 0.10 * twill + 0.12 * (grain - 0.5)
+
+
+def relief_light(height, gain=2.4, light=(-0.55, -0.65, 0.52)):
+    gy, gx = np.gradient(height * gain)
+    n = np.dstack([-gx, -gy, np.ones_like(gx)])
+    n /= np.linalg.norm(n, axis=2, keepdims=True)
+    l = np.array(light, np.float32)
+    l /= np.linalg.norm(l)
+    diff = np.clip((n * l).sum(axis=2), 0, 1)
+    spec = np.clip((n * ((l + np.array([0, 0, 1], np.float32)) / np.linalg.norm(l + np.array([0, 0, 1], np.float32)))).sum(axis=2), 0, 1) ** 24
+    return diff, spec
+
+
+height = np.array(Image.fromarray((fold * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(3.2))).astype(np.float32) / 255 * 5
+diff, spec = relief_light(height)
+light = 0.28 + 0.95 * diff
+base = np.array([34, 46, 78], np.float32)
 jacket = base[None, None, :] * (light * cloth)[..., None]
+jacket += (spec * 0.3)[..., None] * np.array([70, 84, 120], np.float32)
 # reflets doux sur les épaules
 shoulder_hi = np.exp(-(((np.abs(xx - cx) - 215) / 85) ** 2) - (((yy - 120) / 60) ** 2))
-jacket += (shoulder_hi[..., None] * np.array([20, 26, 40], np.float32))
+jacket += (shoulder_hi[..., None] * np.array([18, 24, 38], np.float32))
 
 img = jacket.copy()
 
@@ -73,9 +89,21 @@ for side in (-1, 1):
            (cx + side * 22, 290), (cx + side * 98, 290), (cx + side * 108, 178),
            (cx + side * 132, 150)]
     lap = mask([pts])
-    lapel_light = 0.95 + 0.35 * np.clip(1 - np.abs(yy - 170) / 140, 0, 1)
-    lapel_col = np.array([40, 53, 88], np.float32)[None, None, :] * (lapel_light * cloth * (0.7 + 0.5 * fold ** 1.5))[..., None]
+    # distance à l'arête intérieure : le revers s'arrondit (roulé) vers elle
+    edge_x = cx + side * (88 - (yy - 98) * 78 / 154)
+    roll = np.clip(np.abs(xx - edge_x) / 46.0, 0, 1)
+    lap_h = height * 0.7 + (1 - roll) ** 1.5 * 2.2
+    ld, lsp = relief_light(lap_h, gain=2.4)
+    lapel_col = np.array([42, 56, 92], np.float32)[None, None, :] * ((0.30 + 1.05 * ld) * cloth)[..., None]
+    lapel_col += (lsp * 0.7)[..., None] * np.array([90, 106, 150], np.float32)
     img = img * (1 - lap[..., None]) + lapel_col * lap[..., None]
+    # couture de piqûre le long du bord (pointillé clair)
+    dots = ((np.hypot(xx - cx, yy) // 5) % 2)
+    stitch = mask([[(cx + side * 84, 104), (cx + side * 81, 104), (cx + side * 4, 250), (cx + side * 7, 250)]], 0.6) * dots
+    img = img + stitch[..., None] * np.array([34, 40, 56], np.float32)
+    # pli du col de veste (gorge) entre col et revers
+    gorge = mask([[(cx + side * 90, 98), (cx + side * 94, 98), (cx + side * 130, 148), (cx + side * 126, 150)]], 0.9)
+    img = img * (1 - 0.65 * gorge[..., None])
     # liseré cousu le long du bord intérieur
     edge_line = mask([[(cx + side * 88, 98), (cx + side * 84, 98), (cx + side * 6, 252), (cx + side * 10, 252)]], 0.7)
     img = img * (1 - 0.55 * edge_line[..., None])
