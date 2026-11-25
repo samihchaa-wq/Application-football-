@@ -472,6 +472,36 @@ class CalendarCardActionsOverlay extends StatelessWidget {
   }
 }
 
+/// Pied d'une carte du calendrier : le lieu à gauche, les actions (cloche des
+/// buts, crayon d'administration) à droite.
+///
+/// Les actions étaient posées en haut à droite, à la place de la date : la
+/// ligne « date • heure • type » perdait la moitié de sa largeur et le type
+/// (« Championnat · J10 ») passait à la ligne ou tout en bas de la carte. Elles
+/// sont maintenant en bas, et la ligne du haut garde toute sa largeur.
+class CalendarCardFooter extends StatelessWidget {
+  const CalendarCardFooter({super.key, this.address, this.actions});
+
+  final Widget? address;
+  final Widget? actions;
+
+  /// Marge verticale du bandeau quand il porte des actions.
+  static const double actionsBandPadding = 2;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(child: address ?? const SizedBox(height: actionExtent)),
+        if (actions != null) actions!,
+      ],
+    );
+  }
+
+  static const double actionExtent = CalendarCardActionsOverlay.actionExtent;
+}
+
 /// Espacements communs des cartes du calendrier (« Défilé » et « Par mois »).
 abstract final class CalendarCardSpacing {
   /// Marge intérieure en haut et en bas de chaque carte.
@@ -508,11 +538,17 @@ class CalendarCardSections extends StatelessWidget {
     this.bodyBottomPadding,
     this.bandHorizontalPadding = 14,
     this.bodyHorizontalPadding = 12,
+    this.footerVerticalPadding,
   });
 
   final Widget header;
   final Widget body;
   final Widget? footer;
+
+  /// Marge haute et basse du bandeau du bas, si elle doit différer de celle du
+  /// bandeau du haut (un pied de carte qui porte des boutons de 40 px n'a pas
+  /// besoin de 12 px de plus de chaque côté).
+  final double? footerVerticalPadding;
   final double bandVerticalPadding;
   final double bodyVerticalPadding;
 
@@ -526,12 +562,12 @@ class CalendarCardSections extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget band(Widget child) => ColoredBox(
+    Widget band(Widget child, {double? vertical}) => ColoredBox(
           color: bandShade,
           child: Padding(
             padding: EdgeInsets.symmetric(
               horizontal: bandHorizontalPadding,
-              vertical: bandVerticalPadding,
+              vertical: vertical ?? bandVerticalPadding,
             ),
             child: child,
           ),
@@ -552,7 +588,7 @@ class CalendarCardSections extends StatelessWidget {
           ),
           child: body,
         ),
-        if (footer != null) band(footer),
+        if (footer != null) band(footer, vertical: footerVerticalPadding),
       ],
     );
   }

@@ -47,8 +47,9 @@ class HomeNextMatchCard extends ConsumerWidget {
         : null;
     final showGoalBell = goalAlertStatus?.eligible == true;
 
-    // Les actions appartiennent au bandeau de date, pas à la ligne des équipes.
-    // Même implantation que les autres cartes du calendrier.
+    // Cloche et crayon sous l'affiche, à droite : la ligne du haut garde toute
+    // sa largeur pour « date • heure • Championnat · J10 », comme les autres
+    // cartes du calendrier.
     final actionWidgets = <Widget>[
       if (showGoalBell)
         SizedBox.square(
@@ -67,7 +68,6 @@ class HomeNextMatchCard extends ConsumerWidget {
           ),
         ),
     ];
-    final actionCount = actionWidgets.length;
     final cardActions = actionWidgets.isEmpty
         ? null
         : Row(mainAxisSize: MainAxisSize.min, children: actionWidgets);
@@ -116,17 +116,11 @@ class HomeNextMatchCard extends ConsumerWidget {
             foreground: AppTheme.textPrimary,
             secondary: AppTheme.textPrimary,
             dividerColor: cardBorder,
-            dateEndInset: CalendarCardActionsOverlay.dateInsetFor(actionCount),
+            label: match.isInternal ? null : match.calendarTypeLabel,
             child: fixtureRow,
           ),
-          const SizedBox(height: 7),
-          Text(
-            match.calendarTypeLabel,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: cardBorder,
-                  fontWeight: FontWeight.w400,
-                ),
-          ),
+          if (cardActions != null)
+            Align(alignment: Alignment.centerRight, child: cardActions),
           if (match.address case final address?) ...[
             const SizedBox(height: AppSpacing.contentGap),
             InkWell(
@@ -174,15 +168,11 @@ class HomeNextMatchCard extends ConsumerWidget {
           tint: .16,
           stripe: true),
       clipBehavior: Clip.antiAlias,
-      child: CalendarCardActionsOverlay(
-        actions: cardActions,
-        actionsWidth: actionCount * CalendarCardActionsOverlay.actionExtent,
-        child: InkWell(
-          onTap: () => context.push(
-            '/matches/${match.id}/lineup?section=$initialSection',
-          ),
-          child: content,
+      child: InkWell(
+        onTap: () => context.push(
+          '/matches/${match.id}/lineup?section=$initialSection',
         ),
+        child: content,
       ),
     );
   }
