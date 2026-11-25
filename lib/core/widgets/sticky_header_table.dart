@@ -490,7 +490,8 @@ class SortableHeaderCell extends StatelessWidget {
           child: Text(
             label,
             style: style?.copyWith(
-              color: active ? AppTheme.accent : style?.color,
+              // Colonne triée : le rouge de l'appli (comme les onglets), plus l'orange.
+              color: active ? AppTheme.primaryBright : style?.color,
             ),
             overflow: TextOverflow.ellipsis,
             textAlign: align,

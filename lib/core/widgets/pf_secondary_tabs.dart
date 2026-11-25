@@ -62,7 +62,9 @@ class PfSecondaryTabs<T> extends StatelessWidget {
                     // Même couleur que les onglets principaux : seule la
                     // taille distingue les deux niveaux.
                     ? AppTheme.primaryBright
-                    : AppTheme.textFaint;
+                    // Blanc comme les onglets du dessus : le gris ressemblait à
+                    // des onglets désactivés.
+                    : AppTheme.textPrimary;
               }),
               overlayColor: WidgetStatePropertyAll(
                 AppTheme.primary.withValues(alpha: .08),

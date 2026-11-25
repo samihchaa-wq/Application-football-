@@ -90,8 +90,7 @@ class _NotificationHistoryViewState
     if (entries == null) return;
     final index = entries.indexWhere((item) => item.id == entry.id);
     if (index < 0) return;
-    // La ligne quitte la liste tout de suite : elle a déjà glissé hors de
-    // l'écran.
+    // La ligne quitte la liste tout de suite, sans attendre le serveur.
     setState(() => _entries = [...entries]..removeAt(index));
     try {
       await ref.read(notificationInboxRepositoryProvider).delete(entry.id);
@@ -169,9 +168,7 @@ class _NotificationHistoryViewState
             )
           : ListView.separated(
               physics: const AlwaysScrollableScrollPhysics(),
-              // Marge à droite : sur iPhone, un glissement qui part du bord
-              // de l'écran est intercepté par la navigation.
-              padding: const EdgeInsets.fromLTRB(16, 8, 24, 24),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
               itemCount: entries.length,
               separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (context, index) {
@@ -213,19 +210,8 @@ class _HistoryTile extends StatelessWidget {
     final theme = Theme.of(context);
     final radius = BorderRadius.circular(AppTheme.radiusMd);
 
-    return Dismissible(
+    return KeyedSubtree(
       key: key ?? ValueKey<int>(entry.id),
-      direction: DismissDirection.endToStart,
-      onDismissed: (_) => onDismissed(),
-      background: Container(
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        decoration: BoxDecoration(
-          color: AppTheme.error.withValues(alpha: .18),
-          borderRadius: radius,
-        ),
-        child: const Icon(Icons.delete_outlined, color: AppTheme.error),
-      ),
       child: Material(
         color: highlighted
             ? AppTheme.primaryBright.withValues(alpha: .12)
@@ -281,6 +267,19 @@ class _HistoryTile extends StatelessWidget {
                         ),
                       ),
                     ],
+                  ),
+                ),
+                // Suppression par un bouton visible. Le glissement vers la
+                // gauche se déclenchait en faisant défiler la liste avec le
+                // pouce : une ligne restait coincée à moitié sortie.
+                IconButton(
+                  tooltip: 'Supprimer cette notification',
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onDismissed,
+                  icon: const Icon(
+                    Icons.delete_outlined,
+                    size: 20,
+                    color: AppTheme.textFaint,
                   ),
                 ),
               ],
