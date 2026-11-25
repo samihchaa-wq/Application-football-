@@ -125,14 +125,17 @@ class MorePage extends ConsumerWidget {
           _SettingsGroup(
             children: [
               _SettingsTile(
+                icon: Icons.privacy_tip_outlined,
                 title: 'Confidentialité',
                 onTap: () => context.push('/legal/confidentialite'),
               ),
               _SettingsTile(
+                icon: Icons.description_outlined,
                 title: 'Conditions d’utilisation',
                 onTap: () => context.push('/legal/cgu'),
               ),
               _SettingsTile(
+                icon: Icons.gavel_outlined,
                 title: 'Mentions légales',
                 onTap: () => context.push('/legal/mentions'),
               ),
@@ -294,7 +297,6 @@ class _SettingsTile extends StatelessWidget {
     required this.onTap,
   });
 
-  /// Sans icône pour les listes de simple lecture (informations légales).
   final IconData? icon;
   final String title;
   final VoidCallback onTap;
