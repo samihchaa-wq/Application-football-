@@ -41,6 +41,18 @@ class KitPortrait extends StatelessWidget {
     return frame.image;
   }
 
+  /// Costume du coach : même emplacement et même silhouette que le maillot,
+  /// fabriqué par tool/gen_portrait_suit.py à partir des plis du maillot.
+  static final Future<ui.Image?> _suit = _loadSuit();
+
+  static Future<ui.Image?> _loadSuit() async {
+    try {
+      return await _decode('assets/composition/portrait_suit.png');
+    } catch (_) {
+      return null; // repli : costume dessiné en aplat
+    }
+  }
+
   static Future<_PortraitJerseyImages?> _loadImages() async {
     try {
       return _PortraitJerseyImages(
@@ -64,9 +76,12 @@ class KitPortrait extends StatelessWidget {
                   ? Semantics(
                       label: 'Coach — costume',
                       image: true,
-                      child: const CustomPaint(
-                        key: ValueKey('portrait-suit'),
-                        painter: PortraitSuitPainter(),
+                      child: FutureBuilder<ui.Image?>(
+                        future: _suit,
+                        builder: (context, snapshot) => CustomPaint(
+                          key: const ValueKey('portrait-suit'),
+                          painter: PortraitSuitPainter(image: snapshot.data),
+                        ),
                       ),
                     )
                   : Semantics(
@@ -327,7 +342,10 @@ class PortraitJerseyPainter extends CustomPainter {
 /// silhouette (épaules, col) que le maillot, pour que la photo soit découpée
 /// au même endroit et que le visage ne bouge pas.
 class PortraitSuitPainter extends CustomPainter {
-  const PortraitSuitPainter();
+  const PortraitSuitPainter({this.image});
+
+  /// Costume photo-réaliste (plis, laine, cravate). Sans lui, aplat dessiné.
+  final ui.Image? image;
 
   static const _jacket = Color(0xFF1C2742);
   static const _jacketLight = Color(0xFF2E3B5E);
@@ -337,6 +355,21 @@ class PortraitSuitPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (size.isEmpty) return;
+    final image = this.image;
+    if (image != null) {
+      canvas.drawImageRect(
+        image,
+        Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+        Rect.fromLTWH(
+          0,
+          size.height * _PortraitGeometry.jerseyTop,
+          size.width,
+          size.height * (1 - _PortraitGeometry.jerseyTop),
+        ),
+        Paint()..filterQuality = FilterQuality.medium,
+      );
+      return;
+    }
     canvas
       ..save()
       ..scale(size.width, size.height);
@@ -428,5 +461,6 @@ class PortraitSuitPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(PortraitSuitPainter oldDelegate) => false;
+  bool shouldRepaint(PortraitSuitPainter oldDelegate) =>
+      oldDelegate.image != image;
 }
