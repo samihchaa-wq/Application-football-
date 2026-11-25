@@ -168,6 +168,30 @@ class PlatformAlertsPanel extends ConsumerWidget {
     WidgetRef ref,
     PlatformAlert alert,
   ) async {
+    // Une alerte marquée traitée disparaît de la liste : on confirme.
+    final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Marquer cette alerte comme traitée ?'),
+            content: const Text(
+              'Elle disparaîtra de la liste. À faire une fois le problème '
+              'réglé dans le tableau de bord Stripe.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text('Annuler'),
+              ),
+              FilledButton(
+                key: const Key('platform-alert-resolve-confirm'),
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: const Text('Traitée'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+    if (!confirmed || !context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       await ref.read(platformBillingRepositoryProvider).resolveAlert(alert.id);

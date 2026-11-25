@@ -5,9 +5,9 @@
 ## Audit UX/UI du 25/11/2026 (branche claude/elegant-knuth-jja248)
 
 - Fait : audit écran par écran (211 fichiers lus) → docs/AUDIT_UX_ECRAN_PAR_ECRAN_20261125.md (+ rapports détaillés dans docs/audit_ecrans_20261125/). Corrigé : lots 1-3 partiels (nom du stade non enregistré, « Aucun match » sur erreur réseau, console plateforme qui se vidait, direct : relecture ratée + double but, « Réessayer » sur 6 écrans, erreurs traduites, feuille d'indisponibilité). Composant PfErrorRetry / PfInlineErrorRetry.
-- Suite (même jour) : adresse tapée non écrasée au changement d'adversaire/lieu (2 formulaires de match), confirmation avant de changer le dispositif tactique d'un match d'historique, messages « Match annulé/supprimé », confirmation avant l'émission des factures.
+- Suite (même jour) : adresse tapée non écrasée au changement d'adversaire/lieu (2 formulaires de match), confirmation avant de changer le dispositif tactique d'un match d'historique, messages « Match annulé/supprimé », confirmation avant l'émission des factures, confirmation avant « Traitée » (alerte de paiement) et avant de donner/retirer le rôle Admin, page « Page introuvable » (adresse inconnue).
 - Vérifié : analyze propre, tests verts. Non vérifié : rendu réel (pas de Supabase local ni Docker).
-- Reste à faire : décision sur l'indicateur de chargement (PfLoader/PfSkeleton ne dessinent rien, choix assumé) ; confirmation de sortie (PopScope) des formulaires de match ; anti double appui et retour d'action (joueurs, saison) ; confirmations « Traitée » (litige) et rôle Admin ; accessibilité (clavier composition/bilan, zones de toucher) ; petits textes ; page d'erreur de navigation.
+- Reste à faire : décision sur l'indicateur de chargement (PfLoader/PfSkeleton ne dessinent rien, choix assumé) ; confirmation de sortie (PopScope) des formulaires de match ; anti double appui et retour d'action (joueurs, saison) ; fermeture du contrôleur du champ « Prénom » juste après la fermeture de la fenêtre (players_registry_page, à confirmer à l'écran) ; accessibilité (clavier composition/bilan, zones de toucher) ; petits textes ; page d'erreur de navigation.
 
 ## Session Kyky du 22/11/2026 (branche claude/gallant-babbage-2iz44v)
 
