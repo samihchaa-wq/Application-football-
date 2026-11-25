@@ -169,3 +169,21 @@ Deno.test("un refus de Stripe est signalé", async () => {
   const response = await handler(request());
   assertEquals(response.status, 502);
 });
+
+Deno.test("un montant sous 0,50 € est refusé avant Stripe", async () => {
+  const { handler, events } = fixture({
+    rpc: {
+      data: {
+        checkout_id: "c-1",
+        club_id: "club-1",
+        club_name: "FC Tests",
+        amount_cents: 49,
+        created_at_epoch: 1_800_000_000,
+      },
+      error: null,
+    },
+  });
+  const response = await handler(request());
+  assertEquals(response.status, 500);
+  assertEquals(events.length, 1); // seulement l'appel à la base, rien vers Stripe
+});

@@ -263,3 +263,16 @@ Deno.test("plusieurs signatures v1 : une seule valide suffit", async () => {
     true,
   );
 });
+
+Deno.test("une signature tronquée ou allongée est refusée", async () => {
+  const payload = '{"id":"evt_1"}';
+  const good = await stripeSignatureFor(SECRET, String(NOW), payload);
+  for (const candidate of [good.slice(0, 10), good.slice(0, 63), good + "00"]) {
+    const header = `t=${NOW},v1=${candidate}`;
+    assertEquals(await verifyStripeSignature(payload, header, SECRET, NOW), false);
+  }
+  assertEquals(
+    await verifyStripeSignature(payload, `t=${NOW},v1=${good}`, SECRET, NOW),
+    true,
+  );
+});
