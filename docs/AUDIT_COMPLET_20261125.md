@@ -381,3 +381,56 @@ Aucun appel envoyé à Supabase pendant ces essais.
 - Vrai téléphone (iPhone/Android), lecteur d'écran réel, texte agrandi à 200 %,
   mode « mouvement réduit », mesure de contraste automatique (appli dessinée
   sur canevas).
+
+## Phase 7 — Performance (fait, mesures sur le site web)
+
+Méthode : build web identique à celui du déploiement, servi avec compression
+gzip comme en production, ouvert dans un navigateur au format téléphone
+(375 px) avec réseau et processeur bridés ; poids de chaque fichier ; relecture
+des motifs de lenteur dans le code ; taille des données réelles (lecture seule).
+Mesures faites sur l'**écran de connexion** (le seul accessible sans compte).
+
+### Chargement
+| Situation | 1re visite | 2e visite |
+|---|---|---|
+| Bonne connexion (12 Mbit/s), processeur normal | 3,9 s | 0,45 s |
+| 4G moyenne (4 Mbit/s), téléphone 4× plus lent | **10,6 s** | 1,1 s |
+| 3G rapide (1,6 Mbit/s), téléphone 4× plus lent | **22 s** | 1,2 s |
+
+- Poids de la 1re visite : **3,8 Mo** compressés (script de l'appli 1,5 Mo +
+  moteur de rendu 2,1 Mo + polices). Le logo s'affiche dès 0,3 s.
+- 2e visite : **0 octet téléchargé** (le cache du site fonctionne).
+- Vidéos du stade (2,9 + 1,3 Mo) et musique (1 Mo) ne sont **pas** chargées au
+  démarrage.
+- Script de l'appli : 1,48 Mo compressé pour un plafond de 1,7 Mo (**87 %**) :
+  garde-fou existant en CI, marge faible (≈ 13 %).
+
+### Constats
+1. **Première ouverture lente sur téléphone moyen en 4G (~10 s)** : inhérent à
+   Flutter web (le moteur de rendu pèse 2 Mo). Aucun défaut de configuration
+   trouvé. Les pistes (`wasm`, moteur allégé) ne sont pas sûres sur iPhone ;
+   à ne pas tenter sans essai sur de vrais appareils. Un écran d'attente
+   explicite aide déjà (logo à 0,3 s).
+2. **Marge du plafond de poids faible** : une nouvelle grosse fonctionnalité
+   fera échouer la publication ; le plafond a déjà été relevé une fois
+   (27/08). Surveiller.
+3. **Mineur : 3 variantes du moteur de rendu publiées** (7,3 + 5,4 + 3,6 Mo)
+   alors qu'une seule sert par navigateur : alourdit le dossier publié
+   (53 Mo), pas le téléchargement des joueurs.
+4. **Code des écrans : rien d'alarmant** : listes longues construites en
+   différé (`SliverList`, `ListView.builder`) ; 4 875 constructeurs `const` ;
+   images réseau toutes redimensionnées ; 5 `RepaintBoundary`. Le fil du
+   calendrier regroupe matchs, événements et 313 matchs d'historique,
+   recalculés et retriés à chaque affichage : coût négligeable aujourd'hui
+   (≈ 370 lignes), à surveiller si l'historique grossit beaucoup.
+5. **Base** : voir phase 3 (aucune requête lente ; tâches de fond à re-mesurer
+   avec davantage de clubs).
+
+### Non mesuré (à lire)
+- **Fluidité dans l'appli connectée** (défilement, Live, statistiques,
+  composition avec vidéo) : pas de compte de test, donc pas de profil de
+  performance. Les remarques du point 4 sont de la lecture de code, pas des
+  mesures.
+- Téléphone réel, mémoire, batterie ; mesures de Lighthouse.
+- Le temps réel sur le serveur Cloudflare (compression brotli, cache
+  navigateur) : simulé en local avec gzip.
