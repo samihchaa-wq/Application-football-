@@ -6,7 +6,9 @@
    « club suspendu »).
 2. La fonction `stripe-checkout` appelle `admin_prepare_card_payment()` avec le
    jeton de l'admin : la base calcule et fige le montant (parrainage compris).
-3. Stripe Checkout encaisse ce montant exact.
+3. Stripe Checkout encaisse ce montant exact. Un appui répété dans les
+   30 minutes réutilise le même paiement en attente (pas de second paiement à
+   régler) ; la page de paiement expire 32 minutes après sa création.
 4. Stripe appelle `stripe-webhook` (signature vérifiée), qui appelle
    `stripe_record_card_payment()` : même effet qu'un paiement noté à la main
    (année ouverte, club rouvert, facture, parrainage). Idempotent.

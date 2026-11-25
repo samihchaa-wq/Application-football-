@@ -1,6 +1,6 @@
 # Mission 07 — projets de textes juridiques à faire valider
 
-**État au 12 novembre 2026 — BROUILLONS UNIQUEMENT.** Ces textes sont volontairement **non exploitables tels quels** : toutes les mentions `[À COMPLÉTER]` ou `[À VALIDER]` doivent être traitées ; la qualification juridique des clients et la répartition des rôles RGPD doivent être tranchées. Relecture **avocat/juriste** avant publication ; fiscalité et factures par **expert-comptable**. Source des risques : [audit mission 07](../JURIDIQUE_MISSION07.md).
+**État au 12 novembre 2026 — BROUILLONS UNIQUEMENT.** Ces textes sont volontairement **non exploitables tels quels** : toutes les mentions `[À COMPLÉTER]` ou `[À VALIDER]` doivent être traitées ; la qualification juridique des clients et la répartition des rôles RGPD doivent être tranchées. Relecture **avocat/juriste** avant publication ; fiscalité et factures par **expert-comptable**. Source des risques : [audit mission 07](JURIDIQUE_MISSION07.md).
 
 Ne pas injecter directement ces brouillons dans `legal_documents.dart` sans validation, ni réécrire une version acceptée par les utilisateurs sans procédure de versionnage et information.
 

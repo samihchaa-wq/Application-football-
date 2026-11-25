@@ -2,7 +2,8 @@
 """Refuse les modifications destructrices des migrations SQL déjà versionnées.
 
 Compare l'état de la base Git de la PR à la tête à valider. N'écrit rien et
-ne se connecte pas à Supabase. Une nouvelle migration datée est autorisée.
+ne se connecte pas à Supabase. Une nouvelle migration datée est autorisée,
+à condition que son numéro ne soit pas déjà pris par une autre migration.
 """
 from __future__ import annotations
 
@@ -35,6 +36,23 @@ def violations(name_status: str) -> list[str]:
     return errors
 
 
+def duplicate_versions(paths: list[str]) -> list[str]:
+    """Deux fichiers qui portent le même numéro (14 chiffres) se bloquent
+    mutuellement à l'application en production : le registre de migrations
+    de Supabase n'accepte qu'une seule ligne par numéro."""
+    seen: dict[str, list[str]] = {}
+    for path in paths:
+        name = path.rsplit("/", 1)[-1]
+        match = re.match(r"^([0-9]{14})_", name)
+        if match:
+            seen.setdefault(match.group(1), []).append(name)
+    return [
+        f"Numéro de migration en double {version} : " + ", ".join(sorted(names))
+        for version, names in sorted(seen.items())
+        if len(names) > 1
+    ]
+
+
 def main(argv: list[str]) -> int:
     if len(argv) != 3 or not all(argv[1:]):
         print("Usage: check_migration_history.py BASE_SHA HEAD_SHA", file=sys.stderr)
@@ -49,6 +67,14 @@ def main(argv: list[str]) -> int:
         print("Impossible de vérifier l'historique Git : " + result.stderr, file=sys.stderr)
         return 2
     problems = violations(result.stdout)
+    listing = subprocess.run(
+        ["git", "ls-tree", "-r", "--name-only", head, "--", PREFIX],
+        capture_output=True, text=True, check=False,
+    )
+    if listing.returncode != 0:
+        print("Impossible de lister les migrations : " + listing.stderr, file=sys.stderr)
+        return 2
+    problems += duplicate_versions(listing.stdout.splitlines())
     for problem in problems:
         print("ERREUR : " + problem, file=sys.stderr)
     if problems:

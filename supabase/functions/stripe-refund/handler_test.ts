@@ -136,3 +136,17 @@ Deno.test("Stripe a remboursé mais l'enregistrement échoue : signalé, sans er
   assertEquals(response.status, 200);
   assertEquals((await response.json()).recorded, false);
 });
+
+Deno.test("un montant de 0 ou négatif est refusé sans appel", async () => {
+  for (const amount of [0, -100]) {
+    const { handler, events } = fixture();
+    const response = await handler(request({
+      payment_id: PAYMENT,
+      request_id: REQUEST,
+      amount_cents: amount,
+      reason: "x",
+    }));
+    assertEquals(response.status, 400);
+    assertEquals(events, []);
+  }
+});

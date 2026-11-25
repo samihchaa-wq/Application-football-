@@ -74,6 +74,25 @@ reset role;
 select is((select (payload ->> 'amount_cents')::int from checkouts where label = 'filleul'), 7505,
   'le club parrainé paie 75,05 € par carte');
 
+-- Un appui répété ne crée pas un second paiement à régler.
+select pg_temp.act_as('7a000000-0000-0000-0000-000000000002');
+set local role authenticated;
+select is(
+  (public.admin_prepare_card_payment() ->> 'checkout_id'),
+  (select payload ->> 'checkout_id' from checkouts where label = 'filleul'),
+  'un second appui réutilise le paiement en attente'
+);
+reset role;
+select is(
+  (select count(*)::int from private.card_checkouts
+   where club_id = (select id from test_clubs where label = 'filleul')),
+  1, 'un seul paiement en attente par club'
+);
+select ok(
+  (select payload ? 'created_at_epoch' from checkouts where label = 'filleul'),
+  'l’heure de création est fournie pour l’expiration de la page'
+);
+
 -- Un autre admin connecté ne peut pas confirmer ; le serveur oui.
 select pg_temp.act_as('7a000000-0000-0000-0000-000000000004');
 select throws_ok(

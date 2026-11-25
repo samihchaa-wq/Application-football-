@@ -22,6 +22,7 @@ function fixture({
       club_id: "club-1",
       club_name: "FC Tests",
       amount_cents: 7505,
+      created_at_epoch: 1_800_000_000,
     },
     error: null,
   } as { data: unknown; error: unknown },
@@ -87,6 +88,42 @@ Deno.test("ouvre une session Stripe du montant calculé par la base", async () =
     "https://app.example.test/#/admin/abonnement?paiement=merci",
   );
   assertEquals((events[1] as { idempotency: string }).idempotency, "checkout-c-1");
+  // La page expire 32 min après la création du paiement.
+  assertEquals(stripe.body.expires_at, String(1_800_000_000 + 32 * 60));
+});
+
+Deno.test("deux appels pour le même paiement envoient des paramètres identiques", async () => {
+  const first = fixture();
+  const second = fixture();
+  await first.handler(request());
+  await new Promise((resolve) => setTimeout(resolve, 1100));
+  await second.handler(request());
+  // Mêmes paramètres + même clé d'idempotence : Stripe renvoie la même page.
+  assertEquals(
+    (second.events[1] as { body: unknown }).body,
+    (first.events[1] as { body: unknown }).body,
+  );
+  assertEquals(
+    (second.events[1] as { idempotency: string }).idempotency,
+    (first.events[1] as { idempotency: string }).idempotency,
+  );
+});
+
+Deno.test("base ancienne sans heure de création : expiration depuis maintenant", async () => {
+  const { handler, events } = fixture({
+    rpc: {
+      data: { checkout_id: "c-1", club_id: "club-1", club_name: "FC", amount_cents: 7505 },
+      error: null,
+    },
+  });
+  const before = Math.floor(Date.now() / 1000);
+  await handler(request());
+  const expiresAt = Number(
+    (events[1] as { body: Record<string, string> }).body.expires_at,
+  );
+  if (expiresAt < before + 32 * 60 || expiresAt > before + 32 * 60 + 5) {
+    throw new Error(`expires_at inattendu : ${expiresAt}`);
+  }
 });
 
 Deno.test("sans connexion, rien n'est demandé", async () => {
@@ -131,4 +168,22 @@ Deno.test("un refus de Stripe est signalé", async () => {
   const { handler } = fixture({ stripe: { status: 400, body: { error: {} } } as never });
   const response = await handler(request());
   assertEquals(response.status, 502);
+});
+
+Deno.test("un montant sous 0,50 € est refusé avant Stripe", async () => {
+  const { handler, events } = fixture({
+    rpc: {
+      data: {
+        checkout_id: "c-1",
+        club_id: "club-1",
+        club_name: "FC Tests",
+        amount_cents: 49,
+        created_at_epoch: 1_800_000_000,
+      },
+      error: null,
+    },
+  });
+  const response = await handler(request());
+  assertEquals(response.status, 500);
+  assertEquals(events.length, 1); // seulement l'appel à la base, rien vers Stripe
 });

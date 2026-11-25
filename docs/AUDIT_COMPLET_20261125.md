@@ -1,0 +1,601 @@
+# Audit complet — 25/11/2026
+
+## Phase 0 — État des lieux (fait)
+
+| Contrôle | Résultat |
+|---|---|
+| Analyse statique (`flutter analyze`) | 0 problème |
+| Tests | 1556 réussis, 0 échec |
+| Couverture des tests | 64,2 % des lignes (21 956 / 34 195) |
+| Build web release | OK, 51 Mo au total (script principal 4,9 Mo, moteur de rendu 37 Mo) |
+| Graphe de code | mis à jour |
+| Dépendances | 62 paquets ont une version plus récente, bloquées par les contraintes (voir plan de mise à jour existant) |
+
+À noter :
+- Des traces d'erreur s'affichent pendant les tests, mais tous passent :
+  bruit ou erreurs attendues, à vérifier en phase 8.
+- Un avertissement de build sur la police d'icônes iPhone (CupertinoIcons) :
+  mineur, à vérifier en phase 6.
+- Stripe : d'après `docs/HANDOFF.md`, aucun paiement ni événement Stripe n'a
+  jamais été reçu en production, et les fonctions Stripe n'ont jamais été
+  exécutées en test. À confirmer en lecture seule en phase 2.
+
+Non testé : vrai téléphone, vrais paiements.
+
+## Phase 1 — Sécurité + données (fait)
+
+Méthode : lecture seule de la base de production `application-football`
+(l'ancien projet `AS-Grinta` n'a pas été touché), lecture du code des
+fonctions serveur, du site web et du dépôt.
+
+### Verdict : aucun problème bloquant ni important trouvé
+
+| Contrôle | Résultat |
+|---|---|
+| Tables de l'app | 65 sur 65 protégées par des règles d'accès ; aucune ouverte aux visiteurs non connectés |
+| Cloisonnement entre clubs | 463 fonctions tournent sous un rôle qui respecte les règles par club ; règle « club_isolation » stricte sur les tables |
+| Fonctions ouvertes aux visiteurs non connectés | 0 |
+| Fonctions sensibles de paiement (`apply_*`, `stripe_*`, `vault_secrets`, `http_post`…) | non appelables par les utilisateurs |
+| Fonctions « plateforme » (23) | toutes vérifient que l'appelant est l'éditeur |
+| Fonctions « staff » / « coach » relues | toutes vérifient le rôle |
+| Fonctions serveur publiques (5) | `stripe-webhook` : signature + anti-rejeu 5 min ; `send-push` : jeton interne ; `register-account` et `account-email` : limitation de débit ; `calendar-feed` : jeton aléatoire |
+| Fichiers stockés | 3 espaces, images seulement (png/jpeg/webp, 5–10 Mo) ; photos de profil privées |
+| Secrets dans le code | aucun (seule la clé publique `anon`, normale) ; aucune clé `service_role` côté app |
+| Site web | CSP, HSTS, anti-iframe, anti-détection de type en place |
+
+### Points mineurs (aucun corrigé : ils demandent de toucher à la base, donc ton accord)
+
+1. **Image de badge pas assez contrôlée** : `staff_update_badge_image` accepte
+   toute adresse qui *contient* le chemin du stockage, donc une image hébergée
+   ailleurs passe. `staff_create_badge` ne vérifie pas l'adresse du tout.
+   Réservé aux administrateurs de badges, risque faible. Correctif : exiger
+   l'adresse exacte du stockage du projet.
+2. **Reste de l'ancien projet** : fonction `grinta_sync.ping` (renvoie `1`),
+   appelable par tout le monde, signalée par l'alerte Supabase. Inoffensive,
+   à supprimer.
+3. **Alerte « tables privées sans règle »** (6 tables `private.*`) : voulu, ces
+   tables sont fermées à tous ; aucune action.
+
+### Non vérifié
+
+- **Réglages d'authentification de la production** (mots de passe compromis
+  refusés, durée des sessions, limites de tentatives) : non lisibles d'ici.
+  À contrôler par toi dans le tableau de bord Supabase.
+- **Isolation entre deux clubs en vrai** : la production n'a qu'1 club. La
+  protection est lue dans le code (règles strictes), pas éprouvée avec un
+  deuxième club. Un test local existe (`docs/M04_TEST_HTTP_DEUX_CLUBS_*`),
+  non rejoué ici.
+- **Tests de sécurité de la base (pgTAP)** : non lancés, pas de base locale ici.
+- **Données** : la production contient 21 profils actifs et 1 club (pas
+  « personne encore ») ; 0 événement Stripe reçu, 1 paiement enregistré.
+
+## Phase 2 — Paiements Stripe (fait)
+
+Méthode : lecture du code des 3 fonctions Stripe et des fonctions de base
+qu'elles appellent, lecture seule de la production, 26 tests des fonctions
+Stripe relancés (réussis), et 3 appels invalides à la production (rejetés,
+aucun effet).
+
+### État réel en production
+- Les 3 fonctions Stripe sont déployées et à jour.
+- La clé de signature du webhook est configurée (réponse « signature
+  invalide », et non « non configuré »).
+- **Jamais utilisé** : 0 paiement par carte tenté, 0 événement Stripe reçu.
+  Le seul paiement enregistré est un virement de 79 € saisi à la main.
+- **Non vérifiable d'ici** : la clé secrète Stripe (nécessaire au bouton
+  « Payer par carte »), et le point de terminaison déclaré côté Stripe.
+  Le bouton n'a donc jamais été éprouvé de bout en bout.
+- L'abonnement du club est actif jusqu'au **18/11/2037** : à confirmer que
+  c'est voulu (période offerte ?).
+
+### Ce qui est solide
+- Le montant ne vient jamais de l'app : la base le calcule et le fige.
+- Le paiement est enregistré seulement si montant et devise sont identiques
+  à ceux figés ; ligne verrouillée, enregistrement une seule fois.
+- Signature Stripe vérifiée, rejeu refusé après 5 min.
+- Remboursement : droit « éditeur » vérifié, plafond = montant payé moins
+  déjà remboursé ; un même remboursement (appli + tableau de bord Stripe) ne
+  peut pas être compté deux fois (contrainte d'unicité en base).
+- Contestations : transformées en alerte pour l'éditeur.
+
+### Problèmes
+1. **Important, peu probable : double paiement possible.** Chaque appui sur
+   « Payer par carte » crée un nouveau paiement à régler, et l'ancien reste
+   payable jusqu'à 24 h. Si un admin ouvre deux pages de paiement et règle les
+   deux, le club est débité deux fois et deux années sont ouvertes (il faut
+   un remboursement manuel). Le commentaire du code (« un double appui ne
+   crée pas deux sessions ») est faux dans les faits. Correctif proposé :
+   faire expirer la page de paiement après 30 min et réutiliser le paiement
+   en attente récent au lieu d'en créer un autre. Touche aux paiements :
+   **attend ton accord**.
+2. **Mineur** : le webhook ne contrôle pas `livemode` (test ou réel) ; sans
+   conséquence tant qu'un point de terminaison correspond à un secret.
+   Il faudra séparer clairement test et réel au passage en vrais paiements.
+
+### Non testé
+- Un vrai paiement de bout en bout (même en mode test) : exige la clé
+  secrète Stripe, absente d'ici.
+- Les tests de la base (pgTAP) sur ces fonctions.
+
+### Correction du problème 1 (double paiement) — faite, accord reçu
+- Base (`20261206010000_paiement_carte_sans_doublon.sql`) : un paiement en
+  attente de moins de 30 min, même club, même montant et mêmes réductions,
+  est réutilisé ; verrou par club contre les appels simultanés.
+- Fonction `stripe-checkout` : la page de paiement expire 32 min après la
+  création ; deux appels pour le même paiement envoient des paramètres
+  identiques, donc Stripe renvoie la même page (clé d'idempotence).
+- Vérifié : 28 tests des fonctions Stripe réussis ; logique SQL rejouée dans
+  une base jetable (réutilisation, montant changé, plus de 30 min, déjà payé,
+  6 appels simultanés = 1 seule ligne).
+- **Non vérifié** : test pgTAP ajouté (lancé par la CI seulement) ; vrai
+  comportement de Stripe sur un appel répété (la réponse identique pour des
+  paramètres identiques est documentée par Stripe, mais je n'ai pas de clé
+  pour l'essayer) ; **migration non appliquée à la production** (elle part à
+  la publication automatique, après fusion).
+
+## Phase 3 — Base de données (fait)
+
+Méthode : lecture seule de la production (alertes de performance Supabase,
+statistiques des requêtes, tâches planifiées, taille des tables, contrôles
+d'intégrité), historique des sauvegardes sur GitHub. Aucune écriture.
+
+### État
+- Base de **85 Mo**, 84 migrations appliquées, 16 tâches planifiées sans échec.
+- Aucun index invalide, aucune clé étrangère sans index, 1 seule table sans
+  clé primaire (`private.client_incident_log_unassigned`, table interne).
+- Requêtes lentes : rien d'inquiétant. La plus lente par appel
+  (`get_club_rules`, 81 ms) est déjà corrigée par une migration récente.
+- Sauvegardes : complètes (base + photos), **chiffrées**, lancées chaque
+  lundi et après chaque fusion sur `main` ; dernière réussie le 25/11.
+  Exercice de restauration sur copie jetable réussi le 24/11.
+  Surveillance de la production : toutes les heures, réussie.
+
+### Constats
+1. **Important : les sauvegardes sont stockées comme « artefacts » d'un dépôt
+   GitHub public** (90 jours). Elles sont chiffrées (AES-256, phrase d'au moins
+   48 caractères imposée), donc illisibles sans la phrase, mais elles contiennent
+   toute la base (téléphones, dates de naissance…) et sont téléchargeables par
+   n'importe quel compte GitHub. La phrase devient le seul rempart. Le fichier
+   du workflow le dit lui-même (« prévoir un stockage externe privé »).
+   Recommandation : stockage privé externe, ou dépôt privé, avant de
+   multiplier les clubs. Décision à toi.
+2. **Mineur : journal du planificateur = 62 % de la base** (53 Mo sur 85 Mo).
+   Purgé chaque nuit au-delà de 7 jours, donc stable. Une tâche tourne toutes
+   les 5 s (120 000 lignes par semaine). Pas d'action nécessaire.
+3. **Mineur : 4 index en double** (`club_settings_club_id_idx`, et 3 index
+   `*_latest_idx` / `*_order_idx` redondants avec des contraintes d'unicité) :
+   place et écritures inutiles. Suppression = changement de base, accord requis.
+4. **Mineur : 1 contrainte non validée** (`push_notification_log_kind_check`) :
+   protège les nouvelles lignes mais pas les anciennes. À valider.
+5. **À surveiller pour la croissance** : les tâches de fond parcourent chaque
+   club à chaque minute (`run_for_each_club`, 313 000 appels, 0,4 % du temps de
+   la base aujourd'hui avec 1 club). La charge sera multipliée par le nombre de
+   clubs. Aucun problème maintenant ; à re-mesurer à 10 clubs.
+6. **Info** : 61 index « jamais utilisés » : normal avec 1 seul club et peu
+   de trafic ; à ne pas supprimer (ils servent aux liens entre tables).
+   L'authentification est limitée à 10 connexions (réglage Supabase à passer
+   en pourcentage si l'offre grossit).
+7. **Information** : une simulation (« do $sim$ », 3 saisons de matchs) a été
+   exécutée une fois sur la production ; aucune trace n'en subsiste (identifiants
+   simulés absents, aucune saison 2023-2025).
+8. **Process** : ma migration portait le même numéro qu'une migration déjà
+   appliquée en production (créée sur une autre branche). Détecté à temps,
+   renommée en `20261206010000`. Les numéros de migration se choisissent donc
+   au dernier moment, après mise à jour sur `main`.
+
+### Non vérifié
+- Les sauvegardes automatiques propres à Supabase (offre, restauration à un
+  instant donné) : non lisibles d'ici.
+- La restauration des **photos** n'a jamais été prouvée (point #91 du dossier).
+- Rejeu complet des migrations depuis une base vide : impossible par
+  construction (l'historique n'est pas rejouable ; la CI utilise un schéma
+  de base reconstitué, comme documenté).
+
+### Lot de nettoyage proposé (attend ton accord)
+Une seule migration : supprimer les 4 index en double, supprimer
+`grinta_sync.ping`, valider la contrainte du journal des notifications,
+durcir les adresses d'images de badges (phase 1).
+
+
+## Correctifs aux phases 1 à 3 (constatés pendant la phase 4)
+
+Le 25/11, **un deuxième club est apparu en production pendant l'audit** :
+« AS Grinta » (22 profils, créé aujourd'hui). Au début de l'audit, il n'y avait
+que « FC Démo » (21 profils, club de démonstration). Conséquences :
+
+- Phase 1, « 21 profils actifs et 1 club » : exact à l'heure de la mesure,
+  dépassé depuis. Les 21 profils étaient ceux du club de démonstration.
+- Phase 1, « isolation entre deux clubs non éprouvée » : **maintenant éprouvée**
+  (voir phase 4).
+- Phase 2, « un virement de 79 € » et « abonnement jusqu'au 18/11/2037 » :
+  ces deux faits concernent le club de **démonstration**. AS Grinta a un
+  abonnement jusqu'au 25/11/2036 (10 ans), sans paiement enregistré : ce sont
+  des périodes offertes, pas des anomalies. Il reste vrai qu'aucun paiement
+  par carte n'a jamais été tenté.
+- Phase 3, « la production sert 1 club » : même remarque.
+
+## Phase 4 — Logique métier (fait, avec limites)
+
+Méthode : contrôles de cohérence sur les **données réelles** (lecture seule,
+2 clubs, 22 + 32 matchs), test d'isolation entre clubs avec de vrais comptes
+simulés en lecture seule, relecture de la logique des cotes, des pronos et de
+la gestion des heures, couverture des tests par zone.
+
+### Résultat : aucun bug métier trouvé dans les données
+| Contrôle | Résultat |
+|---|---|
+| Isolation entre clubs (40 tables lisibles, compte de chaque club) | **0 ligne de l'autre club visible**, dans les deux sens |
+| Fonction appelée avec un match de l'autre club | réponse identique à un match inexistant : pas de fuite |
+| Matchs terminés sans score / buts joueurs > score / clean sheet avec but encaissé | 0 / 0 / 0 |
+| Score de finalisation ≠ score du match | 0 |
+| Élections « homme du match » restées ouvertes / lives bloqués | 0 / 0 |
+| Doublons (participants, pronos, badges) | 0 |
+| Incohérence de club entre match, saison, participant, badge | 0 |
+| Cotes : probabilités = 1, bornes 1,11 à 22,42, cohérence cote/probabilité | 0 anomalie sur 51 matchs |
+| Heure du match = date + heure de Paris | 0 écart sur 54 matchs |
+| Pronos des matchs annulés | exclus des calculs de badges et titres |
+
+### Constats
+1. **Mineur : doublons d'adversaires dans le club de démonstration** (6 noms
+   en double, 21 matchs liés), venant du script de démonstration. Aucun dans
+   AS Grinta. Pas d'impact sur les vrais clubs.
+2. **Mineur : un match du 22/11 reste « à venir »** dans le club de démo, sans
+   résultat saisi (3 jours). Cas normal (résultat à saisir par l'admin) ; à
+   voir si un rappel aux admins est voulu.
+3. **Note de conception** : les heures sont affichées dans le fuseau du
+   téléphone, alors que les règles (ouverture, fermeture des pronos) suivent
+   l'heure de Paris. Pour un joueur à l'étranger, « 20 h » s'affiche en heure
+   locale. À confirmer que c'est voulu.
+4. **Information** : la date de « fermeture des pronos » d'un match terminé est
+   celle de la saisie du résultat, pas T-15. Le blocage réel est fait par une
+   règle de base sur l'heure (T-15), pas par cette date.
+
+### Limites de cette phase (à lire)
+- **Pas de relecture ligne à ligne** des 370 fichiers Flutter : la logique
+  métier vit surtout dans la base (≈ 460 fonctions) et dans plus de 100 fichiers
+  de tests de base ; je m'appuie sur ces tests et sur les données réelles.
+- **Zones peu couvertes par les tests Flutter** : liste des matchs (45 %),
+  Live (43 %), badges (55 %) côté écrans ; fichiers d'accès aux données
+  (17 à 40 %).
+- **Écritures entre clubs** (créer/modifier chez l'autre club) : non testées
+  sur la production (lecture seule). Couvertes par les tests de base (CI).
+- **Parcours Live en vrai** (pilote, remplacements, buts) : non essayé.
+- Les tests de base (pgTAP) n'ont pas pu être lancés ici.
+
+## Phase 5 — Architecture et code mort (fait)
+
+Méthode : analyse automatique des imports des 370 fichiers, des dépendances,
+des appels vers la base (162 fonctions ouvertes aux connectés comparées à ce
+que l'app, les fonctions serveur et le site appellent), des motifs de gestion
+d'état et de libération de ressources.
+
+### Verdict : code propre, dette modérée, rien de bloquant
+| Contrôle | Résultat |
+|---|---|
+| Analyse statique | 0 problème |
+| `TODO`/`FIXME`, `// ignore`, `print` oubliés | 0 / 0 / 0 |
+| Dépendances déclarées mais jamais utilisées | 0 |
+| Fichiers jamais importés | 1 (voir 1) |
+| Contrôleurs / minuteries créés sans être libérés | 0 (7 cas vérifiés à la main) |
+| Écoute en direct (Realtime) laissée ouverte | non applicable (aucun canal manuel) |
+| Couches (domaine → données) | respectées ; 1 fichier « domaine » importe l'affichage, 8 fichiers « données » aussi |
+
+### Constats
+1. **Code mort Flutter** : `email_verification_panel.dart` (84 lignes) n'est
+   utilisé que par son propre test. Je ne l'ai pas supprimé : il peut être
+   préparé pour plus tard. À toi de dire.
+2. **4 fonctions de base jamais appelées**, ouvertes aux connectés :
+   `admin_create_match_complete` (ancienne version, remplacée par la v3),
+   `admin_finalize_match_sport_postgame`, `admin_publish_match_convocations`,
+   `get_match_live_timeline`. Contrôle de droits vérifié : les trois premières
+   sont protégées (par la fonction interne qu'elles appellent, que j'ai lue) ;
+   aucune faille. Mais ce sont des portes ouvertes inutiles : à retirer dans le
+   lot de nettoyage de la base.
+3. **Gestion d'état en retard d'une version majeure** : Riverpod 2.6 alors que
+   la 3.5 existe (go_router 16 → 18, share_plus 10 → 13, connectivity_plus
+   6 → 7 aussi). 24 usages de `StateProvider` et 2 de `StateNotifierProvider`
+   (les contrôleurs d'authentification et des matchs, les plus gros) passent
+   en « ancien style » avec Riverpod 3. Le plan de mise à jour existe
+   (`docs/dependency-upgrade-plan.md`) ; chantier à traiter à part, pas urgent.
+4. **Fichiers très longs** : 12 fichiers dépassent 900 lignes (le plus long :
+   le formulaire d'entrée de calendrier, 1 347 lignes ; réglages du club
+   1 329 ; Live en cours 1 210). Plus difficile à relire et à tester ; sans
+   effet pour l'utilisateur.
+5. **Dépendances circulaires entre modules** : 14 paires de modules
+   s'importent l'un l'autre (`matches` ↔ `sports_management`, `matches` ↔
+   `predictions`, `match_live` ↔ `matches`, `auth` ↔ `club`…). Signe d'un
+   découpage qui s'est emmêlé ; ralentit les évolutions. Mineur.
+6. **Rafraîchissement des écrans** : 334 écoutes d'état (`ref.watch`) pour
+   environ 20 écoutes ciblées (`select`) ; les écrans qui écoutent un état
+   entier se reconstruisent à chaque changement. À mesurer en phase 7
+   (performance) plutôt qu'à deviner. (Correction : j'avais d'abord compté 80
+   `select`, mais 54 étaient des requêtes vers la base.)
+7. 4 fichiers d'écran appellent la base directement, sans passer par la couche
+   « données » (`auth_state`, `forced_password_change_page`,
+   `club_identity_sync`, `admin_waitlist_page`). Mineur.
+
+### Non vérifié
+- Doublons de code (copier-coller) : pas d'outil spécialisé ici ; non mesuré.
+- Les fonctions de base appelées seulement par d'autres fonctions ou par la
+  planification : comptées comme « utilisées », non vérifiées une à une.
+
+## Phase 6 — UX/UI (fait, périmètre limité aux écrans publics)
+
+Méthode : lecture de l'audit UX du 24/11 et de ce qui a été fusionné depuis ;
+mesures dans le code (accessibilité, formulaires, états de chargement, d'erreur
+et vides) ; **build web identique à celui du déploiement**, ouvert dans un vrai
+navigateur en 3 formats (téléphone 375 px, paysage 812 × 375, ordinateur
+1280 px) : écran de connexion, validation à vide, création de compte, arbre
+d'accessibilité, champs de formulaire, installation sur l'écran d'accueil.
+Aucun appel envoyé à Supabase pendant ces essais.
+
+### Ce qui est bon (vérifié)
+- Aucun débordement horizontal à 375 px ; en paysage le formulaire dépasse mais
+  **défile** correctement ; aucune erreur dans la console (hors avertissements
+  du navigateur sans carte graphique).
+- Connexion : les vrais champs portent `username` / `current-password` dans un
+  formulaire : **les gestionnaires de mots de passe fonctionnent** (mon premier
+  soupçon, fondé sur les champs d'accessibilité, était faux).
+- Accessibilité : boutons et champs ont un nom lisible (« Se connecter »,
+  « Afficher le mot de passe »…) ; les 83 boutons-icônes ont une infobulle ;
+  23 libellés d'images ; 59 zones `Semantics`.
+- États : 32 écrans « vide » dédiés, 14 squelettes de chargement, 33 « tirer
+  pour actualiser », 0 message d'erreur technique affiché tel quel.
+- Installation : manifeste complet (icônes 192/512 + « maskable », couleurs,
+  `standalone`), icônes iPhone, service worker actif.
+- Les corrections UX du 24/11 (bandeau, danger, couleurs, icônes, paysage…) sont
+  bien sur `main` ; non revérifiées écran par écran ici (voir limites).
+
+### Constats
+1. **À vérifier sur iPhone : barre d'état blanche ?** Le site installé déclare
+   `apple-mobile-web-app-status-bar-style: default` alors que le thème est
+   sombre (#0B0F14) : sur iPhone, la barre du haut risque d'apparaître claire
+   sur une appli noire. Correctif probable : valeur `black`. Non vérifiable ici
+   (pas d'iPhone).
+2. **Orientation verrouillée à l'installation** : le manifeste impose
+   `portrait-primary`, alors que l'appli a été adaptée au paysage (barre
+   latérale). Sur Android, l'appli installée ne pivotera pas. À trancher :
+   voulu ou non ?
+3. ~~3 boutons-icônes sans nom (liste d'attente)~~ : **faux constat, retiré**.
+   Mon premier comptage confondait des composants enveloppes et cherchait
+   l'infobulle au mauvais endroit. Recompté à la main : les 83 boutons-icônes
+   ont tous un nom pour les lecteurs d'écran.
+4. **Mineur : un échec silencieux** dans la fiche d'un match : si le chargement
+   du vote « homme du match » échoue, les actions de l'administrateur
+   (corriger…) disparaissent sans message. Même schéma sur la courbe par saison
+   de la fiche joueur (là, sans gravité).
+5. **Mineur : le message de validation reste affiché à l'écran suivant** : le
+   message « Renseigne ton identifiant et ton mot de passe » (bandeau du bas)
+   recouvre encore le début du formulaire « Créer mon compte ».
+6. **Mineur** : 1 texte fixé à 10 px (`composition_presentation_stage.dart`,
+   ligne 402) ; manifeste sans `id` ni `lang`.
+7. **Restes de l'audit du 24/11 (non faits, décisions à toi)** : légende des
+   chiffres du Prono, trois étages de choix dans les statistiques, marges de
+   page uniformes, formulaires (27 champs sur 99 ont un type de clavier ; 9
+   « remplissage automatique »), libellés de réglages en double (migration).
+
+### Non testé (à lire)
+- **Tous les écrans connectés** (calendrier, match, Live, stats, club,
+  gestionnaire) : je n'ai pas de compte de test, et je ne me connecte pas à la
+  production. Leur état repose sur l'audit du 24/11 et sur les tests Flutter.
+- Vrai téléphone (iPhone/Android), lecteur d'écran réel, texte agrandi à 200 %,
+  mode « mouvement réduit », mesure de contraste automatique (appli dessinée
+  sur canevas).
+
+## Phase 7 — Performance (fait, mesures sur le site web)
+
+Méthode : build web identique à celui du déploiement, servi avec compression
+gzip comme en production, ouvert dans un navigateur au format téléphone
+(375 px) avec réseau et processeur bridés ; poids de chaque fichier ; relecture
+des motifs de lenteur dans le code ; taille des données réelles (lecture seule).
+Mesures faites sur l'**écran de connexion** (le seul accessible sans compte).
+
+### Chargement
+| Situation | 1re visite | 2e visite |
+|---|---|---|
+| Bonne connexion (12 Mbit/s), processeur normal | 3,9 s | 0,45 s |
+| 4G moyenne (4 Mbit/s), téléphone 4× plus lent | **10,6 s** | 1,1 s |
+| 3G rapide (1,6 Mbit/s), téléphone 4× plus lent | **22 s** | 1,2 s |
+
+- Poids de la 1re visite : **3,8 Mo** compressés (script de l'appli 1,5 Mo +
+  moteur de rendu 2,1 Mo + polices). Le logo s'affiche dès 0,3 s.
+- 2e visite : **0 octet téléchargé** (le cache du site fonctionne).
+- Vidéos du stade (2,9 + 1,3 Mo) et musique (1 Mo) ne sont **pas** chargées au
+  démarrage.
+- Script de l'appli : 1,48 Mo compressé pour un plafond de 1,7 Mo (**87 %**) :
+  garde-fou existant en CI, marge faible (≈ 13 %).
+
+### Constats
+1. **Première ouverture lente sur téléphone moyen en 4G (~10 s)** : inhérent à
+   Flutter web (le moteur de rendu pèse 2 Mo). Aucun défaut de configuration
+   trouvé. Les pistes (`wasm`, moteur allégé) ne sont pas sûres sur iPhone ;
+   à ne pas tenter sans essai sur de vrais appareils. Un écran d'attente
+   explicite aide déjà (logo à 0,3 s).
+2. **Marge du plafond de poids faible** : une nouvelle grosse fonctionnalité
+   fera échouer la publication ; le plafond a déjà été relevé une fois
+   (27/08). Surveiller.
+3. **Mineur : 3 variantes du moteur de rendu publiées** (7,3 + 5,4 + 3,6 Mo)
+   alors qu'une seule sert par navigateur : alourdit le dossier publié
+   (53 Mo), pas le téléchargement des joueurs.
+4. **Code des écrans : rien d'alarmant** : listes longues construites en
+   différé (`SliverList`, `ListView.builder`) ; 4 875 constructeurs `const` ;
+   images réseau toutes redimensionnées ; 5 `RepaintBoundary`. Le fil du
+   calendrier regroupe matchs, événements et 313 matchs d'historique,
+   recalculés et retriés à chaque affichage : coût négligeable aujourd'hui
+   (≈ 370 lignes), à surveiller si l'historique grossit beaucoup.
+5. **Base** : voir phase 3 (aucune requête lente ; tâches de fond à re-mesurer
+   avec davantage de clubs).
+
+### Non mesuré (à lire)
+- **Fluidité dans l'appli connectée** (défilement, Live, statistiques,
+  composition avec vidéo) : pas de compte de test, donc pas de profil de
+  performance. Les remarques du point 4 sont de la lecture de code, pas des
+  mesures.
+- Téléphone réel, mémoire, batterie ; mesures de Lighthouse.
+- Le temps réel sur le serveur Cloudflare (compression brotli, cache
+  navigateur) : simulé en local avec gzip.
+
+## Phase 8 — Tests (fait)
+
+Méthode : inventaire des suites, relance de toutes celles qui tournent ici,
+passe Flutter en **ordre aléatoire** (graine 1009809916), **mutation** (je
+casse volontairement une règle et je vérifie qu'un test échoue : 8 règles
+Stripe, 4 règles Flutter), analyse du bruit de sortie, lecture de la CI.
+
+### État
+| Suite | Volume | Résultat ici |
+|---|---|---|
+| Flutter | 1 556 tests (283 fichiers) | tous réussis, aussi en ordre aléatoire |
+| Fonctions serveur (Deno) | 144 | tous réussis |
+| Outils Python | 121 | tous réussis |
+| Contrôles Node | 42 | tous réussis |
+| Base de données (pgTAP) | 199 fichiers | **non lancés ici** (pile Supabase locale requise) ; lancés par la CI |
+
+- Aucun test désactivé (« skip »), aucun hasard, aucune attente réelle
+  (`Future.delayed`), sortie quasi vide (16 lignes hors progression).
+- Tests « exhaustifs » sur les cas critiques (pronostic, fenêtre de pronostic,
+  phases du match, routage de connexion) : bonne pratique, à conserver.
+- CI : couverture minimale imposée à 56 % (réel : 64,2 %, soit 8 points de
+  marge) ; budget de poids ; tests de base lancés sur les changements de base.
+
+### Mutations
+- **Flutter : 4 règles cassées sur 4 détectées** (mot de passe minimum 12 → 8,
+  fin de match entre nous inversée, mauvais vainqueur récompensé au pronostic,
+  écart de buts faussé).
+- **Stripe : 5 sur 8 détectées au départ.** Trois trous trouvés et **corrigés**
+  (tests ajoutés, 31 tests Stripe) : signature tronquée acceptée, paiement
+  sous 0,50 € accepté, remboursement de 0 accepté. Les trois mutations sont
+  maintenant détectées.
+
+### Constats
+1. **Corrigé** : les trois trous de tests Stripe ci-dessus (commit 1b473ef3).
+2. **Risque de test « à date »** : 244 dates fixes à partir de 2026 et 59
+   usages de l'heure réelle dans les tests. Un test qui suppose « ce match est
+   dans le futur » peut échouer le jour où la date passe. Les tests passent
+   aujourd'hui ; je n'ai pas pu simuler d'autres dates (pas d'horloge
+   truquable ici). À surveiller si la CI casse sans changement de code.
+3. **Mineur** : un clic manqué est signalé par un avertissement dans les tests
+   des réglages du club (`club_settings_page_test.dart` ou le test voisin) ;
+   les assertions qui suivent passent, donc pas de test vide prouvé.
+4. **Mineur** : 3 fonctions de base absentes des tests de base :
+   `admin_save_internal_composition_v2` (ancienne version),
+   `get_last_opponent_encounters`, `match_prediction_participant_count`.
+5. **Constat transversal** : le **dépôt GitHub est public** (indicateur
+   `private: false` de l'API GitHub). Le commentaire de `flutter_ci.yml`
+   (« Dépôt privé : chaque minute est décomptée du quota ») est donc **périmé**.
+   Conséquences à connaître : les archives de sauvegarde (phase 3) sont
+   téléchargeables par tout compte GitHub (chiffrées), et **ces rapports
+   d'audit sont publics** une fois poussés. Rien de sensible n'y figure
+   (aucun secret, aucune donnée de joueur) mais ils décrivent des points
+   faibles : décision à toi (voir le message de fin de phase).
+
+### Non vérifié
+- Les tests de base (pgTAP), dont ceux que j'ai ajoutés en phase 2 ; la
+  logique SQL a été éprouvée dans une base jetable, pas par la CI.
+- Mutations sur la logique SQL (base) et sur les écrans Flutter.
+- Fragilité des tests d'écran dans le temps (graines supplémentaires, autres
+  dates, autres machines).
+
+## Phase 9 — Documentation (fait)
+
+Méthode : contrôle automatique des 55 notes de `docs/` + README + notes de
+`supabase/` (chemins de fichiers cités, liens), relecture du relais
+(`HANDOFF`) et de l'index, recherche de données personnelles dans l'historique
+Git (le dépôt est public).
+
+### Constats
+1. **Corrigé** : 3 liens cassés (`JURIDIQUE_MISSION07`, `JURIDIQUE_MODELES_A_VALIDER`,
+   `M01_REGLAGES_CLUB`) ; `docs/INDEX.md` régénéré (146 notes) ; `HANDOFF.md`
+   mis à jour (entrée d'audit, date de l'en-tête, qui disait encore le 17/11).
+2. **32 références à des fichiers qui n'existent plus**, dans 16 notes : le plus
+   souvent des notes d'archive (missions, contrôles de qualité du 13/11, anciens
+   widgets `grinta_*`, anciens workflows déplacés dans `workflows-disabled`).
+   Laissées telles quelles (ce sont des comptes rendus datés) ;
+   `docs/production-operations.md` et `docs/database-release-process.md`, eux,
+   décrivent un fonctionnement encore actuel avec des outils retirés : à relire.
+3. **`supabase/production_migrations.lock` n'existe plus**, alors que 4
+   workflows et 1 note de procédure y font référence (le contrôle qui s'en
+   servait est désactivé). Sans effet, mais source de confusion.
+4. **Le dépôt est public et la documentation dit le contraire** à deux endroits
+   (`flutter_ci.yml`, « dépôt privé » ; à l'inverse `JURIDIQUE_MISSION07` le
+   sait déjà et signale que l'historique pourrait contenir d'anciennes données
+   d'AS Grinta, **non vérifié**). Vérifié ici par recherche dans les 1 435
+   commits : **aucune donnée personnelle trouvée** (e-mails de grands
+   fournisseurs : 1 faux dans un test ; téléphones : faux numéros de tests et
+   tracés de dessins ; aucun fichier de données, aucune liste de joueurs ; un
+   export de **structure** sans données). Limite : je n'ai pas cherché les
+   noms ; l'absence de preuve n'est pas une preuve d'absence.
+5. **Process** : le contrôle de CI ne voyait pas deux migrations au même
+   numéro (cas vécu pendant l'audit) : **corrigé** (refus + 3 tests, cas réel
+   simulé).
+6. Beaucoup de notes datées (missions, recettes, captures) alourdissent
+   `docs/` ; l'index évite de tout lire. Un classement « archives » les
+   séparerait des notes vivantes. Mineur.
+
+### Non vérifié
+- Exactitude de chaque note de procédure (je n'ai pas rejoué les procédures).
+- Les captures et maquettes (images).
+
+---
+
+# Synthèse finale de l'audit
+
+## Verdict
+Aucun problème bloquant, aucune faille de sécurité grave. Le code est propre
+(0 alerte d'analyse, 1 556 tests Flutter + 144 + 121 + 42 verts), l'isolation
+entre clubs tient (testée en lecture seule avec 2 clubs), les paiements sont
+bien conçus. Les vrais risques sont **opérationnels** et tiennent à ce qui n'a
+jamais été essayé en vrai.
+
+## Les 10 risques, du plus important au moins important
+1. **Stripe n'a jamais été essayé de bout en bout** (0 paiement carte, 0
+   événement reçu ; clé secrète et point de terminaison côté Stripe non
+   vérifiables ici). À faire avant toute vente : un paiement test complet.
+2. **Sauvegardes de toute la base dans des artefacts d'un dépôt public**
+   (chiffrées, phrase de 48 caractères minimum, 90 jours). Seule la phrase
+   protège des données personnelles. Stockage privé recommandé.
+3. **Dépôt public + historique non entièrement vérifié** : la recherche
+   automatique n'a rien trouvé, mais les noms n'ont pas été cherchés ; les
+   rapports d'audit sont publics.
+4. **Réglages d'authentification de production non vérifiés** (mots de passe
+   compromis refusés, limites de tentatives) : à regarder dans Supabase.
+5. **Écrans connectés jamais audités par moi** (pas de compte de test) : UX,
+   fluidité et logique d'affichage reposent sur l'audit du 24/11 et les tests.
+6. **Tests de base (pgTAP) non rejoués ici** : dont ceux ajoutés pour le
+   correctif de paiement ; la CI les lancera à la fusion.
+7. **Première ouverture lente sur téléphone moyen en 4G (~10 s)**, 3,8 Mo ;
+   plafond de poids à 87 % : une grosse nouveauté fera échouer la publication.
+8. **Double paiement carte** : corrigé (migration + expiration de la page),
+   **en attente de fusion et de publication** ; comportement réel de Stripe
+   sur un appel répété non essayé.
+9. **Croissance** : tâches de fond qui parcourent chaque club chaque minute,
+   Riverpod en retard d'une version majeure, 14 dépendances circulaires entre
+   modules, fichiers de plus de 900 lignes. Sans effet aujourd'hui.
+10. **Détails à trancher** : barre d'état iPhone sur fond noir, orientation
+    verrouillée en portrait, restauration des photos jamais prouvée, heures
+    affichées dans le fuseau du téléphone.
+
+## Corrections faites (dans la PR #248)
+- Paiement carte : un appui répété réutilise le paiement en attente ; la page
+  Stripe expire 32 min après sa création (migration `20261206010000`).
+- 3 tests ajoutés aux fonctions Stripe (signature tronquée, montant minimum,
+  remboursement de 0), vérifiés par mutation.
+- Contrôle de CI : refus de deux migrations au même numéro.
+- Docs : 3 liens réparés, relais et index à jour.
+- Rapports d'audit (ce fichier et le plan).
+
+## En attente de ton accord
+- **Lot de nettoyage de la base** (une migration) : 4 index en double,
+  `grinta_sync.ping`, 4 fonctions inutilisées, contrainte
+  `push_notification_log_kind_check`, contrôle des adresses d'images de badges.
+- Barre d'état iPhone (`black`) et orientation du manifeste.
+- Fichier mort `email_verification_panel.dart` (84 lignes + son test).
+- Rapports d'audit : les garder dans le dépôt public ou les en sortir ?
+- Sauvegardes : passer à un stockage privé ?
+
+## Erreurs de mon audit, corrigées en cours de route
+- « 1 seul club en production » : vrai au début, faux depuis la création
+  d'AS Grinta le 25/11 (rectifié, isolation re-testée avec 2 clubs).
+- « 3 boutons sans infobulle » : faux (comptage au mauvais endroit), retiré.
+- « 80 usages de `select` » : 54 étaient des requêtes de base, corrigé (≈ 20).
+- Soupçon « remplissage automatique désactivé à la connexion » : faux, retiré.
