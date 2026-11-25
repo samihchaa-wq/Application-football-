@@ -195,3 +195,69 @@ d'intégrité), historique des sauvegardes sur GitHub. Aucune écriture.
 Une seule migration : supprimer les 4 index en double, supprimer
 `grinta_sync.ping`, valider la contrainte du journal des notifications,
 durcir les adresses d'images de badges (phase 1).
+
+
+## Correctifs aux phases 1 à 3 (constatés pendant la phase 4)
+
+Le 25/11, **un deuxième club est apparu en production pendant l'audit** :
+« AS Grinta » (22 profils, créé aujourd'hui). Au début de l'audit, il n'y avait
+que « FC Démo » (21 profils, club de démonstration). Conséquences :
+
+- Phase 1, « 21 profils actifs et 1 club » : exact à l'heure de la mesure,
+  dépassé depuis. Les 21 profils étaient ceux du club de démonstration.
+- Phase 1, « isolation entre deux clubs non éprouvée » : **maintenant éprouvée**
+  (voir phase 4).
+- Phase 2, « un virement de 79 € » et « abonnement jusqu'au 18/11/2037 » :
+  ces deux faits concernent le club de **démonstration**. AS Grinta a un
+  abonnement jusqu'au 25/11/2036 (10 ans), sans paiement enregistré : ce sont
+  des périodes offertes, pas des anomalies. Il reste vrai qu'aucun paiement
+  par carte n'a jamais été tenté.
+- Phase 3, « la production sert 1 club » : même remarque.
+
+## Phase 4 — Logique métier (fait, avec limites)
+
+Méthode : contrôles de cohérence sur les **données réelles** (lecture seule,
+2 clubs, 22 + 32 matchs), test d'isolation entre clubs avec de vrais comptes
+simulés en lecture seule, relecture de la logique des cotes, des pronos et de
+la gestion des heures, couverture des tests par zone.
+
+### Résultat : aucun bug métier trouvé dans les données
+| Contrôle | Résultat |
+|---|---|
+| Isolation entre clubs (40 tables lisibles, compte de chaque club) | **0 ligne de l'autre club visible**, dans les deux sens |
+| Fonction appelée avec un match de l'autre club | réponse identique à un match inexistant : pas de fuite |
+| Matchs terminés sans score / buts joueurs > score / clean sheet avec but encaissé | 0 / 0 / 0 |
+| Score de finalisation ≠ score du match | 0 |
+| Élections « homme du match » restées ouvertes / lives bloqués | 0 / 0 |
+| Doublons (participants, pronos, badges) | 0 |
+| Incohérence de club entre match, saison, participant, badge | 0 |
+| Cotes : probabilités = 1, bornes 1,11 à 22,42, cohérence cote/probabilité | 0 anomalie sur 51 matchs |
+| Heure du match = date + heure de Paris | 0 écart sur 54 matchs |
+| Pronos des matchs annulés | exclus des calculs de badges et titres |
+
+### Constats
+1. **Mineur : doublons d'adversaires dans le club de démonstration** (6 noms
+   en double, 21 matchs liés), venant du script de démonstration. Aucun dans
+   AS Grinta. Pas d'impact sur les vrais clubs.
+2. **Mineur : un match du 22/11 reste « à venir »** dans le club de démo, sans
+   résultat saisi (3 jours). Cas normal (résultat à saisir par l'admin) ; à
+   voir si un rappel aux admins est voulu.
+3. **Note de conception** : les heures sont affichées dans le fuseau du
+   téléphone, alors que les règles (ouverture, fermeture des pronos) suivent
+   l'heure de Paris. Pour un joueur à l'étranger, « 20 h » s'affiche en heure
+   locale. À confirmer que c'est voulu.
+4. **Information** : la date de « fermeture des pronos » d'un match terminé est
+   celle de la saisie du résultat, pas T-15. Le blocage réel est fait par une
+   règle de base sur l'heure (T-15), pas par cette date.
+
+### Limites de cette phase (à lire)
+- **Pas de relecture ligne à ligne** des 370 fichiers Flutter : la logique
+  métier vit surtout dans la base (≈ 460 fonctions) et dans plus de 100 fichiers
+  de tests de base ; je m'appuie sur ces tests et sur les données réelles.
+- **Zones peu couvertes par les tests Flutter** : liste des matchs (45 %),
+  Live (43 %), badges (55 %) côté écrans ; fichiers d'accès aux données
+  (17 à 40 %).
+- **Écritures entre clubs** (créer/modifier chez l'autre club) : non testées
+  sur la production (lecture seule). Couvertes par les tests de base (CI).
+- **Parcours Live en vrai** (pilote, remplacements, buts) : non essayé.
+- Les tests de base (pgTAP) n'ont pas pu être lancés ici.
