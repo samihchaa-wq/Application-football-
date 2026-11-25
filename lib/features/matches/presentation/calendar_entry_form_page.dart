@@ -578,12 +578,15 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
           if (!_isEvent) ...[
             TextFormField(
               controller: _stadiumNameController,
+              // Le nom du stade vient de la fiche de l'adversaire : le
+              // formulaire ne l'enregistre pas. Le rendre modifiable faisait
+              // perdre la saisie en silence.
+              readOnly: true,
               enabled: !busy,
-              textCapitalization: TextCapitalization.words,
-              textInputAction: TextInputAction.next,
-              maxLength: 120,
               decoration: const InputDecoration(
-                labelText: 'Nom du stade (facultatif)',
+                labelText: 'Stade de l’adversaire',
+                helperText:
+                    'Repris de la fiche de l’adversaire (Bibliothèque des stades).',
               ),
             ),
             const SizedBox(height: 8),
