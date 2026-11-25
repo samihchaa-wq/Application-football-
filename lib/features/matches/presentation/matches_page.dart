@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/widgets/pf_error_retry.dart';
 import 'package:petit_filet/core/club/club_identity.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/utils/match_window.dart';
@@ -146,11 +147,11 @@ class _MatchesPageState extends ConsumerState<MatchesPage> {
               if (state.isLoading)
                 PfSkeleton.list(itemCount: 4, itemHeight: 108)
               else if (state.error != null)
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(state.error!),
-                  ),
+                PfInlineErrorRetry(
+                  message: state.error!,
+                  onRetry: () => ref
+                      .read(matchesControllerProvider.notifier)
+                      .load(seasonId: state.selectedSeasonId),
                 )
               else if (matches.isEmpty)
                 const Card(

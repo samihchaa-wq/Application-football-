@@ -416,6 +416,12 @@ class _AdminSquadPlanPageState extends ConsumerState<AdminSquadPlanPage> {
           ],
         );
     if (_loading) return withBackArrow(const PfProgressIndicator());
+    if (_matches.isEmpty && _error != null) {
+      // Sans ce cas, une coupure réseau affichait « Aucun match disponible ».
+      return withBackArrow(
+        PfErrorRetry(message: _error!, onRetry: _loadMatches),
+      );
+    }
     if (_matches.isEmpty) {
       return withBackArrow(
         const PfEmptyState(

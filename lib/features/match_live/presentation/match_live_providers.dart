@@ -162,6 +162,10 @@ class MatchLiveStateController
       state = AsyncData(bundle);
     } catch (error, stackTrace) {
       if (generation != _stateGeneration) return;
+      // Une relecture périodique ratée ne doit pas effacer l'écran de
+      // pilotage en plein match : on garde les dernières données, la
+      // relecture suivante réessaiera.
+      if (state.hasValue) return;
       state = AsyncError(error, stackTrace);
     }
   }
@@ -304,7 +308,29 @@ class MatchLiveStateController
     );
   }
 
+  /// Vrai tant qu'un changement de score attend la réponse du serveur : un
+  /// second appui trop rapproché ajoutait un deuxième but.
+  bool _scoreInFlight = false;
+
   Future<void> adjustScore({
+    required String team,
+    required int delta,
+    String? scorerParticipantId,
+  }) async {
+    if (_scoreInFlight) return;
+    _scoreInFlight = true;
+    try {
+      await _adjustScore(
+        team: team,
+        delta: delta,
+        scorerParticipantId: scorerParticipantId,
+      );
+    } finally {
+      _scoreInFlight = false;
+    }
+  }
+
+  Future<void> _adjustScore({
     required String team,
     required int delta,
     String? scorerParticipantId,

@@ -92,6 +92,10 @@ class ClubSeasonTile extends ConsumerWidget {
           );
       ref.invalidate(adminDashboardProvider);
       ref.invalidate(openSeasonIdProvider);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Saison « ${season.name} » terminée.')),
+      );
     } catch (error) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -125,7 +129,14 @@ class ClubSeasonTile extends ConsumerWidget {
         ],
       ),
     );
-    if (name == null || name.trim().isEmpty || !context.mounted) return;
+    if (name == null || !context.mounted) return;
+    if (name.trim().isEmpty) {
+      // Avant, la fenêtre se fermait sans rien dire sur un nom vide.
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Indique un nom de saison.')),
+      );
+      return;
+    }
     try {
       await ref.read(adminRepositoryProvider).createSeason(name);
       ref.invalidate(adminDashboardProvider);

@@ -32,7 +32,7 @@ class SeasonWrappedButton extends ConsumerWidget {
       tooltip: preview ? 'Ma saison (aperçu)' : 'Ma saison',
       visualDensity: VisualDensity.compact,
       padding: const EdgeInsets.all(4),
-      constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+      constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
       style: IconButton.styleFrom(
         foregroundColor: AppTheme.accent,
         backgroundColor: AppTheme.accent.withValues(alpha: .08),

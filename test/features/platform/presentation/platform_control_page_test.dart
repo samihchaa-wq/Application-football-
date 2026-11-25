@@ -284,6 +284,8 @@ void main() {
       find.byKey(const ValueKey('platform-alert-resolve-alert-1')),
     );
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('platform-alert-resolve-confirm')));
+    await tester.pumpAndSettle();
     expect(billing.alerts, isEmpty);
     expect(find.text('Rien à traiter côté paiements'), findsOneWidget);
     await tester.pumpWidget(const SizedBox.shrink());

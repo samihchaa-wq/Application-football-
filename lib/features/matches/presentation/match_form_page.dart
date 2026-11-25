@@ -142,9 +142,16 @@ class _MatchFormPageState extends ConsumerState<MatchFormPage> {
     _applyRememberedAddress();
   }
 
+  /// Vrai dès que la personne a tapé dans le champ adresse : on ne l'écrase
+  /// plus quand elle change d'adversaire ou de lieu.
+  bool _addressEditedByUser = false;
+
   void _refreshAddressForSelection() => _applyRememberedAddress();
 
   void _applyRememberedAddress() {
+    if (_addressEditedByUser && _addressController.text.trim().isNotEmpty) {
+      return;
+    }
     String? remembered;
     if (_isHome) {
       remembered = _clubHomeAddress;
@@ -479,6 +486,7 @@ class _MatchFormPageState extends ConsumerState<MatchFormPage> {
                 TextFormField(
                   controller: _addressController,
                   enabled: !busy,
+                  onChanged: (_) => _addressEditedByUser = true,
                   textCapitalization: TextCapitalization.words,
                   keyboardType: TextInputType.multiline,
                   minLines: 2,

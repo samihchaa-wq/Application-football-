@@ -60,9 +60,9 @@ class AdminMatchOptionsButton extends ConsumerWidget {
         .read(matchesControllerProvider.notifier)
         .cancelMatch(match.id);
     ref.invalidate(matchDetailsProvider(match.id));
-    if (failure != null) {
-      messenger.showSnackBar(SnackBar(content: Text(failure)));
-    }
+    messenger.showSnackBar(
+      SnackBar(content: Text(failure ?? 'Match annulé.')),
+    );
   }
 
   Future<void> _finish(BuildContext context, WidgetRef ref) async {
@@ -150,6 +150,7 @@ class AdminMatchOptionsButton extends ConsumerWidget {
       // rafraîchissement le ScrollController peut être clampé à 0 ; on force
       // donc un nouvel ancrage sur le match pertinent une fois la liste prête.
       ref.read(matchesFocusRequestProvider.notifier).state++;
+      messenger.showSnackBar(const SnackBar(content: Text('Match supprimé.')));
       return;
     }
     messenger.showSnackBar(SnackBar(content: Text(failure)));

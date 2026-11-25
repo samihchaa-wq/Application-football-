@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/widgets/pf_error_retry.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
@@ -58,21 +59,10 @@ class _MatchAvailabilitySelectorState
           top: widget.topSpacing,
           bottom: widget.bottomSpacing,
         ),
-        child: const Card(
-          child: Padding(
-            padding: EdgeInsets.all(14),
-            child: Row(
-              children: [
-                Icon(Icons.error_outlined),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Ta disponibilité est momentanément indisponible.',
-                  ),
-                ),
-              ],
-            ),
-          ),
+        child: PfInlineErrorRetry(
+          message: 'Ta disponibilité est momentanément indisponible.',
+          onRetry: () =>
+              ref.invalidate(myMatchAvailabilityProvider(widget.matchId)),
         ),
       ),
       data: (value) {

@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:petit_filet/core/widgets/player_photo_mode_picker.dart';
 import 'package:petit_filet/core/storage/player_photo_mode.dart';
 import 'package:petit_filet/core/security/password_policy.dart';
@@ -696,7 +697,13 @@ class _ContactEmailDialogState extends ConsumerState<ContactEmailDialog> {
       if (mounted) setState(() => _sent = true);
     } catch (error) {
       if (mounted) {
-        setState(() => _error = '$error'.replaceFirst('Bad state: ', ''));
+        // Les StateError de ce dépôt portent déjà un message en français ;
+        // toute autre erreur (réseau, serveur) passe par la traduction au lieu
+        // d'afficher son texte technique.
+        setState(
+          () => _error =
+              error is StateError ? error.message : humanizeError(error),
+        );
       }
     } finally {
       if (mounted) setState(() => _sending = false);

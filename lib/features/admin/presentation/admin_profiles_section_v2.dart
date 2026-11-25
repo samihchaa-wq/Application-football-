@@ -479,16 +479,53 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
                       selected: profile.role == 'admin',
                       onSelected: policy.isSelf || policy.isArchived
                           ? null
-                          : (_) => run(
+                          : (_) async {
+                              final granting = profile.role != 'admin';
+                              final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder: (dialogContext) => AlertDialog(
+                                      title: Text(
+                                        granting
+                                            ? 'Donner les droits d’administrateur ?'
+                                            : 'Retirer les droits d’administrateur ?',
+                                      ),
+                                      content: Text(
+                                        granting
+                                            ? '${profile.displayName} pourra '
+                                                'modifier les réglages, les '
+                                                'matchs et les comptes du club.'
+                                            : '${profile.displayName} ne '
+                                                'pourra plus gérer le club.',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.of(
+                                            dialogContext,
+                                          ).pop(false),
+                                          child: const Text('Annuler'),
+                                        ),
+                                        FilledButton(
+                                          onPressed: () => Navigator.of(
+                                            dialogContext,
+                                          ).pop(true),
+                                          child: Text(
+                                            granting ? 'Donner' : 'Retirer',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ) ??
+                                  false;
+                              if (!confirmed || !context.mounted) return;
+                              await run(
                                 () => repository.updateProfileRole(
                                   profile.id,
-                                  profile.role == 'admin'
-                                      ? 'pronostiqueur'
-                                      : 'admin',
+                                  granting ? 'admin' : 'pronostiqueur',
                                 ),
                                 success:
                                     'Accès de ${profile.displayName} mis à jour.',
-                              ),
+                              );
+                            },
                     ),
                   ),
                 ),

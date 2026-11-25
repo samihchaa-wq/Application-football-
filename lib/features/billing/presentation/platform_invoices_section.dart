@@ -219,6 +219,30 @@ class _InvoiceList extends ConsumerWidget {
   }
 
   Future<void> _issue(BuildContext context, WidgetRef ref) async {
+    // L'émission attribue des numéros définitifs : on demande confirmation.
+    final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Émettre les factures prêtes ?'),
+            content: const Text(
+              'Chaque facture reçoit un numéro définitif. Cette action ne '
+              'peut pas être annulée.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text('Annuler'),
+              ),
+              FilledButton(
+                key: const Key('platform-invoices-issue-confirm'),
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: const Text('Émettre'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+    if (!confirmed || !context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final count = await ref.read(invoiceRepositoryProvider).issuePending();

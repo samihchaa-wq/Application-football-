@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/widgets/pf_error_retry.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
 import 'package:petit_filet/features/matches/data/match_info_repository.dart';
@@ -36,18 +37,10 @@ class MatchAvailabilityBoardCard extends ConsumerWidget {
       loading: () => const SizedBox.shrink(),
       error: (_, __) => Padding(
         padding: EdgeInsets.only(bottom: bottomSpacing),
-        child: Card(
-          margin: compact ? EdgeInsets.zero : null,
-          child: const Padding(
-            padding: EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Icon(Icons.error_outlined),
-                SizedBox(width: 10),
-                Expanded(child: Text('Effectif momentanément indisponible.')),
-              ],
-            ),
-          ),
+        child: PfInlineErrorRetry(
+          message: 'Effectif momentanément indisponible.',
+          onRetry: () =>
+              ref.invalidate(matchAvailabilityBoardProvider(matchId)),
         ),
       ),
       data: (board) {

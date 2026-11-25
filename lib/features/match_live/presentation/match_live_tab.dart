@@ -6,6 +6,7 @@ import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:petit_filet/core/utils/match_window.dart';
 import 'package:petit_filet/features/sports_management/presentation/match_report_page.dart';
 import 'package:petit_filet/features/matches/data/match_info_repository.dart';
+import 'package:petit_filet/core/widgets/pf_error_retry.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
 import 'package:petit_filet/core/widgets/pf_status_banner.dart';
 import 'package:petit_filet/features/match_live/domain/match_live_session.dart';
@@ -53,9 +54,9 @@ class MatchLiveTab extends ConsumerWidget {
         ),
       ),
       error: (error, _) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(humanizeError(error), textAlign: TextAlign.center),
+        child: PfErrorRetry(
+          message: humanizeError(error),
+          onRetry: () => ref.invalidate(matchLiveStateProvider(matchId)),
         ),
       ),
       data: (bundle) {

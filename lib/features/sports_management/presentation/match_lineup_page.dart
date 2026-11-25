@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/widgets/pf_error_retry.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/theme/app_spacing.dart';
 import 'package:petit_filet/core/utils/match_window.dart';
@@ -377,8 +378,10 @@ class PublishedLineupPreview extends ConsumerWidget {
       padding: EdgeInsets.only(top: topSpacing, bottom: bottomSpacing),
       child: lineup.when(
         loading: () => const SizedBox.shrink(),
-        error: (_, __) => const _MatchModuleError(
+        error: (_, __) => PfInlineErrorRetry(
           message: 'Composition momentanément indisponible.',
+          onRetry: () =>
+              ref.invalidate(publishedMatchCompositionProvider(matchId)),
         ),
         data: (composition) {
           if (composition == null) {
@@ -505,29 +508,6 @@ class PublishedLineupPreview extends ConsumerWidget {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class _MatchModuleError extends StatelessWidget {
-  const _MatchModuleError({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.cardPadding),
-        child: Row(
-          children: [
-            const Icon(Icons.error_outlined),
-            const SizedBox(width: AppSpacing.contentGap),
-            Expanded(child: Text(message)),
-          ],
-        ),
       ),
     );
   }
