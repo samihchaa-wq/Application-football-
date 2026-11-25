@@ -98,19 +98,23 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('cloche et crayon au niveau de la date, pas des équipes', (
-    tester,
-  ) async {
+  testWidgets('cloche et crayon sous l’affiche, la date garde le type de match',
+      (tester) async {
     await pumpCard(tester, isAdmin: true);
 
-    final date = tester.getRect(
-      find
-          .descendant(
-            of: find.byType(MatchDateHeader),
-            matching: find.byType(Text),
-          )
-          .first,
-    );
+    final dateText = tester
+        .widget<Text>(
+          find
+              .descendant(
+                of: find.byType(MatchDateHeader),
+                matching: find.byType(Text),
+              )
+              .first,
+        )
+        .data!;
+    // « date • heure • Amical » sur la même ligne, comme les autres cartes.
+    expect(dateText, contains('Amical'));
+
     final bell = tester.getRect(
       find.byIcon(Icons.notifications_none_outlined),
     );
@@ -119,10 +123,8 @@ void main() {
       find.byIcon(Icons.arrow_forward_ios_outlined),
     );
 
-    expect((bell.center.dy - date.center.dy).abs(), lessThan(18));
-    expect((edit.center.dy - date.center.dy).abs(), lessThan(18));
-    expect(bell.center.dy, lessThan(arrow.center.dy));
-    expect(edit.center.dy, lessThan(arrow.center.dy));
+    expect(bell.center.dy, greaterThan(arrow.center.dy));
+    expect(edit.center.dy, greaterThan(arrow.center.dy));
     expect(edit.center.dx, greaterThan(bell.center.dx));
     expect(tester.takeException(), isNull);
 
@@ -145,7 +147,8 @@ void main() {
           .first,
     );
     final bell = tester.getRect(find.byIcon(Icons.notifications_none_outlined));
-    expect(date.right, lessThanOrEqualTo(bell.left));
+    // Les boutons sont sous la date : aucun recouvrement vertical.
+    expect(bell.top, greaterThanOrEqualTo(date.bottom));
     expect(tester.takeException(), isNull);
   });
 

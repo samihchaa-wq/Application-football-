@@ -13,9 +13,13 @@ abstract final class PfButtonStyles {
   /// Bouton plein d'une couleur sémantique (vert, rouge d'erreur…), texte
   /// sombre : le blanc ne passe pas le contraste de 4,5:1 sur ces teintes
   /// claires.
-  static ButtonStyle solid(Color color) => FilledButton.styleFrom(
-        foregroundColor: AppTheme.background,
-        disabledForegroundColor: AppTheme.background.withValues(alpha: .6),
+  static ButtonStyle solid(
+    Color color, {
+    Color foreground = AppTheme.background,
+  }) =>
+      FilledButton.styleFrom(
+        foregroundColor: foreground,
+        disabledForegroundColor: foreground.withValues(alpha: .6),
         elevation: 0,
         shadowColor: Colors.transparent,
         backgroundBuilder: (context, states, child) => DecoratedBox(

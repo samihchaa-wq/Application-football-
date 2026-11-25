@@ -432,20 +432,24 @@ class ClubEventCard extends ConsumerWidget {
           tint: .16,
           stripe: true),
       clipBehavior: Clip.antiAlias,
-      child: CalendarCardActionsOverlay(
-        actions: editButton,
-        child: CalendarCardSections(
-          header: CalendarDateLine(
-            kickoffAt: event.startsAt,
-            label: 'Événement',
-            endInset:
-                editButton != null ? CalendarCardActionsOverlay.dateInset : 0,
-          ),
-          body: CalendarCenteredTitle(event.title),
-          footer: event.location.trim().isEmpty
-              ? null
-              : CalendarAddressLine(event.location),
+      child: CalendarCardSections(
+        header: CalendarDateLine(
+          kickoffAt: event.startsAt,
+          label: 'Événement',
         ),
+        body: CalendarCenteredTitle(event.title),
+        // Le crayon est en bas avec le lieu : la ligne du haut garde toute
+        // sa largeur, comme sur les cartes de match.
+        footerVerticalPadding:
+            editButton == null ? null : CalendarCardFooter.actionsBandPadding,
+        footer: editButton == null && event.location.trim().isEmpty
+            ? null
+            : CalendarCardFooter(
+                address: event.location.trim().isEmpty
+                    ? null
+                    : CalendarAddressLine(event.location),
+                actions: editButton,
+              ),
       ),
     );
   }
@@ -506,7 +510,6 @@ class MonthlyMatchCard extends ConsumerWidget {
           child: adminActions,
         ),
     ];
-    final actionCount = actionWidgets.length;
     final cardActions = actionWidgets.isEmpty
         ? null
         : Row(mainAxisSize: MainAxisSize.min, children: actionWidgets);
@@ -522,48 +525,51 @@ class MonthlyMatchCard extends ConsumerWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: _onTap(context, phase),
-        child: CalendarCardActionsOverlay(
-          actions: cardActions,
-          actionsWidth: actionCount * CalendarCardActionsOverlay.actionExtent,
-          child: CalendarCardSections(
-            header: CalendarDateLine(
-              kickoffAt: match.kickoffAt,
-              label: match.isInternal ? null : match.calendarTypeLabel,
-              endInset: CalendarCardActionsOverlay.dateInsetFor(actionCount),
-            ),
-            body: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (match.isInternal)
-                  const CalendarCenteredTitle('Match entre nous')
-                else
-                  CalendarScoreline(
-                    homeName: homeName,
-                    awayName: awayName,
-                    ownIsHome: match.isHome,
-                    foreground: match.isCancelled
-                        ? AppTheme.textFaint
-                        : AppTheme.textPrimary,
-                  ),
-                const SizedBox(height: CalendarCardSpacing.line),
-                Text(
-                  match.statusLabel,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: statusColor,
-                        fontWeight: FontWeight.w400,
-                      ),
-                ),
-              ],
-            ),
-            footer: address != null && address.isNotEmpty
-                ? CalendarAddressLine(
-                    address,
-                    onTap: () => showMatchAddressSheet(context, address),
-                  )
-                : null,
+        child: CalendarCardSections(
+          header: CalendarDateLine(
+            kickoffAt: match.kickoffAt,
+            label: match.isInternal ? null : match.calendarTypeLabel,
           ),
+          body: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (match.isInternal)
+                const CalendarCenteredTitle('Match entre nous')
+              else
+                CalendarScoreline(
+                  homeName: homeName,
+                  awayName: awayName,
+                  ownIsHome: match.isHome,
+                  foreground: match.isCancelled
+                      ? AppTheme.textFaint
+                      : AppTheme.textPrimary,
+                ),
+              const SizedBox(height: CalendarCardSpacing.line),
+              Text(
+                match.statusLabel,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: statusColor,
+                      fontWeight: FontWeight.w400,
+                    ),
+              ),
+            ],
+          ),
+          footerVerticalPadding: cardActions == null
+              ? null
+              : CalendarCardFooter.actionsBandPadding,
+          footer: cardActions != null || (address != null && address.isNotEmpty)
+              ? CalendarCardFooter(
+                  address: address != null && address.isNotEmpty
+                      ? CalendarAddressLine(
+                          address,
+                          onTap: () => showMatchAddressSheet(context, address),
+                        )
+                      : null,
+                  actions: cardActions,
+                )
+              : null,
         ),
       ),
     );

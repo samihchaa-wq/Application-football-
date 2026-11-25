@@ -285,6 +285,7 @@ class _AvailabilityPanel extends StatelessWidget {
                   label: 'Présent',
                   icon: Icons.check_circle_outlined,
                   color: AppTheme.success,
+                  solid: AppTheme.availabilityInSolid,
                   selected: selectedAvailable,
                   onPressed: saving ? null : onAvailable,
                 ),
@@ -295,6 +296,7 @@ class _AvailabilityPanel extends StatelessWidget {
                   label: 'Absent',
                   icon: Icons.cancel_outlined,
                   color: AppTheme.error,
+                  solid: AppTheme.availabilityOutSolid,
                   selected: selectedAbsent,
                   onPressed: saving ? null : onAbsent,
                 ),
@@ -349,24 +351,31 @@ class _AvailabilityPanel extends StatelessWidget {
   }
 }
 
-/// Un des deux choix Présent / Absent. Vert pour Présent, rouge pour Absent :
-/// contour de la couleur quand il n'est pas choisi (il se voit mieux que le
-/// contour discret d'avant), plein quand il l'est.
+/// Un des deux choix Présent / Absent, comme sur l'ancienne version de
+/// l'appli : fond translucide + icône + texte blanc quand il n'est pas choisi
+/// (le fond noir des boutons à contour jurait sur la carte colorée), aplat
+/// vert ou rouge profond, texte blanc, quand il l'est.
 ///
 /// Le thème peint un dégradé rouge sur tous les boutons pleins, qui écrasait
-/// le vert de « Présent » : on le remplace ici par un aplat de la couleur.
+/// le vert de « Présent » : [PfButtonStyles.solid] le remplace par un aplat.
 class _AvailabilityChoice extends StatelessWidget {
   const _AvailabilityChoice({
     required this.label,
     required this.icon,
     required this.color,
+    required this.solid,
     required this.selected,
     required this.onPressed,
   });
 
   final String label;
   final IconData icon;
+
+  /// Couleur de l'icône quand le bouton n'est pas choisi.
   final Color color;
+
+  /// Aplat quand le bouton est choisi.
+  final Color solid;
   final bool selected;
   final VoidCallback? onPressed;
 
@@ -377,7 +386,7 @@ class _AvailabilityChoice extends StatelessWidget {
         onPressed: onPressed,
         icon: Icon(icon),
         label: Text(label),
-        style: PfButtonStyles.solid(color),
+        style: PfButtonStyles.solid(solid, foreground: Colors.white),
       );
     }
     return OutlinedButton.icon(
@@ -385,8 +394,10 @@ class _AvailabilityChoice extends StatelessWidget {
       icon: Icon(icon),
       label: Text(label),
       style: OutlinedButton.styleFrom(
-        foregroundColor: color,
-        side: BorderSide(color: color, width: 1.5),
+        backgroundColor: Colors.white.withValues(alpha: .08),
+        foregroundColor: AppTheme.textPrimary,
+        iconColor: color,
+        side: BorderSide(color: Colors.white.withValues(alpha: .22)),
       ),
     );
   }

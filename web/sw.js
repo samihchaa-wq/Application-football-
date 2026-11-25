@@ -171,7 +171,18 @@ self.addEventListener('fetch', (event) => {
           // Morceaux de programme chargés à la demande : leur adresse ne
           // porte pas la version, ils doivent donc toujours venir du réseau
           // tant qu'il répond.
-          path.endsWith('.part.js');
+          path.endsWith('.part.js') ||
+          // Polices et manifestes d'assets. La police des icônes ne contient
+          // que les icônes utilisées par CETTE version, sous une adresse qui
+          // ne porte pas la version : rendue depuis le cache d'avant pendant
+          // qu'elle se met à jour, elle manquait les icônes ajoutées par la
+          // version qui venait de s'installer (icônes de Statistiques et de
+          // Présent absentes sur iPhone). Réseau d'abord, cache en secours.
+          path.includes('/assets/fonts/') ||
+          path.endsWith('/FontManifest.json') ||
+          path.endsWith('/AssetManifest.json') ||
+          path.endsWith('/AssetManifest.bin') ||
+          path.endsWith('/AssetManifest.bin.json');
 
       if (mustStayFresh) {
         return networkFirst(request, cache);

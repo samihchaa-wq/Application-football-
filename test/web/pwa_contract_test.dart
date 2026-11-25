@@ -162,6 +162,23 @@ void main() {
       expect(worker, contains("path.endsWith('.part.js')"));
     });
 
+    test(
+        'la police des icônes vient toujours du réseau : sinon une nouvelle '
+        'icône manque après une mise à jour', () {
+      final fresh = worker.indexOf('const mustStayFresh');
+      final fallback = worker.indexOf('return staleWhileRevalidate');
+      for (final rule in [
+        "path.includes('/assets/fonts/')",
+        "path.endsWith('/FontManifest.json')",
+        "path.endsWith('/AssetManifest.bin')",
+      ]) {
+        final at = worker.indexOf(rule);
+        expect(at, isNonNegative, reason: rule);
+        expect(at, greaterThan(fresh), reason: rule);
+        expect(at, lessThan(fallback), reason: rule);
+      }
+    });
+
     test('la première installation ne recharge pas la page', () {
       final flag = shell.indexOf(
         'var hadController = !!navigator.serviceWorker.controller;',

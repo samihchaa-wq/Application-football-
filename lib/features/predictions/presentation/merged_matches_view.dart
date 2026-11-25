@@ -817,7 +817,6 @@ class _UpcomingMatchCard extends ConsumerWidget {
           child: adminActions,
         ),
     ];
-    final actionCount = actionWidgets.length;
     final cardActions = actionWidgets.isEmpty
         ? null
         : Row(mainAxisSize: MainAxisSize.min, children: actionWidgets);
@@ -836,7 +835,6 @@ class _UpcomingMatchCard extends ConsumerWidget {
       header: CalendarDateLine(
         kickoffAt: match.kickoffAt,
         label: match.isInternal ? null : match.calendarTypeLabel,
-        endInset: CalendarCardActionsOverlay.dateInsetFor(actionCount),
       ),
       bodyBottomPadding:
           match.isCancelled ? CalendarCardSpacing.cancelledBodyBottom : null,
@@ -857,10 +855,19 @@ class _UpcomingMatchCard extends ConsumerWidget {
             ),
         ],
       ),
-      footer: address != null && address.isNotEmpty
-          ? CalendarAddressLine(
-              address,
-              onTap: () => showMatchAddressSheet(context, address),
+      // Cloche et crayon en bas, avec le lieu : la ligne du haut garde toute
+      // sa largeur pour « date • heure • Championnat · J10 ».
+      footerVerticalPadding:
+          cardActions == null ? null : CalendarCardFooter.actionsBandPadding,
+      footer: cardActions != null || (address != null && address.isNotEmpty)
+          ? CalendarCardFooter(
+              address: address != null && address.isNotEmpty
+                  ? CalendarAddressLine(
+                      address,
+                      onTap: () => showMatchAddressSheet(context, address),
+                    )
+                  : null,
+              actions: cardActions,
             )
           : null,
     );
@@ -874,13 +881,9 @@ class _UpcomingMatchCard extends ConsumerWidget {
           tint: .16,
           stripe: true),
       clipBehavior: Clip.antiAlias,
-      child: CalendarCardActionsOverlay(
-        actions: cardActions,
-        actionsWidth: actionCount * CalendarCardActionsOverlay.actionExtent,
-        child: match.isCancelled
-            ? content
-            : InkWell(onTap: () => context.push(detailsRoute), child: content),
-      ),
+      child: match.isCancelled
+          ? content
+          : InkWell(onTap: () => context.push(detailsRoute), child: content),
     );
   }
 }

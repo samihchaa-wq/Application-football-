@@ -165,6 +165,11 @@ abstract final class AppTheme {
   static const Color resultDraw = warning;
   static const Color resultLoss = error;
 
+  /// Réponse choisie (Présent / Absent) : aplats plus profonds que
+  /// [success] et [error], pour du texte blanc à plus de 4,5:1.
+  static const Color availabilityInSolid = Color(0xFF14805A);
+  static const Color availabilityOutSolid = Color(0xFFC62F3F);
+
   static const Color availabilityIn = success;
   static const Color availabilityWaiting = warning;
   static const Color availabilityOut = error;

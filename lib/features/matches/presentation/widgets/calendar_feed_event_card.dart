@@ -55,20 +55,24 @@ class CalendarFeedEventCard extends ConsumerWidget {
           tint: .16,
           stripe: true),
       clipBehavior: Clip.antiAlias,
-      child: CalendarCardActionsOverlay(
-        actions: editButton,
-        child: CalendarCardSections(
-          header: CalendarDateLine(
-            kickoffAt: event.startsAt,
-            label: 'Événement',
-            endInset:
-                editButton != null ? CalendarCardActionsOverlay.dateInset : 0,
-          ),
-          body: CalendarCenteredTitle(event.title),
-          footer: event.location.trim().isEmpty
-              ? null
-              : CalendarAddressLine(event.location),
+      child: CalendarCardSections(
+        header: CalendarDateLine(
+          kickoffAt: event.startsAt,
+          label: 'Événement',
         ),
+        body: CalendarCenteredTitle(event.title),
+        // Le crayon est en bas avec le lieu : la ligne du haut garde toute
+        // sa largeur, comme sur les cartes de match.
+        footerVerticalPadding:
+            editButton == null ? null : CalendarCardFooter.actionsBandPadding,
+        footer: editButton == null && event.location.trim().isEmpty
+            ? null
+            : CalendarCardFooter(
+                address: event.location.trim().isEmpty
+                    ? null
+                    : CalendarAddressLine(event.location),
+                actions: editButton,
+              ),
       ),
     );
   }
