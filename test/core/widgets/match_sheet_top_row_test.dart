@@ -20,7 +20,7 @@ Widget _sheet() => Scaffold(
 
 void main() {
   testWidgets(
-    'la fiche place la flèche à gauche du bandeau, sans barre ni écusson',
+    'la fiche place la flèche au-dessus du bandeau, sans barre ni écusson',
     (tester) async {
       final router = GoRouter(
         initialLocation: '/matches',
@@ -49,10 +49,9 @@ void main() {
 
       final backRect = tester.getRect(back);
       final bannerRect = tester.getRect(find.byKey(_bannerKey));
-      expect(bannerRect.left, greaterThanOrEqualTo(backRect.right));
-      // Flèche centrée verticalement sur le bandeau, tout en haut de l'écran.
-      expect(backRect.center.dy, closeTo(bannerRect.center.dy, 0.5));
-      expect(bannerRect.top, lessThan(10));
+      // Flèche tout en haut, bandeau juste en dessous.
+      expect(bannerRect.top, greaterThanOrEqualTo(backRect.bottom));
+      expect(backRect.top, lessThan(10));
 
       await tester.tap(back);
       await tester.pumpAndSettle();

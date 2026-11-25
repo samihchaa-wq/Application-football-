@@ -44,7 +44,6 @@ flutter:
   assets:
     - assets/images/club_crest.webp
     - assets/images/petit_filet_logo.webp
-    - assets/images/icons/
     - assets/images/badge_backgrounds/
     - assets/composition/
     - assets/audio/wrapped.mp3

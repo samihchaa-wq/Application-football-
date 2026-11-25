@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 /// Haut d'une fiche de match : la flèche retour, puis le bandeau du match
-/// juste à sa droite.
+/// juste en dessous, sur toute la largeur et aligné sur les cartes.
 ///
 /// Les fiches n'ont pas de barre supérieure : ni écusson, ni titre, ni bouton
 /// d'actualisation (tirer l'écran vers le bas recharge la fiche). Le bandeau
@@ -13,7 +13,12 @@ class MatchSheetTopRow extends StatelessWidget {
     super.key,
     this.header,
     this.bottomSpacing = 16,
+    this.contentInset = 16,
   });
+
+  /// Marge gauche du bandeau : celle du reste de la fiche, pour que le bandeau
+  /// soit aligné avec les cartes en dessous. Posée par [MatchSheetListView].
+  final double contentInset;
 
   /// Bandeau du match, ou null pour n'afficher que la flèche.
   final Widget? header;
@@ -26,14 +31,18 @@ class MatchSheetTopRow extends StatelessWidget {
     final header = this.header;
     return Padding(
       padding: EdgeInsets.only(bottom: bottomSpacing),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const MatchSheetBackButton(),
-          if (header != null) ...[
-            const SizedBox(width: 4),
-            Expanded(child: header),
-          ],
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: MatchSheetBackButton(),
+          ),
+          if (header != null)
+            Padding(
+              padding: EdgeInsets.only(left: contentInset),
+              child: header,
+            ),
         ],
       ),
     );
@@ -71,7 +80,14 @@ class MatchSheetListView extends StatelessWidget {
               left: child is MatchSheetTopRow ? 0 : padding.left,
               right: padding.right,
             ),
-            child: child,
+            child: child is MatchSheetTopRow
+                ? MatchSheetTopRow(
+                    key: child.key,
+                    header: child.header,
+                    bottomSpacing: child.bottomSpacing,
+                    contentInset: padding.left,
+                  )
+                : child,
           ),
       ],
     );
