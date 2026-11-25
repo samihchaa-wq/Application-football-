@@ -140,7 +140,7 @@ Deno.serve(async (req: Request) => {
             const list = cols.map(q).join(",");
             await tx.unsafe(
               `insert into public.${q(table)} (${list})
-               select ${list} from jsonb_populate_recordset(null::public.${q(table)}, $1::jsonb)`,
+               select ${list} from jsonb_populate_recordset(null::public.${q(table)}, $1::text::jsonb)`,
               [JSON.stringify(rows.slice(i, i + 500))],
             );
           }
@@ -157,7 +157,7 @@ Deno.serve(async (req: Request) => {
               : "do nothing";
             const done = await tx.unsafe(
               `insert into public.${q(table)} as tgt (${list})
-               select ${list} from jsonb_populate_recordset(null::public.${q(table)}, $1::jsonb)
+               select ${list} from jsonb_populate_recordset(null::public.${q(table)}, $1::text::jsonb)
                on conflict (${pkList}) ${conflict} returning 1`,
               [JSON.stringify(rows.slice(i, i + 500))],
             );
@@ -170,7 +170,7 @@ Deno.serve(async (req: Request) => {
               where t.club_id = $1
                 and (${pk.map((c) => `t.${q(c)}`).join(",")}) not in (
                   select ${keep}
-                    from jsonb_populate_recordset(null::public.${q(table)}, $2::jsonb) r)
+                    from jsonb_populate_recordset(null::public.${q(table)}, $2::text::jsonb) r)
               returning 1`,
             [clubId, JSON.stringify(rows)],
           );
