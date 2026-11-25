@@ -495,3 +495,107 @@ Stripe, 4 règles Flutter), analyse du bruit de sortie, lecture de la CI.
 - Mutations sur la logique SQL (base) et sur les écrans Flutter.
 - Fragilité des tests d'écran dans le temps (graines supplémentaires, autres
   dates, autres machines).
+
+## Phase 9 — Documentation (fait)
+
+Méthode : contrôle automatique des 55 notes de `docs/` + README + notes de
+`supabase/` (chemins de fichiers cités, liens), relecture du relais
+(`HANDOFF`) et de l'index, recherche de données personnelles dans l'historique
+Git (le dépôt est public).
+
+### Constats
+1. **Corrigé** : 3 liens cassés (`JURIDIQUE_MISSION07`, `JURIDIQUE_MODELES_A_VALIDER`,
+   `M01_REGLAGES_CLUB`) ; `docs/INDEX.md` régénéré (146 notes) ; `HANDOFF.md`
+   mis à jour (entrée d'audit, date de l'en-tête, qui disait encore le 17/11).
+2. **32 références à des fichiers qui n'existent plus**, dans 16 notes : le plus
+   souvent des notes d'archive (missions, contrôles de qualité du 13/11, anciens
+   widgets `grinta_*`, anciens workflows déplacés dans `workflows-disabled`).
+   Laissées telles quelles (ce sont des comptes rendus datés) ;
+   `docs/production-operations.md` et `docs/database-release-process.md`, eux,
+   décrivent un fonctionnement encore actuel avec des outils retirés : à relire.
+3. **`supabase/production_migrations.lock` n'existe plus**, alors que 4
+   workflows et 1 note de procédure y font référence (le contrôle qui s'en
+   servait est désactivé). Sans effet, mais source de confusion.
+4. **Le dépôt est public et la documentation dit le contraire** à deux endroits
+   (`flutter_ci.yml`, « dépôt privé » ; à l'inverse `JURIDIQUE_MISSION07` le
+   sait déjà et signale que l'historique pourrait contenir d'anciennes données
+   d'AS Grinta, **non vérifié**). Vérifié ici par recherche dans les 1 435
+   commits : **aucune donnée personnelle trouvée** (e-mails de grands
+   fournisseurs : 1 faux dans un test ; téléphones : faux numéros de tests et
+   tracés de dessins ; aucun fichier de données, aucune liste de joueurs ; un
+   export de **structure** sans données). Limite : je n'ai pas cherché les
+   noms ; l'absence de preuve n'est pas une preuve d'absence.
+5. **Process** : le contrôle de CI ne voyait pas deux migrations au même
+   numéro (cas vécu pendant l'audit) : **corrigé** (refus + 3 tests, cas réel
+   simulé).
+6. Beaucoup de notes datées (missions, recettes, captures) alourdissent
+   `docs/` ; l'index évite de tout lire. Un classement « archives » les
+   séparerait des notes vivantes. Mineur.
+
+### Non vérifié
+- Exactitude de chaque note de procédure (je n'ai pas rejoué les procédures).
+- Les captures et maquettes (images).
+
+---
+
+# Synthèse finale de l'audit
+
+## Verdict
+Aucun problème bloquant, aucune faille de sécurité grave. Le code est propre
+(0 alerte d'analyse, 1 556 tests Flutter + 144 + 121 + 42 verts), l'isolation
+entre clubs tient (testée en lecture seule avec 2 clubs), les paiements sont
+bien conçus. Les vrais risques sont **opérationnels** et tiennent à ce qui n'a
+jamais été essayé en vrai.
+
+## Les 10 risques, du plus important au moins important
+1. **Stripe n'a jamais été essayé de bout en bout** (0 paiement carte, 0
+   événement reçu ; clé secrète et point de terminaison côté Stripe non
+   vérifiables ici). À faire avant toute vente : un paiement test complet.
+2. **Sauvegardes de toute la base dans des artefacts d'un dépôt public**
+   (chiffrées, phrase de 48 caractères minimum, 90 jours). Seule la phrase
+   protège des données personnelles. Stockage privé recommandé.
+3. **Dépôt public + historique non entièrement vérifié** : la recherche
+   automatique n'a rien trouvé, mais les noms n'ont pas été cherchés ; les
+   rapports d'audit sont publics.
+4. **Réglages d'authentification de production non vérifiés** (mots de passe
+   compromis refusés, limites de tentatives) : à regarder dans Supabase.
+5. **Écrans connectés jamais audités par moi** (pas de compte de test) : UX,
+   fluidité et logique d'affichage reposent sur l'audit du 24/11 et les tests.
+6. **Tests de base (pgTAP) non rejoués ici** : dont ceux ajoutés pour le
+   correctif de paiement ; la CI les lancera à la fusion.
+7. **Première ouverture lente sur téléphone moyen en 4G (~10 s)**, 3,8 Mo ;
+   plafond de poids à 87 % : une grosse nouveauté fera échouer la publication.
+8. **Double paiement carte** : corrigé (migration + expiration de la page),
+   **en attente de fusion et de publication** ; comportement réel de Stripe
+   sur un appel répété non essayé.
+9. **Croissance** : tâches de fond qui parcourent chaque club chaque minute,
+   Riverpod en retard d'une version majeure, 14 dépendances circulaires entre
+   modules, fichiers de plus de 900 lignes. Sans effet aujourd'hui.
+10. **Détails à trancher** : barre d'état iPhone sur fond noir, orientation
+    verrouillée en portrait, restauration des photos jamais prouvée, heures
+    affichées dans le fuseau du téléphone.
+
+## Corrections faites (dans la PR #248)
+- Paiement carte : un appui répété réutilise le paiement en attente ; la page
+  Stripe expire 32 min après sa création (migration `20261206010000`).
+- 3 tests ajoutés aux fonctions Stripe (signature tronquée, montant minimum,
+  remboursement de 0), vérifiés par mutation.
+- Contrôle de CI : refus de deux migrations au même numéro.
+- Docs : 3 liens réparés, relais et index à jour.
+- Rapports d'audit (ce fichier et le plan).
+
+## En attente de ton accord
+- **Lot de nettoyage de la base** (une migration) : 4 index en double,
+  `grinta_sync.ping`, 4 fonctions inutilisées, contrainte
+  `push_notification_log_kind_check`, contrôle des adresses d'images de badges.
+- Barre d'état iPhone (`black`) et orientation du manifeste.
+- Fichier mort `email_verification_panel.dart` (84 lignes + son test).
+- Rapports d'audit : les garder dans le dépôt public ou les en sortir ?
+- Sauvegardes : passer à un stockage privé ?
+
+## Erreurs de mon audit, corrigées en cours de route
+- « 1 seul club en production » : vrai au début, faux depuis la création
+  d'AS Grinta le 25/11 (rectifié, isolation re-testée avec 2 clubs).
+- « 3 boutons sans infobulle » : faux (comptage au mauvais endroit), retiré.
+- « 80 usages de `select` » : 54 étaient des requêtes de base, corrigé (≈ 20).
+- Soupçon « remplissage automatique désactivé à la connexion » : faux, retiré.
