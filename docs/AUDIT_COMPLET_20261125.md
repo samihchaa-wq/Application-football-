@@ -261,3 +261,59 @@ la gestion des heures, couverture des tests par zone.
   sur la production (lecture seule). Couvertes par les tests de base (CI).
 - **Parcours Live en vrai** (pilote, remplacements, buts) : non essayé.
 - Les tests de base (pgTAP) n'ont pas pu être lancés ici.
+
+## Phase 5 — Architecture et code mort (fait)
+
+Méthode : analyse automatique des imports des 370 fichiers, des dépendances,
+des appels vers la base (162 fonctions ouvertes aux connectés comparées à ce
+que l'app, les fonctions serveur et le site appellent), des motifs de gestion
+d'état et de libération de ressources.
+
+### Verdict : code propre, dette modérée, rien de bloquant
+| Contrôle | Résultat |
+|---|---|
+| Analyse statique | 0 problème |
+| `TODO`/`FIXME`, `// ignore`, `print` oubliés | 0 / 0 / 0 |
+| Dépendances déclarées mais jamais utilisées | 0 |
+| Fichiers jamais importés | 1 (voir 1) |
+| Contrôleurs / minuteries créés sans être libérés | 0 (7 cas vérifiés à la main) |
+| Écoute en direct (Realtime) laissée ouverte | non applicable (aucun canal manuel) |
+| Couches (domaine → données) | respectées ; 1 fichier « domaine » importe l'affichage, 8 fichiers « données » aussi |
+
+### Constats
+1. **Code mort Flutter** : `email_verification_panel.dart` (84 lignes) n'est
+   utilisé que par son propre test. Je ne l'ai pas supprimé : il peut être
+   préparé pour plus tard. À toi de dire.
+2. **4 fonctions de base jamais appelées**, ouvertes aux connectés :
+   `admin_create_match_complete` (ancienne version, remplacée par la v3),
+   `admin_finalize_match_sport_postgame`, `admin_publish_match_convocations`,
+   `get_match_live_timeline`. Contrôle de droits vérifié : les trois premières
+   sont protégées (par la fonction interne qu'elles appellent, que j'ai lue) ;
+   aucune faille. Mais ce sont des portes ouvertes inutiles : à retirer dans le
+   lot de nettoyage de la base.
+3. **Gestion d'état en retard d'une version majeure** : Riverpod 2.6 alors que
+   la 3.5 existe (go_router 16 → 18, share_plus 10 → 13, connectivity_plus
+   6 → 7 aussi). 24 usages de `StateProvider` et 2 de `StateNotifierProvider`
+   (les contrôleurs d'authentification et des matchs, les plus gros) passent
+   en « ancien style » avec Riverpod 3. Le plan de mise à jour existe
+   (`docs/dependency-upgrade-plan.md`) ; chantier à traiter à part, pas urgent.
+4. **Fichiers très longs** : 12 fichiers dépassent 900 lignes (le plus long :
+   le formulaire d'entrée de calendrier, 1 347 lignes ; réglages du club
+   1 329 ; Live en cours 1 210). Plus difficile à relire et à tester ; sans
+   effet pour l'utilisateur.
+5. **Dépendances circulaires entre modules** : 14 paires de modules
+   s'importent l'un l'autre (`matches` ↔ `sports_management`, `matches` ↔
+   `predictions`, `match_live` ↔ `matches`, `auth` ↔ `club`…). Signe d'un
+   découpage qui s'est emmêlé ; ralentit les évolutions. Mineur.
+6. **Rafraîchissement des écrans** : 334 écoutes d'état (`ref.watch`), dont
+   80 usages de `select` sur le projet ; les écrans qui écoutent un état
+   entier se reconstruisent à chaque changement. À mesurer en phase 7
+   (performance) plutôt qu'à deviner.
+7. 4 fichiers d'écran appellent la base directement, sans passer par la couche
+   « données » (`auth_state`, `forced_password_change_page`,
+   `club_identity_sync`, `admin_waitlist_page`). Mineur.
+
+### Non vérifié
+- Doublons de code (copier-coller) : pas d'outil spécialisé ici ; non mesuré.
+- Les fonctions de base appelées seulement par d'autres fonctions ou par la
+  planification : comptées comme « utilisées », non vérifiées une à une.
