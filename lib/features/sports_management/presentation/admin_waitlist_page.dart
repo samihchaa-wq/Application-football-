@@ -192,7 +192,7 @@ class _AdminWaitlistPageState extends ConsumerState<AdminWaitlistPage> {
     if (waitlist == null || _entries.isEmpty) {
       return const Center(
         child: PfEmptyState(
-          icon: Icons.format_list_numbered_rounded,
+          icon: Icons.format_list_numbered_outlined,
           title: 'Aucun joueur dans la saison',
           message: 'Ajoute des joueurs à l’effectif pour construire l’ordre '
               'de la liste d’attente.',
@@ -220,10 +220,15 @@ class _AdminWaitlistPageState extends ConsumerState<AdminWaitlistPage> {
           Padding(
             key: const ValueKey('waitlist-mode-notice'),
             padding: const EdgeInsets.only(bottom: 12),
+            // Une seule phrase : l'effet des +1 pour ce mode. Avant, le nom du
+            // mode et une règle interne (« toujours comptabilisés au coup
+            // d'envoi ») précédaient l'information utile.
             child: Text(
-              'Mode « ${ClubRules.waitlistMode.label} ». '
-              'Les +1 sont toujours comptabilisés au coup d’envoi. '
-              '${ClubRules.waitlistMode == WaitlistMode.adminChoice ? 'L’admin choisit les joueurs retenus.' : ClubRules.waitlistPriorityEnabled ? 'Ils influencent les convocations automatiques.' : 'Ils n’influencent pas les convocations.'}',
+              ClubRules.waitlistMode == WaitlistMode.adminChoice
+                  ? 'L’admin choisit les joueurs retenus.'
+                  : ClubRules.waitlistPriorityEnabled
+                      ? 'Les +1 influencent les convocations automatiques.'
+                      : 'Les +1 n’influencent pas les convocations.',
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
@@ -431,7 +436,7 @@ class _WaitlistScrollableRow extends StatelessWidget {
                         key: ValueKey(
                           'waitlist-decrement-${entry.seasonPlayerId}',
                         ),
-                        icon: Icons.remove_circle_outline,
+                        icon: Icons.remove_circle_outlined,
                         onPressed: !adjustingCount && waitlistCount > 0
                             ? onDecrement
                             : null,
@@ -451,7 +456,7 @@ class _WaitlistScrollableRow extends StatelessWidget {
                         key: ValueKey(
                           'waitlist-increment-${entry.seasonPlayerId}',
                         ),
-                        icon: Icons.add_circle_outline,
+                        icon: Icons.add_circle_outlined,
                         onPressed: adjustingCount ? null : onIncrement,
                       ),
                     ],
@@ -485,7 +490,7 @@ class _CompactIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       icon: Icon(icon, size: 20),
-      tooltip: icon == Icons.add_circle_outline ? 'Ajouter' : 'Retirer',
+      tooltip: icon == Icons.add_circle_outlined ? 'Ajouter' : 'Retirer',
       onPressed: onPressed,
       visualDensity: VisualDensity.compact,
       padding: EdgeInsets.zero,

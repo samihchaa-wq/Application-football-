@@ -42,7 +42,7 @@ class LockedBadgeEmblem extends StatelessWidget {
             border: Border.all(color: AppTheme.outline.withValues(alpha: .6)),
           ),
           child: Icon(
-            Icons.lock_outline_rounded,
+            Icons.lock_outlined,
             size: lockSize,
             color: AppTheme.textSecondary,
           ),

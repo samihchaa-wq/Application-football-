@@ -590,7 +590,7 @@ class _Message extends StatelessWidget {
       children: [
         Card(
           child: PfEmptyState(
-            icon: Icons.person_search_rounded,
+            icon: Icons.person_search_outlined,
             title: title,
             message: message,
           ),

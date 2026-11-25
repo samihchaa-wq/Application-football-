@@ -40,7 +40,7 @@ class MatchGoalActionsEditor extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              const Icon(Icons.sports_soccer_rounded, size: 32),
+              const Icon(Icons.sports_soccer_outlined, size: 32),
               const SizedBox(height: 10),
               Text(
                 'Aucun but sur ce match.',
@@ -140,7 +140,7 @@ class _GoalActionCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                Icon(Icons.sports_soccer_rounded, size: 19, color: sideColor),
+                Icon(Icons.sports_soccer_outlined, size: 19, color: sideColor),
               ],
             ),
             const SizedBox(height: 6),
@@ -157,7 +157,7 @@ class _GoalActionCard extends StatelessWidget {
   List<Widget> _buildOwnRows(BuildContext context) {
     return [
       _AttributionTile(
-        icon: const _TileIcon(Icons.sports_soccer_rounded),
+        icon: const _TileIcon(Icons.sports_soccer_outlined),
         label: 'Buteur',
         value: goal.isOwnGoal
             ? 'CSC adverse'
@@ -185,7 +185,7 @@ class _GoalActionCard extends StatelessWidget {
 
   Widget _buildOpponentRow(BuildContext context) {
     return _AttributionTile(
-      icon: const _TileIcon(Icons.flag_rounded),
+      icon: const _TileIcon(Icons.flag_outlined),
       label: 'Origine du but',
       value:
           goal.isOwnGoal ? 'CSC ${ClubIdentity.name}' : 'But de $opponentName',
@@ -203,7 +203,7 @@ class _GoalActionCard extends StatelessWidget {
       extraChoiceLabel: 'CSC adverse',
       extraChoiceIcon: Icons.shield_moon_outlined,
       clearChoiceLabel: 'Buteur inconnu',
-      clearChoiceIcon: Icons.help_outline,
+      clearChoiceIcon: Icons.help_outlined,
     );
     if (choice == null) return;
     if (choice == kMatchLiveExtraChoiceId) {
@@ -231,9 +231,9 @@ class _GoalActionCard extends StatelessWidget {
       title: 'Qui a fait la passe ?',
       playerLeading: const AssistBootIcon(size: 22),
       extraChoiceLabel: 'Aucune passe décisive',
-      extraChoiceIcon: Icons.block_rounded,
+      extraChoiceIcon: Icons.block_outlined,
       clearChoiceLabel: 'Passeur inconnu',
-      clearChoiceIcon: Icons.help_outline,
+      clearChoiceIcon: Icons.help_outlined,
     );
     if (choice == null) return;
     if (choice == kMatchLiveExtraChoiceId) {
@@ -259,7 +259,7 @@ class _GoalActionCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.flag_rounded),
+              leading: const Icon(Icons.flag_outlined),
               title: Text('But de $opponentName'),
               onTap: () => Navigator.of(sheetContext).pop(false),
             ),
@@ -449,7 +449,7 @@ class _AttributionTile extends StatelessWidget {
                 if (enabled) ...[
                   const SizedBox(width: 6),
                   const Icon(
-                    Icons.chevron_right_rounded,
+                    Icons.chevron_right_outlined,
                     size: 18,
                     color: AppTheme.textSecondary,
                   ),

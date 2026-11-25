@@ -101,10 +101,9 @@ class _MatchLivePreKickoffPageState
               children: [
                 Text(_openError!, textAlign: TextAlign.center),
                 const SizedBox(height: 12),
-                FilledButton.icon(
+                FilledButton(
                   onPressed: _openWorkspaceIfNeeded,
-                  icon: const Icon(Icons.refresh_rounded),
-                  label: const Text('Réessayer'),
+                  child: const Text('Réessayer'),
                 ),
               ],
             ),
@@ -177,7 +176,7 @@ class _MatchLivePreKickoffPageState
           const SizedBox(height: 20),
           FilledButton.icon(
             onPressed: _busy ? null : _confirmAndStart,
-            icon: const Icon(Icons.play_circle_fill_rounded),
+            icon: const Icon(Icons.play_circle_fill_outlined),
             label: const Text('Démarrer le match'),
           ),
         ],
@@ -242,7 +241,7 @@ class _MatchLivePreKickoffPageState
         ),
         const SizedBox(width: 8),
         iconAction(
-          icon: Icons.person_add_alt_1_rounded,
+          icon: Icons.person_add_alt_1_outlined,
           tooltip: 'Ajouter un joueur',
           onPressed:
               controlsDisabled || !ClubRules.enabled(ClubFeature.liveAddPlayers)
@@ -255,7 +254,7 @@ class _MatchLivePreKickoffPageState
         ),
         const SizedBox(width: 6),
         iconAction(
-          icon: Icons.person_remove_rounded,
+          icon: Icons.person_remove_outlined,
           tooltip: 'Retirer un joueur',
           onPressed: controlsDisabled ||
                   !ClubRules.enabled(ClubFeature.liveRemovePlayers)
@@ -436,7 +435,7 @@ class MatchLivePreKickoffSpectatorView extends ConsumerWidget {
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: PfEmptyState(
-            icon: failed ? Icons.wifi_off_rounded : Icons.groups_outlined,
+            icon: failed ? Icons.wifi_off_outlined : Icons.groups_outlined,
             tone: failed ? PfEmptyTone.alert : PfEmptyTone.neutral,
             title: failed
                 ? 'Impossible de charger la composition.'

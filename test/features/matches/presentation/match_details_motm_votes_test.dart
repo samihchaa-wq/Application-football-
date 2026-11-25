@@ -315,7 +315,7 @@ void main() {
     expect(frame('Exact'), const Color(0xFF9B6CFF));
     expect(frame('Ecart'), AppTheme.reward);
     expect(frame('UneEquipe'), AppTheme.reward);
-    expect(frame('Vainqueur'), const Color(0xFF39E784));
+    expect(frame('Vainqueur'), AppTheme.success);
     expect(frame('Rate'), isNull);
   });
 

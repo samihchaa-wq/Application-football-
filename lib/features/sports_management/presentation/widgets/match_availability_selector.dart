@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 class MatchAvailabilitySelector extends ConsumerStatefulWidget {
   const MatchAvailabilitySelector({
@@ -62,7 +63,7 @@ class _MatchAvailabilitySelectorState
             padding: EdgeInsets.all(14),
             child: Row(
               children: [
-                Icon(Icons.error_outline),
+                Icon(Icons.error_outlined),
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -148,17 +149,16 @@ class _MatchAvailabilitySelectorState
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: Text(
-            'Veux-tu vraiment passer de « $currentLabel » '
-            'à « $targetLabel » ?',
+            'Passer de « $currentLabel » à « $targetLabel » ?',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Non'),
+              child: const Text('Annuler'),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Oui'),
+              child: Text('Passer à $targetLabel'),
             ),
           ],
         ),
@@ -283,7 +283,7 @@ class _AvailabilityPanel extends StatelessWidget {
               Expanded(
                 child: _AvailabilityChoice(
                   label: 'Présent',
-                  icon: Icons.check_circle_outline,
+                  icon: Icons.check_circle_outlined,
                   color: AppTheme.success,
                   selected: selectedAvailable,
                   onPressed: saving ? null : onAvailable,
@@ -328,18 +328,16 @@ class _AvailabilityPanel extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: OutlinedButton(
                     onPressed: onOpenEffectif,
-                    icon: const Icon(Icons.groups_2_outlined),
-                    label: const Text('Effectif'),
+                    child: const Text('Effectif'),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: OutlinedButton(
                     onPressed: onOpenComposition,
-                    icon: const Icon(Icons.sports_soccer_outlined),
-                    label: const Text('Compo'),
+                    child: const Text('Compo'),
                   ),
                 ),
               ],
@@ -379,20 +377,7 @@ class _AvailabilityChoice extends StatelessWidget {
         onPressed: onPressed,
         icon: Icon(icon),
         label: Text(label),
-        style: FilledButton.styleFrom(
-          foregroundColor: AppTheme.background,
-          disabledForegroundColor: AppTheme.background,
-          elevation: 0,
-          shadowColor: Colors.transparent,
-          backgroundBuilder: (context, states, child) => DecoratedBox(
-            decoration: BoxDecoration(
-              color: color,
-              // Mêmes coins arrondis que le bouton « Absent » à côté.
-              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-            ),
-            child: child,
-          ),
-        ),
+        style: PfButtonStyles.solid(color),
       );
     }
     return OutlinedButton.icon(

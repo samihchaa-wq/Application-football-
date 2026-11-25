@@ -582,7 +582,7 @@ class _FormationPitchEditorState extends State<FormationPitchEditor> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          selected ? Icons.ads_click_rounded : Icons.add,
+                          selected ? Icons.ads_click_outlined : Icons.add,
                           color: Colors.white,
                           size: 18,
                         ),
@@ -590,7 +590,7 @@ class _FormationPitchEditorState extends State<FormationPitchEditor> {
                           slot.label,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 9,
+                            fontSize: 11,
                             fontWeight: FontWeight.w400,
                           ),
                         ),

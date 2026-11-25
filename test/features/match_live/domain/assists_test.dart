@@ -116,7 +116,7 @@ void main() {
       ),
     );
 
-    expect(find.textContaining('21 Mai 2026'), findsOneWidget);
+    expect(find.textContaining('21 mai 2026'), findsOneWidget);
     expect(find.textContaining('Championnat · J23'), findsOneWidget);
     expect(find.text('2 – 8'), findsOneWidget);
     expect(find.text(address), findsOneWidget);

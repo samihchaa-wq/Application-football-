@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 /// Effectif de la saison. Les membres du club y arrivent d'eux-mêmes quand
 /// leur compte est validé ; on n'ajoute ici à la main que les joueurs qui n'ont
@@ -32,7 +33,7 @@ class PlayersRegistryPage extends ConsumerWidget {
           if (seasonId == null) {
             return const Center(
               child: PfEmptyState(
-                icon: Icons.calendar_month_rounded,
+                icon: Icons.calendar_month_outlined,
                 title: 'Aucune saison ouverte',
                 message: 'Crée une saison dans Administration pour définir '
                     'ton effectif.',
@@ -72,7 +73,7 @@ class _RosterList extends ConsumerWidget {
               child: FilledButton.icon(
                 onPressed: () =>
                     _showPlayerDialog(context, ref, seasonId: seasonId),
-                icon: const Icon(Icons.person_add_alt_1),
+                icon: const Icon(Icons.person_add_alt_1_outlined),
                 label: const Text('Ajouter un joueur sans compte'),
               ),
             ),
@@ -80,7 +81,7 @@ class _RosterList extends ConsumerWidget {
             if (players.isEmpty)
               const Card(
                 child: PfEmptyState(
-                  icon: Icons.groups_rounded,
+                  icon: Icons.groups_outlined,
                   title: 'Effectif vide',
                   compact: true,
                 ),
@@ -442,6 +443,7 @@ Future<bool> _confirmUnlink(BuildContext context, RosterPlayer player) async {
               child: const Text('Annuler'),
             ),
             FilledButton(
+              style: PfButtonStyles.danger,
               onPressed: () => Navigator.pop(dialogContext, true),
               child: const Text('Supprimer la liaison'),
             ),
@@ -468,9 +470,7 @@ Future<bool> _confirmDelete(BuildContext context, RosterPlayer player) async {
               child: const Text('Annuler'),
             ),
             FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(dialogContext).colorScheme.error,
-              ),
+              style: PfButtonStyles.danger,
               onPressed: () => Navigator.pop(dialogContext, true),
               child: const Text('Supprimer'),
             ),

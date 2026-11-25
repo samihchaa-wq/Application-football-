@@ -93,7 +93,7 @@ class _MatchesPageState extends ConsumerState<MatchesPage> {
             IconButton(
               tooltip: 'Créer un match',
               visualDensity: VisualDensity.compact,
-              icon: const Icon(Icons.add_rounded),
+              icon: const Icon(Icons.add_outlined),
               style: IconButton.styleFrom(
                 foregroundColor: Colors.white,
                 backgroundColor: AppTheme.primary,
@@ -155,7 +155,7 @@ class _MatchesPageState extends ConsumerState<MatchesPage> {
               else if (matches.isEmpty)
                 const Card(
                   child: PfEmptyState(
-                    icon: Icons.stadium_rounded,
+                    icon: Icons.stadium_outlined,
                     title: 'Aucun match cette saison',
                     message: 'Les matchs de la saison apparaîtront ici dès '
                         'qu’ils seront programmés.',
@@ -232,13 +232,13 @@ class _MatchesTimeline extends StatelessWidget {
                       ),
                       child: Icon(
                         match.isFinished
-                            ? Icons.check_rounded
+                            ? Icons.check_outlined
                             : match.phase(now: now) == MatchDisplayPhase.live
-                                ? Icons.sensors_rounded
+                                ? Icons.sensors_outlined
                                 : match.phase(now: now) ==
                                         MatchDisplayPhase.awaitingValidation
                                     ? Icons.fact_check_outlined
-                                    : Icons.sports_soccer_rounded,
+                                    : Icons.sports_soccer_outlined,
                         size: 13,
                         color: match.id == target?.id
                             ? Colors.white

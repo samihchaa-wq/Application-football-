@@ -133,7 +133,7 @@ class _CalendarSectionState extends ConsumerState<_CalendarSection> {
               sliver: SliverToBoxAdapter(
                 child: _MessageCard(
                   title: 'Historique indisponible',
-                  icon: Icons.wifi_off_rounded,
+                  icon: Icons.wifi_off_outlined,
                   message: state.error!,
                   tone: PfEmptyTone.alert,
                 ),
@@ -145,7 +145,7 @@ class _CalendarSectionState extends ConsumerState<_CalendarSection> {
               sliver: SliverToBoxAdapter(
                 child: _MessageCard(
                   title: 'Aucun match joué',
-                  icon: Icons.history_rounded,
+                  icon: Icons.history_outlined,
                   message: 'Les matchs terminés et leurs pronos s’afficheront '
                       'ici.',
                 ),
@@ -205,20 +205,20 @@ class _CalendarMatchCard extends ConsumerWidget {
 
     if (match.isFinished) {
       background = const Color(0xFF1B2128);
-      outline = const Color(0xFF6B7885);
+      outline = AppTheme.outline;
       statusColor = const Color(0xFFA9B4BF);
       dateColor = const Color(0xFFA9B4BF);
       statusLabel = 'Terminé';
     } else if (isNextMatch) {
       background = const Color(0xFF2B161A);
-      outline = const Color(0xFFFF5A6A);
+      outline = AppTheme.error;
       statusColor = const Color(0xFFFF8A96);
       dateColor = const Color(0xFFE8B4BA);
       statusLabel = 'Prochain';
     } else {
       background = const Color(0xFF14261D);
-      outline = const Color(0xFF3FAE7A);
-      statusColor = const Color(0xFF5BDDA0);
+      outline = AppTheme.success;
+      statusColor = AppTheme.success;
       dateColor = const Color(0xFFA8D8BF);
       statusLabel = 'À venir';
     }
@@ -320,6 +320,7 @@ class _AdminMatchActions extends ConsumerWidget {
                 child: const Text('Annuler'),
               ),
               FilledButton(
+                style: PfButtonStyles.danger,
                 onPressed: () => Navigator.pop(dialogContext, true),
                 child: const Text('Supprimer'),
               ),

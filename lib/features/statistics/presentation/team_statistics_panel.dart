@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'dart:math' as math;
 
 import 'package:petit_filet/core/theme/app_spacing.dart';
@@ -7,9 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
 
-const _teamGreen = Color(0xFF2E9E2A);
-const _teamYellow = Color(0xFFD79B0A);
-const _teamRed = Color(0xFFD2362D);
+const _teamGreen = AppTheme.resultWin;
+const _teamYellow = AppTheme.resultDraw;
+const _teamRed = AppTheme.resultLoss;
 
 class TeamStatisticsPanel extends ConsumerWidget {
   const TeamStatisticsPanel({required this.period, super.key});
@@ -380,8 +381,10 @@ class _RecentResultsRow extends StatelessWidget {
               child: Center(
                 child: Text(
                   result,
+                  // Texte sombre : le blanc ne passe pas le contraste sur
+                  // ces teintes claires.
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppTheme.background,
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
                   ),

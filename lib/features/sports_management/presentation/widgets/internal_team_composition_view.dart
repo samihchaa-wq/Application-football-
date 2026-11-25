@@ -381,7 +381,7 @@ class _InternalTeamCompositionViewState
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Valider'),
+              child: const Text('Mettre en ligne'),
             ),
           ],
         ),
@@ -686,12 +686,12 @@ class _InternalTeamCompositionViewState
                   ButtonSegment<int>(
                     value: 0,
                     label: Text('Sur papier'),
-                    icon: Icon(Icons.list_alt_rounded),
+                    icon: Icon(Icons.list_alt_outlined),
                   ),
                   ButtonSegment<int>(
                     value: 1,
                     label: Text('Sur terrain'),
-                    icon: Icon(Icons.sports_soccer_rounded),
+                    icon: Icon(Icons.sports_soccer_outlined),
                   ),
                 ],
                 selected: {_viewMode},
@@ -799,10 +799,9 @@ class _InternalTeamCompositionViewState
                       ?.copyWith(color: Theme.of(context).colorScheme.error),
                 ),
               const SizedBox(height: 8),
-              OutlinedButton.icon(
+              OutlinedButton(
                 onPressed: _saving ? null : _resetComposition,
-                icon: const Icon(Icons.restart_alt_rounded),
-                label: const Text('Réinitialiser'),
+                child: const Text('Réinitialiser'),
               ),
               const SizedBox(height: 8),
               FilledButton.icon(

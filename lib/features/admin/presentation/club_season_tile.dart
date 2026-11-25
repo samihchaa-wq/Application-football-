@@ -4,6 +4,7 @@ import 'package:petit_filet/features/admin/data/admin_repository.dart';
 import 'package:petit_filet/features/players/data/roster_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 /// Créer ou finir la saison du club, dans les Réglages du club.
 class ClubSeasonTile extends ConsumerWidget {
@@ -35,7 +36,7 @@ class ClubSeasonTile extends ConsumerWidget {
         final openSeason = current;
         if (openSeason == null) {
           return ListTile(
-            leading: const Icon(Icons.add_circle_outline),
+            leading: const Icon(Icons.add_circle_outlined),
             title: const Text('Créer une saison'),
             onTap: () => _createSeason(context, ref),
           );
@@ -75,11 +76,9 @@ class ClubSeasonTile extends ConsumerWidget {
               // Action définitive : bouton rouge, comme les autres
               // suppressions de l'appli.
               FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(dialogContext).colorScheme.error,
-                ),
+                style: PfButtonStyles.danger,
                 onPressed: () => Navigator.pop(dialogContext, true),
-                child: const Text('Confirmer'),
+                child: const Text('Finir la saison'),
               ),
             ],
           ),

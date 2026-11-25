@@ -134,12 +134,14 @@ class _CalendarSubscriptionTileState
     final applePlatform = defaultTargetPlatform == TargetPlatform.iOS ||
         defaultTargetPlatform == TargetPlatform.macOS;
     _launchNow(webcalUri, webWindowName: applePlatform ? '_self' : null);
-    final copied = await _copyCalendarLink(webcalUri);
+    // La copie sert de filet : l'abonnement s'ouvre de lui-même, et la page
+    // d'abonnement propose le lien si besoin.
+    await _copyCalendarLink(webcalUri);
     if (!mounted) return;
+    // Les étapes détaillées sont sur la page d'abonnement : le message n'a
+    // plus à les répéter (il tenait sur 4 lignes pendant 20 secondes).
     _showActionMessage(
-      copied
-          ? 'Apple Calendrier ne propose pas « S’abonner » ? Ouvre la page d’abonnement, ou colle le lien copié dans Calendrier > Calendriers > Ajouter > Ajouter un calendrier avec abonnement.'
-          : 'Apple Calendrier ne propose pas « S’abonner » ? Ouvre la page d’abonnement.',
+      'Pas de « S’abonner » dans Calendrier ? Ouvre la page d’abonnement.',
       actionLabel: 'Ouvrir',
       onAction: () => _openSubscribePage(httpsUri),
       duration: const Duration(seconds: 20),
@@ -149,19 +151,12 @@ class _CalendarSubscriptionTileState
   Future<void> _useGoogleCalendar(Uri httpsUri) async {
     final copied = await _copyCalendarLink(httpsUri);
     if (!mounted) return;
-    if (copied) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          duration: Duration(seconds: 8),
-          content: Text(
-            'Lien copié. L’appli Google Agenda ne permet pas l’abonnement : ouvre calendar.google.com dans un navigateur (sur téléphone, en version ordinateur), puis Autres agendas > + > À partir de l’URL.',
-          ),
-        ),
-      );
-      return;
-    }
+    // Google Agenda ne permet pas l'abonnement dans son appli : la page
+    // d'abonnement explique la marche à suivre sur calendar.google.com.
     _showActionMessage(
-      'Copie impossible. Ouvre la page d’abonnement pour copier le lien, puis ajoute-le dans Google Agenda en version web : Autres agendas > + > À partir de l’URL.',
+      copied
+          ? 'Lien copié. Google Agenda s’ajoute depuis un navigateur.'
+          : 'Copie impossible. Ouvre la page d’abonnement pour copier le lien.',
       actionLabel: 'Ouvrir',
       onAction: () => _openSubscribePage(httpsUri),
     );
@@ -175,7 +170,7 @@ class _CalendarSubscriptionTileState
     if (!mounted) return;
     if (copied) {
       _showActionMessage(
-        'Lien copié. Dans Outlook : Ajouter un calendrier > S’abonner à partir du web, puis colle le lien.',
+        'Lien copié. Dans Outlook : Ajouter un calendrier > S’abonner à partir du web.',
         actionLabel: 'Outlook',
         onAction: () => _launchNow(
           Uri.parse('https://outlook.live.com/calendar/0/view/month'),
@@ -185,7 +180,7 @@ class _CalendarSubscriptionTileState
       return;
     }
     _showActionMessage(
-      'Copie impossible. Ouvre la page d’abonnement pour copier le lien, puis dans Outlook : Ajouter un calendrier > S’abonner à partir du web.',
+      'Copie impossible. Ouvre la page d’abonnement pour copier le lien.',
       actionLabel: 'Ouvrir',
       onAction: () => _openSubscribePage(httpsUri),
     );
@@ -220,35 +215,35 @@ class _CalendarSubscriptionTileState
                 ),
                 const SizedBox(height: 12),
                 ListTile(
-                  leading: const Icon(Icons.calendar_month_rounded),
+                  leading: const Icon(Icons.calendar_month_outlined),
                   title: const Text('Apple Calendrier'),
                   subtitle: const Text('iPhone, iPad et Mac'),
-                  trailing: const Icon(Icons.chevron_right_rounded),
+                  trailing: const Icon(Icons.chevron_right_outlined),
                   onTap: () => choose(() => _openAppleCalendar(httpsUri)),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.event_rounded),
+                  leading: const Icon(Icons.event_outlined),
                   title: const Text('Google Agenda'),
                   subtitle: const Text(
                     'Android : abonnement à faire sur Google Agenda en version web',
                   ),
-                  trailing: const Icon(Icons.content_copy_rounded),
+                  trailing: const Icon(Icons.content_copy_outlined),
                   onTap: () => choose(() => _useGoogleCalendar(httpsUri)),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.mail_outline_rounded),
+                  leading: const Icon(Icons.mail_outlined),
                   title: const Text('Outlook'),
                   subtitle: const Text('Outlook.com ou Outlook sur le web'),
-                  trailing: const Icon(Icons.chevron_right_rounded),
+                  trailing: const Icon(Icons.chevron_right_outlined),
                   onTap: () => choose(() => _useOutlookCalendar(httpsUri)),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.link_rounded),
+                  leading: const Icon(Icons.link_outlined),
                   title: const Text('Copier le lien du calendrier'),
                   subtitle: const Text(
                     'Pour toute autre application compatible ICS',
                   ),
-                  trailing: const Icon(Icons.content_copy_rounded),
+                  trailing: const Icon(Icons.content_copy_outlined),
                   onTap: () => choose(() async {
                     final copied = await _copyCalendarLink(httpsUri);
                     if (!mounted) return;

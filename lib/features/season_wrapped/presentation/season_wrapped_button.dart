@@ -46,7 +46,7 @@ class SeasonWrappedButton extends ConsumerWidget {
           alignment: Alignment.center,
           children: [
             Icon(
-              Icons.auto_awesome_rounded,
+              Icons.auto_awesome_outlined,
               size: 21,
               color: AppTheme.accent,
             ),
@@ -63,7 +63,7 @@ class SeasonWrappedButton extends ConsumerWidget {
                   child: const Text(
                     'A',
                     style: TextStyle(
-                      fontSize: 9,
+                      fontSize: 11,
                       height: 1.3,
                       fontWeight: FontWeight.w400,
                       color: AppTheme.textPrimary,

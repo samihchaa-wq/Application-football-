@@ -1,5 +1,6 @@
 import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
 import 'package:flutter/material.dart';
+import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 /// Choix du joueur à retirer de la feuille de match, puis confirmation.
 ///
@@ -56,7 +57,7 @@ Future<MatchCompositionEntry?> showMatchLiveRemovePlayerPicker(
                       children: [
                         for (final entry in sorted)
                           ListTile(
-                            leading: const Icon(Icons.person_remove_rounded),
+                            leading: const Icon(Icons.person_remove_outlined),
                             title: Text(entry.displayName),
                             subtitle: Text(
                               entry.zone == MatchCompositionZone.field
@@ -85,6 +86,7 @@ Future<MatchCompositionEntry?> showMatchLiveRemovePlayerPicker(
           child: const Text('Annuler'),
         ),
         FilledButton(
+          style: PfButtonStyles.danger,
           onPressed: () => Navigator.pop(dialogContext, true),
           child: const Text('Retirer'),
         ),

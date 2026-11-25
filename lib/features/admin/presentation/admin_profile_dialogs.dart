@@ -140,7 +140,7 @@ Future<void> _resetPassword(
           ],
         ),
         actions: [
-          TextButton.icon(
+          TextButton(
             onPressed: () async {
               await Clipboard.setData(ClipboardData(text: link));
               if (dialogContext.mounted) {
@@ -148,8 +148,7 @@ Future<void> _resetPassword(
                     .showSnackBar(const SnackBar(content: Text('Lien copié.')));
               }
             },
-            icon: const Icon(Icons.copy_outlined),
-            label: const Text('Copier'),
+            child: const Text('Copier'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext),

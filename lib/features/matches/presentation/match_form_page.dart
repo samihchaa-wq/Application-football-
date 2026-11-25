@@ -24,6 +24,7 @@ import 'package:petit_filet/features/matches/presentation/widgets/match_meeting_
 import 'package:petit_filet/features/matches/presentation/widgets/match_wheel_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 class MatchFormPage extends ConsumerStatefulWidget {
   const MatchFormPage({super.key, this.match});
@@ -272,7 +273,7 @@ class _MatchFormPageState extends ConsumerState<MatchFormPage> {
             MatchFormSection(
               title: 'Match',
               subtitle: 'Type, adversaire, terrain et maillot',
-              icon: Icons.sports_soccer_rounded,
+              icon: Icons.sports_soccer_outlined,
               children: [
                 if (_isInternal)
                   const ListTile(
@@ -352,7 +353,7 @@ class _MatchFormPageState extends ConsumerState<MatchFormPage> {
                             padding: const EdgeInsets.symmetric(horizontal: 10),
                           ),
                           onPressed: busy ? null : _createOpponent,
-                          icon: const Icon(Icons.add_rounded),
+                          icon: const Icon(Icons.add_outlined),
                           label: const Text(
                             'Ajouter un adversaire',
                             textAlign: TextAlign.center,
@@ -413,7 +414,7 @@ class _MatchFormPageState extends ConsumerState<MatchFormPage> {
             MatchFormSection(
               title: 'Organisation',
               subtitle: 'Date, heure, rendez-vous et convocations',
-              icon: Icons.schedule_rounded,
+              icon: Icons.schedule_outlined,
               children: [
                 Row(
                   children: [
@@ -521,7 +522,7 @@ class _MatchFormPageState extends ConsumerState<MatchFormPage> {
                               height: 20,
                               child: PfProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.unfold_more_rounded),
+                          : const Icon(Icons.unfold_more_outlined),
                       onTap: busy ? null : _pickSquadSize,
                     ),
                   ],
@@ -715,6 +716,7 @@ class _MatchFormPageState extends ConsumerState<MatchFormPage> {
                 child: const Text('Annuler'),
               ),
               FilledButton(
+                style: PfButtonStyles.danger,
                 onPressed: () => Navigator.pop(dialogContext, true),
                 child: const Text('Supprimer'),
               ),

@@ -60,6 +60,22 @@ class AppFormats {
     'Déc',
   ];
 
+  /// Mois abrégés en minuscules, avec leur point : « nov. », « août ».
+  static const _monthsAbbreviated = [
+    'janv.',
+    'févr.',
+    'mars',
+    'avr.',
+    'mai',
+    'juin',
+    'juil.',
+    'août',
+    'sept.',
+    'oct.',
+    'nov.',
+    'déc.',
+  ];
+
   static const _monthsLong = [
     'Janvier',
     'Février',
@@ -108,8 +124,11 @@ class AppFormats {
     bool includeTime = true,
   }) {
     final local = dt.toLocal();
+    // « Dim. 22 nov. 2026 » plutôt que « Dimanche 22 Novembre 2026 » : même
+    // information, mais la ligne tient avec le type de match (« Championnat ·
+    // J8 ») au lieu de passer sur deux lignes sur un téléphone.
     final fullDate =
-        '${weekdayLong(local)} ${dayNumber(local)} ${monthLong(local)} ${local.year}';
+        '${weekdayShort(local)}. ${local.day} ${_monthsAbbreviated[local.month - 1]} ${local.year}';
     return includeTime ? '$fullDate • ${hourMinute(local)}' : fullDate;
   }
 

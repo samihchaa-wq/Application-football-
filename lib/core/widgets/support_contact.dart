@@ -35,7 +35,7 @@ class SupportContact extends StatelessWidget {
         TextButton.icon(
           key: const Key('support-contact-button'),
           onPressed: () => launchUrl(mailtoUri(subject)),
-          icon: const Icon(Icons.mail_outline),
+          icon: const Icon(Icons.mail_outlined),
           label: const Text('Nous écrire'),
         ),
       ],

@@ -62,12 +62,21 @@ Future<void> _pump(
 }
 
 void main() {
-  test('bandeau absent du poste de contrôle, du bilan et de la connexion', () {
-    expect(pushBannerAllowedOn('/control'), isFalse);
-    expect(pushBannerAllowedOn('/wrapped'), isFalse);
-    expect(pushBannerAllowedOn('/auth/accept-terms'), isFalse);
+  test('bandeau seulement sur le Calendrier', () {
     expect(pushBannerAllowedOn('/matches'), isTrue);
-    expect(pushBannerAllowedOn('/controle-technique'), isTrue);
+    for (final path in [
+      '/stats',
+      '/more',
+      '/profile',
+      '/admin/club',
+      '/matches/abc/lineup',
+      '/control',
+      '/wrapped',
+      '/auth/accept-terms',
+      '/controle-technique',
+    ]) {
+      expect(pushBannerAllowedOn(path), isFalse, reason: path);
+    }
   });
 
   setUp(() => SharedPreferences.setMockInitialValues({}));

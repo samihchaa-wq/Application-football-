@@ -145,7 +145,7 @@ class _ForcedPasswordChangePageState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Icon(Icons.lock_reset_rounded, size: 54),
+                      const Icon(Icons.lock_reset_outlined, size: 54),
                       const SizedBox(height: 16),
                       Text(
                         'Nouveau mot de passe',
@@ -180,7 +180,7 @@ class _ForcedPasswordChangePageState
                                 labelText: 'Nouveau mot de passe',
                                 helperText: PasswordPolicy.helperText,
                                 helperMaxLines: 4,
-                                prefixIcon: const Icon(Icons.lock_outline),
+                                prefixIcon: const Icon(Icons.lock_outlined),
                                 suffixIcon: IconButton(
                                   tooltip: _obscure
                                       ? 'Afficher le mot de passe'
@@ -201,7 +201,7 @@ class _ForcedPasswordChangePageState
                               obscureText: _obscure,
                               decoration: const InputDecoration(
                                 labelText: 'Confirmer le mot de passe',
-                                prefixIcon: Icon(Icons.lock_outline),
+                                prefixIcon: Icon(Icons.lock_outlined),
                               ),
                               onSubmitted: (_) {
                                 if (!isBusy) _submit();
@@ -219,7 +219,7 @@ class _ForcedPasswordChangePageState
                                 height: 18,
                                 child: PfProgressIndicator(strokeWidth: 2),
                               )
-                            : const Icon(Icons.check_circle_outline),
+                            : const Icon(Icons.check_circle_outlined),
                         label: Text(
                           _isVerifyingRecovery
                               ? 'Vérification du lien…'

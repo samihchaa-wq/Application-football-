@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 /// Affiche une rencontre au format vertical : équipe à domicile au-dessus,
@@ -32,9 +33,9 @@ class MatchFixture extends StatelessWidget {
   final double scoreFontSize;
   final TextAlign textAlign;
 
-  static const Color _won = Color(0xFF34C98A);
-  static const Color _lost = Color(0xFFFF5A6A);
-  static const Color _draw = Color(0xFFFFB020);
+  static const Color _won = AppTheme.resultWin;
+  static const Color _lost = AppTheme.resultLoss;
+  static const Color _draw = AppTheme.resultDraw;
 
   static Color resultColor(int ownScore, int opponentScore) {
     if (ownScore > opponentScore) return _won;

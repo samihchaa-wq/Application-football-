@@ -44,7 +44,7 @@ class MorePage extends ConsumerWidget {
               if (!pushAppInstalled())
                 _SettingsTile(
                   key: const Key('more-install-app'),
-                  icon: Icons.install_mobile,
+                  icon: Icons.install_mobile_outlined,
                   title: 'Installer l’appli sur mon téléphone',
                   onTap: () => showHomeScreenInstallGuide(context),
                 ),
@@ -63,7 +63,7 @@ class MorePage extends ConsumerWidget {
                   onTap: () => context.push('/unavailability'),
                 ),
                 _SettingsTile(
-                  icon: Icons.format_list_numbered_rounded,
+                  icon: Icons.format_list_numbered_outlined,
                   title: 'Liste d’attente',
                   onTap: () => context.push(
                     isAdminView ? '/admin/waitlist' : '/waitlist',
@@ -103,12 +103,12 @@ class MorePage extends ConsumerWidget {
                 ),
                 // Propre à Petit Filet : les réglages de chaque club.
                 _SettingsTile(
-                  icon: Icons.tune_rounded,
+                  icon: Icons.tune_outlined,
                   title: 'Réglages du club',
                   onTap: () => context.push('/admin/club'),
                 ),
                 _SettingsTile(
-                  icon: Icons.history_rounded,
+                  icon: Icons.history_outlined,
                   title: 'Ajouter des matchs passés',
                   onTap: () => context.push('/admin/history'),
                 ),
@@ -125,17 +125,14 @@ class MorePage extends ConsumerWidget {
           _SettingsGroup(
             children: [
               _SettingsTile(
-                icon: Icons.privacy_tip_outlined,
                 title: 'Confidentialité',
                 onTap: () => context.push('/legal/confidentialite'),
               ),
               _SettingsTile(
-                icon: Icons.description_outlined,
                 title: 'Conditions d’utilisation',
                 onTap: () => context.push('/legal/cgu'),
               ),
               _SettingsTile(
-                icon: Icons.gavel_outlined,
                 title: 'Mentions légales',
                 onTap: () => context.push('/legal/mentions'),
               ),
@@ -144,13 +141,12 @@ class MorePage extends ConsumerWidget {
           const SizedBox(height: 20),
           // Aussi proposé dans le Profil : c'est ici qu'on le cherche d'abord.
           Center(
-            child: TextButton.icon(
+            child: TextButton(
               onPressed: authState.isBusy
                   ? null
                   : () => confirmAndSignOut(context, ref),
-              icon: const Icon(Icons.logout_rounded),
-              label: const Text('Se déconnecter'),
               style: TextButton.styleFrom(foregroundColor: AppTheme.error),
+              child: const Text('Se déconnecter'),
             ),
           ),
           const SizedBox(height: 8),
@@ -293,19 +289,20 @@ class _SettingsGroup extends StatelessWidget {
 class _SettingsTile extends StatelessWidget {
   const _SettingsTile({
     super.key,
-    required this.icon,
+    this.icon,
     required this.title,
     required this.onTap,
   });
 
-  final IconData icon;
+  /// Sans icône pour les listes de simple lecture (informations légales).
+  final IconData? icon;
   final String title;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: AppTheme.primaryBright),
+      leading: icon == null ? null : Icon(icon, color: AppTheme.primaryBright),
       title: Text(title),
       trailing: const Icon(Icons.chevron_right),
       onTap: onTap,

@@ -412,7 +412,7 @@ class _CreateBadgeCard extends StatelessWidget {
                   Expanded(
                     child: FilledButton.tonalIcon(
                       onPressed: creating ? null : onEditImage,
-                      icon: const Icon(Icons.photo_library_rounded),
+                      icon: const Icon(Icons.photo_library_outlined),
                       label: const Text('Choisir et recadrer'),
                     ),
                   ),

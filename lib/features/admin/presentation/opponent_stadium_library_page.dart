@@ -4,6 +4,7 @@ import 'package:petit_filet/core/widgets/pf_app_bar.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 class OpponentStadiumLibraryPage extends ConsumerStatefulWidget {
   const OpponentStadiumLibraryPage({super.key});
@@ -135,7 +136,8 @@ class _OpponentStadiumLibraryPageState
                 onPressed: () => Navigator.pop(dialogContext, false),
                 child: const Text('Annuler'),
               ),
-              FilledButton.tonal(
+              FilledButton(
+                style: PfButtonStyles.danger,
                 onPressed: () => Navigator.pop(dialogContext, true),
                 child: const Text('Supprimer'),
               ),
@@ -177,7 +179,7 @@ class _OpponentStadiumLibraryPageState
       appBar: PfAppBar(title: const Text('Équipes & stades')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _saving ? null : () => _openEditor(),
-        icon: const Icon(Icons.add_rounded),
+        icon: const Icon(Icons.add_outlined),
         label: const Text('Ajouter'),
       ),
       body: RefreshIndicator(
@@ -191,7 +193,7 @@ class _OpponentStadiumLibraryPageState
               enabled: !_saving,
               decoration: const InputDecoration(
                 labelText: 'Rechercher',
-                prefixIcon: Icon(Icons.search_rounded),
+                prefixIcon: Icon(Icons.search_outlined),
               ),
             ),
             const SizedBox(height: 14),
@@ -289,7 +291,7 @@ class _OpponentStadiumLibraryPageState
                             value: 'delete',
                             child: ListTile(
                               contentPadding: EdgeInsets.zero,
-                              leading: Icon(Icons.delete_outline),
+                              leading: Icon(Icons.delete_outlined),
                               title: Text('Supprimer'),
                             ),
                           ),
@@ -402,7 +404,7 @@ class _OpponentStadiumEditorState extends State<_OpponentStadiumEditor> {
                 ),
               ),
               const SizedBox(height: 10),
-              FilledButton.icon(
+              FilledButton(
                 onPressed: () {
                   if (!_formKey.currentState!.validate()) return;
                   Navigator.pop(
@@ -414,8 +416,7 @@ class _OpponentStadiumEditorState extends State<_OpponentStadiumEditor> {
                     ),
                   );
                 },
-                icon: const Icon(Icons.save_outlined),
-                label: const Text('Enregistrer'),
+                child: const Text('Enregistrer'),
               ),
             ],
           ),

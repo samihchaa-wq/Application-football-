@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 /// Affiche un score entouré en vert, orange ou rouge selon le résultat
@@ -22,9 +23,9 @@ class MatchResultScoreChip extends StatelessWidget {
   final String? semanticLabel;
 
   Color get _color {
-    if (scoreOwn > scoreOpponent) return const Color(0xFF34C98A);
-    if (scoreOwn == scoreOpponent) return const Color(0xFFFFB020);
-    return const Color(0xFFFF5A6A);
+    if (scoreOwn > scoreOpponent) return AppTheme.resultWin;
+    if (scoreOwn == scoreOpponent) return AppTheme.resultDraw;
+    return AppTheme.resultLoss;
   }
 
   @override

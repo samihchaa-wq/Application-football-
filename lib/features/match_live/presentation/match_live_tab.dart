@@ -434,7 +434,7 @@ class _RealtimeFallbackNotice extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           child: Row(
             children: [
-              Icon(Icons.sync_problem_rounded, color: colors.onErrorContainer),
+              Icon(Icons.sync_problem_outlined, color: colors.onErrorContainer),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(

@@ -40,7 +40,7 @@ void main() {
 
     await tester.tap(find.text('Finir la saison'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Confirmer'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Finir la saison'));
     await tester.pumpAndSettle();
     expect(club.seasonStatusChanges, [('s-1', 'archived')]);
     expect(find.text('Créer une saison'), findsOneWidget);

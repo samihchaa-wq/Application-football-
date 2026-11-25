@@ -46,7 +46,7 @@ class ChampionshipRoundTile extends StatelessWidget {
               : null,
         ),
       ),
-      trailing: const Icon(Icons.unfold_more_rounded),
+      trailing: const Icon(Icons.unfold_more_outlined),
       onTap: enabled ? onTap : null,
     );
   }

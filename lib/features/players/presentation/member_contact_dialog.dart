@@ -96,7 +96,7 @@ class _MemberContactDialogState extends State<_MemberContactDialog> {
                   ? const Icon(Icons.calendar_today_outlined)
                   : IconButton(
                       tooltip: 'Effacer la date de naissance',
-                      icon: const Icon(Icons.close_rounded),
+                      icon: const Icon(Icons.close_outlined),
                       onPressed: () => setState(() => _birthDate = null),
                     ),
             ),

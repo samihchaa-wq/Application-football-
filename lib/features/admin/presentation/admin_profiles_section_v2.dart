@@ -590,10 +590,7 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: FilledButton(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.error,
-                        foregroundColor: Theme.of(context).colorScheme.onError,
-                      ),
+                      style: PfButtonStyles.danger,
                       onPressed: deleteAccount,
                       child: const Text('Supprimer'),
                     ),

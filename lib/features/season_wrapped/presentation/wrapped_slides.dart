@@ -926,7 +926,7 @@ class _ClosingSlide extends StatelessWidget {
                 ),
                 textStyle: WrappedType.label(skin.badgeText, size: 17),
               ),
-              icon: const Icon(Icons.ios_share, size: 18),
+              icon: const Icon(Icons.ios_share_outlined, size: 18),
               label: const Text('PARTAGER MA SAISON'),
             ),
             const SizedBox(height: 4),

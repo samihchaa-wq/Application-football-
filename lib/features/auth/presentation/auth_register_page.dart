@@ -300,7 +300,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                 autofillHints: const [AutofillHints.givenName],
                 decoration: const InputDecoration(
                   labelText: 'Prénom',
-                  prefixIcon: Icon(Icons.person_outline),
+                  prefixIcon: Icon(Icons.person_outlined),
                 ),
               ),
               TextField(
@@ -330,7 +330,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                   : 'Sert à retrouver ton compte si tu perds ton mot '
                       'de passe. Un lien de confirmation te sera envoyé.',
               helperMaxLines: 4,
-              prefixIcon: const Icon(Icons.mail_outline),
+              prefixIcon: const Icon(Icons.mail_outlined),
             ),
           ),
           const SizedBox(height: 16),
@@ -352,7 +352,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                     labelText: 'Mot de passe',
                     helperText: PasswordPolicy.helperText,
                     helperMaxLines: 4,
-                    prefixIcon: const Icon(Icons.lock_outline),
+                    prefixIcon: const Icon(Icons.lock_outlined),
                     suffixIcon: IconButton(
                       tooltip: _obscurePassword
                           ? 'Afficher le mot de passe'
@@ -376,7 +376,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                   onSubmitted: (_) => _submitting ? null : _submit(),
                   decoration: const InputDecoration(
                     labelText: 'Répète le mot de passe',
-                    prefixIcon: Icon(Icons.lock_outline),
+                    prefixIcon: Icon(Icons.lock_outlined),
                   ),
                 ),
               ],
@@ -403,7 +403,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                     height: 18,
                     child: PfProgressIndicator(strokeWidth: 2),
                   )
-                : const Icon(Icons.sports_soccer),
+                : const Icon(Icons.sports_soccer_outlined),
             label: Text(
               _submitting
                   ? 'Création en cours…'

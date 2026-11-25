@@ -18,6 +18,7 @@ import 'package:petit_filet/features/sports_management/presentation/widgets/matc
 import 'package:flutter/material.dart';
 import 'package:petit_filet/core/widgets/pf_status_banner.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 /// Écran « Compte rendu » : deux onglets, une seule validation.
 ///
@@ -306,6 +307,7 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
               child: const Text('Annuler'),
             ),
             FilledButton(
+              style: PfButtonStyles.danger,
               onPressed: selected.length == count
                   ? () => Navigator.pop(dialogContext, {...selected})
                   : null,
@@ -652,7 +654,7 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
                       height: 18,
                       child: PfProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(Icons.verified_rounded),
+                  : const Icon(Icons.verified_outlined),
               // Une fois validé, le bouton enregistre une correction (journal
               // et nouveau calcul des statistiques) : l'ancien libellé laissait
               // croire que la validation n'avait pas été prise en compte.
@@ -680,7 +682,7 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
             padding: const EdgeInsets.only(bottom: 12),
             child: OutlinedButton.icon(
               onPressed: _saving ? null : _addPlayer,
-              icon: const Icon(Icons.person_add_alt_1_rounded),
+              icon: const Icon(Icons.person_add_alt_1_outlined),
               label: const Text('Ajouter un joueur'),
             ),
           ),
@@ -724,7 +726,7 @@ class _ReadOnlyNotice extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.lock_outline, color: colors.onErrorContainer),
+          Icon(Icons.lock_outlined, color: colors.onErrorContainer),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -880,8 +882,8 @@ class _AddPlayerSheet extends StatelessWidget {
               ListTile(
                 leading: Icon(
                   entry.isGoalkeeper
-                      ? Icons.sports_handball_rounded
-                      : Icons.person_rounded,
+                      ? Icons.sports_handball_outlined
+                      : Icons.person_outlined,
                 ),
                 title: Text(entry.displayName),
                 onTap: () => Navigator.of(context).pop(
@@ -895,8 +897,8 @@ class _AddPlayerSheet extends StatelessWidget {
               ListTile(
                 leading: Icon(
                   player.isGoalkeeper
-                      ? Icons.sports_handball_rounded
-                      : Icons.person_rounded,
+                      ? Icons.sports_handball_outlined
+                      : Icons.person_outlined,
                 ),
                 title: Text(player.displayName),
                 onTap: () => Navigator.of(context).pop(
@@ -908,7 +910,7 @@ class _AddPlayerSheet extends StatelessWidget {
             const _SheetSection('Invités'),
             for (final player in guests)
               ListTile(
-                leading: const Icon(Icons.person_outline_rounded),
+                leading: const Icon(Icons.person_outlined),
                 title: Text(player.displayName),
                 onTap: () => Navigator.of(context).pop(
                   _AddPlayerChoice(guestPlayerId: player.guestPlayerId),

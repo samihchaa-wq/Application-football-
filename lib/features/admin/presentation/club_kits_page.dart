@@ -147,20 +147,18 @@ class _ClubKitsPageState extends ConsumerState<ClubKitsPage> {
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
         children: [
           const Text(
-            'Les maillots que tu proposes au choix pour chaque match. Les '
-            'joueurs voient celui retenu sur la fiche du match, les '
-            'compositions et la vidéo.',
+            'Les maillots que tu proposes pour chaque match. Les joueurs '
+            'voient celui retenu sur la fiche du match, les compositions et '
+            'la vidéo.',
           ),
-          const ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: Icon(Icons.check_circle_outline),
-            title: Text('Maillot automatiquement sur les photos'),
-            subtitle: Text(
-              'Le maillot du club accompagne chaque photo de joueur : '
-              'profil, fiche, effectif et listes. Pour un match, la tenue '
-              'choisie remplace la tenue par défaut dans les compositions '
-              'et la vidéo. Les photos originales restent intactes.',
-            ),
+          const SizedBox(height: 8),
+          // Ce n'est pas un réglage : l'ancienne ligne à coche ressemblait à une
+          // case à cocher qu'on pouvait décocher.
+          Text(
+            'Le maillot du club s’ajoute automatiquement aux photos des '
+            'joueurs. Les photos originales restent intactes.',
+            key: const ValueKey('kits-photos-automatic'),
+            style: theme.textTheme.bodySmall,
           ),
           if (ClubKits.usesDefaults) ...[
             const SizedBox(height: 8),
@@ -187,7 +185,7 @@ class _ClubKitsPageState extends ConsumerState<ClubKitsPage> {
                 child: TextButton.icon(
                   key: ValueKey('kit-archive-${_kits[i].slot.id}'),
                   onPressed: _saving ? null : () => _archive(i),
-                  icon: const Icon(Icons.delete_outline),
+                  icon: const Icon(Icons.delete_outlined),
                   label: const Text('Supprimer ce maillot'),
                 ),
               ),

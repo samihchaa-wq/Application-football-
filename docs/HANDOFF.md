@@ -33,6 +33,14 @@
 - Test auth_register M03 : on quitte le champ e-mail avant de chercher le bouton (le focus ramenait la page vers le champ).
 - Données de test locales modifiées (match J9 remis au 29/11, match J10 du 02/12 créé) : base locale uniquement.
 
+## Session UI UX Pro Max, audit et lots A à E (24/11/2026, branche claude/lucid-cannon-s0z1fc)
+
+- Audit complet : docs/AUDIT_UX_UI_20261124.md (constats, ce qui est fait, ce qui reste, et pourquoi).
+- Nouveau : lib/core/theme/pf_button_styles.dart (le thème peint un dégradé rouge sur TOUT bouton plein : pour une autre couleur, utiliser PfButtonStyles.solid / danger / success, pas `backgroundColor`).
+- Règle d'icônes : une seule famille (`_outlined`) ; icône sur les boutons d'action principaux (ajouter, partager, lire, supprimer, valider avec chargement), pas sur Annuler / Modifier / Copier / Enregistrer ordinaire.
+- Bandeau notifications : `pushBannerAllowedOn` = Calendrier seulement ; la cloche affiche un point jaune si l'appareil ne reçoit rien.
+- Vérifié : analyze propre, 1554 tests verts, captures locales 375 / 1280 / 812 × 375. Non vérifié : vrai téléphone, texte agrandi, mouvement réduit.
+
 ## Règles impératives
 
 1. **Écriture uniquement dans `samihchaa-wq/Application-football-`.** Ne jamais modifier les dépôts, données, sites ni bases Supabase d'AS Grinta original ou de Carte soirée. Le dépôt AS Grinta peut être consulté en lecture seule pour comparer ses fonctionnalités et son interface.

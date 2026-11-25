@@ -129,7 +129,7 @@ class JerseyOptionTile extends StatelessWidget {
                               child: const Padding(
                                 padding: EdgeInsets.all(2),
                                 child: Icon(
-                                  Icons.check_rounded,
+                                  Icons.check_outlined,
                                   size: 18,
                                   color: Colors.white,
                                 ),

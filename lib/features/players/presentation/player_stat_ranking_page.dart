@@ -393,7 +393,7 @@ class _Message extends StatelessWidget {
       children: [
         Card(
           child: PfEmptyState(
-            icon: Icons.bar_chart_rounded,
+            icon: Icons.bar_chart_outlined,
             title: title,
             message: message,
           ),

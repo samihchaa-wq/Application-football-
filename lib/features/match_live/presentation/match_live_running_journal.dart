@@ -57,7 +57,7 @@ class _LiveJournal extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Icon(Icons.receipt_long_rounded),
+                  const Icon(Icons.receipt_long_outlined),
                   const SizedBox(width: 9),
                   Expanded(
                     child: Text(
@@ -77,8 +77,8 @@ class _LiveJournal extends StatelessWidget {
                   const SizedBox(width: AppSpacing.microGap),
                   Icon(
                     expanded
-                        ? Icons.keyboard_arrow_up_rounded
-                        : Icons.keyboard_arrow_down_rounded,
+                        ? Icons.keyboard_arrow_up_outlined
+                        : Icons.keyboard_arrow_down_outlined,
                   ),
                 ],
               ),
@@ -195,7 +195,7 @@ class _JournalEventRow extends StatelessWidget {
     final theme = Theme.of(context);
     final (icon, color, label) = switch (event.type) {
       MatchLiveEventType.goalUs => (
-          Icons.sports_soccer_rounded,
+          Icons.sports_soccer_outlined,
           theme.colorScheme.onSurface,
           event.isOpponentOwnGoal
               ? 'But ${ClubIdentity.name} · CSC adverse'
@@ -208,7 +208,7 @@ class _JournalEventRow extends StatelessWidget {
           'But adverse',
         ),
       MatchLiveEventType.substitution => (
-          Icons.swap_horiz_rounded,
+          Icons.swap_horiz_outlined,
           theme.colorScheme.secondary,
           '${event.playerInName ?? '?'} entre · '
               '${event.playerOutName ?? '?'} sort',
@@ -248,7 +248,7 @@ class _JournalEventRow extends StatelessWidget {
                 value: _JournalAction.scorer,
                 child: Row(
                   children: [
-                    const Icon(Icons.person_search_rounded),
+                    const Icon(Icons.person_search_outlined),
                     const SizedBox(width: AppSpacing.contentGap),
                     Text(
                       event.needsScorer
@@ -280,7 +280,7 @@ class _JournalEventRow extends StatelessWidget {
                 value: _JournalAction.delete,
                 child: Row(
                   children: [
-                    Icon(Icons.delete_outline_rounded),
+                    Icon(Icons.delete_outlined),
                     SizedBox(width: AppSpacing.contentGap),
                     Text('Retirer'),
                   ],

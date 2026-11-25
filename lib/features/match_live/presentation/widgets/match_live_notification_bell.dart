@@ -132,8 +132,8 @@ class NotificationBellButton extends StatelessWidget {
               )
             : Icon(
                 active
-                    ? Icons.notifications_rounded
-                    : Icons.notifications_none_rounded,
+                    ? Icons.notifications_outlined
+                    : Icons.notifications_none_outlined,
                 color: color,
               ),
       ),

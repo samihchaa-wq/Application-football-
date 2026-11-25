@@ -162,11 +162,10 @@ class _HistoryImportPageState extends ConsumerState<HistoryImportPage> {
                           'puis demande historique_petit_filet.json. '
                           'Contrôle les informations générées.'),
                       const SizedBox(height: 12),
-                      OutlinedButton.icon(
+                      OutlinedButton(
                         key: const Key('history-import-copy-prompt'),
                         onPressed: _copyPrompt,
-                        icon: const Icon(Icons.copy_outlined),
-                        label: const Text('Copier le prompt pour mon IA'),
+                        child: const Text('Copier le prompt pour mon IA'),
                       ),
                     ],
                   ),
@@ -230,7 +229,7 @@ class _HistoryImportPageState extends ConsumerState<HistoryImportPage> {
                         FilledButton.icon(
                           key: const Key('history-import-confirm'),
                           onPressed: _importing ? null : _import,
-                          icon: const Icon(Icons.check_circle_outline),
+                          icon: const Icon(Icons.check_circle_outlined),
                           label: Text(_importing
                               ? 'Import en cours…'
                               : 'Confirmer l’import'),

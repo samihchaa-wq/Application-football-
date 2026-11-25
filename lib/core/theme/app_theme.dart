@@ -159,6 +159,12 @@ abstract final class AppTheme {
   //
   // Ces couleurs ne conviennent qu'au texte et aux fonds teintés : sur un
   // bouton plein, c'est le libellé clair qui deviendrait illisible.
+  /// Résultat d'un match : une seule série de couleurs dans toute l'appli
+  /// (scores du calendrier, camembert et pastilles des statistiques…).
+  static const Color resultWin = success;
+  static const Color resultDraw = warning;
+  static const Color resultLoss = error;
+
   static const Color availabilityIn = success;
   static const Color availabilityWaiting = warning;
   static const Color availabilityOut = error;

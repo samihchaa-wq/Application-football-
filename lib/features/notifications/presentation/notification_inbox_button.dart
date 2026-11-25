@@ -1,5 +1,6 @@
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/features/notifications/data/notification_inbox_repository.dart';
+import 'package:petit_filet/features/preferences/data/push_subscriptions_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,9 +13,17 @@ class NotificationInboxButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final unread = ref.watch(unreadNotificationCountProvider).valueOrNull ?? 0;
-    final label = unread == 0
-        ? 'Notifications'
-        : 'Notifications, $unread non ${unread > 1 ? 'lues' : 'lue'}';
+    // Le bandeau d'avertissement ne s'affiche que sur le Calendrier : ailleurs,
+    // un point sur la cloche dit que cet appareil ne reçoit pas les
+    // notifications.
+    final deviceAlert = ref.watch(pushDeviceAlertProvider).valueOrNull;
+    final deviceIsSilent =
+        deviceAlert != null && deviceAlert != PushDeviceAlert.none;
+    final label = unread > 0
+        ? 'Notifications, $unread non ${unread > 1 ? 'lues' : 'lue'}'
+        : deviceIsSilent
+            ? 'Notifications, désactivées sur cet appareil'
+            : 'Notifications';
 
     return Semantics(
       label: label,
@@ -50,11 +59,36 @@ class NotificationInboxButton extends ConsumerWidget {
                   top: -6,
                   right: -7,
                   child: _UnreadPill(count: unread),
+                )
+              else if (deviceIsSilent)
+                const Positioned(
+                  top: -3,
+                  right: -3,
+                  child: _SilentDeviceDot(),
                 ),
             ],
           ),
         ),
         onPressed: () => context.push('/notifications'),
+      ),
+    );
+  }
+}
+
+/// Point d'avertissement : cet appareil ne recevra pas les notifications.
+class _SilentDeviceDot extends StatelessWidget {
+  const _SilentDeviceDot();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const ValueKey('notification-device-silent-dot'),
+      width: 12,
+      height: 12,
+      decoration: BoxDecoration(
+        color: AppTheme.warning,
+        shape: BoxShape.circle,
+        border: Border.all(color: AppTheme.background, width: 2),
       ),
     );
   }
@@ -69,13 +103,13 @@ class _UnreadPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       key: const ValueKey('notification-unread-pill'),
-      constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+      constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
       padding: const EdgeInsets.symmetric(horizontal: 4),
       alignment: Alignment.center,
       decoration: BoxDecoration(
         // Texte sombre sur rouge : le blanc y serait trop peu lisible.
         color: AppTheme.error,
-        borderRadius: BorderRadius.circular(9),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: AppTheme.background, width: 2),
       ),
       child: Text(
@@ -84,7 +118,7 @@ class _UnreadPill extends StatelessWidget {
         textScaler: TextScaler.noScaling,
         style: const TextStyle(
           color: AppTheme.background,
-          fontSize: 10,
+          fontSize: 11,
           height: 1.1,
           fontWeight: FontWeight.w400,
         ),

@@ -349,7 +349,7 @@ class _AdminSquadPlanPageState extends ConsumerState<AdminSquadPlanPage> {
               ),
               FilledButton.icon(
                 onPressed: () => Navigator.pop(dialogContext, true),
-                icon: Icon(actionIcon ?? Icons.check_rounded),
+                icon: Icon(actionIcon ?? Icons.check_outlined),
                 label: Text(actionLabel),
               ),
             ],
@@ -419,7 +419,7 @@ class _AdminSquadPlanPageState extends ConsumerState<AdminSquadPlanPage> {
     if (_matches.isEmpty) {
       return withBackArrow(
         const PfEmptyState(
-          icon: Icons.event_busy_rounded,
+          icon: Icons.event_busy_outlined,
           title: 'Aucun match disponible',
           message: 'Crée un match depuis l’onglet Matchs pour préparer '
               'l’effectif et la composition.',

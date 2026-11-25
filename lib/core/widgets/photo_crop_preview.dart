@@ -426,7 +426,7 @@ class _PhotoCropDialogState extends State<_PhotoCropDialog> {
                                 color: Colors.black,
                               ),
                             )
-                          : const Icon(Icons.check_circle_outline),
+                          : const Icon(Icons.check_circle_outlined),
                       label: Text(widget.confirmLabel),
                       style: FilledButton.styleFrom(
                         backgroundColor: const Color(0xFFE3B45E),

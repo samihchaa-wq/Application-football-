@@ -6,6 +6,7 @@ import 'package:petit_filet/features/profile/data/personal_data_repository.dart'
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 /// Mot à recopier pour confirmer la suppression du compte.
 const String deleteAccountConfirmationWord = 'SUPPRIMER';
@@ -163,6 +164,7 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
           child: const Text('Annuler'),
         ),
         FilledButton(
+          style: PfButtonStyles.danger,
           key: const Key('delete-account-confirm'),
           onPressed: canDelete ? () => Navigator.pop(context, true) : null,
           child: const Text('Supprimer'),

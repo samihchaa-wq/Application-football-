@@ -5,13 +5,13 @@ import 'package:petit_filet/features/preferences/data/push_subscriptions_reposit
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Écrans où le bandeau n'a rien à faire : le poste de contrôle de
-/// l'exploitant (pas de convocations), le bilan de saison plein écran et les
-/// étapes de connexion ou d'acceptation des conditions.
-bool pushBannerAllowedOn(String path) => !(path == '/control' ||
-    path.startsWith('/control/') ||
-    path == '/wrapped' ||
-    path.startsWith('/auth/'));
+/// Le bandeau n'apparaît que sur le Calendrier, l'écran d'accueil de l'appli.
+///
+/// Posé au-dessus de tous les écrans, il mangeait environ 15 % de la hauteur
+/// du téléphone sur chacun d'eux (une quinzaine d'écrans, chacun avec le même
+/// message). Ailleurs, un point d'avertissement sur la cloche garde l'état
+/// visible sans prendre de place (voir `NotificationInboxButton`).
+bool pushBannerAllowedOn(String path) => path == '/matches';
 
 /// Bandeau du haut de l'application quand cet appareil ne recevra pas les
 /// notifications du club sans que le joueur l'ait choisi.
@@ -84,6 +84,9 @@ class _PushDeviceBannerState extends ConsumerState<PushDeviceBanner> {
     if (alert == null || alert == PushDeviceAlert.none) {
       return const SizedBox.shrink();
     }
+    // Écran peu haut (téléphone couché) : pas de bandeau, il couvrirait le
+    // tiers de l'écran ; le point d'avertissement de la cloche reste.
+    if (MediaQuery.sizeOf(context).height < 500) return const SizedBox.shrink();
     if (alert == PushDeviceAlert.needsInstall) {
       return _InstallBanner(
         onHowTo: () => showHomeScreenInstallGuide(
@@ -253,7 +256,7 @@ class _InstallGuideSheetState extends State<_InstallGuideSheet> {
             ),
             step(
               2,
-              Icons.install_mobile,
+              Icons.install_mobile_outlined,
               'Choisis «\u00a0Installer l’application\u00a0» (ou «\u00a0Ajouter '
               'à l’écran d’accueil\u00a0»), puis confirme.',
             ),
@@ -267,7 +270,7 @@ class _InstallGuideSheetState extends State<_InstallGuideSheet> {
         : [
             step(
               1,
-              Icons.ios_share,
+              Icons.ios_share_outlined,
               'Dans Safari, touche le bouton Partager, en bas de l’écran.',
             ),
             step(
@@ -305,12 +308,12 @@ class _InstallGuideSheetState extends State<_InstallGuideSheet> {
                 segments: const [
                   ButtonSegment(
                     value: InstallPlatform.iphone,
-                    icon: Icon(Icons.phone_iphone),
+                    icon: Icon(Icons.phone_iphone_outlined),
                     label: Text('iPhone'),
                   ),
                   ButtonSegment(
                     value: InstallPlatform.android,
-                    icon: Icon(Icons.phone_android),
+                    icon: Icon(Icons.phone_android_outlined),
                     label: Text('Android'),
                   ),
                 ],
@@ -339,7 +342,7 @@ class _InstallGuideSheetState extends State<_InstallGuideSheet> {
                 child: FilledButton.icon(
                   key: const Key('install-guide-now'),
                   onPressed: _installNow,
-                  icon: const Icon(Icons.install_mobile),
+                  icon: const Icon(Icons.install_mobile_outlined),
                   label: const Text('Installer maintenant'),
                 ),
               ),

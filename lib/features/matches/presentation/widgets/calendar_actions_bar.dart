@@ -17,7 +17,7 @@ class CalendarActionsBar extends StatelessWidget {
       child: FilledButton.icon(
         key: const ValueKey('calendar-new-event-action'),
         onPressed: onCreate,
-        icon: const Icon(Icons.add_rounded, size: 20),
+        icon: const Icon(Icons.add_outlined, size: 20),
         label: const Text(
           'Nouvel événement',
           maxLines: 1,

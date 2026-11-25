@@ -130,10 +130,9 @@ class _BadgeTextDialogState extends ConsumerState<_BadgeTextDialog> {
           onPressed: _saving ? null : () => Navigator.of(context).pop(),
           child: const Text('Annuler'),
         ),
-        FilledButton.icon(
+        FilledButton(
           onPressed: _canSave ? _save : null,
-          icon: const Icon(Icons.check_rounded),
-          label: const Text('Enregistrer'),
+          child: const Text('Enregistrer'),
         ),
       ],
     );

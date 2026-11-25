@@ -428,7 +428,7 @@ class _MergedMatchesViewState extends ConsumerState<MergedMatchesView> {
                                   sliver: SliverToBoxAdapter(
                                     child: _MessageCard(
                                       title: 'Matchs indisponibles',
-                                      icon: Icons.wifi_off_rounded,
+                                      icon: Icons.wifi_off_outlined,
                                       message: state.error!,
                                       tone: PfEmptyTone.alert,
                                     ),
@@ -1021,7 +1021,7 @@ class _MessageCard extends StatelessWidget {
   const _MessageCard({
     required this.title,
     required this.message,
-    this.icon = Icons.sports_soccer_rounded,
+    this.icon = Icons.sports_soccer_outlined,
     this.tone = PfEmptyTone.neutral,
   });
 

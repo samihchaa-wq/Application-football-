@@ -8,7 +8,6 @@ class _EffectifAvatarColumn extends StatelessWidget {
   const _EffectifAvatarColumn({
     required this.title,
     required this.color,
-    required this.icon,
     required this.players,
     required this.locked,
     this.acceptsDrops = false,
@@ -24,7 +23,6 @@ class _EffectifAvatarColumn extends StatelessWidget {
 
   final String title;
   final Color color;
-  final IconData icon;
   final List<ConvocationPlayer> players;
   final bool locked;
   final bool acceptsDrops;
@@ -74,8 +72,9 @@ class _EffectifAvatarColumn extends StatelessWidget {
               countLabel: countCoachApart
                   ? effectifCountLabel(players)
                   : '${players.length}',
+              // La couleur, le titre et le nombre suffisent : l'icône ajoutait
+              // un troisième code pour la même information.
               color: color,
-              icon: icon,
               highlighted: highlightedTarget,
               trailing: onRelanceAll != null && players.isNotEmpty
                   ? TextButton.icon(

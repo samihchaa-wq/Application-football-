@@ -66,7 +66,7 @@ class _SeasonCard extends ConsumerWidget {
             const SizedBox(height: 10),
             Align(
               alignment: Alignment.centerLeft,
-              child: OutlinedButton.icon(
+              child: OutlinedButton(
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Theme.of(context).colorScheme.error,
                 ),
@@ -81,8 +81,7 @@ class _SeasonCard extends ConsumerWidget {
                       'C’est définitif. Tu pourras ensuite créer une '
                       'nouvelle saison.',
                 ),
-                icon: const Icon(Icons.flag_outlined),
-                label: const Text('Finir la saison'),
+                child: const Text('Finir la saison'),
               ),
             ),
           ],
@@ -112,11 +111,9 @@ class _SeasonCard extends ConsumerWidget {
               // Action définitive : bouton rouge, comme les autres
               // suppressions de l'appli.
               FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(dialogContext).colorScheme.error,
-                ),
+                style: PfButtonStyles.danger,
                 onPressed: () => Navigator.pop(dialogContext, true),
-                child: const Text('Confirmer'),
+                child: const Text('Finir la saison'),
               ),
             ],
           ),

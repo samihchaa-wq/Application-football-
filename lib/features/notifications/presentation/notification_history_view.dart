@@ -224,7 +224,7 @@ class _HistoryTile extends StatelessWidget {
           color: AppTheme.error.withValues(alpha: .18),
           borderRadius: radius,
         ),
-        child: const Icon(Icons.delete_outline, color: AppTheme.error),
+        child: const Icon(Icons.delete_outlined, color: AppTheme.error),
       ),
       child: Material(
         color: highlighted

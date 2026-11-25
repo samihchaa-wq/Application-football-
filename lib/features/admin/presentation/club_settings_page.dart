@@ -441,7 +441,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       IconButton(
         key: ValueKey('club-info-$key'),
         tooltip: 'Informations : $title',
-        icon: const Icon(Icons.info_outline_rounded, size: 20),
+        icon: const Icon(Icons.info_outlined, size: 20),
         onPressed: () => _showInfo(title, description),
       );
 
@@ -518,7 +518,6 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   Widget _section(
     String key,
     String title,
-    IconData icon,
     List<Widget> children, {
     bool expanded = false,
   }) {
@@ -532,7 +531,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
         key: ValueKey(
             query.isEmpty ? 'club-section-$key' : 'club-section-$key-$query'),
         initiallyExpanded: expanded || query.isNotEmpty,
-        leading: Icon(icon),
+        // Pas d'icône à gauche : le titre dit déjà de quoi il s'agit.
         title: Text(title),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         children: [
@@ -728,7 +727,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
         _ruleInfo(rule),
       ),
       subtitle: Text('$count statistiques sur 9 sélectionnées'),
-      trailing: const Icon(Icons.tune_rounded),
+      trailing: const Icon(Icons.tune_outlined),
       onTap: _ruleLocked(rule) ? null : () => _chooseWrappedStats(rule),
     );
   }
@@ -848,7 +847,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           IconButton(
             key: ValueKey('club-rule-${rule.key}-minus'),
             tooltip: 'Diminuer',
-            icon: const Icon(Icons.remove_circle_outline),
+            icon: const Icon(Icons.remove_circle_outlined),
             onPressed: locked || rule.value <= rule.min
                 ? null
                 : () => _setRule(rule, stepped(up: false)),
@@ -857,7 +856,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           IconButton(
             key: ValueKey('club-rule-${rule.key}-plus'),
             tooltip: 'Augmenter',
-            icon: const Icon(Icons.add_circle_outline),
+            icon: const Icon(Icons.add_circle_outlined),
             onPressed: locked || rule.value >= rule.max
                 ? null
                 : () => _setRule(rule, stepped(up: true)),
@@ -957,12 +956,12 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           onChanged: (value) => setState(() => _settingsSearch = value),
           decoration: InputDecoration(
             labelText: 'Rechercher un réglage',
-            prefixIcon: const Icon(Icons.search_rounded),
+            prefixIcon: const Icon(Icons.search_outlined),
             suffixIcon: _settingsSearch.isEmpty
                 ? null
                 : IconButton(
                     tooltip: 'Effacer la recherche',
-                    icon: const Icon(Icons.close_rounded),
+                    icon: const Icon(Icons.close_outlined),
                     onPressed: () => setState(() {
                       _settingsSearchController.clear();
                       _settingsSearch = '';
@@ -982,7 +981,6 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
         _section(
             'identity',
             'Identité et maillots',
-            Icons.shield_outlined,
             [
               const SizedBox(height: 12),
               TextField(
@@ -1055,14 +1053,14 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
               ListTile(
                 key: const ValueKey('club-kits-entry'),
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.checkroom_rounded),
+                leading: const Icon(Icons.checkroom_outlined),
                 title: _labelWithInfo(
                   'kits',
                   'Maillots du club',
                   'Choisis les tenues des joueurs et des gardiens. Elles sont '
                       'utilisées dans les compositions et les matchs.',
                 ),
-                trailing: const Icon(Icons.chevron_right_rounded),
+                trailing: const Icon(Icons.chevron_right_outlined),
                 onTap: () => context.push('/admin/club/maillots'),
               ),
             ],
@@ -1070,7 +1068,6 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
         _section(
           'contact',
           'Coordonnées du club',
-          Icons.contact_mail_outlined,
           [
             const SizedBox(height: 4),
             const Text(
@@ -1084,7 +1081,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
               textCapitalization: TextCapitalization.words,
               decoration: const InputDecoration(
                 labelText: 'Personne à contacter (président, secrétaire…)',
-                prefixIcon: Icon(Icons.person_outline_rounded),
+                prefixIcon: Icon(Icons.person_outlined),
               ),
             ),
             const SizedBox(height: 12),
@@ -1095,7 +1092,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
               autocorrect: false,
               decoration: const InputDecoration(
                 labelText: 'E-mail du club',
-                prefixIcon: Icon(Icons.mail_outline_rounded),
+                prefixIcon: Icon(Icons.mail_outlined),
               ),
             ),
             const SizedBox(height: 12),
@@ -1128,7 +1125,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
               autocorrect: false,
               decoration: const InputDecoration(
                 labelText: 'Site internet ou page du club',
-                prefixIcon: Icon(Icons.language_rounded),
+                prefixIcon: Icon(Icons.language_outlined),
               ),
             ),
             const SizedBox(height: 12),
@@ -1164,7 +1161,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
             ),
           ],
         ),
-        _section('squad', 'Effectif et convocations', Icons.groups_outlined, [
+        _section('squad', 'Effectif et convocations', [
           const SizedBox(height: 8),
           ListTile(
             key: const Key('club-usual-squad-size'),
@@ -1179,7 +1176,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
               children: [
                 IconButton(
                   key: const Key('club-usual-squad-size-minus'),
-                  icon: const Icon(Icons.remove_circle_outline),
+                  icon: const Icon(Icons.remove_circle_outlined),
                   tooltip: 'Retirer',
                   onPressed: _savingUsualSquadSize || _usualSquadSize <= 1
                       ? null
@@ -1188,7 +1185,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
                 Text('$_usualSquadSize'),
                 IconButton(
                   key: const Key('club-usual-squad-size-plus'),
-                  icon: const Icon(Icons.add_circle_outline),
+                  icon: const Icon(Icons.add_circle_outlined),
                   tooltip: 'Ajouter',
                   onPressed: _savingUsualSquadSize || _usualSquadSize >= 30
                       ? null
@@ -1199,7 +1196,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           ),
           ..._rulesFor('squad'),
         ]),
-        _section('matches', 'Matchs et direct', Icons.sports_soccer_outlined, [
+        _section('matches', 'Matchs et direct', [
           const SizedBox(height: 8),
           const SizedBox(height: 12),
           TextField(
@@ -1236,20 +1233,18 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
         _section(
           'composition',
           'Composition et vidéo',
-          Icons.view_quilt_outlined,
           [..._rulesFor('composition')],
         ),
-        _section('live', 'Direct : outils du coach', Icons.timer_outlined, [
+        _section('live', 'Direct : outils du coach', [
           ..._rulesFor('live'),
         ]),
-        _section('predictions', 'Pronostics', Icons.emoji_events_outlined, [
+        _section('predictions', 'Pronostics', [
           ..._modulesFor('predictions'),
           ..._rulesFor('predictions'),
         ]),
         _section(
           'rewards',
           'Statistiques et récompenses',
-          Icons.bar_chart_rounded,
           [
             ..._modulesFor('rewards'),
             ..._rulesFor('rewards'),
@@ -1260,7 +1255,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
               subtitle: _modules.isEnabled(ClubModule.badges)
                   ? null
                   : const Text('Active d’abord « Badges » ci-dessus.'),
-              trailing: const Icon(Icons.chevron_right_rounded),
+              trailing: const Icon(Icons.chevron_right_outlined),
               onTap: _modules.isEnabled(ClubModule.badges)
                   ? () => context.push('/admin/badges')
                   : null,
@@ -1271,14 +1266,13 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
             _rules.any(
               (r) => _isRelevantRule(r) && _ruleCategory(r) == 'other',
             ))
-          _section('other', 'Autres réglages', Icons.tune_rounded, [
+          _section('other', 'Autres réglages', [
             ..._modulesFor('other'),
             ..._rulesFor('other'),
           ]),
         _section(
           'members',
           'Membres et invitations',
-          Icons.person_add_alt_1_outlined,
           [
             _labelWithInfo(
               'invite',
@@ -1307,13 +1301,12 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
               children: [
                 FilledButton.tonalIcon(
                   onPressed: _copyInviteLink,
-                  icon: const Icon(Icons.link, size: 18),
+                  icon: const Icon(Icons.link_outlined, size: 18),
                   label: const Text('Copier le lien d’inscription'),
                 ),
-                OutlinedButton.icon(
+                OutlinedButton(
                   onPressed: _renewingCode ? null : _renewInviteCode,
-                  icon: const Icon(Icons.autorenew_rounded, size: 18),
-                  label: const Text('Changer le code'),
+                  child: const Text('Changer le code'),
                 ),
               ],
             ),
@@ -1321,7 +1314,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           ],
         ),
         // L'abonnement a son propre écran, ouvert depuis Paramètres.
-        _section('season', 'Saison', Icons.flag_outlined, [
+        _section('season', 'Saison', [
           const Text(
             'Finir la saison archive le classement final. Tu pourras ensuite '
             'en créer une nouvelle.',

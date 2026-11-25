@@ -23,6 +23,7 @@ import 'package:petit_filet/features/matches/presentation/widgets/match_meeting_
 import 'package:petit_filet/features/matches/presentation/widgets/match_wheel_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 enum _CalendarEntryKind { championnat, amical, internal, event }
 
@@ -232,7 +233,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
             IconButton(
               tooltip: 'Supprimer l’événement',
               onPressed: busy ? null : _confirmDeleteEvent,
-              icon: const Icon(Icons.delete_outline),
+              icon: const Icon(Icons.delete_outlined),
             ),
         ],
       ),
@@ -254,7 +255,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
             ] else if (widget.event != null) ...[
               const ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: Icon(Icons.event_rounded),
+                leading: Icon(Icons.event_outlined),
                 title: Text('Événement'),
                 subtitle: Text('Rendez-vous du club, indépendant des matchs.'),
               ),
@@ -519,7 +520,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
                           padding: EdgeInsets.zero,
                         ),
                         onPressed: busy ? null : _createOpponent,
-                        child: const Icon(Icons.add_rounded),
+                        child: const Icon(Icons.add_outlined),
                       ),
                     ),
                   ),
@@ -684,15 +685,14 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
       addCard(
         ListTile(
           contentPadding: EdgeInsets.zero,
-          title: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Nombre de joueurs convoqués ${_squadSizeController.text} joueur${_squadSizeController.text == '1' ? '' : 's'}',
-              maxLines: 1,
-            ),
+          // Titre + valeur sur deux lignes, comme dans l'autre formulaire :
+          // « … convoqués 14 joueurs » répétait le mot « joueurs » sur une seule
+          // ligne réduite par un FittedBox.
+          title: const Text('Nombre de joueurs convoqués'),
+          subtitle: Text(
+            '${_squadSizeController.text} joueur${_squadSizeController.text == '1' ? '' : 's'}',
           ),
-          trailing: const Icon(Icons.unfold_more_rounded),
+          trailing: const Icon(Icons.unfold_more_outlined),
           onTap: busy ? null : _pickSquadSize,
         ),
       );
@@ -730,7 +730,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
         contentPadding: EdgeInsets.zero,
         title: const Text('Date'),
         subtitle: Text(_formatDate(_startsAt)),
-        trailing: const Icon(Icons.unfold_more_rounded),
+        trailing: const Icon(Icons.unfold_more_outlined),
         onTap: busy ? null : _pickDate,
       );
 
@@ -738,7 +738,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
         contentPadding: EdgeInsets.zero,
         title: const Text('Heure'),
         subtitle: Text(_formatTime(_startsAt)),
-        trailing: const Icon(Icons.unfold_more_rounded),
+        trailing: const Icon(Icons.unfold_more_outlined),
         onTap: busy ? null : _pickTime,
       );
 
@@ -1155,6 +1155,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
                 child: const Text('Annuler'),
               ),
               FilledButton(
+                style: PfButtonStyles.danger,
                 onPressed: () => Navigator.pop(dialogContext, true),
                 child: const Text('Supprimer'),
               ),
@@ -1323,20 +1324,22 @@ class _CriterionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final background = Color.alphaBlend(
-      colors.primary.withValues(alpha: lighter ? 0.14 : 0.06),
-      colors.surface,
-    );
+    // Gris-bleu comme les autres cartes de l'appli : les blocs de ce
+    // formulaire étaient teintés de bordeaux, un fond d'une autre couleur que
+    // partout ailleurs. Les deux nuances alternées gardent les blocs distincts.
+    final background = lighter
+        ? Color.alphaBlend(
+            AppTheme.surfaceHigh.withValues(alpha: .55),
+            AppTheme.surface,
+          )
+        : AppTheme.surface;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: colors.primary.withValues(alpha: lighter ? 0.28 : 0.18),
-        ),
+        border: Border.all(color: AppTheme.outline.withValues(alpha: .28)),
       ),
       child: child,
     );
