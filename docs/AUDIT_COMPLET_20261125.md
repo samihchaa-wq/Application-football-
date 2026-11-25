@@ -305,10 +305,11 @@ d'état et de libération de ressources.
    s'importent l'un l'autre (`matches` ↔ `sports_management`, `matches` ↔
    `predictions`, `match_live` ↔ `matches`, `auth` ↔ `club`…). Signe d'un
    découpage qui s'est emmêlé ; ralentit les évolutions. Mineur.
-6. **Rafraîchissement des écrans** : 334 écoutes d'état (`ref.watch`), dont
-   80 usages de `select` sur le projet ; les écrans qui écoutent un état
+6. **Rafraîchissement des écrans** : 334 écoutes d'état (`ref.watch`) pour
+   environ 20 écoutes ciblées (`select`) ; les écrans qui écoutent un état
    entier se reconstruisent à chaque changement. À mesurer en phase 7
-   (performance) plutôt qu'à deviner.
+   (performance) plutôt qu'à deviner. (Correction : j'avais d'abord compté 80
+   `select`, mais 54 étaient des requêtes vers la base.)
 7. 4 fichiers d'écran appellent la base directement, sans passer par la couche
    « données » (`auth_state`, `forced_password_change_page`,
    `club_identity_sync`, `admin_waitlist_page`). Mineur.
