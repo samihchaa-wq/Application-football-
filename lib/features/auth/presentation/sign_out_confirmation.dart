@@ -11,7 +11,7 @@ Future<void> confirmAndSignOut(BuildContext context, WidgetRef ref) async {
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      title: const Text('Se déconnecter ?'),
+      title: const Text('Se déconnecter\u00A0?'),
       content: const Text(
         'Tu devras te reconnecter pour accéder à l’application.',
       ),

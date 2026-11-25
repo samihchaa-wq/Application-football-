@@ -353,7 +353,7 @@ void main() {
     );
     await tester.tap(find.text('Se déconnecter'));
     await tester.pumpAndSettle();
-    expect(find.text('Se déconnecter ?'), findsOneWidget);
+    expect(find.text('Se déconnecter\u00A0?'), findsOneWidget);
 
     await tester.tap(find.text('Annuler'));
     await tester.pumpAndSettle();

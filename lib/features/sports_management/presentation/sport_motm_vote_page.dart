@@ -42,7 +42,7 @@ class _SportMotmVotePageState extends ConsumerState<SportMotmVotePage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirmer ton vote ?'),
+        title: const Text('Confirmer ton vote\u00A0?'),
         content: Text(
           'Tu votes pour ${candidate.displayName}. Ce choix est secret et '
           'définitif : il ne pourra plus être modifié.',

@@ -51,7 +51,7 @@ void main() {
 
       // Première mise en ligne : l'écran annonce la notification aux convoqués
       // avant de publier.
-      expect(find.text('Publier la composition ?'), findsOneWidget);
+      expect(find.text('Publier la composition\u00A0?'), findsOneWidget);
       await tester.tap(find.widgetWithText(FilledButton, 'Valider'));
       await _pumpFrames(tester);
 

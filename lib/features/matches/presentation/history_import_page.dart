@@ -85,7 +85,7 @@ class _HistoryImportPageState extends ConsumerState<HistoryImportPage> {
     final yes = await showDialog<bool>(
       context: context,
       builder: (dialog) => AlertDialog(
-        title: const Text('Importer les matchs ?'),
+        title: const Text('Importer les matchs\u00A0?'),
         content: Text(
           'Importer ${batch.count} rencontres dans cette équipe ? '
           'Les doublons existants seront ignorés. '

@@ -303,7 +303,7 @@ class _SomeoneElsePilots extends ConsumerWidget {
                 final confirmed = await showDialog<bool>(
                   context: context,
                   builder: (dialogContext) => AlertDialog(
-                    title: const Text('Prendre la main ?'),
+                    title: const Text('Prendre la main\u00A0?'),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(dialogContext, false),

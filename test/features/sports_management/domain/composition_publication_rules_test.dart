@@ -59,13 +59,13 @@ void main() {
     ).readAsStringSync();
 
     expect(composition, contains('compositionPublicationWillNotify('));
-    expect(composition, contains('Publier la composition ?'));
+    expect(composition, contains(r'Publier la composition\u00A0?'));
 
     expect(internal, contains('compositionPublicationWillNotify('));
-    expect(internal, contains('Mettre les compositions en ligne ?'));
+    expect(internal, contains(r'Mettre les compositions en ligne\u00A0?'));
     expect(internal, contains('Les compositions sont '));
     expect(internal, contains('en ligne » aux joueurs convoqués.'));
-    expect(internal, isNot(contains('Publier la composition ?')));
+    expect(internal, isNot(contains(r'Publier la composition\u00A0?')));
 
     final paperStart = internal.indexOf('Future<void> _savePaper()');
     final visualStart = internal.indexOf('Future<void> _save()', paperStart);

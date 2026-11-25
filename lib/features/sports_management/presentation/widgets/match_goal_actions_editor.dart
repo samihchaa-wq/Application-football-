@@ -199,7 +199,7 @@ class _GoalActionCard extends StatelessWidget {
     final choice = await pickMatchLiveScorer(
       context,
       candidates: squad,
-      title: 'Qui a marqué ?',
+      title: 'Qui a marqué\u00A0?',
       extraChoiceLabel: 'CSC adverse',
       extraChoiceIcon: Icons.shield_moon_outlined,
       clearChoiceLabel: 'Buteur inconnu',
@@ -228,7 +228,7 @@ class _GoalActionCard extends StatelessWidget {
     final choice = await pickMatchLiveScorer(
       context,
       candidates: candidates,
-      title: 'Qui a fait la passe ?',
+      title: 'Qui a fait la passe\u00A0?',
       playerLeading: const AssistBootIcon(size: 22),
       extraChoiceLabel: 'Aucune passe décisive',
       extraChoiceIcon: Icons.block_outlined,

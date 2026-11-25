@@ -91,7 +91,8 @@ void main() {
       await tester.tap(resetButton);
       await tester.pumpAndSettle();
 
-      expect(find.text('Réinitialiser les compositions ?'), findsOneWidget);
+      expect(
+          find.text('Réinitialiser les compositions\u00A0?'), findsOneWidget);
       expect(
         find.textContaining(
           'Les noms d’équipe et les maillots seront conservés',

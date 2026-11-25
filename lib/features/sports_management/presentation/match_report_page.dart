@@ -276,8 +276,8 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
         builder: (dialogContext, setDialogState) => AlertDialog(
           title: Text(
             count == 1
-                ? 'Quel but veux-tu supprimer ?'
-                : 'Quels $count buts veux-tu supprimer ?',
+                ? 'Quel but veux-tu supprimer\u00A0?'
+                : 'Quels $count buts veux-tu supprimer\u00A0?',
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -389,8 +389,8 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
           builder: (dialogContext) => AlertDialog(
             title: Text(
               report.isCorrection
-                  ? 'Corriger le compte rendu ?'
-                  : 'Valider le compte rendu ?',
+                  ? 'Corriger le compte rendu\u00A0?'
+                  : 'Valider le compte rendu\u00A0?',
             ),
             content: SingleChildScrollView(
               child: Column(

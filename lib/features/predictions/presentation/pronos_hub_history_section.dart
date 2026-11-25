@@ -309,7 +309,7 @@ class _AdminMatchActions extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
-            title: const Text('Supprimer ce match ?'),
+            title: const Text('Supprimer ce match\u00A0?'),
             content: const Text(
               'Le match, ses pronostics, ses buteurs et ses statistiques '
               'seront définitivement supprimés. Les classements seront recalculés.',

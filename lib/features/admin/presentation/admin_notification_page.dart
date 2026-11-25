@@ -54,7 +54,7 @@ class _AdminNotificationPageState extends ConsumerState<AdminNotificationPage> {
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
-            title: const Text('Envoyer la notification ?'),
+            title: const Text('Envoyer la notification\u00A0?'),
             content: Text(
               '« $title »\n\n$body\n\n'
               'Destinataires (${names.length}) : ${names.join(', ')}',

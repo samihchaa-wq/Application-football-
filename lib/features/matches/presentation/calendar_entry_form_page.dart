@@ -1147,7 +1147,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
-            title: const Text('Supprimer cet événement ?'),
+            title: const Text('Supprimer cet événement\u00A0?'),
             content: const Text('Cette action est irréversible.'),
             actions: [
               TextButton(

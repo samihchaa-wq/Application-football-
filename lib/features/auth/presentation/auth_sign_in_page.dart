@@ -112,7 +112,7 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: authState.isLoading ? null : _forgotPassword,
-              child: const Text('Mot de passe oublié ?'),
+              child: const Text('Mot de passe oublié\u00A0?'),
             ),
           ),
           FilledButton.icon(

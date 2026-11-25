@@ -166,7 +166,7 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
       if (inRoster) {
         final confirmed = await _confirm(
           context,
-          'Retirer de l’effectif ?',
+          'Retirer de l’effectif\u00A0?',
           '${profile.displayName} ne fera plus partie de l’effectif de la '
               'saison. Son compte, ses statistiques et son historique sont '
               'conservés.',
@@ -298,7 +298,7 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
       if (!policy.isArchived) {
         final confirmed = await _confirm(
           context,
-          'Archiver ce compte ?',
+          'Archiver ce compte\u00A0?',
           '${profile.displayName} ne pourra plus se connecter. '
               'Ses données seront conservées.',
         );
@@ -313,7 +313,7 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
     Future<void> deleteAccount() async {
       final confirmed = await _confirm(
         context,
-        'Supprimer ce compte ?',
+        'Supprimer ce compte\u00A0?',
         '${profile.displayName} sera supprimé définitivement. '
             'Pour bloquer uniquement la connexion, utilise « Archiver ».',
       );
@@ -654,7 +654,7 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
                       onReject: () async {
                         final confirmed = await _confirm(
                           context,
-                          'Refuser et supprimer ce compte ?',
+                          'Refuser et supprimer ce compte\u00A0?',
                           '${profile.displayName} sera supprimé définitivement.',
                         );
                         if (!confirmed) return;

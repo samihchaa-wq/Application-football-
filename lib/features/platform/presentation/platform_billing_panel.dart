@@ -300,7 +300,8 @@ class _SubscriptionCard extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(suspended ? 'Rouvrir l’accès ?' : 'Suspendre l’accès ?'),
+        title: Text(
+            suspended ? 'Rouvrir l’accès\u00A0?' : 'Suspendre l’accès\u00A0?'),
         content: Text(
           suspended
               ? 'Les membres de ${team.name} retrouvent l’appli tout de suite.'

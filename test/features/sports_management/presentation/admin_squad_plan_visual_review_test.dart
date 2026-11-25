@@ -351,7 +351,7 @@ void main() {
 
     // Annuler laisse le joueur où il est, et n'écrit rien.
     await _dragPlayerToColumn(tester, playerName: 'Clara', columnIndex: 0);
-    expect(find.text('Prévenir Clara ?'), findsOneWidget);
+    expect(find.text('Prévenir Clara\u00A0?'), findsOneWidget);
     await tester.tap(find.widgetWithText(TextButton, 'Annuler'));
     await _pumpFrames(tester, count: 20);
     expect(find.text('Liste d’attente (1)'), findsOneWidget);
@@ -359,7 +359,7 @@ void main() {
 
     // Confirmer déplace le joueur et déclenche l'écriture.
     await _dragPlayerToColumn(tester, playerName: 'Clara', columnIndex: 0);
-    expect(find.text('Prévenir Clara ?'), findsOneWidget);
+    expect(find.text('Prévenir Clara\u00A0?'), findsOneWidget);
     await tester.tap(find.widgetWithText(FilledButton, 'Confirmer'));
     await _pumpFrames(tester, count: 20);
     expect(find.text('Liste d’attente (0)'), findsOneWidget);
@@ -403,7 +403,7 @@ void main() {
 
     // Annuler laisse le joueur convoqué et n'écrit rien.
     await _dragPlayerToColumn(tester, playerName: 'Bruno', columnIndex: 2);
-    expect(find.text('Noter Bruno absent ?'), findsOneWidget);
+    expect(find.text('Noter Bruno absent\u00A0?'), findsOneWidget);
     await tester.tap(find.widgetWithText(TextButton, 'Annuler'));
     await _pumpFrames(tester, count: 20);
     expect(find.text('Convoqués (3)'), findsOneWidget);
@@ -412,7 +412,7 @@ void main() {
 
     // Confirmer enregistre l'absence à la place du joueur.
     await _dragPlayerToColumn(tester, playerName: 'Bruno', columnIndex: 2);
-    expect(find.text('Noter Bruno absent ?'), findsOneWidget);
+    expect(find.text('Noter Bruno absent\u00A0?'), findsOneWidget);
     await tester.tap(find.widgetWithText(FilledButton, 'Noter absent'));
     await _pumpFrames(tester, count: 40);
 
@@ -469,7 +469,7 @@ void main() {
     await tester.tap(save);
     await _pumpFrames(tester, count: 10);
 
-    expect(find.text('Publier la composition ?'), findsOneWidget);
+    expect(find.text('Publier la composition\u00A0?'), findsOneWidget);
     expect(
       find.textContaining('enverra une notification à tous les joueurs'),
       findsOneWidget,
@@ -719,7 +719,7 @@ void main() {
     await tester.tap(save);
     await _pumpFrames(tester, count: 20);
 
-    expect(find.text('Publier la composition ?'), findsNothing);
+    expect(find.text('Publier la composition\u00A0?'), findsNothing);
     expect(repository.saveCalls, 1);
   });
 

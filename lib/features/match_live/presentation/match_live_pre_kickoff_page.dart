@@ -380,7 +380,7 @@ class _MatchLivePreKickoffPageState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Démarrer le match ?'),
+        title: const Text('Démarrer le match\u00A0?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),

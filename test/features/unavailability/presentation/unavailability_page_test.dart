@@ -110,7 +110,7 @@ void main() {
 
     await tester.tap(find.text('Annuler'));
     await tester.pumpAndSettle();
-    expect(find.text('Annuler cette indisponibilité ?'), findsOneWidget);
+    expect(find.text('Annuler cette indisponibilité\u00A0?'), findsOneWidget);
     await tester.tap(find.text('Garder'));
     await tester.pumpAndSettle();
     expect(repository.cancelled, isEmpty);

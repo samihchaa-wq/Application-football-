@@ -33,7 +33,7 @@ void main() {
     expect(find.text('Saison 2026-2027'), findsOneWidget);
     await tester.tap(find.text('Finir la saison'));
     await tester.pumpAndSettle();
-    expect(find.text('Finir la saison ?'), findsOneWidget);
+    expect(find.text('Finir la saison\u00A0?'), findsOneWidget);
     await tester.tap(find.text('Annuler'));
     await tester.pumpAndSettle();
     expect(club.seasonStatusChanges, isEmpty);

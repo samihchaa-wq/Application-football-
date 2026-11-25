@@ -431,7 +431,7 @@ Future<bool> _confirmUnlink(BuildContext context, RosterPlayer player) async {
   return await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: const Text('Supprimer la liaison ?'),
+          title: const Text('Supprimer la liaison\u00A0?'),
           content: Text(
             '${player.displayName} ne sera plus relié au compte '
             '${player.linkedProfileLabel ?? 'sélectionné'}. Le joueur et les '

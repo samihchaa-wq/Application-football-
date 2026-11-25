@@ -126,7 +126,7 @@ class _OpponentStadiumLibraryPageState
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
-            title: const Text('Supprimer cette équipe ?'),
+            title: const Text('Supprimer cette équipe\u00A0?'),
             content: Text(
               '« ${item.name} » ne pourra être supprimée que si elle n’est '
               'liée à aucun match actuel ou historique.',
