@@ -132,3 +132,66 @@ aucun effet).
   paramètres identiques est documentée par Stripe, mais je n'ai pas de clé
   pour l'essayer) ; **migration non appliquée à la production** (elle part à
   la publication automatique, après fusion).
+
+## Phase 3 — Base de données (fait)
+
+Méthode : lecture seule de la production (alertes de performance Supabase,
+statistiques des requêtes, tâches planifiées, taille des tables, contrôles
+d'intégrité), historique des sauvegardes sur GitHub. Aucune écriture.
+
+### État
+- Base de **85 Mo**, 84 migrations appliquées, 16 tâches planifiées sans échec.
+- Aucun index invalide, aucune clé étrangère sans index, 1 seule table sans
+  clé primaire (`private.client_incident_log_unassigned`, table interne).
+- Requêtes lentes : rien d'inquiétant. La plus lente par appel
+  (`get_club_rules`, 81 ms) est déjà corrigée par une migration récente.
+- Sauvegardes : complètes (base + photos), **chiffrées**, lancées chaque
+  lundi et après chaque fusion sur `main` ; dernière réussie le 25/11.
+  Exercice de restauration sur copie jetable réussi le 24/11.
+  Surveillance de la production : toutes les heures, réussie.
+
+### Constats
+1. **Important : les sauvegardes sont stockées comme « artefacts » d'un dépôt
+   GitHub public** (90 jours). Elles sont chiffrées (AES-256, phrase d'au moins
+   48 caractères imposée), donc illisibles sans la phrase, mais elles contiennent
+   toute la base (téléphones, dates de naissance…) et sont téléchargeables par
+   n'importe quel compte GitHub. La phrase devient le seul rempart. Le fichier
+   du workflow le dit lui-même (« prévoir un stockage externe privé »).
+   Recommandation : stockage privé externe, ou dépôt privé, avant de
+   multiplier les clubs. Décision à toi.
+2. **Mineur : journal du planificateur = 62 % de la base** (53 Mo sur 85 Mo).
+   Purgé chaque nuit au-delà de 7 jours, donc stable. Une tâche tourne toutes
+   les 5 s (120 000 lignes par semaine). Pas d'action nécessaire.
+3. **Mineur : 4 index en double** (`club_settings_club_id_idx`, et 3 index
+   `*_latest_idx` / `*_order_idx` redondants avec des contraintes d'unicité) :
+   place et écritures inutiles. Suppression = changement de base, accord requis.
+4. **Mineur : 1 contrainte non validée** (`push_notification_log_kind_check`) :
+   protège les nouvelles lignes mais pas les anciennes. À valider.
+5. **À surveiller pour la croissance** : les tâches de fond parcourent chaque
+   club à chaque minute (`run_for_each_club`, 313 000 appels, 0,4 % du temps de
+   la base aujourd'hui avec 1 club). La charge sera multipliée par le nombre de
+   clubs. Aucun problème maintenant ; à re-mesurer à 10 clubs.
+6. **Info** : 61 index « jamais utilisés » : normal avec 1 seul club et peu
+   de trafic ; à ne pas supprimer (ils servent aux liens entre tables).
+   L'authentification est limitée à 10 connexions (réglage Supabase à passer
+   en pourcentage si l'offre grossit).
+7. **Information** : une simulation (« do $sim$ », 3 saisons de matchs) a été
+   exécutée une fois sur la production ; aucune trace n'en subsiste (identifiants
+   simulés absents, aucune saison 2023-2025).
+8. **Process** : ma migration portait le même numéro qu'une migration déjà
+   appliquée en production (créée sur une autre branche). Détecté à temps,
+   renommée en `20261206010000`. Les numéros de migration se choisissent donc
+   au dernier moment, après mise à jour sur `main`.
+
+### Non vérifié
+- Les sauvegardes automatiques propres à Supabase (offre, restauration à un
+  instant donné) : non lisibles d'ici.
+- La restauration des **photos** n'a jamais été prouvée (point #91 du dossier).
+- Rejeu complet des migrations depuis une base vide : impossible par
+  construction (l'historique n'est pas rejouable ; la CI utilise un schéma
+  de base reconstitué, comme documenté).
+
+### Lot de nettoyage proposé (attend ton accord)
+Une seule migration : supprimer les 4 index en double, supprimer
+`grinta_sync.ping`, valider la contrainte du journal des notifications,
+durcir les adresses d'images de badges (phase 1).
