@@ -7,6 +7,8 @@ const _themed = [
   'core/widgets/calendar_scoreline.dart',
   'core/widgets/pf_status_banner.dart',
   'predictions/presentation/merged_matches_view.dart',
+  // Document PDF imprimé (pas l'interface) : calqué sur l'attestation papier.
+  'license/domain/license_pdf.dart',
 ];
 
 void main() {
