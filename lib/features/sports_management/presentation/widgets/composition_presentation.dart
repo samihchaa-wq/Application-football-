@@ -325,6 +325,7 @@ class _CompositionPresentationPageState
         CompositionPresentationData._coachId: _Face(
           name: data.coach!.name,
           photoUrl: data.coach!.photoUrl,
+          isCoach: true,
         ),
     };
   }

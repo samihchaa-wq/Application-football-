@@ -744,6 +744,7 @@ class PlayerAvatar extends StatefulWidget {
     required this.name,
     this.lastName,
     this.isGoalkeeper = false,
+    this.isCoach = false,
     this.kit,
     this.size = 52,
     this.fallbackScale = .84,
@@ -757,6 +758,9 @@ class PlayerAvatar extends StatefulWidget {
   /// écrans (voir [avatarInitials]).
   final String? lastName;
   final bool isGoalkeeper;
+
+  /// Le coach est habillé d'un costume, pas du maillot du club.
+  final bool isCoach;
 
   /// Tenue prioritaire si l'écran en fournit une. Sinon, la tenue du match
   /// provient de CompositionKitScope ; ailleurs, celle par défaut du club.
@@ -915,6 +919,7 @@ class _PlayerAvatarState extends State<PlayerAvatar> {
               : KitPortrait(
                   kit: kit,
                   isGoalkeeper: widget.isGoalkeeper,
+                  isCoach: widget.isCoach,
                   child: child,
                 ),
       // Les vues HTML créent un overlay de composition par avatar sur le Web.

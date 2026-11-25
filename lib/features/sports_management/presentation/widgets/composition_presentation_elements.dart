@@ -233,12 +233,14 @@ class _Face {
     this.lastName,
     this.photoUrl,
     this.isGoalkeeper = false,
+    this.isCoach = false,
   });
 
   final String name;
   final String? lastName;
   final String? photoUrl;
   final bool isGoalkeeper;
+  final bool isCoach;
 
   bool get hasPhoto => photoUrl?.trim().isNotEmpty ?? false;
 }
@@ -263,6 +265,7 @@ class _PresentationTile extends StatelessWidget {
       name: face.name,
       lastName: face.lastName,
       isGoalkeeper: face.isGoalkeeper,
+      isCoach: face.isCoach,
       size: photoSize,
     );
     return SizedBox(

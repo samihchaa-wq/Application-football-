@@ -15,10 +15,14 @@ class KitPortrait extends StatelessWidget {
     required this.kit,
     required this.child,
     this.isGoalkeeper = false,
+    this.isCoach = false,
   });
 
   final ClubKit kit;
   final bool isGoalkeeper;
+
+  /// Le coach ne porte pas le maillot du club : il est habillé d'un costume.
+  final bool isCoach;
   final Widget child;
 
   /// Le maillot validé : une carte de lumière (plis, mailles, coutures) et
@@ -56,26 +60,37 @@ class KitPortrait extends StatelessWidget {
           ClipPath(clipper: const _HeadClipper(), child: child),
           Positioned.fill(
             child: IgnorePointer(
-              child: Semantics(
-                label: '${isGoalkeeper ? 'Gardien' : 'Joueur'} — ${kit.label}',
-                image: true,
-                child: FutureBuilder<_PortraitJerseyImages?>(
-                  future: _images,
-                  builder: (context, snapshot) => CustomPaint(
-                    key: ValueKey(
-                      'portrait-jersey-${isGoalkeeper ? 'goalkeeper' : 'field'}',
+              child: isCoach
+                  ? Semantics(
+                      label: 'Coach — costume',
+                      image: true,
+                      child: const CustomPaint(
+                        key: ValueKey('portrait-suit'),
+                        painter: PortraitSuitPainter(),
+                      ),
+                    )
+                  : Semantics(
+                      label:
+                          '${isGoalkeeper ? 'Gardien' : 'Joueur'} — ${kit.label}',
+                      image: true,
+                      child: FutureBuilder<_PortraitJerseyImages?>(
+                        future: _images,
+                        builder: (context, snapshot) => CustomPaint(
+                          key: ValueKey(
+                            'portrait-jersey-${isGoalkeeper ? 'goalkeeper' : 'field'}',
+                          ),
+                          painter: PortraitJerseyPainter(
+                            body: isGoalkeeper ? kit.goalkeeperBody : kit.body,
+                            trim: isGoalkeeper ? kit.goalkeeperTrim : kit.trim,
+                            pattern: isGoalkeeper
+                                ? kit.goalkeeperPattern
+                                : kit.pattern,
+                            luma: snapshot.data?.luma,
+                            collar: snapshot.data?.collar,
+                          ),
+                        ),
+                      ),
                     ),
-                    painter: PortraitJerseyPainter(
-                      body: isGoalkeeper ? kit.goalkeeperBody : kit.body,
-                      trim: isGoalkeeper ? kit.goalkeeperTrim : kit.trim,
-                      pattern:
-                          isGoalkeeper ? kit.goalkeeperPattern : kit.pattern,
-                      luma: snapshot.data?.luma,
-                      collar: snapshot.data?.collar,
-                    ),
-                  ),
-                ),
-              ),
             ),
           ),
         ],
@@ -305,4 +320,113 @@ class PortraitJerseyPainter extends CustomPainter {
       oldDelegate.pattern != pattern ||
       oldDelegate.luma != luma ||
       oldDelegate.collar != collar;
+}
+
+
+/// Costume du coach : veste bleu nuit, chemise blanche, cravate. Même
+/// silhouette (épaules, col) que le maillot, pour que la photo soit découpée
+/// au même endroit et que le visage ne bouge pas.
+class PortraitSuitPainter extends CustomPainter {
+  const PortraitSuitPainter();
+
+  static const _jacket = Color(0xFF1C2742);
+  static const _jacketLight = Color(0xFF2E3B5E);
+  static const _shirt = Color(0xFFF4F6FA);
+  static const _tie = Color(0xFFB3202F);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
+    canvas
+      ..save()
+      ..scale(size.width, size.height);
+
+    final body = _PortraitGeometry.shirt();
+    final collar = _PortraitGeometry.innerCollar().getBounds();
+    final left = collar.left;
+    final right = collar.right;
+    final top = collar.top;
+    final mid = (left + right) / 2;
+    final bottom = collar.bottom;
+    final apexY = bottom + .17;
+
+    // Veste, avec un léger dégradé vertical pour garder du volume.
+    canvas
+      ..save()
+      ..clipPath(body)
+      ..drawRect(
+        const Rect.fromLTWH(0, _PortraitGeometry.jerseyTop, 1, .45),
+        Paint()
+          ..shader = const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [_jacketLight, _jacket],
+          ).createShader(
+            const Rect.fromLTWH(0, _PortraitGeometry.jerseyTop, 1, .45),
+          ),
+      );
+
+    // Chemise : triangle blanc entre les deux revers.
+    final shirt = Path()
+      ..moveTo(left - .035, top - .01)
+      ..lineTo(right + .035, top - .01)
+      ..lineTo(mid, apexY)
+      ..close();
+    canvas.drawPath(shirt, Paint()..color = _shirt);
+
+    // Cravate : nœud puis lame.
+    final knot = Path()
+      ..moveTo(mid - .03, bottom - .03)
+      ..lineTo(mid + .03, bottom - .03)
+      ..lineTo(mid + .02, bottom + .035)
+      ..lineTo(mid - .02, bottom + .035)
+      ..close();
+    final blade = Path()
+      ..moveTo(mid - .02, bottom + .035)
+      ..lineTo(mid + .02, bottom + .035)
+      ..lineTo(mid + .034, apexY + .09)
+      ..lineTo(mid, apexY + .13)
+      ..lineTo(mid - .034, apexY + .09)
+      ..close();
+    canvas
+      ..drawPath(blade, Paint()..color = _tie)
+      ..drawPath(knot, Paint()..color = _tie);
+
+    // Revers : deux bandes plus claires qui bordent la chemise.
+    final lapelPaint = Paint()
+      ..color = _jacketLight
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = .016
+      ..strokeJoin = StrokeJoin.round;
+    canvas
+      ..drawPath(
+        Path()
+          ..moveTo(left - .035, top - .01)
+          ..lineTo(mid, apexY)
+          ..lineTo(mid, apexY + .2),
+        lapelPaint,
+      )
+      ..drawPath(
+        Path()
+          ..moveTo(right + .035, top - .01)
+          ..lineTo(mid, apexY)
+          ..lineTo(mid, apexY + .2),
+        lapelPaint,
+      )
+      ..restore();
+
+    // Contour fin de la veste.
+    canvas
+      ..drawPath(
+        body,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = .006
+          ..color = const Color(0xFF0E1526),
+      )
+      ..restore();
+  }
+
+  @override
+  bool shouldRepaint(PortraitSuitPainter oldDelegate) => false;
 }

@@ -184,6 +184,7 @@ class EffectifPlayerTile extends StatelessWidget {
                 name: name,
                 lastName: lastName,
                 isGoalkeeper: isGoalkeeper,
+                isCoach: isCoach,
                 size: 30,
                 fallbackScale: .9,
               ),
