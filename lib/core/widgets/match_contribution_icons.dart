@@ -1,12 +1,14 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 /// Icônes des faits de match d'un joueur, partagées par la composition d'un
 /// match terminé et la fiche joueur : ⚽ pour un but, un crampon pour une
 /// passe décisive, 👑 pour l'Homme du match.
 
-/// Ballon d'un but, ajusté dans un carré de côté [size] : un emoji dessiné à
-/// une taille de police donnée déborde de cette taille, et le ballon
-/// paraissait plus gros que le crampon voisin à taille égale.
+/// Ballon d'un but, dessiné comme le crampon (blanc sur disque noir) : même
+/// taille, même style, et lisible sur le vert du terrain. L'emoji ⚽ restait
+/// invisible sur certains téléphones.
 class GoalIcon extends StatelessWidget {
   const GoalIcon({super.key, this.size = 13});
 
@@ -16,13 +18,53 @@ class GoalIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox.square(
       dimension: size,
-      child: FittedBox(
-        // Sans hauteur de ligne forcée, la boîte du texte englobe tout le
-        // dessin de l'emoji : rien ne dépasse du carré.
-        child: Text('⚽', style: TextStyle(fontSize: size)),
-      ),
+      child: const CustomPaint(painter: _BallPainter()),
     );
   }
+}
+
+class _BallPainter extends CustomPainter {
+  const _BallPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final r = size.width / 2;
+    final c = size.center(Offset.zero);
+    canvas.drawCircle(c, r, Paint()..color = Colors.black);
+    final white = Paint()..color = Colors.white;
+    final ringR = r * 0.86;
+    canvas.drawCircle(
+      c,
+      ringR,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = r * 0.1,
+    );
+    // Pentagone central, relié au bord par cinq traits.
+    final pent = Path();
+    final dark = Paint()
+      ..color = Colors.black
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = r * 0.09
+      ..strokeCap = StrokeCap.round;
+    canvas.drawCircle(c, ringR - r * 0.05, white);
+    for (var i = 0; i < 5; i++) {
+      final a = -math.pi / 2 + i * 2 * math.pi / 5;
+      final p = c + Offset(math.cos(a), math.sin(a)) * r * 0.32;
+      i == 0 ? pent.moveTo(p.dx, p.dy) : pent.lineTo(p.dx, p.dy);
+      canvas.drawLine(
+        c + Offset(math.cos(a), math.sin(a)) * r * 0.32,
+        c + Offset(math.cos(a), math.sin(a)) * ringR,
+        dark,
+      );
+    }
+    pent.close();
+    canvas.drawPath(pent, Paint()..color = Colors.black);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => false;
 }
 
 /// Couronne de l'Homme du match.
