@@ -77,8 +77,8 @@ class MatchHistoryCard extends ConsumerWidget {
           radius: 20,
           borderColor: border,
           borderWidth: 1.3,
-          tint: .16,
-          stripe: true),
+          stripe: true,
+          flat: true),
       clipBehavior: Clip.antiAlias,
       // Une fois terminé, un « Match entre nous » devient une archive purement
       // informative, et un match annulé n'a plus rien à ouvrir : pas de

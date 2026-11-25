@@ -2,6 +2,7 @@ import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/utils/app_formats.dart';
 import 'package:petit_filet/core/widgets/match_fixture.dart';
 import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/club/club_rules.dart';
 import 'package:flutter/material.dart';
 
 /// Affiche d'une rencontre sur une seule ligne, pour les cartes du calendrier :
@@ -183,6 +184,17 @@ class _ScorelineTeam extends StatelessWidget {
 
     if (!isOwnTeam) return Center(child: label);
 
+    return ValueListenableBuilder<int>(
+      valueListenable: ClubRules.revision,
+      builder: (context, _, __) {
+        // Le club peut choisir, dans ses réglages, de ne pas afficher son logo.
+        if (!ClubRules.showCrestInFixtures) return Center(child: label);
+        return _withCrest(crest, label);
+      },
+    );
+  }
+
+  Widget _withCrest(Widget crest, Widget label) {
     final reserved = SizedBox(width: crestSize + _crestGap);
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -558,7 +570,7 @@ class CalendarCardSections extends StatelessWidget {
   final double bodyHorizontalPadding;
 
   /// Voile posé sur la couleur de la carte pour foncer les bandeaux.
-  static const Color bandShade = Color(0x40000000);
+  static const Color bandShade = Color(0x73000000);
 
   @override
   Widget build(BuildContext context) {

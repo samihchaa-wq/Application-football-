@@ -1,10 +1,8 @@
 import 'package:petit_filet/core/theme/pf_card_border.dart';
 import 'package:petit_filet/core/club/club_identity.dart';
-import 'package:petit_filet/core/theme/app_spacing.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/theme/calendar_card_palette.dart';
 import 'package:petit_filet/core/widgets/match_address_sheet.dart';
-import 'package:petit_filet/core/widgets/match_date_column.dart';
 import 'package:petit_filet/core/widgets/calendar_scoreline.dart';
 import 'package:petit_filet/features/match_live/data/match_live_notification_repository.dart';
 import 'package:petit_filet/features/match_live/presentation/widgets/match_live_notification_bell.dart';
@@ -72,91 +70,51 @@ class HomeNextMatchCard extends ConsumerWidget {
         ? null
         : Row(mainAxisSize: MainAxisSize.min, children: actionWidgets);
 
-    final fixtureRow = Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(
-          child: match.isInternal
-              ? Text(
-                  'Match entre nous',
-                  textAlign: TextAlign.start,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        color: AppTheme.textPrimary,
-                      ),
-                )
-              : CalendarScoreline(
-                  homeName: homeName,
-                  awayName: awayName,
-                  ownIsHome: match.isHome,
-                  foreground: AppTheme.textPrimary,
-                ),
-        ),
-        const Icon(
-          Icons.arrow_forward_ios_outlined,
-          size: 14,
-          color: AppTheme.textFaint,
-        ),
-      ],
-    );
-
-    final content = Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.cardPadding,
-        12,
-        AppSpacing.cardPadding,
-        13,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          MatchDateHeader(
-            kickoffAt: match.kickoffAt,
+    final fixture = match.isInternal
+        ? const CalendarCenteredTitle('Match entre nous')
+        : CalendarScoreline(
+            homeName: homeName,
+            awayName: awayName,
+            ownIsHome: match.isHome,
             foreground: AppTheme.textPrimary,
-            secondary: AppTheme.textPrimary,
-            dividerColor: cardBorder,
-            label: match.isInternal ? null : match.calendarTypeLabel,
-            child: fixtureRow,
-          ),
-          if (cardActions != null)
-            Align(alignment: Alignment.centerRight, child: cardActions),
-          if (match.address case final address?) ...[
-            const SizedBox(height: AppSpacing.contentGap),
-            InkWell(
-              onTap: () => showMatchAddressSheet(context, address),
-              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 3),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(Icons.place_outlined, size: 16, color: cardBorder),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        address,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.textSecondary,
-                              fontWeight: FontWeight.w400,
-                            ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+          );
+
+    final address = match.address?.trim();
+    final hasAddress = address != null && address.isNotEmpty;
+
+    // Même découpe que les autres cartes du calendrier : bandeau de date,
+    // affiche au centre, bandeau du bas avec le lieu et les actions.
+    final content = CalendarCardSections(
+      header: CalendarDateLine(
+        kickoffAt: match.kickoffAt,
+        label: match.isInternal ? null : match.calendarTypeLabel,
+      ),
+      body: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          fixture,
           if (showAvailability)
             MatchAvailabilitySelector(
               matchId: match.id,
               embeddedOnDark: true,
-              topSpacing: 10,
+              topSpacing: CalendarCardSpacing.line,
             ),
         ],
       ),
+      footerVerticalPadding:
+          cardActions == null ? null : CalendarCardFooter.actionsBandPadding,
+      footer: cardActions != null || hasAddress
+          ? CalendarCardFooter(
+              address: hasAddress
+                  ? CalendarAddressLine(
+                      address,
+                      onTap: () => showMatchAddressSheet(context, address),
+                    )
+                  : null,
+              actions: cardActions,
+            )
+          : null,
     );
 
     return Card(
@@ -165,8 +123,8 @@ class HomeNextMatchCard extends ConsumerWidget {
           radius: AppTheme.radiusMd,
           borderColor: cardBorder,
           borderWidth: 1.2,
-          tint: .16,
-          stripe: true),
+          stripe: true,
+          flat: true),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => context.push(

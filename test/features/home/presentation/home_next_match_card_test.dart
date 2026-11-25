@@ -1,4 +1,3 @@
-import 'package:petit_filet/core/widgets/match_date_column.dart';
 import 'package:petit_filet/core/widgets/calendar_scoreline.dart';
 import 'package:petit_filet/features/club/data/club_repository.dart';
 import 'package:petit_filet/features/home/presentation/home_next_match_card.dart';
@@ -106,7 +105,7 @@ void main() {
         .widget<Text>(
           find
               .descendant(
-                of: find.byType(MatchDateHeader),
+                of: find.byType(CalendarDateLine),
                 matching: find.byType(Text),
               )
               .first,
@@ -119,12 +118,11 @@ void main() {
       find.byIcon(Icons.notifications_none_outlined),
     );
     final edit = tester.getRect(find.byIcon(Icons.edit_outlined));
-    final arrow = tester.getRect(
-      find.byIcon(Icons.arrow_forward_ios_outlined),
-    );
+    final fixture = tester.getRect(find.byType(CalendarScoreline));
 
-    expect(bell.center.dy, greaterThan(arrow.center.dy));
-    expect(edit.center.dy, greaterThan(arrow.center.dy));
+    // Cloche et crayon sont dans le bandeau du bas, sous l'affiche.
+    expect(bell.center.dy, greaterThan(fixture.bottom));
+    expect(edit.center.dy, greaterThan(fixture.bottom));
     expect(edit.center.dx, greaterThan(bell.center.dx));
     expect(tester.takeException(), isNull);
 
@@ -141,7 +139,7 @@ void main() {
     final date = tester.getRect(
       find
           .descendant(
-            of: find.byType(MatchDateHeader),
+            of: find.byType(CalendarDateLine),
             matching: find.byType(Text),
           )
           .first,
@@ -158,7 +156,6 @@ void main() {
     await pumpCard(tester, isAdmin: false, eligible: false);
     expect(find.byIcon(Icons.notifications_none_outlined), findsNothing);
     expect(find.byIcon(Icons.edit_outlined), findsNothing);
-    expect(find.byIcon(Icons.arrow_forward_ios_outlined), findsOneWidget);
     final fixture = tester.widget<CalendarScoreline>(
       find.byType(CalendarScoreline),
     );

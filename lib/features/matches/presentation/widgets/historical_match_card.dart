@@ -38,8 +38,8 @@ class HistoricalMatchCard extends StatelessWidget {
           radius: 20,
           borderColor: border,
           borderWidth: 1.3,
-          tint: .16,
-          stripe: true),
+          stripe: true,
+          flat: true),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => context.push('/matches/history/${match.id}', extra: match),

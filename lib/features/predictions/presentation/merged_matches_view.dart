@@ -878,8 +878,8 @@ class _UpcomingMatchCard extends ConsumerWidget {
           radius: AppTheme.radiusMd,
           borderColor: cardBorder,
           borderWidth: 1.2,
-          tint: .16,
-          stripe: true),
+          stripe: true,
+          flat: true),
       clipBehavior: Clip.antiAlias,
       child: match.isCancelled
           ? content
