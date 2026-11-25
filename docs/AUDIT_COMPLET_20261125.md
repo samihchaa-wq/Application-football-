@@ -434,3 +434,64 @@ Mesures faites sur l'**écran de connexion** (le seul accessible sans compte).
 - Téléphone réel, mémoire, batterie ; mesures de Lighthouse.
 - Le temps réel sur le serveur Cloudflare (compression brotli, cache
   navigateur) : simulé en local avec gzip.
+
+## Phase 8 — Tests (fait)
+
+Méthode : inventaire des suites, relance de toutes celles qui tournent ici,
+passe Flutter en **ordre aléatoire** (graine 1009809916), **mutation** (je
+casse volontairement une règle et je vérifie qu'un test échoue : 8 règles
+Stripe, 4 règles Flutter), analyse du bruit de sortie, lecture de la CI.
+
+### État
+| Suite | Volume | Résultat ici |
+|---|---|---|
+| Flutter | 1 556 tests (283 fichiers) | tous réussis, aussi en ordre aléatoire |
+| Fonctions serveur (Deno) | 144 | tous réussis |
+| Outils Python | 121 | tous réussis |
+| Contrôles Node | 42 | tous réussis |
+| Base de données (pgTAP) | 199 fichiers | **non lancés ici** (pile Supabase locale requise) ; lancés par la CI |
+
+- Aucun test désactivé (« skip »), aucun hasard, aucune attente réelle
+  (`Future.delayed`), sortie quasi vide (16 lignes hors progression).
+- Tests « exhaustifs » sur les cas critiques (pronostic, fenêtre de pronostic,
+  phases du match, routage de connexion) : bonne pratique, à conserver.
+- CI : couverture minimale imposée à 56 % (réel : 64,2 %, soit 8 points de
+  marge) ; budget de poids ; tests de base lancés sur les changements de base.
+
+### Mutations
+- **Flutter : 4 règles cassées sur 4 détectées** (mot de passe minimum 12 → 8,
+  fin de match entre nous inversée, mauvais vainqueur récompensé au pronostic,
+  écart de buts faussé).
+- **Stripe : 5 sur 8 détectées au départ.** Trois trous trouvés et **corrigés**
+  (tests ajoutés, 31 tests Stripe) : signature tronquée acceptée, paiement
+  sous 0,50 € accepté, remboursement de 0 accepté. Les trois mutations sont
+  maintenant détectées.
+
+### Constats
+1. **Corrigé** : les trois trous de tests Stripe ci-dessus (commit 1b473ef3).
+2. **Risque de test « à date »** : 244 dates fixes à partir de 2026 et 59
+   usages de l'heure réelle dans les tests. Un test qui suppose « ce match est
+   dans le futur » peut échouer le jour où la date passe. Les tests passent
+   aujourd'hui ; je n'ai pas pu simuler d'autres dates (pas d'horloge
+   truquable ici). À surveiller si la CI casse sans changement de code.
+3. **Mineur** : un clic manqué est signalé par un avertissement dans les tests
+   des réglages du club (`club_settings_page_test.dart` ou le test voisin) ;
+   les assertions qui suivent passent, donc pas de test vide prouvé.
+4. **Mineur** : 3 fonctions de base absentes des tests de base :
+   `admin_save_internal_composition_v2` (ancienne version),
+   `get_last_opponent_encounters`, `match_prediction_participant_count`.
+5. **Constat transversal** : le **dépôt GitHub est public** (indicateur
+   `private: false` de l'API GitHub). Le commentaire de `flutter_ci.yml`
+   (« Dépôt privé : chaque minute est décomptée du quota ») est donc **périmé**.
+   Conséquences à connaître : les archives de sauvegarde (phase 3) sont
+   téléchargeables par tout compte GitHub (chiffrées), et **ces rapports
+   d'audit sont publics** une fois poussés. Rien de sensible n'y figure
+   (aucun secret, aucune donnée de joueur) mais ils décrivent des points
+   faibles : décision à toi (voir le message de fin de phase).
+
+### Non vérifié
+- Les tests de base (pgTAP), dont ceux que j'ai ajoutés en phase 2 ; la
+  logique SQL a été éprouvée dans une base jetable, pas par la CI.
+- Mutations sur la logique SQL (base) et sur les écrans Flutter.
+- Fragilité des tests d'écran dans le temps (graines supplémentaires, autres
+  dates, autres machines).
