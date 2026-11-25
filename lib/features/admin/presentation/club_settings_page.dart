@@ -341,7 +341,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Changer le code d’invitation ?'),
+        title: const Text('Changer le code d’invitation\u00A0?'),
         content: const Text(
           'L’ancien code et l’ancien lien ne fonctionneront plus. Les joueurs '
           'déjà inscrits ne sont pas concernés.',
@@ -723,7 +723,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
       contentPadding: EdgeInsets.zero,
       title: _labelWithInfo(
         'rule-${rule.key}',
-        'Quelles stats apparaissent au bilan de fin de saison ?',
+        'Quelles stats apparaissent au bilan de fin de saison\u00A0?',
         _ruleInfo(rule),
       ),
       subtitle: Text('$count statistiques sur 9 sélectionnées'),

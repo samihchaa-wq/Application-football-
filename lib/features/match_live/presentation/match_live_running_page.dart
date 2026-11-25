@@ -1014,8 +1014,8 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
     MatchLiveEvent event,
   ) async {
     final title = event.type == MatchLiveEventType.substitution
-        ? 'Retirer ce remplacement ?'
-        : 'Retirer ce but ?';
+        ? 'Retirer ce remplacement\u00A0?'
+        : 'Retirer ce but\u00A0?';
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -1046,7 +1046,7 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Mi-temps ?'),
+        title: const Text('Mi-temps\u00A0?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -1071,7 +1071,7 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Fin du match ?'),
+        title: const Text('Fin du match\u00A0?'),
         // Le titre seul ne disait pas ce que l'appui déclenche.
         content: const Text(
           'Le chrono s’arrête et le score final est enregistré.',
@@ -1100,7 +1100,7 @@ class _MatchLiveRunningPageState extends ConsumerState<MatchLiveRunningPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Recommencer le match ?'),
+        title: const Text('Recommencer le match\u00A0?'),
         content: const Text(
           'Le chrono revient à zéro, et les buts et changements de ce '
           'direct sont effacés.',

@@ -315,7 +315,7 @@ class _PendingTile extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Écarter cette facture ?'),
+        title: const Text('Écarter cette facture\u00A0?'),
         content: const Text(
           'Le paiement reste noté, mais aucune facture ne sera émise pour lui. '
           'À réserver aux paiements de test ou du club de démonstration.',

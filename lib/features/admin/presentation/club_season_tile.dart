@@ -62,7 +62,7 @@ class ClubSeasonTile extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
-            title: const Text('Finir la saison ?'),
+            title: const Text('Finir la saison\u00A0?'),
             content: Text(
               'La saison « ${season.name} » sera archivée immédiatement '
               'et le classement final figé. C’est définitif. '

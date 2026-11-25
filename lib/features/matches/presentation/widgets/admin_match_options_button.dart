@@ -34,7 +34,7 @@ class AdminMatchOptionsButton extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
-            title: const Text('Annuler ce match ?'),
+            title: const Text('Annuler ce match\u00A0?'),
             content: const Text(
               'Le match sera marqué comme annulé. Il reste visible dans le '
               'calendrier pour informer les joueurs, mais ne sera plus '
@@ -69,7 +69,7 @@ class AdminMatchOptionsButton extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
-            title: const Text('Terminer ce match ?'),
+            title: const Text('Terminer ce match\u00A0?'),
             content: const Text(
               'Le match entre nous sera marqué comme terminé et sortira des '
               'matchs en cours. Cette action ne peut pas être annulée depuis '
@@ -123,7 +123,7 @@ class AdminMatchOptionsButton extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
-            title: const Text('Supprimer ce match ?'),
+            title: const Text('Supprimer ce match\u00A0?'),
             content: Text(warning),
             actions: [
               TextButton(

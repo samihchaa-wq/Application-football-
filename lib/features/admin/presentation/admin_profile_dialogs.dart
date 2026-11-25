@@ -117,7 +117,7 @@ Future<void> _resetPassword(
 ) async {
   final confirmed = await _confirm(
     context,
-    'Réinitialiser le mot de passe ?',
+    'Réinitialiser le mot de passe\u00A0?',
     'Un lien à usage unique sera généré pour ${profile.displayName}.',
   );
   if (!confirmed) return;

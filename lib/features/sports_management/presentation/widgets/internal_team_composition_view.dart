@@ -369,7 +369,7 @@ class _InternalTeamCompositionViewState
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: const Text('Mettre les compositions en ligne ?'),
+          title: const Text('Mettre les compositions en ligne\u00A0?'),
           content: const Text(
             'Enregistrer les deux terrains enverra « Les compositions sont '
             'en ligne » aux joueurs convoqués.',
@@ -431,7 +431,7 @@ class _InternalTeamCompositionViewState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Réinitialiser les compositions ?'),
+        title: const Text('Réinitialiser les compositions\u00A0?'),
         content: const Text(
           'Tous les joueurs des deux équipes seront remis dans '
           '« Non affectés ». Les noms d’équipe et les maillots seront conservés.',

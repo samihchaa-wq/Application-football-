@@ -447,7 +447,7 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
       postMatch: _postMatch,
     )) {
       final confirmed = await _confirmAction(
-        title: 'Publier la composition ?',
+        title: 'Publier la composition\u00A0?',
         actionLabel: 'Valider',
         actionIcon: Icons.notifications_active_outlined,
         content: const Text(

@@ -65,7 +65,7 @@ class _CardPaymentButtonState extends ConsumerState<CardPaymentButton> {
       ref.invalidate(clubSubscriptionProvider);
       ref.invalidate(clubReferralsProvider);
       ref.invalidate(myClubAccessProvider);
-      _show('Année offerte activée. Merci pour tes parrainages !');
+      _show('Année offerte activée. Merci pour tes parrainages\u00A0!');
     } catch (error) {
       _show(humanizeError(error));
     } finally {

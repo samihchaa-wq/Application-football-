@@ -75,7 +75,7 @@ class _SeasonCard extends ConsumerWidget {
                   ref,
                   openSeason,
                   'archived',
-                  title: 'Finir la saison ?',
+                  title: 'Finir la saison\u00A0?',
                   message: 'La saison « ${openSeason.name} » sera archivée '
                       'immédiatement et le classement final figé. '
                       'C’est définitif. Tu pourras ensuite créer une '

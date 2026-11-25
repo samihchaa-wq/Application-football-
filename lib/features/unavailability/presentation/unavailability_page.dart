@@ -95,7 +95,7 @@ class _MyUnavailabilitiesPanel extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Annuler cette indisponibilité ?'),
+        title: const Text('Annuler cette indisponibilité\u00A0?'),
         content: Text(
           'Tu redeviendras convocable '
           '${formatUnavailabilityPeriod(unavailability.startsOn, unavailability.endsOn)}. '

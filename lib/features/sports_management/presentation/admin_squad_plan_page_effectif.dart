@@ -108,7 +108,7 @@ extension _AdminSquadPlanEffectif on _AdminSquadPlanPageState {
       postMatch: _postMatch,
     )) {
       final confirmed = await _confirmAction(
-        title: 'Prévenir ${player.displayName} ?',
+        title: 'Prévenir ${player.displayName}\u00A0?',
         actionLabel: 'Confirmer',
         actionIcon: Icons.notifications_active_outlined,
         content: Text(
@@ -155,7 +155,7 @@ extension _AdminSquadPlanEffectif on _AdminSquadPlanPageState {
         !_isInternalMatch &&
         _waitlistedPlayers.any((waiting) => waiting.isAvailable);
     final confirmed = await _confirmAction(
-      title: 'Noter ${player.displayName} absent ?',
+      title: 'Noter ${player.displayName} absent\u00A0?',
       actionLabel: 'Noter absent',
       actionIcon: Icons.cancel_outlined,
       content: Text(
@@ -349,7 +349,7 @@ extension _AdminSquadPlanEffectif on _AdminSquadPlanPageState {
 
     final confirmed = await _confirmAction(
       title: isCollective
-          ? 'Relancer les sans réponse ?'
+          ? 'Relancer les sans réponse\u00A0?'
           : 'Relancer ${player.displayName} ?',
       actionLabel: 'Relancer',
       actionIcon: Icons.notifications_active_outlined,
@@ -581,7 +581,7 @@ extension _AdminSquadPlanEffectif on _AdminSquadPlanPageState {
     final matchId = _selectedMatchId;
     if (matchId == null || _busy || _locked || !player.isGuest) return;
     final confirmed = await _confirmAction(
-      title: 'Retirer l’invité ?',
+      title: 'Retirer l’invité\u00A0?',
       actionLabel: 'Retirer',
       actionIcon: Icons.person_remove_outlined,
       content: Text('${player.displayName} sera retiré de ce match.'),

@@ -149,7 +149,7 @@ class _MatchAvailabilitySelectorState
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: Text(
-            'Passer de « $currentLabel » à « $targetLabel » ?',
+            'Passer de « $currentLabel » à « $targetLabel »\u00A0?',
           ),
           actions: [
             TextButton(

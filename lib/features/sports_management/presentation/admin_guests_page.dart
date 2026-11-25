@@ -231,7 +231,7 @@ class _AdminGuestsPageState extends ConsumerState<AdminGuestsPage> {
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
-            title: const Text('Retirer cet invité du match ?'),
+            title: const Text('Retirer cet invité du match\u00A0?'),
             content: Text(
               '${guest.displayName} sera retiré du brouillon courant. Les anciennes '
               'publications restent intactes.',

@@ -46,6 +46,7 @@
 - Icônes manquantes après une mise à jour (Statistiques, Présent) : la police des icônes ne contient que les icônes de CETTE version ; le service worker la servait depuis l'ancien cache. `web/sw.js` : polices et manifestes d'assets passent maintenant par le réseau d'abord (test de contrat dans test/web/pwa_contract_test.dart). Après la mise en ligne de ce correctif, la mise à jour suivante n'aura plus ce défaut.
 - Cartes du calendrier : cloche et crayon dans le bas de la carte (`CalendarCardFooter`), la ligne du haut garde « date • heure • Championnat · J10 ».
 - Présent / Absent : fond translucide + icône + texte blanc ; choisi = aplat vert profond / rouge profond, texte blanc (`AppTheme.availabilityInSolid/OutSolid`, contraste testé).
+- **Prompt de relais pour la suite du chantier UX/UI : docs/PROMPT_SUITE_UX_UI.md** (ce qui est fait, ce qui reste, outils, pièges).
 - Mode de test optionnel : `flutter test --dart-define=PF_TEXT_SCALE=2` (texte agrandi ; non utilisé par la CI). Le balayage à 200 % n'a pas pu être mené à terme (redémarrage du conteneur) : à refaire.
 
 ## Règles impératives

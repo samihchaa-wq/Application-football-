@@ -200,7 +200,7 @@ void main() {
 
     await tester.tap(find.text('Archiver'));
     await tester.pumpAndSettle();
-    expect(find.text('Archiver ce compte ?'), findsOneWidget);
+    expect(find.text('Archiver ce compte\u00A0?'), findsOneWidget);
 
     // Annuler ne change rien.
     await tester.tap(find.widgetWithText(TextButton, 'Annuler'));
@@ -226,7 +226,7 @@ void main() {
 
     await tester.tap(find.text('Refuser et supprimer'));
     await tester.pumpAndSettle();
-    expect(find.text('Refuser et supprimer ce compte ?'), findsOneWidget);
+    expect(find.text('Refuser et supprimer ce compte\u00A0?'), findsOneWidget);
     await confirmDialog(tester);
 
     expect(repository.deletedAccounts, ['p-2']);

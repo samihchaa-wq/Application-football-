@@ -136,7 +136,7 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
     final canDelete =
         _controller.text.trim().toUpperCase() == deleteAccountConfirmationWord;
     return AlertDialog(
-      title: const Text('Supprimer ton compte ?'),
+      title: const Text('Supprimer ton compte\u00A0?'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

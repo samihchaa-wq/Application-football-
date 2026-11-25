@@ -324,7 +324,7 @@ class _DeleteHistoricalMatchButtonState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Supprimer ce match ?'),
+        title: const Text('Supprimer ce match\u00A0?'),
         content: const Text(
           'Il disparaît de l’historique et des statistiques. '
           'Tu pourras le saisir à nouveau.',

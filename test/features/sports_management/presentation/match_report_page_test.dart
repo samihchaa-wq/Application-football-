@@ -109,7 +109,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.remove).first);
     await tester.pumpAndSettle();
 
-    expect(find.text('Quel but veux-tu supprimer ?'), findsOneWidget);
+    expect(find.text('Quel but veux-tu supprimer\u00A0?'), findsOneWidget);
     // Les deux buts existants sont proposés : rien n'est supprimé d'office.
     expect(find.byType(CheckboxListTile), findsNWidgets(2));
   });

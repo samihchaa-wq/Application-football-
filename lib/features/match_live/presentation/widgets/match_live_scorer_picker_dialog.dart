@@ -20,7 +20,7 @@ const String kMatchLiveClearChoiceId = '__clear__';
 Future<String?> pickMatchLiveScorer(
   BuildContext context, {
   required List<MatchCompositionEntry> candidates,
-  String title = 'Qui a marqué ?',
+  String title = 'Qui a marqué\u00A0?',
   IconData icon = Icons.sports_soccer_outlined,
   Widget? playerLeading,
   String? extraChoiceLabel,
