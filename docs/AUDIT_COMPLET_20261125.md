@@ -337,7 +337,7 @@ Aucun appel envoyé à Supabase pendant ces essais.
   formulaire : **les gestionnaires de mots de passe fonctionnent** (mon premier
   soupçon, fondé sur les champs d'accessibilité, était faux).
 - Accessibilité : boutons et champs ont un nom lisible (« Se connecter »,
-  « Afficher le mot de passe »…) ; 71 boutons-icônes sur 74 ont une infobulle ;
+  « Afficher le mot de passe »…) ; les 83 boutons-icônes ont une infobulle ;
   23 libellés d'images ; 59 zones `Semantics`.
 - États : 32 écrans « vide » dédiés, 14 squelettes de chargement, 33 « tirer
   pour actualiser », 0 message d'erreur technique affiché tel quel.
@@ -356,8 +356,10 @@ Aucun appel envoyé à Supabase pendant ces essais.
    `portrait-primary`, alors que l'appli a été adaptée au paysage (barre
    latérale). Sur Android, l'appli installée ne pivotera pas. À trancher :
    voulu ou non ?
-3. **3 boutons-icônes sans nom** pour les lecteurs d'écran, dans la liste
-   d'attente (`admin_waitlist_page.dart`, lignes 435, 455, 480).
+3. ~~3 boutons-icônes sans nom (liste d'attente)~~ : **faux constat, retiré**.
+   Mon premier comptage confondait des composants enveloppes et cherchait
+   l'infobulle au mauvais endroit. Recompté à la main : les 83 boutons-icônes
+   ont tous un nom pour les lecteurs d'écran.
 4. **Mineur : un échec silencieux** dans la fiche d'un match : si le chargement
    du vote « homme du match » échoue, les actions de l'administrateur
    (corriger…) disparaissent sans message. Même schéma sur la courbe par saison
