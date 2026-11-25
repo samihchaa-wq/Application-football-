@@ -91,6 +91,9 @@ class AssistBootIcon extends StatelessWidget {
       decoration: const BoxDecoration(
         color: Colors.black,
         shape: BoxShape.circle,
+        border: Border.fromBorderSide(
+          BorderSide(color: Colors.white70, width: 0.5),
+        ),
       ),
       child: Image.asset(
         'assets/images/icons/assist_boot.png',

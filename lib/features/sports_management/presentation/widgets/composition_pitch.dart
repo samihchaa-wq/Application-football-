@@ -529,7 +529,7 @@ class CompositionPlayerTile extends StatelessWidget {
                 if (entry.goals > 0)
                   Positioned(
                     left: 0,
-                    top: 40,
+                    top: 34,
                     child: GoalBadge(goals: entry.goals),
                   ),
                 if (entry.assists > 0)
@@ -613,12 +613,12 @@ class GoalBadge extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        const GoalIcon(size: 16),
+        const GoalIcon(size: 22),
         if (goals > 1)
           Positioned(
             // À droite de l'icône, pas par-dessus : sinon le chiffre la cache.
             top: -3,
-            left: 17,
+            left: 23,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
               decoration: BoxDecoration(
@@ -655,12 +655,12 @@ class AssistBadge extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        const AssistBootIcon(size: 16),
+        const AssistBootIcon(size: 22),
         if (assists > 1)
           Positioned(
             // À droite de l'icône, pas par-dessus : sinon le chiffre la cache.
             top: -3,
-            left: 17,
+            left: 23,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
               decoration: BoxDecoration(
