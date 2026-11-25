@@ -74,11 +74,7 @@ class MatchHistoryCard extends ConsumerWidget {
     return Card(
       color: surface,
       shape: PfCardBorder(
-          radius: 20,
-          borderColor: border,
-          borderWidth: 1.3,
-          stripe: true,
-          flat: true),
+          radius: 20, borderColor: border, borderWidth: 1.3, flat: true),
       clipBehavior: Clip.antiAlias,
       // Une fois terminé, un « Match entre nous » devient une archive purement
       // informative, et un match annulé n'a plus rien à ouvrir : pas de

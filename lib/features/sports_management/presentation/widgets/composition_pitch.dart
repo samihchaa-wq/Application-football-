@@ -528,13 +528,13 @@ class CompositionPlayerTile extends StatelessWidget {
                   ),
                 if (entry.goals > 0)
                   Positioned(
-                    left: 0,
+                    left: -9,
                     top: 34,
                     child: GoalBadge(goals: entry.goals),
                   ),
                 if (entry.assists > 0)
                   Positioned(
-                    left: 0,
+                    left: -9,
                     top: 58,
                     child: AssistBadge(assists: entry.assists),
                   ),
@@ -616,9 +616,10 @@ class GoalBadge extends StatelessWidget {
         const GoalIcon(size: 22),
         if (goals > 1)
           Positioned(
-            // À droite de l'icône, pas par-dessus : sinon le chiffre la cache.
-            top: -3,
-            left: 23,
+            // Sur le coin bas-droit de l'icône, côté gauche de la photo :
+            // le chiffre ne cache plus les initiales du joueur.
+            top: 11,
+            left: 14,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
               decoration: BoxDecoration(
@@ -630,7 +631,7 @@ class GoalBadge extends StatelessWidget {
                 '$goals',
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: FontWeight.w400,
                   height: 1,
                 ),
@@ -658,9 +659,10 @@ class AssistBadge extends StatelessWidget {
         const AssistBootIcon(size: 22),
         if (assists > 1)
           Positioned(
-            // À droite de l'icône, pas par-dessus : sinon le chiffre la cache.
-            top: -3,
-            left: 23,
+            // Sur le coin bas-droit de l'icône, côté gauche de la photo :
+            // le chiffre ne cache plus les initiales du joueur.
+            top: 11,
+            left: 14,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
               decoration: BoxDecoration(
@@ -672,7 +674,7 @@ class AssistBadge extends StatelessWidget {
                 '$assists',
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: FontWeight.w400,
                   height: 1,
                 ),
