@@ -1,42 +1,54 @@
 # Plan d'audit complet — 25/11/2026
 
-Périmètre : app Flutter (370 fichiers, 22 modules), Supabase (83 migrations,
-11 fonctions serveur), 283 tests, docs. Statut : **plan à valider, rien audité**.
+Statut : **plan validé par QCM, audit pas commencé.**
 
-## Méthode
-- Carte du code : graphe graphify (mise à jour en phase 0).
-- Chaque constat : gravité (bloquant / important / mineur), preuve (fichier,
-  commande), correctif proposé. Rien n'est déclaré « OK » sans vérification.
-- Résultats dans `docs/AUDIT_COMPLET_20261125.md`, un chapitre par phase.
-- Anciens audits (docs/AUDIT_*) : relus pour vérifier ce qui reste ouvert,
-  pas recopiés.
+## Contexte (réponses au QCM)
+- But : tout à la fois (fiabilité, ménage, bugs, sécurité).
+- Utilisateurs réels : aucun pour l'instant.
+- Support : **web installable uniquement** (pas de dossier Android ni iPhone
+  dans le projet). « App installée » = site ajouté à l'écran d'accueil, sur
+  Android comme sur iPhone. Aucune publication sur les stores n'est prévue.
+- Stripe : état inconnu, à vérifier en lecture seule.
+- Fonctionnalités cœur, toutes prioritaires : matchs + live, pronos + badges,
+  stats + saison, gestion du club.
+- RGPD : hors périmètre pour l'instant.
 
-## Phases (ordre = risque décroissant)
+## Règles de travail
+- Profondeur : **les 370 fichiers passés au crible**, plus les 83 migrations,
+  les 11 fonctions serveur et les 283 tests.
+- Base de production : lecture seule, aucune écriture.
+- Corrections au fil de l'eau, mais seulement les **petits correctifs** en
+  autonomie. Je demande avant de toucher à la base, aux paiements ou à ce que
+  voit l'utilisateur.
+- Une demande de fusion (PR) par phase.
+- Je te préviens seulement en cas de problème grave ; sinon, rapport final.
+- Lectures simples confiées à des assistants moins chers (éclaireur) ;
+  l'analyse et les corrections restent à moi.
+- Anciens audits (docs/AUDIT_*) : je vérifie que leurs points sont vraiment
+  corrigés.
+- Chaque constat : gravité (bloquant / important / mineur), preuve, correctif.
+  Rien n'est déclaré « OK » sans vérification.
+- Résultats dans `docs/AUDIT_COMPLET_20261125.md`.
 
-| # | Phase | Contenu | Skill |
-|---|---|---|---|
-| 0 | État des lieux | graphe à jour, compilation, analyse statique, tests, couverture | verification-before-completion |
-| 1 | Sécurité | droits par club/rôle (RLS), fonctions serveur, secrets, invitations, données perso | vibesec, supabase |
-| 2 | Paiements | Stripe : achat, remboursement, webhook, cas d'échec | stripe-best-practices |
-| 3 | Base de données | schéma, migrations rejouables, index, requêtes lentes, sauvegarde/restauration | supabase-postgres-best-practices |
-| 4 | Bugs & logique | parcours clés (inscription, match, prono, stats, notifications), cas limites | systematic-debugging, code-review |
-| 5 | Architecture & état | Riverpod, découpage, code mort, doublons | state-management-riverpod, simplify |
-| 6 | UX/UI | états vide/chargement/erreur, formulaires, mobile/tablette, accessibilité | ui-states-and-feedback, forms-and-input, adaptive-layout |
-| 7 | Performance | listes, images, reconstructions d'écran, poids de l'app | flutter-performance |
-| 8 | Tests | trous de couverture sur zones sensibles, tests fragiles | test-driven-development |
-| 9 | Publication | versions, signature, permissions, déclarations stores, juridique (RGPD) | release-and-store-shipping |
-| 10 | Docs | INDEX/HANDOFF à jour, docs obsolètes | — |
+## Phases
+
+| # | Phase | Contenu |
+|---|---|---|
+| 0 | État des lieux | graphe à jour, compilation web, analyse statique, tests, couverture, état Stripe |
+| 1 | Sécurité + données | droits par club et par rôle, fonctions serveur, secrets, invitations |
+| 2 | Paiements Stripe | achat, remboursement, webhook, cas d'échec |
+| 3 | Base de données | migrations rejouables, index, requêtes lentes, sauvegarde |
+| 4 | Logique métier | matchs + live, pronos + badges, stats + saison, gestion du club |
+| 5 | Architecture | gestion de l'état, découpage, code mort, doublons |
+| 6 | UX/UI | états vide/chargement/erreur, formulaires, écran de téléphone, installation web |
+| 7 | Performance | chargement initial du site, listes, images, fluidité |
+| 8 | Tests | trous sur les zones sensibles, tests fragiles |
+| 9 | Docs | INDEX/HANDOFF à jour, docs obsolètes |
 
 ## Livrable final
-Synthèse : top 10 des risques, plan de correction priorisé, ce qui n'a pas pu
-être testé (ex. appareil réel, vrais paiements) et pourquoi.
+Top 10 des risques, corrections faites, corrections en attente de ton
+accord, ce qui n'a pas pu être testé et pourquoi.
 
-## Limites connues
-- Pas de téléphone réel ni de stores dans ce conteneur.
-- Paiements testables en mode test seulement.
-- Base Supabase de production : lecture seule, sur ton accord.
-
-## À décider par toi
-1. Ordre des phases OK ?
-2. Accès production autorisé (lecture) ou local uniquement ?
-3. Corriger au fil de l'eau, ou audit d'abord puis corrections ?
+## Limites
+- Pas de vrai téléphone : tests dans un navigateur qui imite un téléphone.
+- Paiements : mode test seulement.
