@@ -101,8 +101,8 @@ class MatchDetailHeaderCard extends StatelessWidget {
           radius: 20,
           borderColor: border,
           borderWidth: 1.3,
-          tint: .34,
-          stripe: true),
+          stripe: true,
+          flat: true),
       clipBehavior: Clip.antiAlias,
       child: CalendarCardSections(
         bandVerticalPadding: compact ? 6 : CalendarCardSpacing.band,
