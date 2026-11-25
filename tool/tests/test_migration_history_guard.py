@@ -1,7 +1,7 @@
 """Tests locaux sans base de données ni accès réseau."""
 import unittest
 
-from tool.check_migration_history import violations
+from tool.check_migration_history import duplicate_versions, violations
 
 
 class MigrationHistoryGuardTests(unittest.TestCase):
@@ -35,6 +35,24 @@ class MigrationHistoryGuardTests(unittest.TestCase):
 
     def test_unparseable_diff_is_refused(self):
         self.assertEqual(len(violations("unrecognized")), 1)
+
+    def test_duplicate_version_number_is_refused(self):
+        paths = [
+            "supabase/migrations/20261206000000_logo.sql",
+            "supabase/migrations/20261206000000_paiement.sql",
+        ]
+        self.assertEqual(len(duplicate_versions(paths)), 1)
+
+    def test_distinct_version_numbers_are_allowed(self):
+        paths = [
+            "supabase/migrations/20261206000000_logo.sql",
+            "supabase/migrations/20261206010000_paiement.sql",
+        ]
+        self.assertEqual(duplicate_versions(paths), [])
+
+    def test_current_repository_has_no_duplicate_version(self):
+        import glob
+        self.assertEqual(duplicate_versions(sorted(glob.glob("supabase/migrations/*.sql"))), [])
 
 
 if __name__ == "__main__":
