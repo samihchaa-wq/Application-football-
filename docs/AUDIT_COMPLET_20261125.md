@@ -68,3 +68,51 @@ fonctions serveur, du site web et du dépôt.
 - **Tests de sécurité de la base (pgTAP)** : non lancés, pas de base locale ici.
 - **Données** : la production contient 21 profils actifs et 1 club (pas
   « personne encore ») ; 0 événement Stripe reçu, 1 paiement enregistré.
+
+## Phase 2 — Paiements Stripe (fait)
+
+Méthode : lecture du code des 3 fonctions Stripe et des fonctions de base
+qu'elles appellent, lecture seule de la production, 26 tests des fonctions
+Stripe relancés (réussis), et 3 appels invalides à la production (rejetés,
+aucun effet).
+
+### État réel en production
+- Les 3 fonctions Stripe sont déployées et à jour.
+- La clé de signature du webhook est configurée (réponse « signature
+  invalide », et non « non configuré »).
+- **Jamais utilisé** : 0 paiement par carte tenté, 0 événement Stripe reçu.
+  Le seul paiement enregistré est un virement de 79 € saisi à la main.
+- **Non vérifiable d'ici** : la clé secrète Stripe (nécessaire au bouton
+  « Payer par carte »), et le point de terminaison déclaré côté Stripe.
+  Le bouton n'a donc jamais été éprouvé de bout en bout.
+- L'abonnement du club est actif jusqu'au **18/11/2037** : à confirmer que
+  c'est voulu (période offerte ?).
+
+### Ce qui est solide
+- Le montant ne vient jamais de l'app : la base le calcule et le fige.
+- Le paiement est enregistré seulement si montant et devise sont identiques
+  à ceux figés ; ligne verrouillée, enregistrement une seule fois.
+- Signature Stripe vérifiée, rejeu refusé après 5 min.
+- Remboursement : droit « éditeur » vérifié, plafond = montant payé moins
+  déjà remboursé ; un même remboursement (appli + tableau de bord Stripe) ne
+  peut pas être compté deux fois (contrainte d'unicité en base).
+- Contestations : transformées en alerte pour l'éditeur.
+
+### Problèmes
+1. **Important, peu probable : double paiement possible.** Chaque appui sur
+   « Payer par carte » crée un nouveau paiement à régler, et l'ancien reste
+   payable jusqu'à 24 h. Si un admin ouvre deux pages de paiement et règle les
+   deux, le club est débité deux fois et deux années sont ouvertes (il faut
+   un remboursement manuel). Le commentaire du code (« un double appui ne
+   crée pas deux sessions ») est faux dans les faits. Correctif proposé :
+   faire expirer la page de paiement après 30 min et réutiliser le paiement
+   en attente récent au lieu d'en créer un autre. Touche aux paiements :
+   **attend ton accord**.
+2. **Mineur** : le webhook ne contrôle pas `livemode` (test ou réel) ; sans
+   conséquence tant qu'un point de terminaison correspond à un secret.
+   Il faudra séparer clairement test et réel au passage en vrais paiements.
+
+### Non testé
+- Un vrai paiement de bout en bout (même en mode test) : exige la clé
+  secrète Stripe, absente d'ici.
+- Les tests de la base (pgTAP) sur ces fonctions.
