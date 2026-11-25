@@ -57,14 +57,13 @@ insert into expected_original_badges (code) values
     ('exploit_remplace_gardien'),
     ('exploit_penalty_provoque'),
     ('exploit_penalty_subi'),
-    ('exploit_but_vainqueur_tardif'),
     ('exploit_csc'),
     ('role_president'),
     ('role_coach');
 
 select is(
   (select count(*) from expected_original_badges),
-  54::bigint, '54 distinct badges in the versioned AS Grinta seed'
+  53::bigint, '53 distinct badges in the versioned AS Grinta seed'
 );
 
 select ok(
@@ -72,7 +71,7 @@ select ok(
     select 1 from expected_original_badges e
     where not exists (select 1 from private.badge_templates t where t.code=e.code)
   ),
-  'All 54 badges from the current original seed exist as future-club templates'
+  'All 53 badges from the current original seed exist as future-club templates'
 );
 
 select ok(
