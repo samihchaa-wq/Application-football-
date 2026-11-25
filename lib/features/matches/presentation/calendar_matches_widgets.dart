@@ -429,8 +429,8 @@ class ClubEventCard extends ConsumerWidget {
           radius: AppTheme.radiusMd,
           borderColor: CalendarCardPalette.eventBorder,
           borderWidth: 1.2,
-          tint: .16,
-          stripe: true),
+          stripe: true,
+          flat: true),
       clipBehavior: Clip.antiAlias,
       child: CalendarCardSections(
         header: CalendarDateLine(
@@ -520,8 +520,8 @@ class MonthlyMatchCard extends ConsumerWidget {
           radius: AppTheme.radiusMd,
           borderColor: border,
           borderWidth: 1.2,
-          tint: .16,
-          stripe: true),
+          stripe: true,
+          flat: true),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: _onTap(context, phase),

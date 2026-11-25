@@ -14,10 +14,16 @@ class PfCardBorder extends ShapeBorder {
     this.borderWidth = 1,
     this.tint = 0,
     this.stripe = false,
+    this.flat = false,
   });
 
   /// Part de la couleur du contour diffusée dans le fond (0 = aucune).
   final double tint;
+
+  /// Aplat : ni lumière diagonale, ni dégradé de teinte, ni tracé de terrain.
+  /// Seuls le contour, le liseré gauche et le fond de la carte restent : les
+  /// couleurs sont unies et les bandeaux de la carte ressortent nettement.
+  final bool flat;
 
   /// Liseré plein sur le bord gauche, de la couleur du contour (« billet »).
   final bool stripe;
@@ -48,22 +54,24 @@ class PfCardBorder extends ShapeBorder {
     canvas.clipRRect(rrect);
 
     // Lumière diagonale.
-    canvas.drawRect(
-      rect,
-      Paint()
-        ..shader = LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withValues(alpha: .075),
-            Colors.white.withValues(alpha: .0),
-            Colors.black.withValues(alpha: .10),
-          ],
-          stops: const [0, .5, 1],
-        ).createShader(rect),
-    );
+    if (!flat) {
+      canvas.drawRect(
+        rect,
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: .075),
+              Colors.white.withValues(alpha: .0),
+              Colors.black.withValues(alpha: .10),
+            ],
+            stops: const [0, .5, 1],
+          ).createShader(rect),
+      );
+    }
 
-    if (tint > 0) {
+    if (tint > 0 && !flat) {
       canvas.drawRect(
         rect,
         Paint()
@@ -86,34 +94,24 @@ class PfCardBorder extends ShapeBorder {
     }
 
     // Tracé de terrain, en bas à droite.
-    final motif = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2
-      ..color = Colors.white.withValues(alpha: .055);
-    final r = math.min(rect.height * .55, 74.0);
-    final c = Offset(rect.right - r * .55, rect.bottom - r * .35);
-    canvas.drawCircle(c, r, motif);
-    canvas.drawLine(
-      Offset(c.dx - r * 1.6, c.dy + r * 1.2),
-      Offset(c.dx + r * 1.6, c.dy - r * 1.2),
-      motif,
-    );
-    canvas.drawCircle(c, 2.2, motif..style = PaintingStyle.fill);
+    if (!flat) _paintPitch(canvas, rect);
 
     // Liseré lumineux en haut.
-    canvas.drawLine(
-      Offset(rect.left + radius, rect.top + .5),
-      Offset(rect.right - radius, rect.top + .5),
-      Paint()
-        ..strokeWidth = 1
-        ..shader = LinearGradient(
-          colors: [
-            Colors.white.withValues(alpha: 0),
-            Colors.white.withValues(alpha: .26),
-            Colors.white.withValues(alpha: 0),
-          ],
-        ).createShader(rect),
-    );
+    if (!flat) {
+      canvas.drawLine(
+        Offset(rect.left + radius, rect.top + .5),
+        Offset(rect.right - radius, rect.top + .5),
+        Paint()
+          ..strokeWidth = 1
+          ..shader = LinearGradient(
+            colors: [
+              Colors.white.withValues(alpha: 0),
+              Colors.white.withValues(alpha: .26),
+              Colors.white.withValues(alpha: 0),
+            ],
+          ).createShader(rect),
+      );
+    }
     canvas.restore();
 
     // Contour.
@@ -128,6 +126,22 @@ class PfCardBorder extends ShapeBorder {
     }
   }
 
+  void _paintPitch(Canvas canvas, Rect rect) {
+    final motif = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..color = Colors.white.withValues(alpha: .055);
+    final r = math.min(rect.height * .55, 74.0);
+    final c = Offset(rect.right - r * .55, rect.bottom - r * .35);
+    canvas.drawCircle(c, r, motif);
+    canvas.drawLine(
+      Offset(c.dx - r * 1.6, c.dy + r * 1.2),
+      Offset(c.dx + r * 1.6, c.dy - r * 1.2),
+      motif,
+    );
+    canvas.drawCircle(c, 2.2, motif..style = PaintingStyle.fill);
+  }
+
   @override
   ShapeBorder scale(double t) => PfCardBorder(
         radius: radius * t,
@@ -135,5 +149,6 @@ class PfCardBorder extends ShapeBorder {
         borderWidth: borderWidth * t,
         tint: tint,
         stripe: stripe,
+        flat: flat,
       );
 }
