@@ -429,7 +429,6 @@ class ClubEventCard extends ConsumerWidget {
           radius: AppTheme.radiusMd,
           borderColor: CalendarCardPalette.eventBorder,
           borderWidth: 1.2,
-          stripe: true,
           flat: true),
       clipBehavior: Clip.antiAlias,
       child: CalendarCardSections(
@@ -520,7 +519,6 @@ class MonthlyMatchCard extends ConsumerWidget {
           radius: AppTheme.radiusMd,
           borderColor: border,
           borderWidth: 1.2,
-          stripe: true,
           flat: true),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
