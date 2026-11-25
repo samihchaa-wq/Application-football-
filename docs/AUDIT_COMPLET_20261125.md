@@ -318,3 +318,64 @@ d'état et de libération de ressources.
 - Doublons de code (copier-coller) : pas d'outil spécialisé ici ; non mesuré.
 - Les fonctions de base appelées seulement par d'autres fonctions ou par la
   planification : comptées comme « utilisées », non vérifiées une à une.
+
+## Phase 6 — UX/UI (fait, périmètre limité aux écrans publics)
+
+Méthode : lecture de l'audit UX du 24/11 et de ce qui a été fusionné depuis ;
+mesures dans le code (accessibilité, formulaires, états de chargement, d'erreur
+et vides) ; **build web identique à celui du déploiement**, ouvert dans un vrai
+navigateur en 3 formats (téléphone 375 px, paysage 812 × 375, ordinateur
+1280 px) : écran de connexion, validation à vide, création de compte, arbre
+d'accessibilité, champs de formulaire, installation sur l'écran d'accueil.
+Aucun appel envoyé à Supabase pendant ces essais.
+
+### Ce qui est bon (vérifié)
+- Aucun débordement horizontal à 375 px ; en paysage le formulaire dépasse mais
+  **défile** correctement ; aucune erreur dans la console (hors avertissements
+  du navigateur sans carte graphique).
+- Connexion : les vrais champs portent `username` / `current-password` dans un
+  formulaire : **les gestionnaires de mots de passe fonctionnent** (mon premier
+  soupçon, fondé sur les champs d'accessibilité, était faux).
+- Accessibilité : boutons et champs ont un nom lisible (« Se connecter »,
+  « Afficher le mot de passe »…) ; 71 boutons-icônes sur 74 ont une infobulle ;
+  23 libellés d'images ; 59 zones `Semantics`.
+- États : 32 écrans « vide » dédiés, 14 squelettes de chargement, 33 « tirer
+  pour actualiser », 0 message d'erreur technique affiché tel quel.
+- Installation : manifeste complet (icônes 192/512 + « maskable », couleurs,
+  `standalone`), icônes iPhone, service worker actif.
+- Les corrections UX du 24/11 (bandeau, danger, couleurs, icônes, paysage…) sont
+  bien sur `main` ; non revérifiées écran par écran ici (voir limites).
+
+### Constats
+1. **À vérifier sur iPhone : barre d'état blanche ?** Le site installé déclare
+   `apple-mobile-web-app-status-bar-style: default` alors que le thème est
+   sombre (#0B0F14) : sur iPhone, la barre du haut risque d'apparaître claire
+   sur une appli noire. Correctif probable : valeur `black`. Non vérifiable ici
+   (pas d'iPhone).
+2. **Orientation verrouillée à l'installation** : le manifeste impose
+   `portrait-primary`, alors que l'appli a été adaptée au paysage (barre
+   latérale). Sur Android, l'appli installée ne pivotera pas. À trancher :
+   voulu ou non ?
+3. **3 boutons-icônes sans nom** pour les lecteurs d'écran, dans la liste
+   d'attente (`admin_waitlist_page.dart`, lignes 435, 455, 480).
+4. **Mineur : un échec silencieux** dans la fiche d'un match : si le chargement
+   du vote « homme du match » échoue, les actions de l'administrateur
+   (corriger…) disparaissent sans message. Même schéma sur la courbe par saison
+   de la fiche joueur (là, sans gravité).
+5. **Mineur : le message de validation reste affiché à l'écran suivant** : le
+   message « Renseigne ton identifiant et ton mot de passe » (bandeau du bas)
+   recouvre encore le début du formulaire « Créer mon compte ».
+6. **Mineur** : 1 texte fixé à 10 px (`composition_presentation_stage.dart`,
+   ligne 402) ; manifeste sans `id` ni `lang`.
+7. **Restes de l'audit du 24/11 (non faits, décisions à toi)** : légende des
+   chiffres du Prono, trois étages de choix dans les statistiques, marges de
+   page uniformes, formulaires (27 champs sur 99 ont un type de clavier ; 9
+   « remplissage automatique »), libellés de réglages en double (migration).
+
+### Non testé (à lire)
+- **Tous les écrans connectés** (calendrier, match, Live, stats, club,
+  gestionnaire) : je n'ai pas de compte de test, et je ne me connecte pas à la
+  production. Leur état repose sur l'audit du 24/11 et sur les tests Flutter.
+- Vrai téléphone (iPhone/Android), lecteur d'écran réel, texte agrandi à 200 %,
+  mode « mouvement réduit », mesure de contraste automatique (appli dessinée
+  sur canevas).
