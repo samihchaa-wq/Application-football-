@@ -14,6 +14,7 @@ import 'package:petit_filet/features/season_wrapped/presentation/wrapped_theme.d
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -194,6 +195,11 @@ class _WrappedStoryState extends ConsumerState<_WrappedStory>
   int get _slideCount => wrappedSlideSkins(ClubRules.wrappedStatsMask).length;
   bool get _isLastSlide => _index == _slideCount - 1;
 
+  /// Lu sur la plateforme et non dans `MediaQuery` : appelé depuis
+  /// `initState`, où les widgets hérités ne sont pas encore accessibles.
+  bool get _reducedMotion => WidgetsBinding
+      .instance.platformDispatcher.accessibilityFeatures.disableAnimations;
+
   @override
   void initState() {
     super.initState();
@@ -224,6 +230,14 @@ class _WrappedStoryState extends ConsumerState<_WrappedStory>
       _progress.value = 1;
       return;
     }
+    // « Réduire les animations » : plus d'avance automatique, on change
+    // d'écran soi-même (toucher ou clavier).
+    if (_reducedMotion) {
+      _progress
+        ..stop()
+        ..value = 0;
+      return;
+    }
     _progress
       ..duration = _index == 0 ? _openingDuration : _slideDuration
       ..forward(from: 0);
@@ -251,7 +265,7 @@ class _WrappedStoryState extends ConsumerState<_WrappedStory>
   void _resume() {
     if (!_suspended) return;
     _suspended = false;
-    if (!_isLastSlide) _progress.forward();
+    if (!_isLastSlide && !_reducedMotion) _progress.forward();
     if (!_muted) _music.resume();
   }
 
@@ -390,6 +404,25 @@ class _WrappedStoryState extends ConsumerState<_WrappedStory>
 
   @override
   Widget build(BuildContext context) {
+    // Clavier : flèches pour changer d'écran, Espace pour suspendre ou
+    // reprendre, Échap pour quitter. Sans cela, le bilan n'était utilisable
+    // qu'au toucher.
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.arrowRight): () =>
+            _goTo(_index + 1),
+        const SingleActivator(LogicalKeyboardKey.arrowLeft): () =>
+            _goTo(_index - 1),
+        const SingleActivator(LogicalKeyboardKey.space): () =>
+            _suspended ? _resume() : _pause(),
+        const SingleActivator(LogicalKeyboardKey.escape): () =>
+            Navigator.of(context).maybePop(),
+      },
+      child: Focus(autofocus: true, child: _buildStory(context)),
+    );
+  }
+
+  Widget _buildStory(BuildContext context) {
     final playerName = ref.watch(wrappedPlayerNameProvider);
     final statsMask = ClubRules.wrappedStatsMask;
     final skin = wrappedSlideSkins(statsMask)[_index];
