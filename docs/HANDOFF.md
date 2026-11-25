@@ -1,6 +1,6 @@
 # Relais entre assistants — Petit Filet (application commerciale)
 
-**Actualisé le 17 novembre 2026 (correctif de gouvernance publication).** Source de vérité opérationnelle : branche `main`, PR ouvertes et contrôles GitHub sur le dernier SHA ; les états ci-dessous peuvent évoluer.
+**Actualisé le 25 novembre 2026 (audit complet, voir plus bas ; sections datées du 17 au 25/11 ci-dessous).** Source de vérité opérationnelle : branche `main`, PR ouvertes et contrôles GitHub sur le dernier SHA ; les états ci-dessous peuvent évoluer.
 
 ## Session Kyky du 22/11/2026 (branche claude/gallant-babbage-2iz44v)
 
@@ -130,3 +130,11 @@ Restent à vérifier sur GitHub avant intégration : PR #69 (+1 manuel), #72 (é
 - Corrigé : pronostic fermé d'un match fini/annulé (« le Live est ouvert » était faux) ; dates des confrontations coupées ; nom de nouvelle saison déjà pris (refus serveur) ; refus de fin de saison expliqués (24 h de correction, matchs restants) ; bandeau notifications sur poste de contrôle / bilan / connexion ; calendrier admin montrant les autres saisons après une mise à jour en direct ; noms longs coupés au milieu d'un mot ; adversaires de la démo en double (vérifié en ligne : 6 doublons, corrigé à la prochaine remise à zéro nocturne).
 - Copie locale instable : chaque redémarrage du poste coupe Docker (relancer `dockerd`, puis `docker start` de la base ; si le réseau manque, refaire `supabase stop/start`).
 
+## 25/11/2026 — Audit complet, phases 0 à 9 (branche claude/fervent-gauss-x6ef5m, PR #248)
+
+- Rapport : docs/AUDIT_COMPLET_20261125.md (plan : docs/PLAN_AUDIT_COMPLET_20261125.md). Verdict : aucun problème bloquant ni de sécurité grave ; une correction faite, des décisions en attente.
+- Fait : paiement carte sans double paiement (migration 20261206010000, page Stripe 32 min) ; 3 tests Stripe ajoutés ; contrôle CI contre deux migrations au même numéro ; 3 liens de docs réparés.
+- Attend ton accord (touche la base, les paiements ou ce que voit l'utilisateur) : lot de nettoyage de base (4 index en double, `grinta_sync.ping`, 4 fonctions inutilisées, contrainte `push_notification_log_kind_check`, adresses d'images de badges) ; barre d'état iPhone ; orientation du manifeste ; fichier mort `email_verification_panel.dart`.
+- Décisions : dépôt GitHub **public** (sauvegardes chiffrées en artefacts publics 90 jours, rapports d'audit publics) : stockage privé des sauvegardes ? ; Stripe jamais essayé de bout en bout (clé secrète absente d'ici) ; `docs/HANDOFF` ne doit plus dire « dépôt privé ».
+- Non vérifié : écrans connectés (pas de compte de test), tests de base pgTAP (CI seulement), vrai téléphone, auth de production (mots de passe compromis, limites), restauration des photos (#91).
+- Piège : un deuxième club (AS Grinta) est apparu en production le 25/11 ; les nombres « 1 club / 21 profils » des premières mesures étaient ceux de la démo.

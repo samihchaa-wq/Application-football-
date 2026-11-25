@@ -1,6 +1,6 @@
 # Mission 07 — audit juridique et conformité (pré-audit)
 
-**Date :** 12 novembre 2026. **Statut :** documentaire, **non validé** juridiquement. **Coordination :** fil 00, [pilotage PR #29](https://github.com/samihchaa-wq/Application-football-/pull/29), [HANDOFF](../HANDOFF.md).
+**Date :** 12 novembre 2026. **Statut :** documentaire, **non validé** juridiquement. **Coordination :** fil 00, [pilotage PR #29](https://github.com/samihchaa-wq/Application-football-/pull/29), [HANDOFF](HANDOFF.md).
 
 > **Portée et méthode.** Lecture statique du dépôt commercial `samihchaa-wq/Application-football-` et recherche de références officielles françaises/européennes. Aucune vérification des données personnelles anciennes dans l'historique Git, aucune exécution d'un parcours en production, aucun test CI lancé, aucun accord de tiers obtenu. Les éléments « présents dans le code » ne sont **pas** une preuve de conformité effective. Aucune modification de l'application originale, de Supabase ou du code commercial.
 
