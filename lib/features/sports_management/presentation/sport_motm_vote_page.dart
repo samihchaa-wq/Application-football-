@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/widgets/pf_error_retry.dart';
 import 'package:petit_filet/core/club/club_identity.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:petit_filet/core/utils/app_formats.dart';
@@ -269,11 +270,9 @@ class MatchMotmVoteCard extends ConsumerWidget {
       loading: () => const SizedBox.shrink(),
       error: (_, __) => Padding(
         padding: EdgeInsets.only(bottom: bottomSpacing),
-        child: const Card(
-          child: ListTile(
-            leading: Icon(Icons.error_outlined),
-            title: Text('Vote de l’Homme du match momentanément indisponible.'),
-          ),
+        child: PfInlineErrorRetry(
+          message: 'Vote de l’Homme du match momentanément indisponible.',
+          onRetry: () => ref.invalidate(sportMotmVoteProvider(matchId)),
         ),
       ),
       data: (vote) {

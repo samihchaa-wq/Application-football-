@@ -115,97 +115,102 @@ class _UnavailabilityFormSheetState
     final theme = Theme.of(context);
     final isEditing = widget.existing != null;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              isEditing
-                  ? 'Modifier mon indisponibilité'
-                  : 'Déclarer une indisponibilité',
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w400),
-            ),
-            const SizedBox(height: AppSpacing.microGap),
-            Text(
-              'Pendant cette période tu ne fais plus partie de l’effectif '
-              'convocable et tu ne reçois plus les notifications des matchs '
-              'concernés.',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sectionGap),
-            TextField(
-              controller: _reason,
-              enabled: !_saving,
-              maxLength: _reasonMaxLength,
-              maxLines: 2,
-              minLines: 1,
-              textCapitalization: TextCapitalization.sentences,
-              inputFormatters: [
-                LengthLimitingTextInputFormatter(_reasonMaxLength),
-              ],
-              decoration: const InputDecoration(
-                labelText: 'Raison',
-                // Une raison de santé est une donnée très protégée : on
-                // invite à ne pas la détailler.
-                helperText: 'Visible par toi et les admins. Pas de détail '
-                    'médical.',
-              ),
-            ),
-            const SizedBox(height: AppSpacing.contentGap),
-            Row(
-              children: [
-                Expanded(
-                  child: _DateField(
-                    label: 'Du',
-                    value: _startsOn,
-                    onTap: _saving ? null : () => _pickDate(isStart: true),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.contentGap),
-                Expanded(
-                  child: _DateField(
-                    label: 'Au',
-                    value: _endsOn,
-                    onTap: _saving ? null : () => _pickDate(isStart: false),
-                  ),
-                ),
-              ],
-            ),
-            if (_error case final message?) ...[
-              const SizedBox(height: AppSpacing.contentGap),
+    // Pendant l'envoi, la feuille ne peut pas être fermée : sinon le
+    // `pop(true)` de fin d'envoi fermait la page située dessous.
+    return PopScope(
+      canPop: !_saving,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 16,
+          bottom: MediaQuery.viewInsetsOf(context).bottom + 16,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                message,
-                style: TextStyle(color: theme.colorScheme.error),
+                isEditing
+                    ? 'Modifier mon indisponibilité'
+                    : 'Déclarer une indisponibilité',
+                style: theme.textTheme.titleLarge
+                    ?.copyWith(fontWeight: FontWeight.w400),
+              ),
+              const SizedBox(height: AppSpacing.microGap),
+              Text(
+                'Pendant cette période tu ne fais plus partie de l’effectif '
+                'convocable et tu ne reçois plus les notifications des matchs '
+                'concernés.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sectionGap),
+              TextField(
+                controller: _reason,
+                enabled: !_saving,
+                maxLength: _reasonMaxLength,
+                maxLines: 2,
+                minLines: 1,
+                textCapitalization: TextCapitalization.sentences,
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(_reasonMaxLength),
+                ],
+                decoration: const InputDecoration(
+                  labelText: 'Raison',
+                  // Une raison de santé est une donnée très protégée : on
+                  // invite à ne pas la détailler.
+                  helperText: 'Visible par toi et les admins. Pas de détail '
+                      'médical.',
+                ),
+              ),
+              const SizedBox(height: AppSpacing.contentGap),
+              Row(
+                children: [
+                  Expanded(
+                    child: _DateField(
+                      label: 'Du',
+                      value: _startsOn,
+                      onTap: _saving ? null : () => _pickDate(isStart: true),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.contentGap),
+                  Expanded(
+                    child: _DateField(
+                      label: 'Au',
+                      value: _endsOn,
+                      onTap: _saving ? null : () => _pickDate(isStart: false),
+                    ),
+                  ),
+                ],
+              ),
+              if (_error case final message?) ...[
+                const SizedBox(height: AppSpacing.contentGap),
+                Text(
+                  message,
+                  style: TextStyle(color: theme.colorScheme.error),
+                ),
+              ],
+              const SizedBox(height: AppSpacing.sectionGap),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed:
+                        _saving ? null : () => Navigator.of(context).pop(false),
+                    child: const Text('Fermer'),
+                  ),
+                  const SizedBox(width: AppSpacing.microGap),
+                  FilledButton(
+                    onPressed: _saving ? null : _save,
+                    child: Text(_saving ? 'Enregistrement…' : 'Enregistrer'),
+                  ),
+                ],
               ),
             ],
-            const SizedBox(height: AppSpacing.sectionGap),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed:
-                      _saving ? null : () => Navigator.of(context).pop(false),
-                  child: const Text('Fermer'),
-                ),
-                const SizedBox(width: AppSpacing.microGap),
-                FilledButton(
-                  onPressed: _saving ? null : _save,
-                  child: Text(_saving ? 'Enregistrement…' : 'Enregistrer'),
-                ),
-              ],
-            ),
-          ],
+          ),
         ),
       ),
     );

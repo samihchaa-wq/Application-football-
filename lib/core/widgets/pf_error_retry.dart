@@ -35,3 +35,34 @@ class PfErrorRetry extends StatelessWidget {
     );
   }
 }
+
+/// Version en ligne, pour une carte qui ne peut pas se charger au milieu
+/// d'une page : message court + « Réessayer ».
+class PfInlineErrorRetry extends StatelessWidget {
+  const PfInlineErrorRetry({
+    super.key,
+    required this.message,
+    required this.onRetry,
+  });
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+        child: Row(
+          children: [
+            const Icon(Icons.error_outlined),
+            const SizedBox(width: 10),
+            Expanded(child: Text(message)),
+            TextButton(onPressed: onRetry, child: const Text('Réessayer')),
+          ],
+        ),
+      ),
+    );
+  }
+}
