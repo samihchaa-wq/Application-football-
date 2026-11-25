@@ -594,6 +594,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
           TextFormField(
             controller: _addressController,
             enabled: !busy,
+            onChanged: (_) => _addressEditedByUser = true,
             textCapitalization: TextCapitalization.words,
             keyboardType: TextInputType.multiline,
             minLines: 2,
@@ -759,6 +760,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
       }
       if (_isEvent) {
         _addressController.clear();
+        _addressEditedByUser = false;
         _stadiumNameController.clear();
         _meetingAt = null;
       } else {
@@ -814,10 +816,17 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
     _applyRememberedAddress();
   }
 
+  /// Vrai dès que la personne a tapé dans le champ adresse : on ne l'écrase
+  /// plus quand elle change d'adversaire ou de lieu.
+  bool _addressEditedByUser = false;
+
   void _refreshAddressForSelection() => _applyRememberedAddress();
 
   void _applyRememberedAddress() {
     if (_isEvent) return;
+    if (_addressEditedByUser && _addressController.text.trim().isNotEmpty) {
+      return;
+    }
     String? remembered;
     String? stadium;
     if (_isHome) {

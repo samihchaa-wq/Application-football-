@@ -85,8 +85,47 @@ class _HistoryEntryPageState extends ConsumerState<HistoryEntryPage> {
     ];
   }
 
+  int _formationResets = 0;
+
   void _update(HistoryMatchDraft Function(HistoryMatchDraft) change) {
     setState(() => _draft = change(_draft));
+  }
+
+  /// Changer de dispositif retire les titulaires déjà placés : on le dit
+  /// avant, au lieu de les vider sans prévenir.
+  Future<void> _changeFormation(String? code) async {
+    if (_draft.starters.isNotEmpty && code != _draft.formation) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Changer de dispositif ?'),
+          content: const Text(
+            'Les titulaires déjà placés seront retirés de la composition.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Annuler'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Changer'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !mounted) {
+        // Reconstruit la liste pour qu'elle affiche de nouveau le dispositif
+        // d'avant.
+        if (mounted) setState(() => _formationResets++);
+        return;
+      }
+    }
+    _update(
+      (d) => code == null
+          ? d.copyWith(clearFormation: true, starters: const [])
+          : d.copyWith(formation: code, starters: const []),
+    );
   }
 
   Future<void> _pickDate() async {
@@ -580,25 +619,24 @@ class _HistoryEntryPageState extends ConsumerState<HistoryEntryPage> {
               style: theme.textTheme.bodySmall,
             )
           else ...[
-            DropdownButtonFormField<String?>(
-              key: const Key('history-formation'),
-              initialValue: formation?.code,
-              decoration: const InputDecoration(labelText: 'Dispositif'),
-              items: [
-                const DropdownMenuItem<String?>(
-                  value: null,
-                  child: Text('Pas de composition'),
-                ),
-                for (final option in footballFormations)
-                  DropdownMenuItem<String?>(
-                    value: option.code,
-                    child: Text(option.code),
+            KeyedSubtree(
+              key: ValueKey('history-formation-reset-$_formationResets'),
+              child: DropdownButtonFormField<String?>(
+                key: const Key('history-formation'),
+                initialValue: formation?.code,
+                decoration: const InputDecoration(labelText: 'Dispositif'),
+                items: [
+                  const DropdownMenuItem<String?>(
+                    value: null,
+                    child: Text('Pas de composition'),
                   ),
-              ],
-              onChanged: (code) => _update(
-                (d) => code == null
-                    ? d.copyWith(clearFormation: true, starters: const [])
-                    : d.copyWith(formation: code, starters: const []),
+                  for (final option in footballFormations)
+                    DropdownMenuItem<String?>(
+                      value: option.code,
+                      child: Text(option.code),
+                    ),
+                ],
+                onChanged: (code) => _changeFormation(code),
               ),
             ),
             if (formation != null) ...[
