@@ -7,6 +7,7 @@ Régénérer après ajout de notes : `python3 tool/docs_index.py`.
 
 - [Analyse complète de Petit Filet — 18 novembre 2026](ANALYSE_PETIT_FILET_20261118.md) — Ce document est une photographie à une date donnée. Il distingue toujours
 - [Audit des automatismes Petit Filet — 15 novembre 2026](AUDIT_AUTOMATISMES_20261115.md) — Demande : enquêter sur « Simuler la compo », les pronostics et la liste d'attente, ainsi que leurs…
+- [Audit complet — 25/11/2026](AUDIT_COMPLET_20261125.md) — Des traces d'erreur s'affichent pendant les tests, mais tous passent :
 - [Petit Filet — Audit d'écart V1 Q01–Q12 (constats du 14 novembre 2026)](AUDIT_ECART_V1_Q01_Q12_20261114.md) — Statut : AUDIT DOCUMENTAIRE + CODE + BASE COMMERCIALE EN LECTURE SEULE ; RECETTE RÉELLE NON RÉALISÉE.
 - [Mission 01 — Synthèse et index de l'audit d'AS Grinta](AUDIT_FONCTIONNALITES.md) — État : audit documentaire approfondi, non validé par des essais utilisateur.
 - [Audit fonctionnel approfondi — Mission 01](AUDIT_FONCTIONNALITES_DETAILLE.md) — Sources croisées : samihchaa-wq/AS-Grinta (arborescence du dépôt, sans modification),…
