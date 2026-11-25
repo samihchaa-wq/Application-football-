@@ -118,7 +118,7 @@ aucun effet).
 - Les tests de la base (pgTAP) sur ces fonctions.
 
 ### Correction du problème 1 (double paiement) — faite, accord reçu
-- Base (`20261206000000_paiement_carte_sans_doublon.sql`) : un paiement en
+- Base (`20261206010000_paiement_carte_sans_doublon.sql`) : un paiement en
   attente de moins de 30 min, même club, même montant et mêmes réductions,
   est réutilisé ; verrou par club contre les appels simultanés.
 - Fonction `stripe-checkout` : la page de paiement expire 32 min après la
