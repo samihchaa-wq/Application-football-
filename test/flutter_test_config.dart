@@ -10,7 +10,10 @@ import 'package:petit_filet/core/club/club_identity.dart';
 ///
 /// Les écrans doivent rester utilisables avec le texte agrandi du téléphone ;
 /// un test qui échoue dans ce mode signale en général un débordement.
-const _textScale = double.fromEnvironment('PF_TEXT_SCALE', defaultValue: 1);
+final _textScale = double.tryParse(
+      const String.fromEnvironment('PF_TEXT_SCALE', defaultValue: '1'),
+    ) ??
+    1.0;
 
 /// Réglage commun à tous les tests.
 ///
