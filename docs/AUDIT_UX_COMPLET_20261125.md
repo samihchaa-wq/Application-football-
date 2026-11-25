@@ -1,5 +1,8 @@
 # Audit UX/UI — 4 axes (25 novembre 2026)
 
+> **Correction (même jour)** : ce premier passage (comptages) est dépassé. Il affirmait « aucun bloquant » et des squelettes de chargement : faux. Lire `docs/AUDIT_UX_ECRAN_PAR_ECRAN_20261125.md`.
+
+
 Suite de `docs/PLAN_AUDIT_UX_COMPLET.md`. Complète `docs/AUDIT_UX_UI_20261124.md` (boutons, couleurs, textes), sans le refaire.
 Aucun code modifié. À valider avant toute correction.
 
