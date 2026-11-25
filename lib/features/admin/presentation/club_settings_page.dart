@@ -570,6 +570,7 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     'notify_convocation': 'squad',
     'notify_composition': 'squad',
     ClubRules.correctionWindowHoursKey: 'matches',
+    ClubRules.showCrestInFixturesKey: 'matches',
     'match_duration_minutes': 'matches',
     ClubRules.livePilotModeKey: 'live',
     'notify_live_kickoff': 'live',

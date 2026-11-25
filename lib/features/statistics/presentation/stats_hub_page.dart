@@ -2,18 +2,15 @@ import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/app/shell/module_navigation.dart';
 import 'package:petit_filet/core/theme/app_spacing.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
-import 'package:petit_filet/core/utils/name_validation.dart';
 import 'package:petit_filet/core/utils/ranking.dart';
 import 'package:petit_filet/core/widgets/pf_app_bar.dart';
 import 'package:petit_filet/core/widgets/pf_empty_state.dart';
 import 'package:petit_filet/core/widgets/pf_secondary_tabs.dart';
-import 'package:petit_filet/core/widgets/sticky_header_table.dart';
 import 'package:petit_filet/core/widgets/pf_skeleton.dart';
 import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:petit_filet/features/badges/presentation/badge_display_scope.dart';
 import 'package:petit_filet/features/badges/presentation/name_with_badges.dart';
 import 'package:petit_filet/features/club/data/club_repository.dart';
-import 'package:petit_filet/features/players/data/player_stat_ranking.dart';
 import 'package:petit_filet/features/players/presentation/player_card_link.dart';
 import 'package:petit_filet/features/predictions/presentation/pronos_hub_page.dart';
 import 'package:petit_filet/features/statistics/data/statistics_repository.dart';
@@ -143,26 +140,24 @@ class _StatsHubPageState extends ConsumerState<StatsHubPage> {
   }
 }
 
+/// Statistique sur laquelle les joueurs sont classés.
 enum _PlayerStatCol {
-  name,
-  played,
-  goals,
-  assists,
-  cleanSheets,
-  hdm,
-  wins,
-  draws,
-  losses,
+  goals('Buts', 'but', 'buts'),
+  assists('Passes décisives', 'passe décisive', 'passes décisives'),
+  played('Matchs', 'match', 'matchs'),
+  hdm('Homme du match', 'Homme du match', 'Hommes du match'),
+  wins('Victoires', 'victoire', 'victoires'),
+  cleanSheets(
+      'Sans encaisser', 'match sans encaisser', 'matchs sans encaisser');
+
+  const _PlayerStatCol(this.chipLabel, this.singular, this.plural);
+
+  final String chipLabel;
+  final String singular;
+  final String plural;
 }
 
-const _playerValueFlex = 1;
 const _playerBadgeSize = statisticsBadgeSize;
-
-/// Les colonnes de statistiques (J, B, [PD], CS, HDM, G, N, P) se partagent la
-/// zone défilante. On réserve à chacune la même largeur qu'avant l'arrivée des
-/// passes décisives, sinon « HDM » et sa flèche de tri ne tiennent plus.
-const _playerColumnWidth = 64.0;
-const _playerColumnCountWithoutAssists = 7;
 
 /// Les passes décisives ne sont suivies que depuis leur mise en service : une
 /// période antérieure n'en contient aucune, et afficher une colonne vide y
@@ -189,19 +184,7 @@ class _PlayersPanel extends ConsumerStatefulWidget {
 }
 
 class _PlayersPanelState extends ConsumerState<_PlayersPanel> {
-  _PlayerStatCol? _sort;
-  bool _descending = true;
-
-  void _onSort(_PlayerStatCol column) {
-    setState(() {
-      if (_sort == column) {
-        _descending = !_descending;
-      } else {
-        _sort = column;
-        _descending = column != _PlayerStatCol.name;
-      }
-    });
-  }
+  _PlayerStatCol _sort = _PlayerStatCol.goals;
 
   num _value(_PlayerStatCol column, PlayerStatistics player) {
     return switch (column) {
@@ -210,10 +193,7 @@ class _PlayersPanelState extends ConsumerState<_PlayersPanel> {
       _PlayerStatCol.assists => player.assists,
       _PlayerStatCol.cleanSheets => player.teamCleanSheets,
       _PlayerStatCol.wins => player.wins ?? 0,
-      _PlayerStatCol.draws => player.draws ?? 0,
-      _PlayerStatCol.losses => player.losses ?? 0,
       _PlayerStatCol.hdm => player.hdm ?? 0,
-      _PlayerStatCol.name => 0,
     };
   }
 
@@ -251,281 +231,226 @@ class _PlayersPanelState extends ConsumerState<_PlayersPanel> {
         }
 
         final showsAssists = statisticsShowsAssistsColumn(data);
-        final players = [...data.players];
-        // Trier sur une colonne que cette période n'affiche pas donnerait un
-        // classement inexplicable : on retombe sur l'ordre par défaut.
-        final sort =
-            !showsAssists && _sort == _PlayerStatCol.assists ? null : _sort;
-        if (sort != null) {
-          players.sort((a, b) {
-            final comparison = sort == _PlayerStatCol.name
-                ? a.playerName.toLowerCase().compareTo(
-                      b.playerName.toLowerCase(),
-                    )
-                : _value(sort, a).compareTo(_value(sort, b));
-            if (comparison == 0) {
-              return a.playerName.toLowerCase().compareTo(
-                    b.playerName.toLowerCase(),
-                  );
-            }
-            return _descending ? -comparison : comparison;
+        final columns = [
+          for (final column in _PlayerStatCol.values)
+            if (showsAssists || column != _PlayerStatCol.assists) column,
+        ];
+        // Classer sur une statistique que cette période n'affiche pas donnerait
+        // un classement inexplicable : on retombe sur les buts.
+        final sort = columns.contains(_sort) ? _sort : _PlayerStatCol.goals;
+        final players = [...data.players]..sort((a, b) {
+            final comparison = _value(sort, b).compareTo(_value(sort, a));
+            if (comparison != 0) return comparison;
+            return a.playerName.toLowerCase().compareTo(
+                  b.playerName.toLowerCase(),
+                );
           });
-        }
+        final ranks = competitionRanks(players, (p) => _value(sort, p));
 
-        // Rang sportif sur la colonne triee. Trie par nom, ou sans tri, la
-        // colonne redevient une simple position dans la liste.
-        final ranks = sort == null || sort == _PlayerStatCol.name
-            ? [for (var index = 0; index < players.length; index++) index + 1]
-            : competitionRanks(players, (player) => _value(sort, player));
-
-        final pinnedWidth = pfTablePinnedWidthForNames(
-          context,
-          players.map(
-            (player) => capitalizePersonName(player.playerName),
-          ),
-          trailingWidth: _playerBadgeSize,
-          trailingGap: nameWithBadgesGap,
-        );
-
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.screenGutter,
-            AppSpacing.contentGap,
-            AppSpacing.screenGutter,
-            32,
-          ),
-          child: Column(
-            children: [
-              Expanded(
-                child: StickyHeaderTableCard(
-                  onRefresh: _refresh,
-                  pinnedWidth: pinnedWidth,
-                  minWidth: pinnedWidth +
-                      (_playerColumnCountWithoutAssists +
-                              (showsAssists ? 1 : 0)) *
-                          _playerColumnWidth,
-                  pinnedHeader: _PlayersPinnedHeader(
-                    sort: sort,
-                    descending: _descending,
-                    onSort: _onSort,
+        return Column(
+          children: [
+            SizedBox(
+              height: 52,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.screenGutter,
+                  vertical: 8,
+                ),
+                itemCount: columns.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final column = columns[index];
+                  return ChoiceChip(
+                    key: ValueKey('stats-sort-${column.name}'),
+                    label: Text(column.chipLabel),
+                    selected: column == sort,
+                    showCheckmark: false,
+                    onSelected: (_) => setState(() => _sort = column),
+                  );
+                },
+              ),
+            ),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _refresh,
+                child: ListView.separated(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.screenGutter,
+                    4,
+                    AppSpacing.screenGutter,
+                    32,
                   ),
-                  scrollableHeader: _PlayersScrollableHeader(
+                  itemCount: players.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  itemBuilder: (context, index) => _PlayerStatCard(
+                    rank: ranks[index],
+                    player: players[index],
                     sort: sort,
-                    descending: _descending,
-                    onSort: _onSort,
+                    value: _value(sort, players[index]).toInt(),
                     showsAssists: showsAssists,
+                    isCurrentUser: currentProfileId != null &&
+                        players[index].profileId == currentProfileId,
                   ),
-                  rows: [
-                    for (var index = 0; index < players.length; index++)
-                      _playersRow(
-                        context,
-                        rank: ranks[index],
-                        player: players[index],
-                        isCurrentUser: currentProfileId != null &&
-                            players[index].profileId == currentProfileId,
-                        showsAssists: showsAssists,
-                      ),
-                  ],
                 ),
               ),
-              Padding(
-                key: const ValueKey('stats-columns-legend'),
-                padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
-                child: Text(
-                  _playerColumnsLegend(showsAssists: showsAssists),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.textSecondary,
-                      ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
   }
 }
 
-class _PlayersPinnedHeader extends StatelessWidget {
-  const _PlayersPinnedHeader({
+class _PlayerStatCard extends StatelessWidget {
+  const _PlayerStatCard({
+    required this.rank,
+    required this.player,
     required this.sort,
-    required this.descending,
-    required this.onSort,
-  });
-
-  final _PlayerStatCol? sort;
-  final bool descending;
-  final ValueChanged<_PlayerStatCol> onSort;
-
-  @override
-  Widget build(BuildContext context) {
-    final style = pfTableHeaderTextStyle(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        children: [
-          Expanded(
-            child: SortableHeaderCell(
-              label: '',
-              align: TextAlign.center,
-              active: sort == _PlayerStatCol.name,
-              descending: descending,
-              onTap: () => onSort(_PlayerStatCol.name),
-              style: style,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Nom complet de chaque colonne abrégée du tableau des joueurs.
-const _playerColumnNames = <String, String>{
-  'J': 'Matchs joués',
-  'B': 'Buts',
-  'PD': 'Passes décisives',
-  'CS': 'Matchs sans but encaissé',
-  'HDM': 'Homme du match',
-  'G': 'Gagnés',
-  'N': 'Nuls',
-  'P': 'Perdus',
-};
-
-/// Légende sous le tableau : sans elle, les abréviations restaient à deviner.
-String _playerColumnsLegend({required bool showsAssists}) => [
-      for (final entry in _playerColumnNames.entries)
-        if (showsAssists || entry.key != 'PD') '${entry.key} ${entry.value}',
-    ].join(' · ');
-
-class _PlayersScrollableHeader extends StatelessWidget {
-  const _PlayersScrollableHeader({
-    required this.sort,
-    required this.descending,
-    required this.onSort,
+    required this.value,
     required this.showsAssists,
+    required this.isCurrentUser,
   });
 
-  final _PlayerStatCol? sort;
-  final bool descending;
-  final ValueChanged<_PlayerStatCol> onSort;
+  final int rank;
+  final PlayerStatistics player;
+  final _PlayerStatCol sort;
+  final int value;
   final bool showsAssists;
+  final bool isCurrentUser;
+
+  static const _gold = Color(0xFFF2C94C);
+  static const _silver = Color(0xFFC5CED8);
+  static const _bronze = Color(0xFFD08A55);
+
+  Color? get _medal => switch (rank) {
+        1 => _gold,
+        2 => _silver,
+        3 => _bronze,
+        _ => null,
+      };
 
   @override
   Widget build(BuildContext context) {
-    final style = pfTableHeaderTextStyle(context);
+    final theme = Theme.of(context);
+    final medal = _medal;
+    final accent = isCurrentUser ? theme.colorScheme.secondary : null;
+    final borderColor = accent ?? medal?.withValues(alpha: .55);
 
-    Widget valueCell(String label, _PlayerStatCol column, String fullName) {
-      return SortableHeaderCell(
-        label: label,
-        tooltip: fullName,
-        flex: _playerValueFlex,
-        active: sort == column,
-        descending: descending,
-        onTap: () => onSort(column),
-        style: style,
-      );
-    }
-
-    return Padding(
-      padding: pfTableScrollableHeaderPadding,
-      child: Row(
-        children: [
-          valueCell('J', _PlayerStatCol.played, 'Matchs joués'),
-          valueCell('B', _PlayerStatCol.goals, 'Buts'),
-          if (showsAssists)
-            valueCell('PD', _PlayerStatCol.assists, 'Passes décisives'),
-          valueCell(
-            'CS',
-            _PlayerStatCol.cleanSheets,
-            'Clean sheets : matchs sans but encaissé',
+    Widget pill(String text) => Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceHigh,
+            borderRadius: BorderRadius.circular(999),
           ),
-          valueCell(
-            PlayerStat.manOfTheMatch.columnLabel,
-            _PlayerStatCol.hdm,
-            'Homme du match',
-          ),
-          valueCell('G', _PlayerStatCol.wins, 'Matchs gagnés'),
-          valueCell('N', _PlayerStatCol.draws, 'Matchs nuls'),
-          valueCell('P', _PlayerStatCol.losses, 'Matchs perdus'),
-        ],
-      ),
-    );
-  }
-}
-
-StickyTableRow _playersRow(
-  BuildContext context, {
-  required int rank,
-  required PlayerStatistics player,
-  required bool isCurrentUser,
-  required bool showsAssists,
-}) {
-  final valueStyle = pfTableCellTextStyle(context);
-
-  Widget value(int number) {
-    return Expanded(
-      flex: _playerValueFlex,
-      child: Text('$number', textAlign: TextAlign.center, style: valueStyle),
-    );
-  }
-
-  Widget pinned = PlayerCardLink(
-    playerKey: (
-      profileId: player.profileId,
-      fullName: player.fullName,
-      isGoalkeeper: player.isGoalkeeper,
-    ),
-    child: Padding(
-      padding: pfTablePinnedRowPadding,
-      child: Row(
-        children: [
-          PfTableRankCell(rank: rank),
-          Expanded(
-            child: NameWithBadges(
-              profileId: player.profileId,
-              name: player.playerName,
-              badgeSize: _playerBadgeSize,
-              alignBadgesEnd: true,
+          child: Text(
+            text,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: AppTheme.textSecondary,
+              fontWeight: FontWeight.w400,
             ),
           ),
-        ],
-      ),
-    ),
-  );
+        );
 
-  Widget scrollable = Padding(
-    padding: pfTableScrollableRowPadding,
-    child: Row(
-      children: [
-        value(player.matchesPlayed ?? 0),
-        value(player.goals),
-        if (showsAssists) value(player.assists),
-        value(player.teamCleanSheets),
-        value(player.hdm ?? 0),
-        value(player.wins ?? 0),
-        value(player.draws ?? 0),
-        value(player.losses ?? 0),
-      ],
-    ),
-  );
+    String count(int n, _PlayerStatCol column) =>
+        '$n ${n > 1 ? column.plural : column.singular}';
 
-  if (isCurrentUser) {
-    final accent = Theme.of(context).colorScheme.secondary;
-    pinned = DecoratedBox(
+    final details = <String>[
+      if (sort != _PlayerStatCol.played)
+        count(player.matchesPlayed ?? 0, _PlayerStatCol.played),
+      if (sort != _PlayerStatCol.goals)
+        count(player.goals, _PlayerStatCol.goals),
+      if (showsAssists && sort != _PlayerStatCol.assists)
+        count(player.assists, _PlayerStatCol.assists),
+      if (sort != _PlayerStatCol.hdm) '${player.hdm ?? 0} HDM',
+      if (sort != _PlayerStatCol.cleanSheets)
+        '${player.teamCleanSheets} sans encaisser',
+      '${player.wins ?? 0} V · ${player.draws ?? 0} N · ${player.losses ?? 0} D',
+    ];
+
+    return Container(
       decoration: BoxDecoration(
-        color: accent.withValues(alpha: .14),
-        border: Border(left: BorderSide(color: accent, width: 4)),
+        color: accent?.withValues(alpha: .12) ?? AppTheme.surface,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        border: Border.all(
+          color: borderColor ?? Colors.white.withValues(alpha: .06),
+          width: borderColor == null ? 1 : 1.4,
+        ),
       ),
-      child: pinned,
-    );
-    scrollable = DecoratedBox(
-      decoration: BoxDecoration(color: accent.withValues(alpha: .14)),
-      child: scrollable,
+      child: PlayerCardLink(
+        playerKey: (
+          profileId: player.profileId,
+          fullName: player.fullName,
+          isGoalkeeper: player.isGoalkeeper,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 12, 14, 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: medal ?? AppTheme.surfaceHigh,
+                ),
+                child: Text(
+                  '$rank',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w400,
+                    color: medal == null ? AppTheme.textPrimary : Colors.black,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    NameWithBadges(
+                      profileId: player.profileId,
+                      name: player.playerName,
+                      badgeSize: _playerBadgeSize,
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [for (final text in details) pill(text)],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Column(
+                children: [
+                  Text(
+                    '$value',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontFamily: AppTheme.displayFont,
+                      fontSize: 30,
+                      height: 1,
+                      color: medal ?? AppTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    value > 1 ? sort.plural : sort.singular,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
-
-  return StickyTableRow(pinned: pinned, scrollable: scrollable);
 }
 
 class _Message extends StatelessWidget {
