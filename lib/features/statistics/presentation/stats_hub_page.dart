@@ -80,45 +80,47 @@ class _StatsHubPageState extends ConsumerState<StatsHubPage> {
                   AppSpacing.screenGutter,
                   AppSpacing.contentGap,
                 ),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: SegmentedButton<_StatsSection>(
-                    expandedInsets: EdgeInsets.zero,
-                    showSelectedIcon: false,
-                    segments: [
+                child: PfSecondaryTabs<_StatsSection>(
+                  padding: EdgeInsets.zero,
+                  segments: [
+                    const ButtonSegment(
+                      value: _StatsSection.players,
+                      icon: Icon(Icons.person_rounded),
+                      label: Text('Joueurs'),
+                    ),
+                    const ButtonSegment(
+                      value: _StatsSection.team,
+                      icon: Icon(Icons.groups_rounded),
+                      label: Text('Équipe'),
+                    ),
+                    if (predictionsEnabled)
                       const ButtonSegment(
-                        value: _StatsSection.players,
-                        label: Text('Joueurs'),
+                        value: _StatsSection.rankings,
+                        icon: Icon(Icons.online_prediction_rounded),
+                        label: Text('Prono'),
                       ),
-                      const ButtonSegment(
-                        value: _StatsSection.team,
-                        label: Text('Équipe'),
-                      ),
-                      if (predictionsEnabled)
-                        const ButtonSegment(
-                          value: _StatsSection.rankings,
-                          label: Text('Prono'),
-                        ),
-                    ],
-                    selected: {section},
-                    onSelectionChanged: (value) {
-                      setState(() => _section = value.first);
-                    },
-                  ),
+                  ],
+                  selected: {section},
+                  onSelectionChanged: (value) {
+                    setState(() => _section = value.first);
+                  },
                 ),
               ),
               PfSecondaryTabs<StatisticsPeriod>(
                 segments: const [
                   ButtonSegment(
                     value: StatisticsPeriod.current,
+                    icon: Icon(Icons.today_rounded),
                     label: Text('Actuelle'),
                   ),
                   ButtonSegment(
                     value: StatisticsPeriod.previous,
+                    icon: Icon(Icons.history_rounded),
                     label: Text('Précédente'),
                   ),
                   ButtonSegment(
                     value: StatisticsPeriod.allTime,
+                    icon: Icon(Icons.all_inclusive_rounded),
                     label: Text('Toutes'),
                   ),
                 ],

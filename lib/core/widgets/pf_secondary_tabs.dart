@@ -11,6 +11,7 @@ class PfSecondaryTabs<T> extends StatelessWidget {
     required this.segments,
     required this.selected,
     required this.onSelectionChanged,
+    this.padding,
     super.key,
   });
 
@@ -22,70 +23,95 @@ class PfSecondaryTabs<T> extends StatelessWidget {
   final Set<T> selected;
   final ValueChanged<Set<T>> onSelectionChanged;
 
+  /// Marges autour de la barre ; par défaut celles des sous-onglets.
+  final EdgeInsetsGeometry? padding;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.screenGutter,
-        2,
-        AppSpacing.screenGutter,
-        AppSpacing.sectionGap,
+      padding: padding ??
+          const EdgeInsets.fromLTRB(
+            AppSpacing.screenGutter,
+            2,
+            AppSpacing.screenGutter,
+            AppSpacing.sectionGap,
+          ),
+      child: Row(
+        children: [
+          for (var i = 0; i < segments.length; i++) ...[
+            if (i > 0) const SizedBox(width: AppSpacing.contentGap),
+            Expanded(
+                child: _Pill(
+              segment: segments[i],
+              isSelected: selected.contains(segments[i].value),
+              onTap: () => onSelectionChanged({segments[i].value}),
+            )),
+          ],
+        ],
       ),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-          border: Border.all(color: AppTheme.outline.withValues(alpha: .24)),
+    );
+  }
+}
+
+/// Une bulle (forme arrondie) : même style que les boutons du reste de l'appli.
+class _Pill<T> extends StatelessWidget {
+  const _Pill({
+    required this.segment,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final ButtonSegment<T> segment;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isSelected ? AppTheme.primaryBright : AppTheme.textPrimary;
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      child: Material(
+        color: isSelected ? AppTheme.selectedSurface : AppTheme.surface,
+        shape: StadiumBorder(
+          side: BorderSide(
+            color: isSelected
+                ? AppTheme.primary.withValues(alpha: .55)
+                : AppTheme.outline.withValues(alpha: .28),
+          ),
         ),
-        child: SizedBox(
-          width: double.infinity,
-          height: height,
-          child: SegmentedButton<T>(
-            expandedInsets: EdgeInsets.zero,
-            showSelectedIcon: false,
-            segments: segments,
-            selected: selected,
-            onSelectionChanged: onSelectionChanged,
-            style: ButtonStyle(
-              minimumSize: const WidgetStatePropertyAll(Size(0, height)),
-              maximumSize: const WidgetStatePropertyAll(
-                Size(double.infinity, height),
-              ),
-              padding: const WidgetStatePropertyAll(
-                EdgeInsets.symmetric(horizontal: AppSpacing.contentGap),
-              ),
-              backgroundColor: WidgetStateProperty.resolveWith((states) {
-                return states.contains(WidgetState.selected)
-                    ? AppTheme.selectedSurface
-                    : Colors.transparent;
-              }),
-              foregroundColor: WidgetStateProperty.resolveWith((states) {
-                return states.contains(WidgetState.selected)
-                    // Même couleur que les onglets principaux : seule la
-                    // taille distingue les deux niveaux.
-                    ? AppTheme.primaryBright
-                    // Blanc comme les onglets du dessus : le gris ressemblait à
-                    // des onglets désactivés.
-                    : AppTheme.textPrimary;
-              }),
-              overlayColor: WidgetStatePropertyAll(
-                AppTheme.primary.withValues(alpha: .08),
-              ),
-              side: const WidgetStatePropertyAll(BorderSide.none),
-              shape: WidgetStatePropertyAll(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSm - 2),
-                ),
-              ),
-              textStyle: const WidgetStatePropertyAll(
-                TextStyle(
-                  fontSize: 12.5,
+        child: InkWell(
+          customBorder: const StadiumBorder(),
+          onTap: onTap,
+          child: SizedBox(
+            height: PfSecondaryTabs.height,
+            child: Center(
+              child: DefaultTextStyle.merge(
+                style: TextStyle(
+                  fontSize: 14,
                   height: 1,
                   fontWeight: FontWeight.w400,
-                  letterSpacing: .05,
+                  color: color,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (segment.icon != null) ...[
+                      IconTheme.merge(
+                        data: IconThemeData(color: color, size: 18),
+                        child: segment.icon!,
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                    Flexible(
+                      child: DefaultTextStyle.merge(
+                        overflow: TextOverflow.ellipsis,
+                        child: segment.label ?? const SizedBox.shrink(),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
           ),
         ),

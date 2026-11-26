@@ -1,5 +1,4 @@
 import 'package:petit_filet/core/providers/supabase_provider.dart';
-import 'package:petit_filet/core/theme/app_spacing.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/widgets/pf_app_bar.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
@@ -13,88 +12,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-/// Onglets de l'écran Notifications.
-enum NotificationsTab { history, settings }
-
 /// Écran ouvert par la cloche de l'en-tête : l'historique des notifications
-/// reçues, et leurs réglages.
-class NotificationsPage extends StatefulWidget {
-  const NotificationsPage({
-    super.key,
-    this.initialTab = NotificationsTab.history,
-  });
-
-  final NotificationsTab initialTab;
-
-  @override
-  State<NotificationsPage> createState() => _NotificationsPageState();
-}
-
-class _NotificationsPageState extends State<NotificationsPage> {
-  late NotificationsTab _tab = widget.initialTab;
-
-  /// Les réglages interrogent le téléphone et le serveur : ils ne sont
-  /// construits qu'à la première visite de leur onglet, puis gardés.
-  late bool _settingsBuilt = _tab == NotificationsTab.settings;
+/// reçues. Leurs réglages sont dans Paramètres.
+class NotificationsPage extends StatelessWidget {
+  const NotificationsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PfAppBar(title: const Text('Notifications')),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.screenGutter,
-              AppSpacing.contentGap,
-              AppSpacing.screenGutter,
-              AppSpacing.contentGap,
-            ),
-            child: SizedBox(
-              width: double.infinity,
-              child: SegmentedButton<NotificationsTab>(
-                expandedInsets: EdgeInsets.zero,
-                showSelectedIcon: false,
-                segments: const [
-                  ButtonSegment(
-                    value: NotificationsTab.history,
-                    label: Text('Historique'),
-                  ),
-                  ButtonSegment(
-                    value: NotificationsTab.settings,
-                    label: Text('Paramètres'),
-                  ),
-                ],
-                selected: {_tab},
-                onSelectionChanged: (value) {
-                  setState(() {
-                    _tab = value.first;
-                    if (_tab == NotificationsTab.settings) {
-                      _settingsBuilt = true;
-                    }
-                  });
-                },
-              ),
-            ),
-          ),
-          Expanded(
-            child: IndexedStack(
-              index: _tab.index,
-              children: [
-                const NotificationHistoryView(),
-                _settingsBuilt
-                    ? const NotificationSettingsView()
-                    : const SizedBox.shrink(),
-              ],
-            ),
-          ),
-        ],
-      ),
+      body: const NotificationHistoryView(),
     );
   }
 }
 
-/// Réglages des notifications (onglet Paramètres).
+/// Écran des réglages de notifications, ouvert depuis Paramètres.
+class NotificationSettingsPage extends StatelessWidget {
+  const NotificationSettingsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: PfAppBar(title: const Text('Notifications')),
+      body: const NotificationSettingsView(),
+    );
+  }
+}
+
+/// Réglages des notifications (écran Paramètres → Notifications).
 class NotificationSettingsView extends ConsumerWidget {
   const NotificationSettingsView({super.key});
 

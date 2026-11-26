@@ -35,9 +35,9 @@ class PfLabeledButton extends StatelessWidget {
           customBorder: const StadiumBorder(),
           onTap: onTap,
           child: SizedBox(
-            height: 44,
+            height: 38,
             child: Padding(
-              padding: const EdgeInsets.only(left: 8, right: 12),
+              padding: const EdgeInsets.only(left: 8, right: 10),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -47,7 +47,7 @@ class PfLabeledButton extends StatelessWidget {
                     label,
                     maxLines: 1,
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          fontSize: 14,
+                          fontSize: 13,
                           color: color,
                         ),
                   ),

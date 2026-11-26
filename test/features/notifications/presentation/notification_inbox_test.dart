@@ -349,7 +349,7 @@ void main() {
   });
 
   group('écran Notifications', () {
-    testWidgets('s’ouvre sur l’historique, Paramètres en second onglet', (
+    testWidgets('affiche l’historique seul, sans onglet Paramètres', (
       tester,
     ) async {
       final inbox = _FakeInbox([_entry(1, 'Convocation', unread: true)]);
@@ -366,8 +366,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Historique'), findsOneWidget);
-      expect(find.text('Paramètres'), findsOneWidget);
+      expect(find.text('Historique'), findsNothing);
+      expect(find.text('Paramètres'), findsNothing);
       expect(find.text('Convocation'), findsOneWidget);
       expect(inbox.markAllReadCalls, 1);
     });

@@ -50,7 +50,8 @@ class MorePage extends ConsumerWidget {
               profile: authState.profile,
               onTap: () => context.push('/profile'),
             ),
-            // Les notifications s'ouvrent depuis la cloche de l'en-tête.
+            // L'historique des notifications s'ouvre depuis la cloche de
+            // l'en-tête ; leurs réglages sont ici.
             const _SectionLabel('Mon compte'),
             _SettingsGroup(
               children: [
@@ -62,6 +63,11 @@ class MorePage extends ConsumerWidget {
                     title: 'Installer l’appli sur mon téléphone',
                     onTap: () => showHomeScreenInstallGuide(context),
                   ),
+                _SettingsTile(
+                  icon: Icons.notifications_outlined,
+                  title: 'Notifications',
+                  onTap: () => context.push('/notification-settings'),
+                ),
                 const CalendarSubscriptionTile(),
                 // Les admins ont leur Effectif modifiable plus bas.
                 if (!isAdminView)

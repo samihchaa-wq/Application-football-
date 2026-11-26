@@ -336,12 +336,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
               GoRoute(
                 path: '/notifications',
-                builder: (_, state) => NotificationsPage(
-                  initialTab:
-                      state.uri.queryParameters['onglet'] == 'parametres'
-                          ? NotificationsTab.settings
-                          : NotificationsTab.history,
-                ),
+                builder: (_, __) => const NotificationsPage(),
+              ),
+              GoRoute(
+                path: '/notification-settings',
+                builder: (_, __) => const NotificationSettingsPage(),
               ),
               GoRoute(
                 path: '/unavailability',
