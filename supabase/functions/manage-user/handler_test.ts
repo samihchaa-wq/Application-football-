@@ -34,7 +34,9 @@ function fixture() {
     adminCount: 2,
     memberCount: 1,
     profileDeleted: false,
+    targetContactEmail: null as string | null,
   };
+  const alerts: string[] = [];
 
   function query() {
     const filters: Record<string, unknown> = {};
@@ -66,7 +68,12 @@ function fixture() {
           data: state.profileDeleted
             ? null
             : matches
-            ? { id: TARGET, role: state.targetRole, status: state.targetStatus }
+            ? {
+              id: TARGET,
+              role: state.targetRole,
+              status: state.targetStatus,
+              contact_email: state.targetContactEmail,
+            }
             : null,
           error: null,
         });
@@ -182,6 +189,10 @@ function fixture() {
     createClient:
       makeClient as unknown as ManageUserDependencies["createClient"],
     getEnv: (name) => env[name],
+    notifyAdminPasswordReset: (email) => {
+      alerts.push(email);
+      return Promise.resolve();
+    },
   });
   const request = (body: Record<string, unknown>) =>
     handler(
@@ -197,7 +208,7 @@ function fixture() {
         },
       ),
     );
-  return { events, state, handler, request };
+  return { events, state, handler, request, alerts };
 }
 
 function assertNoPrivilegedAction(events: string[]): void {
@@ -377,4 +388,51 @@ Deno.test("manage-user : les comptes de démonstration sont reconnus", () => {
   assertEquals(isDemoAccount("de000000-0000-4000-8000-000000000001"), true);
   assertEquals(isDemoAccount("DE000000-0000-4000-8000-000000000012"), true);
   assertEquals(isDemoAccount("1f0e8a2c-0000-4000-8000-000000000001"), false);
+});
+
+Deno.test("manage-user : réinitialiser un autre admin le prévient par e-mail", async () => {
+  const f = fixture();
+  f.state.targetRole = "admin";
+  f.state.targetContactEmail = "autre-admin@example.invalid";
+  assertEquals(
+    (await f.request({ action: "reset-password", userId: TARGET })).status,
+    200,
+  );
+  assertEquals(f.alerts, ["autre-admin@example.invalid"]);
+});
+
+Deno.test("manage-user : réinitialiser un joueur n'envoie pas d'alerte", async () => {
+  const f = fixture();
+  f.state.targetContactEmail = "joueur@example.invalid";
+  assertEquals(
+    (await f.request({ action: "reset-password", userId: TARGET })).status,
+    200,
+  );
+  assertEquals(f.alerts, []);
+});
+
+Deno.test("manage-user : un corps plus long que déclaré est refusé", async () => {
+  const f = fixture();
+  const big = JSON.stringify({ action: "reset-password", userId: TARGET, pad: "x".repeat(20_000) });
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode(big));
+      controller.close();
+    },
+  });
+  const response = await f.handler(
+    new Request("https://edge.example.invalid/manage-user", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer verified-token",
+        "Content-Type": "application/json",
+        "content-length": "10",
+      },
+      body: stream,
+      // @ts-ignore: requis par Deno pour un corps en flux.
+      duplex: "half",
+    }),
+  );
+  assertEquals(response.status, 413);
+  assertNoPrivilegedAction(f.events);
 });

@@ -164,7 +164,7 @@ def main() -> int:
     require_in_order(
         manage,
         'callerProfile?.status !== "active"',
-        "const body = await req.json()",
+        "body = await readBoundedJson<Record<string, unknown>>(req, 16_384)",
         "manage-user doit vérifier l’admin actif avant de traiter le corps",
     )
     require_in_order(
@@ -258,6 +258,17 @@ def main() -> int:
     ):
         require(marker in account_email, f"account-email: garde absente: {marker}")
     require(
+        account_email.count(
+            'verifyInternalCall(req, String(config.token), "account-email")'
+        ) == 2,
+        "account-email: les deux actions internes doivent exiger la signature propre à account-email",
+    )
+    for name, text in (("account-email", account_email), ("send-push", source("send-push"))):
+        require(
+            'req.headers.get("x-push-token")' not in text,
+            f"{name} ne doit plus accepter le mot de passe interne brut",
+        )
+    require(
         "body = await req.json()" not in account_email,
         "account-email ne doit pas lire le corps sans borne",
     )
@@ -320,9 +331,9 @@ def main() -> int:
     push = source("send-push")
     for marker in (
         'req.method !== "POST"',
-        'req.headers.get("x-push-token")',
+        'req.headers.get("x-push-signature")',
         '"internal_push_config"',
-        "await secretsEqual(token, String(config.token))",
+        'await verifyInternalCall(req, String(config.token), "send-push")',
         "readBoundedJson<PushRequestBody>(req)",
         "RequestBodyTooLargeError",
         'return new Response("non autorisé", { status: 401 })',
@@ -335,13 +346,13 @@ def main() -> int:
     )
     require_in_order(
         push,
-        "await secretsEqual(token, String(config.token))",
+        'await verifyInternalCall(req, String(config.token), "send-push")',
         "readBoundedJson<PushRequestBody>(req)",
         "send-push doit valider le secret interne avant de traiter le corps",
     )
     require_in_order(
         push,
-        "await secretsEqual(token, String(config.token))",
+        'await verifyInternalCall(req, String(config.token), "send-push")',
         'supabase.rpc("internal_push_dispatch"',
         "send-push doit valider le secret interne avant toute distribution",
     )

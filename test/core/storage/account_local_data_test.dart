@@ -8,6 +8,7 @@ void main() {
       'calendar_matches_v1_compte-a': '[{"id":"m1"}]',
       'calendar_history_all_v2': '[{"opponent_name":"Adversaire A"}]',
       'club_events_v1': '[]',
+      'club_identity_v1_compte-a': '{"name":"Club A","short":"CA"}',
       'theme_mode': 'dark',
     });
 

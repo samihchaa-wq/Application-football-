@@ -1,6 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:petit_filet/core/club/club_identity.dart';
 import 'package:petit_filet/core/config/app_config.dart';
 import 'package:petit_filet/core/push/push_client.dart';
+import 'package:petit_filet/core/theme/app_spacing.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/widgets/pf_app_bar.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
@@ -27,148 +30,163 @@ class MorePage extends ConsumerWidget {
 
     return Scaffold(
       appBar: PfAppBar(title: const Text('Paramètres')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // La carte du compte remplace l'ancienne ligne « Profil » : on voit
-          // tout de suite avec quel compte on est connecté.
-          _ProfileHeaderCard(
-            profile: authState.profile,
-            onTap: () => context.push('/profile'),
+      // Marge de la charte (8 px) sur téléphone ; sur grand écran, la page
+      // est centrée sur 760 px comme le calendrier, au lieu d'étirer chaque
+      // ligne sur toute la largeur.
+      body: LayoutBuilder(
+        builder: (context, constraints) => ListView(
+          padding: EdgeInsets.symmetric(
+            horizontal: math.max(
+              AppSpacing.screenGutter,
+              (constraints.maxWidth - _maxContentWidth) / 2 +
+                  AppSpacing.screenGutter,
+            ),
+            vertical: 16,
           ),
-          // Les notifications s'ouvrent depuis la cloche de l'en-tête.
-          const _SectionLabel('Mon compte'),
-          _SettingsGroup(
-            children: [
-              // Masqué une fois l'appli ouverte depuis l'écran d'accueil.
-              if (!pushAppInstalled())
-                _SettingsTile(
-                  key: const Key('more-install-app'),
-                  icon: Icons.install_mobile_outlined,
-                  title: 'Installer l’appli sur mon téléphone',
-                  onTap: () => showHomeScreenInstallGuide(context),
-                ),
-              const CalendarSubscriptionTile(),
-              // Les admins ont leur Effectif modifiable plus bas.
-              if (!isAdminView)
-                _SettingsTile(
-                  icon: Icons.groups_outlined,
-                  title: 'Effectif',
-                  onTap: () => context.push('/effectif'),
-                ),
-              if (sportsEnabled) ...[
-                _SettingsTile(
-                  icon: Icons.event_busy_outlined,
-                  title: 'Indisponibilité',
-                  onTap: () => context.push('/unavailability'),
-                ),
-                _SettingsTile(
-                  icon: Icons.format_list_numbered_outlined,
-                  title: 'Liste d’attente',
-                  onTap: () => context.push(
-                    isAdminView ? '/admin/waitlist' : '/waitlist',
+          children: [
+            // La carte du compte remplace l'ancienne ligne « Profil » : on voit
+            // tout de suite avec quel compte on est connecté.
+            _ProfileHeaderCard(
+              profile: authState.profile,
+              onTap: () => context.push('/profile'),
+            ),
+            // Les notifications s'ouvrent depuis la cloche de l'en-tête.
+            const _SectionLabel('Mon compte'),
+            _SettingsGroup(
+              children: [
+                // Masqué une fois l'appli ouverte depuis l'écran d'accueil.
+                if (!pushAppInstalled())
+                  _SettingsTile(
+                    key: const Key('more-install-app'),
+                    icon: Icons.install_mobile_outlined,
+                    title: 'Installer l’appli sur mon téléphone',
+                    onTap: () => showHomeScreenInstallGuide(context),
                   ),
-                ),
+                const CalendarSubscriptionTile(),
+                // Les admins ont leur Effectif modifiable plus bas.
+                if (!isAdminView)
+                  _SettingsTile(
+                    icon: Icons.groups_outlined,
+                    title: 'Effectif',
+                    onTap: () => context.push('/effectif'),
+                  ),
+                if (sportsEnabled) ...[
+                  _SettingsTile(
+                    icon: Icons.event_busy_outlined,
+                    title: 'Indisponibilité',
+                    onTap: () => context.push('/unavailability'),
+                  ),
+                  _SettingsTile(
+                    icon: Icons.format_list_numbered_outlined,
+                    title: 'Liste d’attente',
+                    onTap: () => context.push(
+                      isAdminView ? '/admin/waitlist' : '/waitlist',
+                    ),
+                  ),
+                ],
               ],
+            ),
+            if (isAdminView) ...[
+              const _SectionLabel('Club · admin'),
+              _SettingsGroup(
+                children: [
+                  _SettingsTile(
+                    icon: Icons.groups_outlined,
+                    title: 'Effectif',
+                    onTap: () => context.push('/admin'),
+                  ),
+                  _SettingsTile(
+                    icon: Icons.stadium_outlined,
+                    title: 'Équipes & stades',
+                    onTap: () async {
+                      await context.push('/admin/stadiums');
+                      if (!context.mounted) return;
+                      // Rafraîchir les cartes de matchs après une modification.
+                      try {
+                        await ref.read(matchesControllerProvider.notifier).load(
+                              allSeasons: true,
+                              forceRefresh: true,
+                            );
+                      } catch (error) {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(humanizeError(error))),
+                        );
+                      }
+                    },
+                  ),
+                  // Propre à Petit Filet : les réglages de chaque club.
+                  _SettingsTile(
+                    icon: Icons.tune_outlined,
+                    title: 'Réglages du club',
+                    onTap: () => context.push('/admin/club'),
+                  ),
+                  _SettingsTile(
+                    icon: Icons.history_outlined,
+                    title: 'Ajouter des matchs passés',
+                    onTap: () => context.push('/admin/history'),
+                  ),
+                  _SettingsTile(
+                    icon: Icons.badge_outlined,
+                    title: 'Licence',
+                    onTap: () => context.push('/admin/licence'),
+                  ),
+                  _SettingsTile(
+                    icon: Icons.credit_card_outlined,
+                    title: 'Abonnement',
+                    onTap: () => context.push('/admin/abonnement'),
+                  ),
+                ],
+              ),
             ],
-          ),
-          if (isAdminView) ...[
-            const _SectionLabel('Club · admin'),
+            // Textes légaux : pour tout le monde, à un endroit qu'on retrouve.
+            const _SectionLabel('Informations légales'),
             _SettingsGroup(
               children: [
                 _SettingsTile(
-                  icon: Icons.groups_outlined,
-                  title: 'Effectif',
-                  onTap: () => context.push('/admin'),
+                  icon: Icons.privacy_tip_outlined,
+                  title: 'Confidentialité',
+                  onTap: () => context.push('/legal/confidentialite'),
                 ),
                 _SettingsTile(
-                  icon: Icons.stadium_outlined,
-                  title: 'Équipes & stades',
-                  onTap: () async {
-                    await context.push('/admin/stadiums');
-                    if (!context.mounted) return;
-                    // Rafraîchir les cartes de matchs après une modification.
-                    try {
-                      await ref.read(matchesControllerProvider.notifier).load(
-                            allSeasons: true,
-                            forceRefresh: true,
-                          );
-                    } catch (error) {
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(humanizeError(error))),
-                      );
-                    }
-                  },
-                ),
-                // Propre à Petit Filet : les réglages de chaque club.
-                _SettingsTile(
-                  icon: Icons.tune_outlined,
-                  title: 'Réglages du club',
-                  onTap: () => context.push('/admin/club'),
+                  icon: Icons.description_outlined,
+                  title: 'Conditions d’utilisation',
+                  onTap: () => context.push('/legal/cgu'),
                 ),
                 _SettingsTile(
-                  icon: Icons.history_outlined,
-                  title: 'Ajouter des matchs passés',
-                  onTap: () => context.push('/admin/history'),
-                ),
-                _SettingsTile(
-                  icon: Icons.badge_outlined,
-                  title: 'Licence',
-                  onTap: () => context.push('/admin/licence'),
-                ),
-                _SettingsTile(
-                  icon: Icons.credit_card_outlined,
-                  title: 'Abonnement',
-                  onTap: () => context.push('/admin/abonnement'),
+                  icon: Icons.gavel_outlined,
+                  title: 'Mentions légales',
+                  onTap: () => context.push('/legal/mentions'),
                 ),
               ],
             ),
+            const SizedBox(height: 20),
+            // Aussi proposé dans le Profil : c'est ici qu'on le cherche d'abord.
+            Center(
+              child: TextButton(
+                onPressed: authState.isBusy
+                    ? null
+                    : () => confirmAndSignOut(context, ref),
+                style: TextButton.styleFrom(foregroundColor: AppTheme.error),
+                child: const Text('Se déconnecter'),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: Text(
+                '${ClubIdentity.name} • version ${AppConfig.version}',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
           ],
-          // Textes légaux : pour tout le monde, à un endroit qu'on retrouve.
-          const _SectionLabel('Informations légales'),
-          _SettingsGroup(
-            children: [
-              _SettingsTile(
-                icon: Icons.privacy_tip_outlined,
-                title: 'Confidentialité',
-                onTap: () => context.push('/legal/confidentialite'),
-              ),
-              _SettingsTile(
-                icon: Icons.description_outlined,
-                title: 'Conditions d’utilisation',
-                onTap: () => context.push('/legal/cgu'),
-              ),
-              _SettingsTile(
-                icon: Icons.gavel_outlined,
-                title: 'Mentions légales',
-                onTap: () => context.push('/legal/mentions'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          // Aussi proposé dans le Profil : c'est ici qu'on le cherche d'abord.
-          Center(
-            child: TextButton(
-              onPressed: authState.isBusy
-                  ? null
-                  : () => confirmAndSignOut(context, ref),
-              style: TextButton.styleFrom(foregroundColor: AppTheme.error),
-              child: const Text('Se déconnecter'),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Center(
-            child: Text(
-              '${ClubIdentity.name} • version ${AppConfig.version}',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 }
+
+/// Largeur maximale du contenu, alignée sur le calendrier.
+const double _maxContentWidth = 760;
 
 class _ProfileHeaderCard extends StatelessWidget {
   const _ProfileHeaderCard({required this.profile, required this.onTap});

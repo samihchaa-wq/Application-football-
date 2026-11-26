@@ -7,6 +7,10 @@
 // (platform_record_refund). Si cette dernière étape échoue, l'événement
 // refund.created de Stripe l'enregistre quand même (stripe-webhook).
 import type { createClient } from "jsr:@supabase/supabase-js@2.95.0";
+import {
+  readBoundedJson,
+  RequestBodyTooLargeError,
+} from "../send-push/request_security.ts";
 
 export interface StripeRefundDependencies {
   createClient: typeof createClient;
@@ -49,10 +53,18 @@ export function createStripeRefundHandler({
       return jsonResponse({ error: "Request body too large" }, 413);
     }
 
+    // L'en-tête de taille peut mentir (envoi fractionné) : le corps est lu
+    // par morceaux et coupé au-delà de la limite.
     let body: Record<string, unknown>;
     try {
-      body = await req.json();
-    } catch {
+      body = await readBoundedJson<Record<string, unknown>>(req, 4096);
+    } catch (error) {
+      if (error instanceof RequestBodyTooLargeError) {
+        return jsonResponse({ error: "Request body too large" }, 413);
+      }
+      return jsonResponse({ error: "Demande illisible." }, 400);
+    }
+    if (body === null || typeof body !== "object" || Array.isArray(body)) {
       return jsonResponse({ error: "Demande illisible." }, 400);
     }
     const paymentId = String(body.payment_id ?? "");
