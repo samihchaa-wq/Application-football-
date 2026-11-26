@@ -26,3 +26,9 @@ Passages planifiés : EN PAUSE pendant la revue.
 - Priorités : cohérence couleurs/textes/boutons, adaptation aux tailles d'écran, états vides/erreurs/chargement, accessibilité.
 - Preuve : captures avant/après (version web), jointes à la PR. Si impossible, dire que ce n'est pas vérifié visuellement.
 - Fait seul : marges, couleurs, tailles, alignements, sans changer la structure d'un écran. Le reste = proposition.
+
+## Sécurité — validé
+- Périmètre : droits (qui voit/modifie quoi), secrets et clés dans le code, données personnelles, invitations et liens partagés.
+- Base : lecture seule (SELECT) sur la vraie base. Même garde-fou et même risque que le testeur (écriture non bloquée techniquement). Jamais de données personnelles réelles dans les rapports.
+- Alerte : rapport, notification si grave (fuite de données, droits trop larges, secret exposé).
+- Fréquence : 1 passage par jour, un sujet par passage.
