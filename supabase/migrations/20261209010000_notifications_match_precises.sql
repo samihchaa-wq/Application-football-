@@ -232,6 +232,8 @@ exception when others then
 end;
 $$;
 
+-- Soumise au cloisonnement par club, comme les autres fonctions privilégiées.
+alter function private.handle_match_detail_notification_change() owner to club_scope;
 revoke all on function private.handle_match_detail_notification_change()
   from public, anon, authenticated;
 
@@ -274,7 +276,8 @@ begin
 end;
 $$;
 
-alter function public.delete_my_notifications() owner to postgres;
+-- Soumise au cloisonnement par club, comme les autres fonctions privilégiées.
+alter function public.delete_my_notifications() owner to club_scope;
 
 comment on function public.delete_my_notifications() is
   'Supprime définitivement toutes les notifications de l''historique du compte connecté et rend leur nombre. Profil actif exigé.';
@@ -328,7 +331,7 @@ begin
 end;
 $$;
 
-alter function public.mark_my_notifications_read_for(text[], uuid) owner to postgres;
+alter function public.mark_my_notifications_read_for(text[], uuid) owner to club_scope;
 
 comment on function public.mark_my_notifications_read_for(text[], uuid) is
   'Marque comme lues les notifications non lues du compte connecté pour les types donnés (et le match donné, si présent) et rend leur nombre. Profil actif exigé.';
