@@ -91,7 +91,7 @@ Future<void> _pumpNotifications(
         ),
       ],
       child: const MaterialApp(
-        home: NotificationsPage(initialTab: NotificationsTab.settings),
+        home: NotificationSettingsPage(),
       ),
     ),
   );
@@ -365,7 +365,7 @@ void main() {
           notificationInboxRepositoryProvider.overrideWithValue(_EmptyInbox()),
         ],
         child: const MaterialApp(
-          home: NotificationsPage(initialTab: NotificationsTab.settings),
+          home: NotificationSettingsPage(),
         ),
       ),
     );
@@ -404,7 +404,7 @@ void main() {
           notificationInboxRepositoryProvider.overrideWithValue(_EmptyInbox()),
         ],
         child: const MaterialApp(
-          home: NotificationsPage(initialTab: NotificationsTab.settings),
+          home: NotificationSettingsPage(),
         ),
       ),
     );

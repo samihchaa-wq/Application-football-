@@ -41,7 +41,7 @@ const _player = AuthProfile(
 /// ligne, pas le contenu des écrans ouverts.
 const _destinations = [
   '/profile',
-  '/notifications',
+  '/notification-settings',
   '/unavailability',
   '/waitlist',
   '/admin/waitlist',
@@ -130,7 +130,7 @@ void main() {
     // Grand écran de téléphone : avec les réglages du club, la page dépasse
     // la petite fenêtre de test par défaut.
     tester.view
-      ..physicalSize = const Size(1170, 3000)
+      ..physicalSize = const Size(1170, 3300)
       ..devicePixelRatio = 3;
     addTearDown(tester.view.reset);
     await _pumpMorePage(tester, profile: _admin, sportsEnabled: true);
@@ -143,8 +143,9 @@ void main() {
     expect(find.text('MON COMPTE'), findsOneWidget);
     expect(find.text('Apple Calendrier, Google Agenda, Outlook'), findsNothing);
     expect(find.text('CLUB · ADMIN'), findsOneWidget);
-    // Les notifications s'ouvrent désormais depuis la cloche de l'en-tête.
-    expect(find.text('Notifications'), findsNothing);
+    // Les réglages de notifications ont leur ligne ici ; l'historique reste
+    // derrière la cloche de l'en-tête.
+    expect(find.text('Notifications'), findsOneWidget);
     for (final title in [
       'Synchroniser mon calendrier',
       'Indisponibilité',
@@ -265,7 +266,7 @@ void main() {
     // L'abonnement aux matchs reste disponible même sans gestion sportive.
     expect(find.text('MON COMPTE'), findsOneWidget);
     expect(find.text('Synchroniser mon calendrier'), findsOneWidget);
-    expect(find.text('Notifications'), findsNothing);
+    expect(find.text('Notifications'), findsOneWidget);
     expect(find.text('Se déconnecter'), findsOneWidget);
 
     expect(find.text('CLUB · ADMIN'), findsNothing);
