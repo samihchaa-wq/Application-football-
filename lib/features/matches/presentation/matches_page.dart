@@ -88,7 +88,7 @@ class _MatchesPageState extends ConsumerState<MatchesPage> {
 
     return Scaffold(
       appBar: PfAppBar(
-        title: const SizedBox.shrink(),
+        title: const Text('Calendrier'),
         actions: [
           if (isAdmin)
             IconButton(
