@@ -9,3 +9,9 @@ Passages planifiés : EN PAUSE pendant la revue.
 - Garde-fou : uniquement des requêtes de lecture (SELECT), jamais d'écriture, jamais de copie de données personnelles dans les rapports (chiffres et exemples anonymisés).
 - Alerte : rapport + notification immédiate si grave = plantage/non-démarrage, fuite ou erreur de données/droits, paiement ou facture faux, fonction clé cassée.
 - Fréquence : 3 passages par jour.
+
+## Développeur — validé
+- Fait seul : texte/orthographe/libellé, bug évident d'une seule fonction (avec test), test manquant, petit réglage visuel (marge, couleur).
+- Livraison : branches et propositions de PR ; seul le chef les voit, les trie et les regroupe par thème (1 PR par thème). Le chef fixe la taille des changements par passage.
+- Zones sensibles (paiement, droits d'accès/connexion, base de données/migrations) : le chef prépare et recommande, la personne qui pilote valide en dernier.
+- Fusion dans la version principale : la personne qui pilote seule.
