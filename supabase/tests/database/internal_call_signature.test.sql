@@ -32,7 +32,7 @@ select isnt(
   'deux fonctions n''ont pas la même signature'
 );
 
--- Appel sortant réel : la signature est ajoutée à côté du club.
+-- Appel sortant réel : la signature remplace le mot de passe brut.
 select private.http_post(
   url := 'http://127.0.0.1:9/functions/v1/send-push',
   body := '{"kind":"test"}'::jsonb,
@@ -48,6 +48,12 @@ select is(
    where url = 'http://127.0.0.1:9/functions/v1/send-push' order by id desc limit 1),
   'd3b9f952dbad38be36c72a87896de7dcd6ee179caa8a83be9a2f2f17f575d6ab',
   'un appel interne vers une fonction serveur porte sa signature'
+);
+
+select ok(
+  (select not (headers ? 'x-push-token') from net.http_request_queue
+   where url = 'http://127.0.0.1:9/functions/v1/send-push' order by id desc limit 1),
+  'le mot de passe interne brut n''est plus transmis'
 );
 
 -- Sans mot de passe interne, aucune signature n'est inventée.
