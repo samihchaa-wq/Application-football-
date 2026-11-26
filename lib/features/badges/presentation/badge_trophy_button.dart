@@ -30,6 +30,46 @@ class BadgeTrophyButton extends ConsumerWidget {
       if (context.mounted) context.push('/armoire');
     }
 
+    final iconWidget = SizedBox(
+      width: 30,
+      height: 30,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          const Icon(
+            Icons.emoji_events_outlined,
+            size: 26,
+            color: AppTheme.reward,
+          ),
+          const ExcludeSemantics(
+            child: Opacity(opacity: 0, child: Text('🏆')),
+          ),
+          if (hasUnseen)
+            Positioned(
+              top: -4,
+              right: -4,
+              child: Container(
+                key: const ValueKey('badge-unseen-indicator'),
+                width: 14,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: AppTheme.accent,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppTheme.background, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.accent.withValues(alpha: .28),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+
     final button = IconButton(
       tooltip: 'Armoire à badges',
       visualDensity: VisualDensity.compact,
@@ -40,49 +80,16 @@ class BadgeTrophyButton extends ConsumerWidget {
         backgroundColor: AppTheme.reward.withValues(alpha: .08),
         side: BorderSide(color: AppTheme.reward.withValues(alpha: .18)),
       ),
-      icon: SizedBox(
-        width: 30,
-        height: 30,
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center,
-          children: [
-            const Icon(
-              Icons.emoji_events_outlined,
-              size: 26,
-              color: AppTheme.reward,
-            ),
-            const ExcludeSemantics(
-              child: Opacity(opacity: 0, child: Text('🏆')),
-            ),
-            if (hasUnseen)
-              Positioned(
-                top: -4,
-                right: -4,
-                child: Container(
-                  key: const ValueKey('badge-unseen-indicator'),
-                  width: 14,
-                  height: 14,
-                  decoration: BoxDecoration(
-                    color: AppTheme.accent,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppTheme.background, width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.accent.withValues(alpha: .28),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
+      icon: iconWidget,
       onPressed: open,
     );
     return showLabel
-        ? PfLabeledButton(label: 'Badges', onTap: open, child: button)
+        ? PfLabeledButton(
+            label: 'Badges',
+            color: AppTheme.reward,
+            icon: iconWidget,
+            onTap: open,
+          )
         : button;
   }
 }

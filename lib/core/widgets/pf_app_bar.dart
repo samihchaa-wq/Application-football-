@@ -210,8 +210,15 @@ Widget _settingsButton(BuildContext context, bool labeled) {
   return labeled
       ? PfLabeledButton(
           label: 'Paramètres',
+          color: AppTheme.textSecondary,
+          backgroundColor: AppTheme.surfaceHigh.withValues(alpha: .46),
+          borderColor: Colors.transparent,
+          icon: const Icon(
+            Icons.settings_outlined,
+            size: 27,
+            color: AppTheme.textSecondary,
+          ),
           onTap: () => context.push('/more'),
-          child: button,
         )
       : button;
 }
