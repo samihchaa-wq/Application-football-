@@ -1,7 +1,6 @@
 -- Image de badge : l'adresse doit COMMENCER par le chemin du stockage
 -- (avant : elle devait seulement le contenir, donc une image hébergée
 -- ailleurs passait). Création : même contrôle, qui n'existait pas.
--- Retire aussi grinta_sync.ping, reste inutile de l'ancien projet.
 
 create or replace function public.staff_update_badge_image(p_badge_code text, p_image_url text)
 returns boolean
@@ -92,5 +91,3 @@ begin
   return true;
 end;
 $function$;
-
-drop function if exists grinta_sync.ping();
