@@ -2,13 +2,25 @@ import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/features/notifications/data/notification_inbox_repository.dart';
 import 'package:petit_filet/features/preferences/data/push_subscriptions_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:petit_filet/core/widgets/pf_labeled_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 /// Cloche de l'en-tête, à côté du trophée : ouvre l'historique des
 /// notifications. Un petit chiffre indique combien n'ont pas été lues.
 class NotificationInboxButton extends ConsumerWidget {
-  const NotificationInboxButton({super.key});
+  const NotificationInboxButton({this.showLabel = false, super.key});
+
+  /// Écrit « Notifications » sous l'icône.
+  final bool showLabel;
+
+  Widget _wrap(BuildContext context, Widget button) => showLabel
+      ? PfLabeledButton(
+          label: 'Notifications',
+          onTap: () => context.push('/notifications'),
+          child: button,
+        )
+      : button;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,48 +41,50 @@ class NotificationInboxButton extends ConsumerWidget {
       label: label,
       button: true,
       excludeSemantics: true,
-      child: IconButton(
-        key: const ValueKey('notification-inbox-button'),
-        tooltip: 'Notifications',
-        visualDensity: VisualDensity.compact,
-        padding: const EdgeInsets.all(4),
-        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
-        style: IconButton.styleFrom(
-          foregroundColor: AppTheme.primaryBright,
-          backgroundColor: AppTheme.primaryBright.withValues(alpha: .08),
-          side: BorderSide(
-            color: AppTheme.primaryBright.withValues(alpha: .18),
-          ),
-        ),
-        icon: SizedBox(
-          width: 30,
-          height: 30,
-          child: Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.center,
-            children: [
-              Icon(
-                Icons.notifications_outlined,
-                size: 26,
-                color: AppTheme.primaryBright,
+      child: _wrap(
+          context,
+          IconButton(
+            key: const ValueKey('notification-inbox-button'),
+            tooltip: 'Notifications',
+            visualDensity: VisualDensity.compact,
+            padding: const EdgeInsets.all(4),
+            constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+            style: IconButton.styleFrom(
+              foregroundColor: AppTheme.primaryBright,
+              backgroundColor: AppTheme.primaryBright.withValues(alpha: .08),
+              side: BorderSide(
+                color: AppTheme.primaryBright.withValues(alpha: .18),
               ),
-              if (unread > 0)
-                Positioned(
-                  top: -6,
-                  right: -7,
-                  child: _UnreadPill(count: unread),
-                )
-              else if (deviceIsSilent)
-                const Positioned(
-                  top: -3,
-                  right: -3,
-                  child: _SilentDeviceDot(),
-                ),
-            ],
-          ),
-        ),
-        onPressed: () => context.push('/notifications'),
-      ),
+            ),
+            icon: SizedBox(
+              width: 30,
+              height: 30,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  Icon(
+                    Icons.notifications_outlined,
+                    size: 26,
+                    color: AppTheme.primaryBright,
+                  ),
+                  if (unread > 0)
+                    Positioned(
+                      top: -6,
+                      right: -7,
+                      child: _UnreadPill(count: unread),
+                    )
+                  else if (deviceIsSilent)
+                    const Positioned(
+                      top: -3,
+                      right: -3,
+                      child: _SilentDeviceDot(),
+                    ),
+                ],
+              ),
+            ),
+            onPressed: () => context.push('/notifications'),
+          )),
     );
   }
 }

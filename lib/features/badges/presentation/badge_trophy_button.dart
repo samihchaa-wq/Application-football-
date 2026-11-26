@@ -1,4 +1,5 @@
 import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/widgets/pf_labeled_button.dart';
 import 'package:petit_filet/features/badges/data/badge_inbox_repository.dart';
 import 'package:petit_filet/features/club/data/club_repository.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 class BadgeTrophyButton extends ConsumerWidget {
-  const BadgeTrophyButton({super.key});
+  const BadgeTrophyButton({this.showLabel = false, super.key});
+
+  /// Écrit « Badges » sous l'icône.
+  final bool showLabel;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -16,7 +20,17 @@ class BadgeTrophyButton extends ConsumerWidget {
     }
     final hasUnseen = ref.watch(hasUnseenBadgeProvider).valueOrNull ?? false;
 
-    return IconButton(
+    Future<void> open() async {
+      try {
+        await ref.read(badgeInboxRepositoryProvider).markSeen();
+        ref.invalidate(hasUnseenBadgeProvider);
+      } catch (_) {
+        // L'armoire reste accessible même si l'acquittement échoue.
+      }
+      if (context.mounted) context.push('/armoire');
+    }
+
+    final button = IconButton(
       tooltip: 'Armoire à badges',
       visualDensity: VisualDensity.compact,
       padding: const EdgeInsets.all(4),
@@ -65,15 +79,10 @@ class BadgeTrophyButton extends ConsumerWidget {
           ],
         ),
       ),
-      onPressed: () async {
-        try {
-          await ref.read(badgeInboxRepositoryProvider).markSeen();
-          ref.invalidate(hasUnseenBadgeProvider);
-        } catch (_) {
-          // L'armoire reste accessible même si l'acquittement échoue.
-        }
-        if (context.mounted) context.push('/armoire');
-      },
+      onPressed: open,
     );
+    return showLabel
+        ? PfLabeledButton(label: 'Badges', onTap: open, child: button)
+        : button;
   }
 }
