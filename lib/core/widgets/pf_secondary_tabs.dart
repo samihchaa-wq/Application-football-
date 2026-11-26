@@ -11,6 +11,7 @@ class PfSecondaryTabs<T> extends StatelessWidget {
     required this.segments,
     required this.selected,
     required this.onSelectionChanged,
+    this.padding,
     super.key,
   });
 
@@ -22,15 +23,19 @@ class PfSecondaryTabs<T> extends StatelessWidget {
   final Set<T> selected;
   final ValueChanged<Set<T>> onSelectionChanged;
 
+  /// Marges autour de la barre ; par défaut celles des sous-onglets.
+  final EdgeInsetsGeometry? padding;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.screenGutter,
-        2,
-        AppSpacing.screenGutter,
-        AppSpacing.sectionGap,
-      ),
+      padding: padding ??
+          const EdgeInsets.fromLTRB(
+            AppSpacing.screenGutter,
+            2,
+            AppSpacing.screenGutter,
+            AppSpacing.sectionGap,
+          ),
       child: Row(
         children: [
           for (var i = 0; i < segments.length; i++) ...[
@@ -88,7 +93,24 @@ class _Pill<T> extends StatelessWidget {
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   color: color,
                 ),
-                child: segment.label ?? const SizedBox.shrink(),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (segment.icon != null) ...[
+                      IconTheme.merge(
+                        data: IconThemeData(color: color, size: 18),
+                        child: segment.icon!,
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                    Flexible(
+                      child: DefaultTextStyle.merge(
+                        overflow: TextOverflow.ellipsis,
+                        child: segment.label ?? const SizedBox.shrink(),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

@@ -149,14 +149,17 @@ class _PlayerCardPageState extends ConsumerState<PlayerCardPage> {
             segments: const [
               ButtonSegment(
                 value: StatisticsPeriod.current,
+                icon: Icon(Icons.today_rounded),
                 label: Text('Saison'),
               ),
               ButtonSegment(
                 value: StatisticsPeriod.previous,
+                icon: Icon(Icons.history_rounded),
                 label: Text('Précédente'),
               ),
               ButtonSegment(
                 value: StatisticsPeriod.allTime,
+                icon: Icon(Icons.all_inclusive_rounded),
                 label: Text('Carrière'),
               ),
             ],
