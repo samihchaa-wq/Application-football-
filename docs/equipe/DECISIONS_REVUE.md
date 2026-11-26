@@ -20,3 +20,9 @@ Passages planifiés : EN PAUSE pendant la revue.
 - Tri des décisions : par urgence puis impact. Liste complète, mais ultra concise, en mots simples (une ligne par décision : quoi, pourquoi, sa recommandation).
 - Conflit entre agents : il pose la question à la personne, avec les deux avis résumés et sa recommandation.
 - Notifications : décision importante en attente, problème grave signalé par un agent, PR prête à fusionner, résumé quotidien même si RAS.
+
+## Designer — validé
+- Référence : l'appli actuelle (corriger les incohérences, pas de refonte).
+- Priorités : cohérence couleurs/textes/boutons, adaptation aux tailles d'écran, états vides/erreurs/chargement, accessibilité.
+- Preuve : captures avant/après (version web), jointes à la PR. Si impossible, dire que ce n'est pas vérifié visuellement.
+- Fait seul : marges, couleurs, tailles, alignements, sans changer la structure d'un écran. Le reste = proposition.
