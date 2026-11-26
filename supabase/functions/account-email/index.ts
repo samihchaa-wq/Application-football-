@@ -6,9 +6,9 @@
 // - confirm (sans compte) : valide le lien reçu ;
 // - request-reset (sans compte) : envoie, à l'adresse confirmée d'un compte, un
 //   lien pour choisir un nouveau mot de passe ;
-// - subscription-reminder (base seulement, jeton interne x-push-token) :
+// - subscription-reminder (base seulement, signature interne x-push-signature) :
 //   prévient les administrateurs d'un club que l'abonnement arrive à échéance ;
-// - inactive-accounts (base seulement, jeton interne x-push-token) : prévient
+// - inactive-accounts (base seulement, signature interne x-push-signature) : prévient
 //   les comptes inutilisés depuis près de 3 ans et supprime ceux qui ont été
 //   prévenus depuis au moins un mois (voir inactive_accounts.ts).
 //
@@ -38,6 +38,7 @@ import {
   parseSubscriptionReminder,
   subscriptionReminderMail,
 } from "./subscription_reminder.ts";
+import { verifyInternalCall } from "../_shared/internal_call.ts";
 
 const MAX_BODY_BYTES = 2_048;
 
@@ -100,16 +101,6 @@ async function readBoundedJson<T>(req: Request, maxBytes: number): Promise<T> {
   }
 
   return JSON.parse(json) as T;
-}
-
-/** Comparaison en temps constant de deux secrets. */
-async function secretsEqual(a: string, b: string): Promise<boolean> {
-  const [left, right] = await Promise.all([sha256Hex(a), sha256Hex(b)]);
-  let diff = left.length ^ right.length;
-  for (let i = 0; i < Math.min(left.length, right.length); i++) {
-    diff |= left.charCodeAt(i) ^ right.charCodeAt(i);
-  }
-  return diff === 0 && a.length > 0;
 }
 
 /// Laisse une tâche se terminer après l'envoi de la réponse. Sur Supabase,
@@ -303,8 +294,11 @@ Deno.serve(async (req: Request) => {
       if (configError || !config?.token) {
         throw configError ?? new Error("Missing internal token");
       }
-      const token = req.headers.get("x-push-token") ?? "";
-      if (!(await secretsEqual(token, String(config.token)))) {
+      // Signature propre à account-email (et au club pour le rappel
+      // d'abonnement) : le mot de passe brut ne suffit plus.
+      if (
+        !(await verifyInternalCall(req, String(config.token), "account-email"))
+      ) {
         return jsonResponse({ error: "Non autorisé." }, 401);
       }
       const reminder = parseSubscriptionReminder(body);
@@ -332,8 +326,11 @@ Deno.serve(async (req: Request) => {
       if (configError || !config?.token) {
         throw configError ?? new Error("Missing internal token");
       }
-      const token = req.headers.get("x-push-token") ?? "";
-      if (!(await secretsEqual(token, String(config.token)))) {
+      // Signature propre à account-email (et au club pour le rappel
+      // d'abonnement) : le mot de passe brut ne suffit plus.
+      if (
+        !(await verifyInternalCall(req, String(config.token), "account-email"))
+      ) {
         return jsonResponse({ error: "Non autorisé." }, 401);
       }
 
@@ -399,7 +396,22 @@ Deno.serve(async (req: Request) => {
         },
       );
       if (limitError) throw limitError;
-      if (allowed !== true) {
+      // Plafond propre au compte, en plus de celui par adresse réseau : un
+      // compte ne peut pas faire envoyer des e-mails en rafale vers des
+      // adresses différentes en changeant de réseau. Le même compteur sert,
+      // avec une empreinte propre au compte (3 demandes par heure).
+      const accountKey = await sha256Hex(
+        `account-confirmation:${userData.user.id}`,
+      );
+      const { data: accountAllowed, error: accountLimitError } = allowed ===
+          true
+        ? await admin.rpc("consume_email_rate_limit", {
+          p_origin_hash: accountKey,
+          p_email_hash: accountKey,
+        })
+        : { data: false, error: null };
+      if (accountLimitError) throw accountLimitError;
+      if (allowed !== true || accountAllowed !== true) {
         return jsonResponse(
           { error: "Trop de demandes. Réessaie plus tard." },
           429,
