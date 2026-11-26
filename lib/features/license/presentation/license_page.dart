@@ -180,14 +180,25 @@ class _LicensePageState extends ConsumerState<LicensePage> {
                     ' / ${players.length}',
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
+                  // Renommer / supprimer une dépense se fait ici, une seule
+                  // fois pour tout le club, pas sur chaque joueur.
                   for (final e in expenses)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        '${e.label} : '
-                        '${players.where((p) => paid.hasPaidExpense(e.id, p.id)).length}'
-                        ' / ${players.length}',
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '${e.label} : '
+                            '${players.where((p) => paid.hasPaidExpense(e.id, p.id)).length}'
+                            ' / ${players.length}',
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: 'Renommer ou supprimer « ${e.label} »',
+                          icon: const Icon(Icons.more_horiz),
+                          visualDensity: VisualDensity.compact,
+                          onPressed: () => _editExpense(e, seasonId),
+                        ),
+                      ],
                     ),
                   const SizedBox(height: 10),
                   Wrap(
@@ -255,11 +266,6 @@ class _LicensePageState extends ConsumerState<LicensePage> {
                       dense: true,
                       controlAffinity: ListTileControlAffinity.leading,
                       title: Text(e.label),
-                      secondary: IconButton(
-                        tooltip: 'Renommer ou supprimer « ${e.label} »',
-                        icon: const Icon(Icons.more_horiz),
-                        onPressed: () => _editExpense(e, seasonId),
-                      ),
                       value: paid.hasPaidExpense(e.id, player.id),
                       onChanged: (value) => _run(
                         () => repository.setExpensePaid(
