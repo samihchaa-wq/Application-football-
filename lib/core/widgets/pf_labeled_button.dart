@@ -1,44 +1,62 @@
 import 'package:flutter/material.dart';
-import 'package:petit_filet/core/theme/app_theme.dart';
 
-/// Bouton d'en-tête avec son nom écrit à sa droite (le nom est aussi cliquable).
+/// Bouton d'en-tête en forme de bulle : icône et nom dans la même bulle,
+/// de la même couleur.
 class PfLabeledButton extends StatelessWidget {
   const PfLabeledButton({
     required this.label,
-    required this.child,
+    required this.color,
+    required this.icon,
     required this.onTap,
+    this.backgroundColor,
+    this.borderColor,
     super.key,
   });
 
-  final VoidCallback onTap;
-
   final String label;
-  final Widget child;
+  final Color color;
+  final Widget icon;
+  final VoidCallback onTap;
+  final Color? backgroundColor;
+  final Color? borderColor;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        child,
-        ExcludeSemantics(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: onTap,
+    return Semantics(
+      button: true,
+      label: label,
+      excludeSemantics: true,
+      child: Material(
+        color: backgroundColor ?? color.withValues(alpha: .08),
+        shape: StadiumBorder(
+          side: BorderSide(color: borderColor ?? color.withValues(alpha: .18)),
+        ),
+        child: InkWell(
+          customBorder: const StadiumBorder(),
+          onTap: onTap,
+          child: SizedBox(
+            height: 44,
             child: Padding(
-              padding: const EdgeInsets.only(left: 2, right: 3),
-              child: Text(
-                label,
-                maxLines: 1,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      fontSize: 14,
-                      color: AppTheme.textSecondary,
-                    ),
+              padding: const EdgeInsets.only(left: 8, right: 12),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  icon,
+                  const SizedBox(width: 4),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          fontSize: 14,
+                          color: color,
+                        ),
+                  ),
+                ],
               ),
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 }

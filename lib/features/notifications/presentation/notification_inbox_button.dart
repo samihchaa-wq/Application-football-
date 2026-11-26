@@ -14,14 +14,6 @@ class NotificationInboxButton extends ConsumerWidget {
   /// Écrit « Notifications » sous l'icône.
   final bool showLabel;
 
-  Widget _wrap(BuildContext context, Widget button) => showLabel
-      ? PfLabeledButton(
-          label: 'Notifications',
-          onTap: () => context.push('/notifications'),
-          child: button,
-        )
-      : button;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final unread = ref.watch(unreadNotificationCountProvider).valueOrNull ?? 0;
@@ -37,54 +29,62 @@ class NotificationInboxButton extends ConsumerWidget {
             ? 'Notifications, désactivées sur cet appareil'
             : 'Notifications';
 
+    final iconWidget = SizedBox(
+      width: 30,
+      height: 30,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          Icon(
+            Icons.notifications_outlined,
+            size: 26,
+            color: AppTheme.primaryBright,
+          ),
+          if (unread > 0)
+            Positioned(
+              top: -6,
+              right: -7,
+              child: _UnreadPill(count: unread),
+            )
+          else if (deviceIsSilent)
+            const Positioned(
+              top: -3,
+              right: -3,
+              child: _SilentDeviceDot(),
+            ),
+        ],
+      ),
+    );
+    void open() => context.push('/notifications');
+
     return Semantics(
       label: label,
       button: true,
       excludeSemantics: true,
-      child: _wrap(
-          context,
-          IconButton(
-            key: const ValueKey('notification-inbox-button'),
-            tooltip: 'Notifications',
-            visualDensity: VisualDensity.compact,
-            padding: const EdgeInsets.all(4),
-            constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
-            style: IconButton.styleFrom(
-              foregroundColor: AppTheme.primaryBright,
-              backgroundColor: AppTheme.primaryBright.withValues(alpha: .08),
-              side: BorderSide(
-                color: AppTheme.primaryBright.withValues(alpha: .18),
+      child: showLabel
+          ? PfLabeledButton(
+              label: 'Notifications',
+              color: AppTheme.primaryBright,
+              icon: iconWidget,
+              onTap: open,
+            )
+          : IconButton(
+              key: const ValueKey('notification-inbox-button'),
+              tooltip: 'Notifications',
+              visualDensity: VisualDensity.compact,
+              padding: const EdgeInsets.all(4),
+              constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+              style: IconButton.styleFrom(
+                foregroundColor: AppTheme.primaryBright,
+                backgroundColor: AppTheme.primaryBright.withValues(alpha: .08),
+                side: BorderSide(
+                  color: AppTheme.primaryBright.withValues(alpha: .18),
+                ),
               ),
+              icon: iconWidget,
+              onPressed: open,
             ),
-            icon: SizedBox(
-              width: 30,
-              height: 30,
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.center,
-                children: [
-                  Icon(
-                    Icons.notifications_outlined,
-                    size: 26,
-                    color: AppTheme.primaryBright,
-                  ),
-                  if (unread > 0)
-                    Positioned(
-                      top: -6,
-                      right: -7,
-                      child: _UnreadPill(count: unread),
-                    )
-                  else if (deviceIsSilent)
-                    const Positioned(
-                      top: -3,
-                      right: -3,
-                      child: _SilentDeviceDot(),
-                    ),
-                ],
-              ),
-            ),
-            onPressed: () => context.push('/notifications'),
-          )),
     );
   }
 }
