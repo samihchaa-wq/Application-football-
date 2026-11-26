@@ -188,7 +188,8 @@ List<Widget> _homeActions(BuildContext context, bool labeled) => [
       const SeasonWrappedEntryButton(),
       BadgeTrophyButton(showLabel: labeled),
       const SizedBox(width: 2),
-      NotificationInboxButton(showLabel: labeled),
+      // Cloche seule, sans texte, même sur les pages aux boutons nommés.
+      NotificationInboxButton(compact: labeled),
       const SizedBox(width: 2),
       _settingsButton(context, labeled),
     ];
@@ -215,7 +216,7 @@ Widget _settingsButton(BuildContext context, bool labeled) {
           borderColor: Colors.transparent,
           icon: const Icon(
             Icons.settings_outlined,
-            size: 27,
+            size: 24,
             color: AppTheme.textSecondary,
           ),
           onTap: () => context.push('/more'),

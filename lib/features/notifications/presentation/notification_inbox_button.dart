@@ -9,7 +9,14 @@ import 'package:go_router/go_router.dart';
 /// Cloche de l'en-tête, à côté du trophée : ouvre l'historique des
 /// notifications. Un petit chiffre indique combien n'ont pas été lues.
 class NotificationInboxButton extends ConsumerWidget {
-  const NotificationInboxButton({this.showLabel = false, super.key});
+  const NotificationInboxButton({
+    this.showLabel = false,
+    this.compact = false,
+    super.key,
+  });
+
+  /// Bulle réduite (38 px), à la taille des boutons nommés voisins.
+  final bool compact;
 
   /// Écrit « Notifications » sous l'icône.
   final bool showLabel;
@@ -74,7 +81,10 @@ class NotificationInboxButton extends ConsumerWidget {
               tooltip: 'Notifications',
               visualDensity: VisualDensity.compact,
               padding: const EdgeInsets.all(4),
-              constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+              constraints: BoxConstraints(
+                minWidth: compact ? 38 : 44,
+                minHeight: compact ? 38 : 44,
+              ),
               style: IconButton.styleFrom(
                 foregroundColor: AppTheme.primaryBright,
                 backgroundColor: AppTheme.primaryBright.withValues(alpha: .08),
