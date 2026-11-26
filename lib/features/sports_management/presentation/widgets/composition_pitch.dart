@@ -529,13 +529,13 @@ class CompositionPlayerTile extends StatelessWidget {
                 if (entry.goals > 0)
                   Positioned(
                     left: -9,
-                    top: 34,
+                    top: 22,
                     child: GoalBadge(goals: entry.goals),
                   ),
                 if (entry.assists > 0)
                   Positioned(
                     left: -9,
-                    top: 58,
+                    top: 46,
                     child: AssistBadge(assists: entry.assists),
                   ),
                 // La photo (58) est centrée en bas d'une case de 62 × 70 :
