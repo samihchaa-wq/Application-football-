@@ -1,3 +1,4 @@
+import 'package:petit_filet/features/notifications/presentation/notification_seen_marker.dart';
 import 'package:petit_filet/core/widgets/pf_error_retry.dart';
 import 'package:petit_filet/core/club/club_identity.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
@@ -92,50 +93,54 @@ class _SportMotmVotePageState extends ConsumerState<SportMotmVotePage> {
   Widget build(BuildContext context) {
     final voteAsync = ref.watch(sportMotmVoteProvider(widget.matchId));
 
-    return Scaffold(
-      appBar: PfAppBar(title: const Text('Homme du match')),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(sportMotmVoteProvider(widget.matchId));
-          await ref.read(sportMotmVoteProvider(widget.matchId).future);
-        },
-        child: voteAsync.when(
-          loading: () => ListView(
-            children: const [
-              SizedBox(height: 240),
-              Center(child: PfProgressIndicator()),
-            ],
-          ),
-          error: (error, _) => ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Text(humanizeError(error)),
+    return NotificationSeenMarker(
+      matchId: widget.matchId,
+      kinds: const ['motm_open', 'motm_result_general', 'motm_result_winner'],
+      child: Scaffold(
+        appBar: PfAppBar(title: const Text('Homme du match')),
+        body: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(sportMotmVoteProvider(widget.matchId));
+            await ref.read(sportMotmVoteProvider(widget.matchId).future);
+          },
+          child: voteAsync.when(
+            loading: () => ListView(
+              children: const [
+                SizedBox(height: 240),
+                Center(child: PfProgressIndicator()),
+              ],
+            ),
+            error: (error, _) => ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Text(humanizeError(error)),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          data: (vote) {
-            if (vote == null) {
-              return ListView(
-                padding: const EdgeInsets.all(16),
-                children: const [
-                  Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(20),
-                      child: Text(
-                        'Le résultat et les présences doivent être validés '
-                        'avant l’ouverture du vote.',
+              ],
+            ),
+            data: (vote) {
+              if (vote == null) {
+                return ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: const [
+                    Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Text(
+                          'Le résultat et les présences doivent être validés '
+                          'avant l’ouverture du vote.',
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              );
-            }
-            return _buildVote(context, vote);
-          },
+                  ],
+                );
+              }
+              return _buildVote(context, vote);
+            },
+          ),
         ),
       ),
     );

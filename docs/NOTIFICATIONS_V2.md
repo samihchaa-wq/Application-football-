@@ -158,7 +158,14 @@ devient lue :
   période d’indisponibilité est annulée, ne compte pas. Une notification qui
   part alors que le joueur a déjà fait l’action arrive directement lue.
 
+Arriver sur l’écran qu’annonce une notification, par la notification ou par
+un autre chemin, la marque aussi lue : onglet Info (horaire, adresse, maillot,
+rendez-vous, domicile/extérieur), Compo, Effectif (convocation), Live, Prono,
+vote Homme du match, Armoire à badges.
+
 Toucher la notification sur le téléphone ne suffit pas à la marquer lue.
+
+L’historique a un bouton « Effacer toutes » (avec confirmation).
 
 ## Pastille de l’icône
 
@@ -243,6 +250,14 @@ Les automatismes suivants ne font plus partie du produit actuel :
 Les anciens types peuvent rester dans l’historique de migrations ou d’audit sans
 être encore générés par le système actuel.
 
+## Changements de détail d’un match
+
+Un changement d’adresse, de maillot, d’heure de rendez-vous ou de lieu
+(domicile/extérieur) envoie une notification par détail (`match_address_changed`,
+`match_jersey_changed`, `match_meeting_changed`, `match_location_changed`),
+aux joueurs éligibles et au coach, tant que le match est à venir. Coupées avec
+l’interrupteur club « Match annulé ou déplacé ».
+
 ## Écran ouvert par chaque notification
 
 Toucher une notification ouvre l’écran qu’elle annonce :
@@ -254,7 +269,7 @@ Toucher une notification ouvre l’écran qu’elle annonce :
 | Convocation | Fiche du match, Effectif |
 | Composition en ligne | Fiche du match, Composition |
 | Rappel pronostic | Fiche du match, Prono |
-| Horaire modifié | Fiche du match, Info |
+| Horaire modifié, adresse, maillot, heure de rendez-vous, domicile/extérieur modifiés | Fiche du match, Info |
 | Coup d’envoi, buts, fin de match (Live) | Fiche du match, Live |
 | Ouverture du vote Homme du match | Vote Homme du match |
 | Résultat Homme du match | Fiche du match terminé |

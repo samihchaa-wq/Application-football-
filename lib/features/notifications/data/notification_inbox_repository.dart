@@ -56,6 +56,14 @@ abstract interface class NotificationInboxRepository {
 
   /// Supprime définitivement une notification, sur tous les appareils.
   Future<void> delete(int id);
+
+  /// Supprime toutes les notifications du compte et rend leur nombre.
+  Future<int> deleteAll();
+
+  /// Marque lues les notifications non lues des types donnés (et du match
+  /// donné, s'il y en a un) : le joueur est arrivé sur l'écran qu'elles
+  /// annoncent. Rend le nombre marqué.
+  Future<int> markReadFor(List<String> kinds, {String? matchId});
 }
 
 class SupabaseNotificationInboxRepository
@@ -103,6 +111,23 @@ class SupabaseNotificationInboxRepository
   Future<void> delete(int id) async {
     _requireSession();
     await _client.rpc('delete_my_notification', params: {'p_id': id});
+  }
+
+  @override
+  Future<int> deleteAll() async {
+    _requireSession();
+    final result = await _client.rpc('delete_my_notifications');
+    return (result as num?)?.toInt() ?? 0;
+  }
+
+  @override
+  Future<int> markReadFor(List<String> kinds, {String? matchId}) async {
+    _requireSession();
+    final result = await _client.rpc(
+      'mark_my_notifications_read_for',
+      params: {'p_kinds': kinds, 'p_match_id': matchId},
+    );
+    return (result as num?)?.toInt() ?? 0;
   }
 }
 

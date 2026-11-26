@@ -1,3 +1,4 @@
+import 'package:petit_filet/features/notifications/presentation/notification_seen_marker.dart';
 import 'package:petit_filet/core/providers/supabase_provider.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
@@ -51,121 +52,127 @@ class ArmoirePage extends ConsumerWidget {
         .maybeWhen(data: (codes) => codes, orElse: () => const <String>{});
     final hasBadgeAdminAccess = ref.watch(canManageBadgesProvider);
 
-    return Scaffold(
-      appBar: PfAppBar(
-        title: const Text('Armoire à badges'),
-        actions: [
-          if (hasBadgeAdminAccess)
-            IconButton(
-              tooltip: 'Gérer les badges',
-              icon: const Icon(Icons.admin_panel_settings_outlined),
-              onPressed: () => context.push('/admin/badges'),
-            ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(badgeHoldersProvider);
-          ref.invalidate(myArmoireProvider);
-          ref.invalidate(myFeaturedCodesProvider);
-          await ref.read(myArmoireProvider.future);
-        },
-        child: armoireAsync.when(
-          loading: () => const Center(child: PfProgressIndicator()),
-          error: (e, _) => ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Card(
-                child: PfEmptyState(
-                  icon: Icons.error_outlined,
-                  title: 'Collection indisponible',
-                  message: humanizeError(e),
-                ),
+    return NotificationSeenMarker(
+      kinds: const ['badge_unlocked'],
+      child: Scaffold(
+        appBar: PfAppBar(
+          title: const Text('Armoire à badges'),
+          actions: [
+            if (hasBadgeAdminAccess)
+              IconButton(
+                tooltip: 'Gérer les badges',
+                icon: const Icon(Icons.admin_panel_settings_outlined),
+                onPressed: () => context.push('/admin/badges'),
               ),
-            ],
-          ),
-          data: (armoire) {
-            final unlocked = armoire.unlocked;
-            final toDiscover = armoire.toDiscover;
-            return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
-              children: [
-                if (armoire.validated.isEmpty &&
-                    armoire.inProgress.isEmpty &&
-                    armoire.locked.isEmpty)
-                  const Card(
-                    child: PfEmptyState(
-                      icon: Icons.emoji_events_outlined,
-                      title: 'Ta collection est vide',
-                      message: 'Joue, pronostique et gagne des matchs pour '
-                          'débloquer tes premiers badges.',
-                    ),
-                  ),
-                if (unlocked.isNotEmpty) ...[
-                  _SectionTitle(
-                    title: 'Débloqués',
-                    count: unlocked.length,
-                    icon: Icons.workspace_premium_outlined,
-                  ),
-                  const SizedBox(height: 14),
-                  _BadgeGrid(
-                    badges: unlocked,
-                    featuredCodes: featured,
-                    onToggleFeatured: (code, nowFeatured) =>
-                        _toggleFeatured(context, ref, code, nowFeatured),
-                  ),
-                  const SizedBox(height: 28),
-                ],
-                if (armoire.inProgress.isNotEmpty) ...[
-                  _SectionTitle(
-                    title: 'En progression',
-                    count: armoire.inProgress.length,
-                    icon: Icons.trending_up_outlined,
-                  ),
-                  const SizedBox(height: 14),
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      final emblemSize = _inProgressEmblemSize(
-                        context,
-                        armoire.inProgress,
-                        constraints.maxWidth,
-                      );
-                      return EqualHeightColumn(
-                        spacing: 10,
-                        children: [
-                          for (final b in armoire.inProgress)
-                            _InProgressTile(badge: b, emblemSize: emblemSize),
-                        ],
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 30),
-                ],
-                if (toDiscover.isNotEmpty) ...[
-                  _SectionTitle(
-                    title: 'Badges mystères',
-                    count: toDiscover.length,
-                    icon: Icons.lock_outlined,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Continue à jouer pour révéler ces récompenses.',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(color: AppTheme.textFaint),
-                  ),
-                  const SizedBox(height: 14),
-                  _BadgeGrid(
-                    badges: toDiscover,
-                    discover: true,
-                    featuredCodes: featured,
-                    onToggleFeatured: (code, nowFeatured) =>
-                        _toggleFeatured(context, ref, code, nowFeatured),
-                  ),
-                ],
-              ],
-            );
+          ],
+        ),
+        body: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(badgeHoldersProvider);
+            ref.invalidate(myArmoireProvider);
+            ref.invalidate(myFeaturedCodesProvider);
+            await ref.read(myArmoireProvider.future);
           },
+          child: armoireAsync.when(
+            loading: () => const Center(child: PfProgressIndicator()),
+            error: (e, _) => ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                Card(
+                  child: PfEmptyState(
+                    icon: Icons.error_outlined,
+                    title: 'Collection indisponible',
+                    message: humanizeError(e),
+                  ),
+                ),
+              ],
+            ),
+            data: (armoire) {
+              final unlocked = armoire.unlocked;
+              final toDiscover = armoire.toDiscover;
+              return ListView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
+                children: [
+                  if (armoire.validated.isEmpty &&
+                      armoire.inProgress.isEmpty &&
+                      armoire.locked.isEmpty)
+                    const Card(
+                      child: PfEmptyState(
+                        icon: Icons.emoji_events_outlined,
+                        title: 'Ta collection est vide',
+                        message: 'Joue, pronostique et gagne des matchs pour '
+                            'débloquer tes premiers badges.',
+                      ),
+                    ),
+                  if (unlocked.isNotEmpty) ...[
+                    _SectionTitle(
+                      title: 'Débloqués',
+                      count: unlocked.length,
+                      icon: Icons.workspace_premium_outlined,
+                    ),
+                    const SizedBox(height: 14),
+                    _BadgeGrid(
+                      badges: unlocked,
+                      featuredCodes: featured,
+                      onToggleFeatured: (code, nowFeatured) =>
+                          _toggleFeatured(context, ref, code, nowFeatured),
+                    ),
+                    const SizedBox(height: 28),
+                  ],
+                  if (armoire.inProgress.isNotEmpty) ...[
+                    _SectionTitle(
+                      title: 'En progression',
+                      count: armoire.inProgress.length,
+                      icon: Icons.trending_up_outlined,
+                    ),
+                    const SizedBox(height: 14),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final emblemSize = _inProgressEmblemSize(
+                          context,
+                          armoire.inProgress,
+                          constraints.maxWidth,
+                        );
+                        return EqualHeightColumn(
+                          spacing: 10,
+                          children: [
+                            for (final b in armoire.inProgress)
+                              _InProgressTile(badge: b, emblemSize: emblemSize),
+                          ],
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 30),
+                  ],
+                  if (toDiscover.isNotEmpty) ...[
+                    _SectionTitle(
+                      title: 'Badges mystères',
+                      count: toDiscover.length,
+                      icon: Icons.lock_outlined,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Continue à jouer pour révéler ces récompenses.',
+                      style: Theme.of(
+                        context,
+                      )
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(color: AppTheme.textFaint),
+                    ),
+                    const SizedBox(height: 14),
+                    _BadgeGrid(
+                      badges: toDiscover,
+                      discover: true,
+                      featuredCodes: featured,
+                      onToggleFeatured: (code, nowFeatured) =>
+                          _toggleFeatured(context, ref, code, nowFeatured),
+                    ),
+                  ],
+                ],
+              );
+            },
+          ),
         ),
       ),
     );

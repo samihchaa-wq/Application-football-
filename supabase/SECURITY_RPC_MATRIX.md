@@ -16,6 +16,8 @@ Audit préparatoire réalisé sur le projet de production le 20 juillet 2026, sa
 |---|---|---|
 | `complete_password_change()` | identité courante | mise à jour contrôlée du profil après Auth |
 | `delete_my_notification(bigint)` | identité courante, profil actif | supprimer une ligne de l’historique du demandeur sans exposer la table privée |
+| `delete_my_notifications()` | identité courante, profil actif | supprimer toutes les lignes de l’historique du demandeur d’un coup |
+| `mark_my_notifications_read_for(text[],uuid)` | identité courante, profil actif | marquer lues les notifications du demandeur pour des types (et un match) donnés |
 | `get_my_notification_history(integer)` | identité courante ; vide pour un profil non actif | lire l’historique privé du demandeur (90 jours) |
 | `get_my_profile()` | identité courante | lecture du profil malgré les restrictions de colonnes |
 | `get_my_unread_notification_count()` | identité courante ; zéro pour un profil non actif | compter les non-lues de la cloche et de la pastille de l’icône |

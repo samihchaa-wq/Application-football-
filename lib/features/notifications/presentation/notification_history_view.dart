@@ -108,6 +108,44 @@ class _NotificationHistoryViewState
     }
   }
 
+  Future<void> _deleteAll() async {
+    final entries = _entries;
+    if (entries == null || entries.isEmpty) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Effacer toutes les notifications ?'),
+        content: const Text(
+          'Elles seront supprimées définitivement, sur tous tes appareils.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            key: const ValueKey('notification-clear-all-confirm'),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Tout effacer'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    // La liste se vide tout de suite, sans attendre le serveur.
+    setState(() => _entries = const []);
+    try {
+      await ref.read(notificationInboxRepositoryProvider).deleteAll();
+      ref.invalidate(unreadNotificationCountProvider);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _entries = entries);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(humanizeError(error))),
+      );
+    }
+  }
+
   void _open(NotificationHistoryEntry entry) {
     final raw = notificationRoute(entry.url);
     if (raw == null) return;
@@ -169,10 +207,21 @@ class _NotificationHistoryViewState
           : ListView.separated(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-              itemCount: entries.length,
+              itemCount: entries.length + 1,
               separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (context, index) {
-                final entry = entries[index];
+                if (index == 0) {
+                  return Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      key: const ValueKey('notification-clear-all'),
+                      onPressed: _deleteAll,
+                      icon: const Icon(Icons.delete_sweep_outlined, size: 20),
+                      label: const Text('Effacer toutes'),
+                    ),
+                  );
+                }
+                final entry = entries[index - 1];
                 return _HistoryTile(
                   key: ValueKey<String>(
                     'notification-history-${entry.id}-'

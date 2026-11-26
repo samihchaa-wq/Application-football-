@@ -422,6 +422,36 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('Joueurs : les flèches changent de période, sans icône',
+      (tester) async {
+    for (final period in StatisticsPeriod.values) {
+      repository.players[period] = [_player('Karim', played: 12, goals: 7)];
+    }
+    await pumpStats(tester);
+    final cycle = find.byKey(const ValueKey('stats-period-cycle'));
+    final next = find.byKey(const ValueKey('stats-period-next'));
+    final previous = find.byKey(const ValueKey('stats-period-previous'));
+
+    expect(find.byIcon(Icons.today_rounded), findsNothing);
+    await tester.tap(next);
+    await tester.pumpAndSettle();
+    expect(find.descendant(of: cycle, matching: find.text('Précédente')),
+        findsOneWidget);
+    await tester.tap(next);
+    await tester.pumpAndSettle();
+    expect(find.descendant(of: cycle, matching: find.text('Toutes')),
+        findsOneWidget);
+    await tester.tap(previous);
+    await tester.pumpAndSettle();
+    expect(find.descendant(of: cycle, matching: find.text('Précédente')),
+        findsOneWidget);
+    await tester.tap(previous);
+    await tester.pumpAndSettle();
+    expect(find.descendant(of: cycle, matching: find.text('Actuelle')),
+        findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('pronostics coupés par le club : plus d’onglet Prono',
       (tester) async {
     await pumpStats(
