@@ -96,7 +96,7 @@ class _StatsHubPageState extends ConsumerState<StatsHubPage> {
                     if (predictionsEnabled)
                       const ButtonSegment(
                         value: _StatsSection.rankings,
-                        icon: Icon(Icons.emoji_events_rounded),
+                        icon: Icon(Icons.online_prediction_rounded),
                         label: Text('Prono'),
                       ),
                   ],
