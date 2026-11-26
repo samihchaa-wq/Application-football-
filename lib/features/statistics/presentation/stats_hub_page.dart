@@ -106,34 +106,22 @@ class _StatsHubPageState extends ConsumerState<StatsHubPage> {
                   },
                 ),
               ),
-              PfSecondaryTabs<StatisticsPeriod>(
-                segments: const [
-                  ButtonSegment(
-                    value: StatisticsPeriod.current,
-                    icon: Icon(Icons.today_rounded),
-                    label: Text('Actuelle'),
-                  ),
-                  ButtonSegment(
-                    value: StatisticsPeriod.previous,
-                    icon: Icon(Icons.history_rounded),
-                    label: Text('Précédente'),
-                  ),
-                  ButtonSegment(
-                    value: StatisticsPeriod.allTime,
-                    icon: Icon(Icons.all_inclusive_rounded),
-                    label: Text('Toutes'),
-                  ),
-                ],
-                selected: {_period},
-                onSelectionChanged: (value) {
-                  setState(() => _period = value.first);
-                },
-              ),
+              // Joueurs : la période se change depuis le coin du tableau (ou
+              // depuis cette barre quand il n'y a pas de tableau à afficher).
+              if (section != _StatsSection.players)
+                _PeriodTabs(
+                  period: _period,
+                  onChanged: (value) => setState(() => _period = value),
+                ),
               Expanded(
                 key: ValueKey<int>(_resetGeneration),
                 child: switch (section) {
                   _StatsSection.rankings => RankingsPanel(period: _period),
-                  _StatsSection.players => _PlayersPanel(period: _period),
+                  _StatsSection.players => _PlayersPanel(
+                      period: _period,
+                      onPeriodChanged: (value) =>
+                          setState(() => _period = value),
+                    ),
                   _StatsSection.team => TeamStatisticsPanel(period: _period),
                 },
               ),
@@ -141,6 +129,39 @@ class _StatsHubPageState extends ConsumerState<StatsHubPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Les trois périodes en bulles : Actuelle, Précédente, Toutes.
+class _PeriodTabs extends StatelessWidget {
+  const _PeriodTabs({required this.period, required this.onChanged});
+
+  final StatisticsPeriod period;
+  final ValueChanged<StatisticsPeriod> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return PfSecondaryTabs<StatisticsPeriod>(
+      segments: const [
+        ButtonSegment(
+          value: StatisticsPeriod.current,
+          icon: Icon(Icons.today_rounded),
+          label: Text('Actuelle'),
+        ),
+        ButtonSegment(
+          value: StatisticsPeriod.previous,
+          icon: Icon(Icons.history_rounded),
+          label: Text('Précédente'),
+        ),
+        ButtonSegment(
+          value: StatisticsPeriod.allTime,
+          icon: Icon(Icons.all_inclusive_rounded),
+          label: Text('Toutes'),
+        ),
+      ],
+      selected: {period},
+      onSelectionChanged: (value) => onChanged(value.first),
     );
   }
 }
@@ -182,9 +203,10 @@ bool statisticsShowsAssistsColumn(StatisticsPeriodData data) {
 }
 
 class _PlayersPanel extends ConsumerStatefulWidget {
-  const _PlayersPanel({required this.period});
+  const _PlayersPanel({required this.period, required this.onPeriodChanged});
 
   final StatisticsPeriod period;
+  final ValueChanged<StatisticsPeriod> onPeriodChanged;
 
   @override
   ConsumerState<_PlayersPanel> createState() => _PlayersPanelState();
@@ -231,24 +253,42 @@ class _PlayersPanelState extends ConsumerState<_PlayersPanel> {
       authControllerProvider.select((state) => state.profile?.id),
     );
 
+    // Sans tableau, le coin du tableau n'existe pas : la barre des périodes
+    // reste disponible au-dessus du message.
+    Widget withPeriodTabs(Widget child) => Column(
+          children: [
+            _PeriodTabs(
+              period: widget.period,
+              onChanged: widget.onPeriodChanged,
+            ),
+            Expanded(child: child),
+          ],
+        );
+
     return async.when(
-      loading: () => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-        child: PfSkeleton.rows(itemCount: 7),
+      loading: () => withPeriodTabs(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: PfSkeleton.rows(itemCount: 7),
+        ),
       ),
-      error: (error, _) => _Message(
-        title: 'Statistiques indisponibles',
-        message: humanizeError(error),
-        onRefresh: _refresh,
+      error: (error, _) => withPeriodTabs(
+        _Message(
+          title: 'Statistiques indisponibles',
+          message: humanizeError(error),
+          onRefresh: _refresh,
+        ),
       ),
       data: (data) {
         if (data.players.isEmpty) {
-          return _Message(
-            title: 'Pas encore de statistiques',
-            message: widget.period == StatisticsPeriod.previous
-                ? 'Aucune statistique pour la saison précédente.'
-                : 'Les stats apparaîtront après le premier match validé.',
-            onRefresh: _refresh,
+          return withPeriodTabs(
+            _Message(
+              title: 'Pas encore de statistiques',
+              message: widget.period == StatisticsPeriod.previous
+                  ? 'Aucune statistique pour la saison précédente.'
+                  : 'Les stats apparaîtront après le premier match validé.',
+              onRefresh: _refresh,
+            ),
           );
         }
 
@@ -307,9 +347,8 @@ class _PlayersPanelState extends ConsumerState<_PlayersPanel> {
                               (showsAssists ? 1 : 0)) *
                           _playerColumnWidth,
                   pinnedHeader: _PlayersPinnedHeader(
-                    sort: sort,
-                    descending: _descending,
-                    onSort: _onSort,
+                    period: widget.period,
+                    onPeriodChanged: widget.onPeriodChanged,
                   ),
                   scrollableHeader: _PlayersScrollableHeader(
                     sort: sort,
@@ -350,33 +389,74 @@ class _PlayersPanelState extends ConsumerState<_PlayersPanel> {
 
 class _PlayersPinnedHeader extends StatelessWidget {
   const _PlayersPinnedHeader({
-    required this.sort,
-    required this.descending,
-    required this.onSort,
+    required this.period,
+    required this.onPeriodChanged,
   });
 
-  final _PlayerStatCol? sort;
-  final bool descending;
-  final ValueChanged<_PlayerStatCol> onSort;
+  final StatisticsPeriod period;
+  final ValueChanged<StatisticsPeriod> onPeriodChanged;
+
+  static const _order = [
+    StatisticsPeriod.current,
+    StatisticsPeriod.previous,
+    StatisticsPeriod.allTime,
+  ];
+
+  static (String, IconData) _look(StatisticsPeriod period) => switch (period) {
+        StatisticsPeriod.current => ('Actuelle', Icons.today_rounded),
+        StatisticsPeriod.previous => ('Précédente', Icons.history_rounded),
+        StatisticsPeriod.allTime => ('Toutes', Icons.all_inclusive_rounded),
+      };
 
   @override
   Widget build(BuildContext context) {
-    final style = pfTableHeaderTextStyle(context);
+    final (label, icon) = _look(period);
+    final next = _order[(_order.indexOf(period) + 1) % _order.length];
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        children: [
-          Expanded(
-            child: SortableHeaderCell(
-              label: '',
-              align: TextAlign.center,
-              active: sort == _PlayerStatCol.name,
-              descending: descending,
-              onTap: () => onSort(_PlayerStatCol.name),
-              style: style,
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+      child: Center(
+        child: Semantics(
+          button: true,
+          label: 'Période : $label. Passer à ${_look(next).$1}',
+          excludeSemantics: true,
+          child: Material(
+            color: AppTheme.selectedSurface,
+            shape: StadiumBorder(
+              side: BorderSide(color: AppTheme.primary.withValues(alpha: .55)),
+            ),
+            child: InkWell(
+              key: const ValueKey('stats-period-cycle'),
+              customBorder: const StadiumBorder(),
+              onTap: () => onPeriodChanged(next),
+              child: SizedBox(
+                height: 36,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(icon, size: 16, color: AppTheme.primaryBright),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13,
+                            height: 1,
+                            fontWeight: FontWeight.w400,
+                            color: AppTheme.primaryBright,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
