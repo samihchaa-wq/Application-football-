@@ -52,6 +52,18 @@ class _WeatherBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final rain = weather.precipitationProbability;
+    final wind = weather.windSpeed;
+    final humidity = weather.humidity;
+    final gusts = weather.windGusts;
+    final hasMetrics =
+        rain != null || wind != null || humidity != null || gusts != null;
+    final divider = Divider(
+      height: 1,
+      thickness: 1,
+      color: AppTheme.outline.withValues(alpha: .3),
+    );
+
     return DecoratedBox(
       decoration: BoxDecoration(
         color: AppTheme.surface.withValues(alpha: .82),
@@ -61,15 +73,15 @@ class _WeatherBody extends StatelessWidget {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 11, 12, 11),
+        padding: const EdgeInsets.fromLTRB(12, 11, 12, 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
               children: [
                 Container(
-                  width: 30,
-                  height: 30,
+                  width: 34,
+                  height: 34,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppTheme.primary.withValues(alpha: .16),
@@ -77,14 +89,14 @@ class _WeatherBody extends StatelessWidget {
                   child: Icon(
                     _weatherIcon(weather.weatherCode),
                     color: AppTheme.primaryBright,
-                    size: 18,
+                    size: 19,
                   ),
                 ),
-                const SizedBox(width: 9),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     'Météo au coup d’envoi',
-                    style: theme.textTheme.titleSmall?.copyWith(
+                    style: theme.textTheme.titleMedium?.copyWith(
                       color: AppTheme.textPrimary,
                       fontWeight: FontWeight.w400,
                     ),
@@ -93,95 +105,129 @@ class _WeatherBody extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  flex: 5,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            _weatherIcon(weather.weatherCode),
-                            color: AppTheme.textPrimary,
-                            size: 36,
-                          ),
-                          const SizedBox(width: 8),
-                          if (weather.temperature case final temperature?)
-                            Flexible(
-                              child: Text(
-                                '${_number(temperature)}°C',
-                                maxLines: 1,
-                                style: theme.textTheme.headlineSmall?.copyWith(
-                                  color: AppTheme.textPrimary,
-                                  fontWeight: FontWeight.w400,
-                                  height: 1,
-                                ),
+            divider,
+            const SizedBox(height: 10),
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    flex: 5,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          _weatherIcon(weather.weatherCode),
+                          color: AppTheme.textPrimary,
+                          size: 46,
+                        ),
+                        const SizedBox(width: 10),
+                        if (weather.temperature case final temperature?)
+                          Flexible(
+                            child: Text(
+                              '${_number(temperature)}°C',
+                              maxLines: 1,
+                              style: theme.textTheme.headlineMedium?.copyWith(
+                                color: AppTheme.textPrimary,
+                                fontWeight: FontWeight.w400,
+                                height: 1,
                               ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  VerticalDivider(
+                    width: 24,
+                    thickness: 1,
+                    color: AppTheme.outline.withValues(alpha: .3),
+                  ),
+                  Expanded(
+                    flex: 5,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          _weatherLabel(weather.weatherCode),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppTheme.primaryBright,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w400,
+                            height: 1.15,
+                          ),
+                        ),
+                        if (weather.apparentTemperature
+                            case final apparent?) ...[
+                          const SizedBox(height: 3),
+                          Text(
+                            'Ressenti ${_number(apparent)}°C',
+                            style: const TextStyle(
+                              color: AppTheme.textSecondary,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (hasMetrics) ...[
+              const SizedBox(height: 10),
+              divider,
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          if (rain != null)
+                            _Metric(
+                              icon: Icons.water_drop_outlined,
+                              label: 'Pluie',
+                              value: '$rain %',
+                            ),
+                          if (humidity != null)
+                            _Metric(
+                              icon: Icons.opacity_outlined,
+                              label: 'Humidité',
+                              value: '$humidity %',
                             ),
                         ],
                       ),
-                      const SizedBox(height: 5),
-                      Text(
-                        _weatherLabel(weather.weatherCode),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: AppTheme.primaryBright,
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w400,
-                          height: 1.15,
-                        ),
+                    ),
+                    VerticalDivider(
+                      width: 24,
+                      thickness: 1,
+                      color: AppTheme.outline.withValues(alpha: .3),
+                    ),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          if (wind != null)
+                            _Metric(
+                              icon: Icons.air_outlined,
+                              label: 'Vent',
+                              value: '${_number(wind)} km/h',
+                            ),
+                          if (gusts != null)
+                            _Metric(
+                              icon: Icons.speed_outlined,
+                              label: 'Rafales',
+                              value: '${_number(gusts)} km/h',
+                            ),
+                        ],
                       ),
-                      if (weather.apparentTemperature case final apparent?) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          'Ressenti ${_number(apparent)}°C',
-                          style: const TextStyle(
-                            color: AppTheme.textSecondary,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 5,
-                  child: Column(
-                    children: [
-                      if (weather.precipitationProbability case final rain?)
-                        _Metric(
-                          icon: Icons.water_drop_outlined,
-                          label: 'Pluie',
-                          value: '$rain %',
-                        ),
-                      if (weather.windSpeed case final wind?)
-                        _Metric(
-                          icon: Icons.air_outlined,
-                          label: 'Vent',
-                          value: '${_number(wind)} km/h',
-                        ),
-                      if (weather.humidity case final humidity?)
-                        _Metric(
-                          icon: Icons.opacity_outlined,
-                          label: 'Humidité',
-                          value: '$humidity %',
-                        ),
-                      if (weather.windGusts case final gusts?)
-                        _Metric(
-                          icon: Icons.speed_outlined,
-                          label: 'Rafales',
-                          value: '${_number(gusts)} km/h',
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ],
         ),
       ),
@@ -199,17 +245,18 @@ class _Metric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icon, size: 14, color: AppTheme.primaryBright),
+          Icon(icon, size: 18, color: AppTheme.primaryBright),
           const SizedBox(width: 5),
           Expanded(
             child: Text(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: AppTheme.textFaint, fontSize: 12),
+              style:
+                  const TextStyle(color: AppTheme.textSecondary, fontSize: 15),
             ),
           ),
           const SizedBox(width: 5),
@@ -218,7 +265,7 @@ class _Metric extends StatelessWidget {
             maxLines: 1,
             style: const TextStyle(
               color: AppTheme.textPrimary,
-              fontSize: 12,
+              fontSize: 15,
               fontWeight: FontWeight.w400,
             ),
           ),
