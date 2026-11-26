@@ -328,7 +328,6 @@ class _LabelDialogState extends State<_LabelDialog> {
           maxLength: 60,
           decoration: const InputDecoration(
             labelText: 'Nom de la dépense',
-            hintText: 'ex. Équipement',
           ),
           onSubmitted: (_) => _submit(),
         ),
