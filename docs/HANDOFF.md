@@ -5,7 +5,7 @@
 ## Corrections des audits sécurité + design du 26/11/2026 (branche claude/quirky-galileo-lf4ti7)
 
 - Fait : jeton interne signé par fonction et par club (`x-push-signature`, migration 20261208000000) ; alerte e-mail quand un admin réinitialise un autre admin ; plafond de demandes de confirmation par compte ; corps de requête borné (manage-user, stripe-refund) ; lien d'agenda régénérable (migration 20261208010000 + bouton « Changer mon lien ») ; cache du club effacé à la déconnexion ; contrôle gitleaks (`secrets_scan.yml`, `.gitleaks.toml`) ; bouton du bas qui grandit avec le texte ; sous-onglets à 44 px ; Paramètres à 8 px et 760 px max.
-- Reste à faire : **après déploiement**, migration qui retire le mot de passe brut `x-push-token` des appels (aujourd'hui envoyé en plus de la signature, pour une transition sans coupure). Décisions : indicateur de chargement, captcha, CORS, variable `CLOUDFLARE_ACCOUNT_ID`, durée des jetons dans le tableau de bord Supabase.
+- Déployé le 26/11 ; notifications vérifiées par la propriétaire. Suite : migration 20261209000000 qui retire le mot de passe brut `x-push-token` des appels (PR suivante). Décisions restantes : indicateur de chargement, captcha, CORS, variable `CLOUDFLARE_ACCOUNT_ID`, durée des jetons dans le tableau de bord Supabase.
 - Non fait volontairement : en-tête d'IP (cf-connecting-ip déjà prioritaire, changer sans vérifier l'infra pourrait bloquer les inscriptions) ; seuils de largeur unifiés (refonte large).
 
 ## Audit UX/UI du 25/11/2026 (branche claude/elegant-knuth-jja248)

@@ -151,10 +151,16 @@ select is(
 );
 
 select is(
-  (select headers ->> 'x-push-token' from net.http_request_queue
+  (select headers ->> 'Content-Type' from net.http_request_queue
    where url = 'http://127.0.0.1:9/send-push' order by id desc limit 1),
-  'secret',
+  'application/json',
   'les autres en-têtes de l''appel sont conservés'
+);
+
+select ok(
+  (select not (headers ? 'x-push-token') from net.http_request_queue
+   where url = 'http://127.0.0.1:9/send-push' order by id desc limit 1),
+  'le mot de passe interne brut ne quitte jamais la base'
 );
 
 select set_config('app.club_id', '', true);
