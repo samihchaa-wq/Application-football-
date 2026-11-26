@@ -124,6 +124,15 @@ class _PfTitleBar extends StatelessWidget {
   final Widget pageName;
   final List<Widget>? actions;
 
+  /// Page sans titre écrit : les boutons disposent de toute la largeur.
+  bool get noTitle => pageName is SizedBox;
+
+  Widget _actionsRow() => Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [...?actions],
+      );
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -133,36 +142,35 @@ class _PfTitleBar extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Expanded(
-            child: DefaultTextStyle.merge(
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.left,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: -.3,
-                  ),
-              child: pageName,
+          if (!noTitle)
+            Expanded(
+              child: DefaultTextStyle.merge(
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.left,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: -.3,
+                    ),
+                child: pageName,
+              ),
             ),
-          ),
           if (actions?.isNotEmpty ?? false) ...[
-            const SizedBox(width: 6),
-            Flexible(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 60),
+            if (!noTitle) const SizedBox(width: 6),
+            if (noTitle)
+              // Sans titre : toute la largeur, avec réduction si trop étroit.
+              Expanded(
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerRight,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      ...?actions,
-                    ],
-                  ),
+                  child: _actionsRow(),
                 ),
+              )
+            else
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 60),
+                child: _actionsRow(),
               ),
-            ),
           ],
         ],
       ),

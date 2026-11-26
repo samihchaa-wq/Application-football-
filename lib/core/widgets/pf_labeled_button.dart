@@ -31,7 +31,7 @@ class PfLabeledButton extends StatelessWidget {
                 label,
                 maxLines: 1,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      fontSize: 10,
+                      fontSize: 14,
                       color: AppTheme.textSecondary,
                     ),
               ),
