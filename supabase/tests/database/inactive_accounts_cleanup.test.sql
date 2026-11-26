@@ -120,9 +120,11 @@ select is(
    where queue.id > current_setting('test.marker')::bigint
      and queue.url like '%/functions/v1/account-email'
      and convert_from(queue.body, 'UTF8')::jsonb ->> 'action' = 'inactive-accounts'
-     and queue.headers ->> 'x-push-token' = 'test-token'),
+     and queue.headers ->> 'x-push-signature' = private.internal_call_signature(
+       'test-token', 'account-email', queue.headers ->> 'x-club-id')
+     and not (queue.headers ? 'x-push-token')),
   1,
-  'la tâche de nuit demande le traitement avec le jeton interne'
+  'la tâche de nuit demande le traitement avec la signature interne, sans le mot de passe brut'
 );
 
 -- Personne d'autre que le serveur ne peut lire la liste ni noter un avertissement.

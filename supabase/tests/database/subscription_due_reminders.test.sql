@@ -128,9 +128,11 @@ select is(
   (select count(*)::int from net.http_request_queue queue
    where queue.id > current_setting('test.marker')::bigint
      and queue.url like '%/functions/v1/account-email'
-     and queue.headers ->> 'x-push-token' = 'test-token'),
+     and queue.headers ->> 'x-push-signature' = private.internal_call_signature(
+       'test-token', 'account-email', queue.headers ->> 'x-club-id')
+     and not (queue.headers ? 'x-push-token')),
   2,
-  'chaque demande porte le jeton interne'
+  'chaque demande porte la signature interne du club, sans le mot de passe brut'
 );
 
 select is((pg_temp.reminders_for('year') -> 0 ->> 'trial')::boolean, false,
