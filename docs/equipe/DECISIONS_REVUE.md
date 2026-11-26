@@ -15,3 +15,8 @@ Passages planifiés : EN PAUSE pendant la revue.
 - Livraison : branches et propositions de PR ; seul le chef les voit, les trie et les regroupe par thème (1 PR par thème). Le chef fixe la taille des changements par passage.
 - Zones sensibles (paiement, droits d'accès/connexion, base de données/migrations) : le chef prépare et recommande, la personne qui pilote valide en dernier.
 - Fusion dans la version principale : la personne qui pilote seule.
+
+## Chef de projet — validé
+- Tri des décisions : par urgence puis impact. Liste complète, mais ultra concise, en mots simples (une ligne par décision : quoi, pourquoi, sa recommandation).
+- Conflit entre agents : il pose la question à la personne, avec les deux avis résumés et sa recommandation.
+- Notifications : décision importante en attente, problème grave signalé par un agent, PR prête à fusionner, résumé quotidien même si RAS.
