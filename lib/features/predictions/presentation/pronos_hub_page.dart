@@ -83,10 +83,10 @@ class _PronosHubPageState extends ConsumerState<PronosHubPage> {
       backgroundColor: Colors.transparent,
       appBar: PfAppBar(
         title: Text(switch (_category) {
-          _PronosCategory.matches => 'Calendrier',
+          _PronosCategory.matches => '',
           _PronosCategory.general => 'Classements',
         }),
-        actions: pfHomeActions(context),
+        actions: pfHomeActions(context, labeled: true),
       ),
       body: Material(
         type: MaterialType.transparency,
