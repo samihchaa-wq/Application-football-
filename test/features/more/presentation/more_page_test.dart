@@ -61,6 +61,7 @@ Future<_FakeAuthRepository> _pumpMorePage(
   required AuthProfile profile,
   required bool sportsEnabled,
   _FakeClubAdminRepository? clubRepository,
+  List<String>? regenerations,
 }) async {
   final repository = _FakeAuthRepository(profile);
   final club = clubRepository ?? _FakeClubAdminRepository();
@@ -90,6 +91,12 @@ Future<_FakeAuthRepository> _pumpMorePage(
             'https://example.supabase.co/functions/v1/calendar-feed?token=00000000-0000-4000-8000-000000000001',
           ),
         ),
+        calendarSubscriptionRegenerateProvider.overrideWithValue(() async {
+          regenerations?.add('regenerate');
+          return Uri.parse(
+            'https://example.supabase.co/functions/v1/calendar-feed?token=00000000-0000-4000-8000-000000000002',
+          );
+        }),
         adminDashboardProvider.overrideWith(
           (ref) => ref.read(adminRepositoryProvider).fetchDashboard(),
         ),
@@ -284,6 +291,54 @@ void main() {
       expect(find.text('Google Agenda'), findsOneWidget);
       expect(find.text('Outlook'), findsOneWidget);
       expect(find.text('Copier le lien du calendrier'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'changer le lien du calendrier demande confirmation, puis rouvre les choix',
+    (tester) async {
+      tester.view
+        ..physicalSize = const Size(1170, 3000)
+        ..devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+      final regenerations = <String>[];
+      await _pumpMorePage(
+        tester,
+        profile: _player,
+        sportsEnabled: false,
+        regenerations: regenerations,
+      );
+
+      await tester.tap(find.text('Synchroniser mon calendrier'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('calendar-subscription-regenerate')),
+      );
+      await tester.pumpAndSettle();
+
+      // Annuler ne change rien.
+      expect(find.text('Changer le lien du calendrier ?'), findsOneWidget);
+      await tester.tap(find.text('Annuler'));
+      await tester.pumpAndSettle();
+      expect(regenerations, isEmpty);
+
+      await tester.tap(find.text('Synchroniser mon calendrier'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('calendar-subscription-regenerate')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('calendar-subscription-regenerate-confirm')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(regenerations, ['regenerate']);
+      expect(
+        find.text('Nouveau lien créé. L’ancien ne fonctionne plus.'),
+        findsOneWidget,
+      );
+      expect(find.text('S’abonner au calendrier'), findsOneWidget);
     },
   );
 

@@ -81,6 +81,8 @@ insert into reviewed_open_definers (fonction, motif) values
    'ne compte que les notifications du demandeur, zéro si son profil n’est pas actif'),
   ('get_or_create_calendar_subscription_token()',
    'ne crée et ne lit que le jeton du demandeur, profil actif exigé'),
+  ('regenerate_calendar_subscription_token()',
+   'ne remplace que le jeton du demandeur, profil actif exigé'),
   ('log_client_incident(text,text,text,text)',
    'ignore un appelant anonyme, tronque ses entrées et se limite à 20 écritures par minute'),
   ('log_app_visit()',
