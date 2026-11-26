@@ -9,10 +9,18 @@ import type {
   createClient,
   SupabaseClient,
 } from "jsr:@supabase/supabase-js@2.95.0";
+import {
+  readBoundedJson,
+  RequestBodyTooLargeError,
+} from "../send-push/request_security.ts";
 
 export interface ManageUserDependencies {
   createClient: typeof createClient;
   getEnv: (name: string) => string | undefined;
+  /// Prévient un administrateur, à son adresse confirmée, qu'un autre
+  /// administrateur du club a demandé un lien de réinitialisation de son mot
+  /// de passe. Absente : aucun e-mail (tests, envoi non configuré).
+  notifyAdminPasswordReset?: (email: string) => Promise<void>;
 }
 
 const corsHeaders = {
@@ -92,12 +100,31 @@ export function isDemoAccount(id: string): boolean {
   return id.toLowerCase().startsWith("de000000-0000-4000-8000-");
 }
 
+/// E-mail envoyé à un administrateur quand un autre administrateur du club a
+/// demandé un lien pour changer son mot de passe.
+export function adminPasswordResetAlertMail(
+  contact: string,
+): { subject: string; text: string } {
+  return {
+    subject: "Un lien pour changer ton mot de passe a été créé",
+    text: [
+      "Bonjour,",
+      "",
+      "Un autre administrateur de ton club vient de créer un lien pour changer le mot de passe de ton compte.",
+      "",
+      "Si c'est à ta demande, tu n'as rien à faire.",
+      `Sinon, change ton mot de passe dès que possible depuis ton profil, et préviens-nous : ${contact}`,
+    ].join("\n"),
+  };
+}
+
 const DEMO_ACCOUNT_ERROR =
   "Compte de démonstration : il ne peut être ni supprimé ni changé de mot de passe.";
 
 export function createManageUserHandler({
   createClient,
   getEnv,
+  notifyAdminPasswordReset,
 }: ManageUserDependencies): (req: Request) => Promise<Response> {
   return async (req: Request) => {
     if (req.method === "OPTIONS") {
@@ -243,7 +270,20 @@ export function createManageUserHandler({
         global: { headers: { "x-club-id": clubId } },
       });
 
-      const body = await req.json();
+      // L'en-tête de taille peut mentir (envoi fractionné) : le corps est lu
+      // par morceaux et coupé au-delà de la limite.
+      let body: Record<string, unknown>;
+      try {
+        body = await readBoundedJson<Record<string, unknown>>(req, 16_384);
+      } catch (error) {
+        if (error instanceof RequestBodyTooLargeError) {
+          return jsonResponse({ error: "Request body too large" }, 413);
+        }
+        return jsonResponse({ error: "Invalid request body" }, 400);
+      }
+      if (body === null || typeof body !== "object" || Array.isArray(body)) {
+        return jsonResponse({ error: "Invalid request body" }, 400);
+      }
       const action = String(body.action ?? "");
 
       if (action === "reset-password") {
@@ -269,7 +309,7 @@ export function createManageUserHandler({
 
         const { data: targetProfile, error: targetError } = await admin
           .from("profiles")
-          .select("id,status")
+          .select("id,status,role,contact_email")
           .eq("id", userId)
           .eq("club_id", clubId)
           .maybeSingle();
@@ -304,6 +344,24 @@ export function createManageUserHandler({
             },
           });
         if (linkError) throw linkError;
+
+        // Un administrateur qui réinitialise le mot de passe d'un autre
+        // administrateur obtient de quoi entrer dans son compte : la personne
+        // concernée est prévenue, pour pouvoir réagir si elle n'a rien demandé.
+        // L'alerte ne bloque jamais la réinitialisation.
+        const contactEmail = typeof targetProfile.contact_email === "string"
+          ? targetProfile.contact_email.trim()
+          : "";
+        if (
+          targetProfile.role === "admin" && contactEmail &&
+          notifyAdminPasswordReset
+        ) {
+          try {
+            await notifyAdminPasswordReset(contactEmail);
+          } catch (error) {
+            console.error("manage-user admin reset alert failure", error);
+          }
+        }
 
         return jsonResponse({
           reset: true,

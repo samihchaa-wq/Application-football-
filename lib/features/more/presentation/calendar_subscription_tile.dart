@@ -17,20 +17,35 @@ final calendarSubscriptionLinkProvider = Provider<Future<Uri> Function()>(
   (ref) {
     return () async {
       final client = ref.read(supabaseClientProvider);
-      final rawToken = await client.rpc(
-        'get_or_create_calendar_subscription_token',
+      return _calendarFeedUri(
+        await client.rpc('get_or_create_calendar_subscription_token'),
       );
-      final token = rawToken?.toString().trim() ?? '';
-      if (token.isEmpty) {
-        throw StateError('Le lien d’abonnement n’a pas pu être créé.');
-      }
-
-      return Uri.parse(
-        '${AppConfig.supabaseUrl}/functions/v1/calendar-feed',
-      ).replace(queryParameters: {'token': token});
     };
   },
 );
+
+/// Remplace le jeton de l'abonné : l'ancien lien cesse aussitôt de
+/// fonctionner (lien partagé par erreur, téléphone perdu).
+final calendarSubscriptionRegenerateProvider = Provider<Future<Uri> Function()>(
+  (ref) {
+    return () async {
+      final client = ref.read(supabaseClientProvider);
+      return _calendarFeedUri(
+        await client.rpc('regenerate_calendar_subscription_token'),
+      );
+    };
+  },
+);
+
+Uri _calendarFeedUri(Object? rawToken) {
+  final token = rawToken?.toString().trim() ?? '';
+  if (token.isEmpty) {
+    throw StateError('Le lien d’abonnement n’a pas pu être créé.');
+  }
+  return Uri.parse(
+    '${AppConfig.supabaseUrl}/functions/v1/calendar-feed',
+  ).replace(queryParameters: {'token': token});
+}
 
 /// Entrée permanente de « Mon compte » pour les joueurs comme les admins.
 class CalendarSubscriptionTile extends ConsumerStatefulWidget {
@@ -262,12 +277,67 @@ class _CalendarSubscriptionTileState
                     );
                   }),
                 ),
+                const Divider(height: 24),
+                ListTile(
+                  key: const ValueKey('calendar-subscription-regenerate'),
+                  leading: const Icon(Icons.autorenew_outlined),
+                  title: const Text('Changer mon lien'),
+                  subtitle: const Text(
+                    'Si ton lien a été partagé par erreur : l’ancien ne marchera plus',
+                  ),
+                  onTap: () => choose(_regenerateLink),
+                ),
               ],
             ),
           ),
         );
       },
     );
+  }
+
+  /// Le changement casse les abonnements déjà faits avec l'ancien lien et ne
+  /// peut pas être annulé : il est confirmé avant, puis les choix d'agenda
+  /// sont rouverts avec le nouveau lien pour se réabonner tout de suite.
+  Future<void> _regenerateLink() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Changer le lien du calendrier ?'),
+        content: const Text(
+          'L’ancien lien cessera de fonctionner. Il faudra t’abonner à '
+          'nouveau dans ton agenda avec le nouveau lien.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            key: const ValueKey('calendar-subscription-regenerate-confirm'),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Changer'),
+          ),
+        ],
+      ),
+    );
+    // Fermeture sans choix (appui à côté, retour) : rien ne change.
+    if (confirmed != true || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    Uri? httpsUri;
+    try {
+      httpsUri = await ref.read(calendarSubscriptionRegenerateProvider)();
+    } catch (error) {
+      messenger.showSnackBar(SnackBar(content: Text(humanizeError(error))));
+      return;
+    }
+    if (!mounted) return;
+    messenger.showSnackBar(
+      const SnackBar(
+        content: Text('Nouveau lien créé. L’ancien ne fonctionne plus.'),
+      ),
+    );
+    await _showCalendarSubscriptionChoices(httpsUri);
   }
 
   Future<void> _subscribeCurrentSeason() async {

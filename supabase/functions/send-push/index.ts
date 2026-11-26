@@ -1,5 +1,6 @@
 // Envoi des notifications Web Push (VAPID) et jobs internes protégés.
-// Appelée par la base via pg_net avec le jeton interne x-push-token.
+// Appelée par la base via pg_net, avec une signature interne propre à cette
+// fonction et au club (x-push-signature, voir _shared/internal_call.ts).
 import { createClient } from "npm:@supabase/supabase-js@2.95.0";
 import webpush from "npm:web-push@3.6.7";
 
@@ -27,8 +28,8 @@ import {
   readBoundedJson,
   RequestBodyTooLargeError,
   safeNotificationUrl,
-  secretsEqual,
 } from "./request_security.ts";
+import { verifyInternalCall } from "../_shared/internal_call.ts";
 import { refreshMatchWeather } from "./weather_refresh.ts";
 
 // Sujet VAPID propre au service commercial (jamais AS Grinta).
@@ -230,6 +231,13 @@ Deno.serve(async (req: Request) => {
     return new Response("method not allowed", { status: 405 });
   }
 
+  // Une requête sans signature n'a aucune chance d'être acceptée : on la
+  // refuse avant toute lecture en base, pour qu'un flot de requêtes
+  // anonymes ne coûte rien.
+  if (!req.headers.get("x-push-signature")) {
+    return new Response("non autorisé", { status: 401 });
+  }
+
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!supabaseUrl || !serviceRoleKey) {
@@ -256,8 +264,9 @@ Deno.serve(async (req: Request) => {
     return new Response("configuration indisponible", { status: 500 });
   }
 
-  const token = req.headers.get("x-push-token") ?? "";
-  if (!(await secretsEqual(token, String(config.token)))) {
+  // Seule une signature propre à send-push et à ce club est acceptée : le
+  // mot de passe brut, ou la signature d'un autre club, ne suffit pas.
+  if (!(await verifyInternalCall(req, String(config.token), "send-push"))) {
     return new Response("non autorisé", { status: 401 });
   }
 

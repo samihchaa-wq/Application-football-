@@ -14,7 +14,9 @@ class PfSecondaryTabs<T> extends StatelessWidget {
     super.key,
   });
 
-  static const double height = 36;
+  // 44 px : taille minimale conseillée pour un doigt (36 px faisait rater
+  // des appuis). Reste plus bas que les onglets principaux.
+  static const double height = 44;
 
   final List<ButtonSegment<T>> segments;
   final Set<T> selected;

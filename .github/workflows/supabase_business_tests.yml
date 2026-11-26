@@ -76,6 +76,7 @@ jobs:
             supabase/functions/send-push/club_notification_policy_test.ts \
             supabase/functions/send-push/history_test.ts \
             supabase/functions/send-push/request_security_test.ts \
+            supabase/functions/_shared/internal_call_test.ts \
             supabase/functions/register-account/password_policy_test.ts \
             supabase/functions/register-account/consent_test.ts \
             supabase/functions/register-account/username_test.ts \
