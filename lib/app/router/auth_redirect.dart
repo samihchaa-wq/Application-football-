@@ -14,6 +14,13 @@ String? resolveAuthRedirect({
 }) {
   final location = matchedLocation;
 
+  // Lien dont les paramètres sont mal codés (ex. « ?code=%E0%A4%A ») : lire
+  // ses paramètres ferait planter l'appli. On garde la page, sans paramètres ;
+  // le routeur réévalue ensuite l'adresse nettoyée.
+  if (_hasMalformedQuery(uri)) {
+    return uri.path.isEmpty ? '/' : uri.path;
+  }
+
   // Le lien de confirmation d'adresse e-mail s'ouvre connecté ou non, depuis
   // n'importe quel appareil : la page ne demande aucune session, le lien porte
   // lui-même la preuve.
@@ -243,6 +250,7 @@ String? _pendingDestination(String? value) {
 
   final uri = Uri.tryParse(value);
   if (uri == null || uri.hasScheme || uri.hasAuthority) return null;
+  if (!_isDecodable(uri)) return null;
   if (!uri.path.startsWith('/') || uri.path == '/auth/loading') return null;
 
   return uri.toString();
@@ -317,6 +325,7 @@ String? _safeLocalRedirect(String? value) {
 
   final uri = Uri.tryParse(value);
   if (uri == null || uri.hasScheme || uri.hasAuthority) return null;
+  if (!_isDecodable(uri)) return null;
   if (!uri.path.startsWith('/') || uri.path.startsWith('/auth')) return null;
   if (uri.path == '/accueil' || uri.path == '/home') return '/matches';
   if (uri.path == '/pronos' && uri.queryParameters['category'] == 'matches') {
@@ -324,4 +333,24 @@ String? _safeLocalRedirect(String? value) {
   }
 
   return uri.toString();
+}
+
+bool _hasMalformedQuery(Uri uri) {
+  try {
+    uri.queryParameters;
+    return false;
+  } on FormatException {
+    return true;
+  }
+}
+
+/// Faux si lire le chemin ou les paramètres de [uri] lèverait une exception.
+bool _isDecodable(Uri uri) {
+  try {
+    uri.queryParameters;
+    uri.pathSegments;
+    return true;
+  } on FormatException {
+    return false;
+  }
 }
