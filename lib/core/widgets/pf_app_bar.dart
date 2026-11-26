@@ -133,6 +133,33 @@ class _PfTitleBar extends StatelessWidget {
         children: [...?actions],
       );
 
+  /// Actions séparées par un [_ActionsGap] : celles d'avant collées à gauche,
+  /// celles d'après collées à droite.
+  Widget _splitActionsRow(int gapIndex, double width) {
+    Widget group(List<Widget> items) => Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: items,
+        );
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      // Au moins toute la largeur ; plus large si le contenu l'exige, et c'est
+      // alors le FittedBox qui réduit l'ensemble.
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minWidth: width),
+        child: IntrinsicWidth(
+            child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            group(actions!.sublist(0, gapIndex)),
+            group(actions!.sublist(gapIndex + 1)),
+          ],
+        )),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -160,10 +187,16 @@ class _PfTitleBar extends StatelessWidget {
             if (noTitle)
               // Sans titre : toute la largeur, avec réduction si trop étroit.
               Expanded(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerRight,
-                  child: _actionsRow(),
+                child: LayoutBuilder(
+                  builder: (context, box) {
+                    final gap = actions!.indexWhere((a) => a is _ActionsGap);
+                    if (gap >= 0) return _splitActionsRow(gap, box.maxWidth);
+                    return FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: _actionsRow(),
+                    );
+                  },
                 ),
               )
             else
@@ -184,12 +217,21 @@ List<Widget> pfHomeActions(BuildContext context, {bool labeled = false}) {
   return _homeActions(context, labeled);
 }
 
+/// Repère : sépare les actions collées à gauche de celles collées à droite.
+class _ActionsGap extends SizedBox {
+  const _ActionsGap();
+}
+
 List<Widget> _homeActions(BuildContext context, bool labeled) => [
+      // Pages aux boutons nommés : la cloche à gauche, le reste à droite.
+      if (labeled) const NotificationInboxButton(compact: true),
+      if (labeled) const _ActionsGap(),
       const SeasonWrappedEntryButton(),
       BadgeTrophyButton(showLabel: labeled),
-      const SizedBox(width: 2),
-      // Cloche seule, sans texte, même sur les pages aux boutons nommés.
-      NotificationInboxButton(compact: labeled),
+      if (!labeled) ...[
+        const SizedBox(width: 2),
+        const NotificationInboxButton(),
+      ],
       const SizedBox(width: 2),
       _settingsButton(context, labeled),
     ];
