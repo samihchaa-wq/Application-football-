@@ -149,7 +149,7 @@ void main() {
     await pumpStats(tester);
     await tester.tap(find.text('B'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Précédente'));
+    await tester.tap(find.byKey(const ValueKey('stats-period-cycle')));
     await tester.pumpAndSettle();
     expect(find.text('Karim'), findsNothing);
 
@@ -194,7 +194,8 @@ void main() {
     ];
 
     await pumpStats(tester);
-    await tester.tap(find.text('Précédente'));
+    // Un seul bouton : Actuelle → Précédente → Toutes → Actuelle.
+    await tester.tap(find.byKey(const ValueKey('stats-period-cycle')));
     await tester.pumpAndSettle();
 
     expect(
@@ -400,6 +401,24 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Cumul'), findsOneWidget);
     expect(requestedPeriods, containsAll(StatisticsPeriod.values));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Joueurs : un seul bouton fait tourner les trois périodes',
+      (tester) async {
+    for (final period in StatisticsPeriod.values) {
+      repository.players[period] = [_player('Karim', played: 12, goals: 7)];
+    }
+    await pumpStats(tester);
+    final cycle = find.byKey(const ValueKey('stats-period-cycle'));
+    expect(find.descendant(of: cycle, matching: find.text('Actuelle')),
+        findsOneWidget);
+    for (final label in ['Précédente', 'Toutes', 'Actuelle']) {
+      await tester.tap(cycle);
+      await tester.pumpAndSettle();
+      expect(find.descendant(of: cycle, matching: find.text(label)),
+          findsOneWidget);
+    }
     expect(tester.takeException(), isNull);
   });
 
