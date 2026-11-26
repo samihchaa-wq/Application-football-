@@ -62,7 +62,7 @@ class _StatsHubPageState extends ConsumerState<StatsHubPage> {
     return Scaffold(
       appBar: PfAppBar(
         title: const SizedBox.shrink(),
-        actions: pfHomeActions(context),
+        actions: pfHomeActions(context, labeled: true),
       ),
       // Seul le module Statistiques arbore les badges à côté des noms : les
       // mêmes panneaux montés ailleurs (Prono, Calendrier) rendent le nom seul.

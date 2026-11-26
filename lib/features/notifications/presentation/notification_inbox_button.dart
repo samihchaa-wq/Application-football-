@@ -2,13 +2,21 @@ import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/features/notifications/data/notification_inbox_repository.dart';
 import 'package:petit_filet/features/preferences/data/push_subscriptions_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:petit_filet/core/widgets/pf_labeled_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 /// Cloche de l'en-tête, à côté du trophée : ouvre l'historique des
 /// notifications. Un petit chiffre indique combien n'ont pas été lues.
 class NotificationInboxButton extends ConsumerWidget {
-  const NotificationInboxButton({super.key});
+  const NotificationInboxButton({this.showLabel = false, super.key});
+
+  /// Écrit « Notifications » sous l'icône.
+  final bool showLabel;
+
+  Widget _wrap(Widget button) => showLabel
+      ? PfLabeledButton(label: 'Notifications', child: button)
+      : button;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,7 +37,7 @@ class NotificationInboxButton extends ConsumerWidget {
       label: label,
       button: true,
       excludeSemantics: true,
-      child: IconButton(
+      child: _wrap(IconButton(
         key: const ValueKey('notification-inbox-button'),
         tooltip: 'Notifications',
         visualDensity: VisualDensity.compact,
@@ -70,7 +78,7 @@ class NotificationInboxButton extends ConsumerWidget {
           ),
         ),
         onPressed: () => context.push('/notifications'),
-      ),
+      )),
     );
   }
 }

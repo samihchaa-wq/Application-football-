@@ -5,6 +5,7 @@ import 'package:petit_filet/features/notifications/presentation/notification_inb
 import 'package:petit_filet/features/season_wrapped/presentation/season_wrapped_entry_button.dart';
 import 'package:petit_filet/core/club/club_identity.dart';
 import 'package:flutter/material.dart';
+import 'package:petit_filet/core/widgets/pf_labeled_button.dart';
 import 'package:go_router/go_router.dart';
 
 /// Clé stable du badge club qui ramène au calendrier.
@@ -147,7 +148,7 @@ class _PfTitleBar extends StatelessWidget {
           if (actions?.isNotEmpty ?? false) ...[
             const SizedBox(width: 6),
             ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 44),
+              constraints: const BoxConstraints(maxHeight: 60),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -163,23 +164,28 @@ class _PfTitleBar extends StatelessWidget {
   }
 }
 
-List<Widget> pfHomeActions(BuildContext context) => [
+List<Widget> pfHomeActions(BuildContext context, {bool labeled = false}) => [
       const SeasonWrappedEntryButton(),
-      const BadgeTrophyButton(),
+      BadgeTrophyButton(showLabel: labeled),
       const SizedBox(width: 2),
-      const NotificationInboxButton(),
+      NotificationInboxButton(showLabel: labeled),
       const SizedBox(width: 2),
-      IconButton(
-        tooltip: 'Paramètres',
-        iconSize: 27,
-        visualDensity: VisualDensity.compact,
-        padding: const EdgeInsets.all(7),
-        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
-        style: IconButton.styleFrom(
-          foregroundColor: AppTheme.textSecondary,
-          backgroundColor: AppTheme.surfaceHigh.withValues(alpha: .46),
-        ),
-        icon: const Icon(Icons.settings_outlined),
-        onPressed: () => context.push('/more'),
-      ),
+      _settingsButton(context, labeled),
     ];
+
+Widget _settingsButton(BuildContext context, bool labeled) {
+  final button = IconButton(
+    tooltip: 'Paramètres',
+    iconSize: 27,
+    visualDensity: VisualDensity.compact,
+    padding: const EdgeInsets.all(7),
+    constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+    style: IconButton.styleFrom(
+      foregroundColor: AppTheme.textSecondary,
+      backgroundColor: AppTheme.surfaceHigh.withValues(alpha: .46),
+    ),
+    icon: const Icon(Icons.settings_outlined),
+    onPressed: () => context.push('/more'),
+  );
+  return labeled ? PfLabeledButton(label: 'Paramètres', child: button) : button;
+}
