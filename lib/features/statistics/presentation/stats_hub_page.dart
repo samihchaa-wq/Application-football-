@@ -402,44 +402,49 @@ class _PlayersPinnedHeader extends StatelessWidget {
     StatisticsPeriod.allTime,
   ];
 
-  static (String, IconData) _look(StatisticsPeriod period) => switch (period) {
-        StatisticsPeriod.current => ('Actuelle', Icons.today_rounded),
-        StatisticsPeriod.previous => ('Précédente', Icons.history_rounded),
-        StatisticsPeriod.allTime => ('Toutes', Icons.all_inclusive_rounded),
+  static String _label(StatisticsPeriod period) => switch (period) {
+        StatisticsPeriod.current => 'Actuelle',
+        StatisticsPeriod.previous => 'Précédente',
+        StatisticsPeriod.allTime => 'Toutes',
       };
 
   @override
   Widget build(BuildContext context) {
-    final (label, icon) = _look(period);
-    final next = _order[(_order.indexOf(period) + 1) % _order.length];
+    final index = _order.indexOf(period);
+    final next = _order[(index + 1) % _order.length];
+    final previous = _order[(index - 1 + _order.length) % _order.length];
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
       child: Center(
-        child: Semantics(
-          button: true,
-          label: 'Période : $label. Passer à ${_look(next).$1}',
-          excludeSemantics: true,
-          child: Material(
-            color: AppTheme.selectedSurface,
-            shape: StadiumBorder(
-              side: BorderSide(color: AppTheme.primary.withValues(alpha: .55)),
-            ),
-            child: InkWell(
-              key: const ValueKey('stats-period-cycle'),
-              customBorder: const StadiumBorder(),
-              onTap: () => onPeriodChanged(next),
-              child: SizedBox(
-                height: 36,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(icon, size: 16, color: AppTheme.primaryBright),
-                      const SizedBox(width: 5),
-                      Flexible(
+        child: Material(
+          color: AppTheme.selectedSurface,
+          shape: StadiumBorder(
+            side: BorderSide(color: AppTheme.primary.withValues(alpha: .55)),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: SizedBox(
+            height: 36,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _PeriodArrow(
+                  key: const ValueKey('stats-period-previous'),
+                  icon: Icons.chevron_left_rounded,
+                  semanticLabel: 'Période précédente : ${_label(previous)}',
+                  onTap: () => onPeriodChanged(previous),
+                ),
+                Flexible(
+                  child: Semantics(
+                    button: true,
+                    label: 'Période : ${_label(period)}. '
+                        'Passer à ${_label(next)}',
+                    excludeSemantics: true,
+                    child: InkWell(
+                      key: const ValueKey('stats-period-cycle'),
+                      onTap: () => onPeriodChanged(next),
+                      child: Center(
                         child: Text(
-                          label,
+                          _label(period),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -450,12 +455,49 @@ class _PlayersPinnedHeader extends StatelessWidget {
                           ),
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+                _PeriodArrow(
+                  key: const ValueKey('stats-period-next'),
+                  icon: Icons.chevron_right_rounded,
+                  semanticLabel: 'Période suivante : ${_label(next)}',
+                  onTap: () => onPeriodChanged(next),
+                ),
+              ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Flèche d'un côté du sélecteur de période.
+class _PeriodArrow extends StatelessWidget {
+  const _PeriodArrow({
+    super.key,
+    required this.icon,
+    required this.semanticLabel,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String semanticLabel;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      excludeSemantics: true,
+      child: InkWell(
+        onTap: onTap,
+        child: SizedBox(
+          width: 30,
+          height: 36,
+          child: Icon(icon, size: 22, color: AppTheme.primaryBright),
         ),
       ),
     );

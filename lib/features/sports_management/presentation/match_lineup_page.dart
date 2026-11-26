@@ -6,6 +6,7 @@ import 'package:petit_filet/core/widgets/match_sheet_top_row.dart';
 import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
 import 'package:petit_filet/features/match_live/presentation/match_live_tab.dart';
+import 'package:petit_filet/features/notifications/presentation/notification_seen_marker.dart';
 import 'package:petit_filet/features/matches/data/match_info_repository.dart';
 import 'package:petit_filet/features/matches/presentation/upcoming_match_prediction_page.dart';
 import 'package:petit_filet/features/matches/presentation/widgets/match_info_tab.dart';
@@ -83,12 +84,16 @@ class MatchLineupPage extends ConsumerWidget {
           : section == 'live' && (isInternal || liveTooEarly)
               ? 'effectif'
               : section;
-      return AdminSquadPlanPage(
-        initialMatchId: matchId,
-        initialStep: adminSection,
-        showPredictionStep: !isInternal && !predictionClosed,
-        fromNotification:
-            queryParameters['from'] == compositionOpenedFromNotification,
+      return NotificationSeenMarker(
+        matchId: matchId,
+        kinds: notificationKindsForMatchSection(adminSection),
+        child: AdminSquadPlanPage(
+          initialMatchId: matchId,
+          initialStep: adminSection,
+          showPredictionStep: !isInternal && !predictionClosed,
+          fromNotification:
+              queryParameters['from'] == compositionOpenedFromNotification,
+        ),
       );
     }
 
@@ -113,125 +118,130 @@ class MatchLineupPage extends ConsumerWidget {
     final showLive = resolvedSection == 'live';
     final showPrediction = resolvedSection == 'prediction';
 
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: RefreshIndicator(
-          onRefresh: () async {
-            ref
-              ..invalidate(matchCoreProvider(matchId))
-              ..invalidate(upcomingMatchFixtureProvider(matchId))
-              ..invalidate(publishedMatchCompositionProvider(matchId))
-              ..invalidate(matchAvailabilityBoardProvider(matchId))
-              ..invalidate(matchInfoProvider(matchId))
-              ..invalidate(inlineMatchPredictionProvider(matchId));
-            await Future.wait([
-              ref.read(upcomingMatchFixtureProvider(matchId).future),
-              if (showComposition)
-                ref.read(publishedMatchCompositionProvider(matchId).future),
-              if (showEffectif)
-                ref.read(matchAvailabilityBoardProvider(matchId).future),
-              if (showInfo) ref.read(matchInfoProvider(matchId).future),
-              if (showPrediction)
-                ref.read(inlineMatchPredictionProvider(matchId).future),
-            ]);
-          },
-          child: MatchSheetListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.screenGutter,
-              AppSpacing.sectionGap,
-              AppSpacing.screenGutter,
-              40,
-            ),
-            children: liveTakesOver
-                ? [
-                    const MatchSheetTopRow(bottomSpacing: 0),
-                    MatchLiveTab(matchId: matchId),
-                  ]
-                : [
-                    MatchSheetTopRow(
-                      header: UpcomingMatchFixtureHeader(
-                        matchId: matchId,
-                        bottomSpacing: 0,
-                      ),
-                    ),
-                    SegmentedButton<String>(
-                      showSelectedIcon: false,
-                      segments: [
-                        const ButtonSegment(value: 'info', label: Text('Info')),
-                        if (!tooFarAway)
-                          const ButtonSegment(
-                            value: 'effectif',
-                            label: Text('Effectif'),
-                          ),
-                        if (!tooFarAway)
-                          const ButtonSegment(
-                            value: 'composition',
-                            label: Text('Compo'),
-                          ),
-                        if (!isInternal && !tooFarAway && !liveTooEarly)
-                          const ButtonSegment(
-                            value: 'live',
-                            label: Text('Live'),
-                          ),
-                        if (!isInternal && !tooFarAway && !predictionClosed)
-                          const ButtonSegment(
-                            value: 'prediction',
-                            label: Text('Prono'),
-                          ),
-                      ],
-                      selected: {resolvedSection},
-                      onSelectionChanged: (selection) {
-                        // La vidéo de la compo peut se lancer à l'arrivée :
-                        // l'appui la débloque sur iPhone.
-                        if (selection.first == 'composition') {
-                          primeStadiumVideo();
-                        }
-                        context.go(
-                          '/matches/$matchId/lineup?section=${selection.first}',
-                        );
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.sectionGap),
-                    if (showInfo) MatchInfoTab(matchId: matchId),
-                    if (showEffectif)
-                      MatchAvailabilityBoardCard(
-                        matchId: matchId,
-                        showAfterComposition: true,
-                      ),
-                    if (showEffectif)
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          key: const ValueKey(
-                              'match-effectif-waitlist-readonly'),
-                          onPressed: () => context.push('/waitlist'),
-                          child: const Text('Voir la liste d’attente'),
-                        ),
-                      ),
-                    if (showComposition && isInternal)
-                      InternalTeamCompositionView(
-                        matchId: matchId,
-                        editable: false,
-                      )
-                    else if (showComposition)
-                      PlayerCompositionTab(
-                        matchId: matchId,
-                        fromNotification: queryParameters['from'] ==
-                            compositionOpenedFromNotification,
-                        lineupBuilder: (landing) => PublishedLineupPreview(
+    return NotificationSeenMarker(
+      matchId: matchId,
+      kinds: notificationKindsForMatchSection(resolvedSection),
+      child: Scaffold(
+        body: SafeArea(
+          bottom: false,
+          child: RefreshIndicator(
+            onRefresh: () async {
+              ref
+                ..invalidate(matchCoreProvider(matchId))
+                ..invalidate(upcomingMatchFixtureProvider(matchId))
+                ..invalidate(publishedMatchCompositionProvider(matchId))
+                ..invalidate(matchAvailabilityBoardProvider(matchId))
+                ..invalidate(matchInfoProvider(matchId))
+                ..invalidate(inlineMatchPredictionProvider(matchId));
+              await Future.wait([
+                ref.read(upcomingMatchFixtureProvider(matchId).future),
+                if (showComposition)
+                  ref.read(publishedMatchCompositionProvider(matchId).future),
+                if (showEffectif)
+                  ref.read(matchAvailabilityBoardProvider(matchId).future),
+                if (showInfo) ref.read(matchInfoProvider(matchId).future),
+                if (showPrediction)
+                  ref.read(inlineMatchPredictionProvider(matchId).future),
+              ]);
+            },
+            child: MatchSheetListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.screenGutter,
+                AppSpacing.sectionGap,
+                AppSpacing.screenGutter,
+                40,
+              ),
+              children: liveTakesOver
+                  ? [
+                      const MatchSheetTopRow(bottomSpacing: 0),
+                      MatchLiveTab(matchId: matchId),
+                    ]
+                  : [
+                      MatchSheetTopRow(
+                        header: UpcomingMatchFixtureHeader(
                           matchId: matchId,
-                          expanded: true,
-                          fallbackToEffectif: false,
-                          emptyMessage: 'Composition non publiée.',
-                          landing: landing,
+                          bottomSpacing: 0,
                         ),
                       ),
-                    if (showLive) MatchLiveTab(matchId: matchId),
-                    if (showPrediction)
-                      InlineMatchPredictionCard(matchId: matchId),
-                  ],
+                      SegmentedButton<String>(
+                        showSelectedIcon: false,
+                        segments: [
+                          const ButtonSegment(
+                              value: 'info', label: Text('Info')),
+                          if (!tooFarAway)
+                            const ButtonSegment(
+                              value: 'effectif',
+                              label: Text('Effectif'),
+                            ),
+                          if (!tooFarAway)
+                            const ButtonSegment(
+                              value: 'composition',
+                              label: Text('Compo'),
+                            ),
+                          if (!isInternal && !tooFarAway && !liveTooEarly)
+                            const ButtonSegment(
+                              value: 'live',
+                              label: Text('Live'),
+                            ),
+                          if (!isInternal && !tooFarAway && !predictionClosed)
+                            const ButtonSegment(
+                              value: 'prediction',
+                              label: Text('Prono'),
+                            ),
+                        ],
+                        selected: {resolvedSection},
+                        onSelectionChanged: (selection) {
+                          // La vidéo de la compo peut se lancer à l'arrivée :
+                          // l'appui la débloque sur iPhone.
+                          if (selection.first == 'composition') {
+                            primeStadiumVideo();
+                          }
+                          context.go(
+                            '/matches/$matchId/lineup?section=${selection.first}',
+                          );
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.sectionGap),
+                      if (showInfo) MatchInfoTab(matchId: matchId),
+                      if (showEffectif)
+                        MatchAvailabilityBoardCard(
+                          matchId: matchId,
+                          showAfterComposition: true,
+                        ),
+                      if (showEffectif)
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            key: const ValueKey(
+                                'match-effectif-waitlist-readonly'),
+                            onPressed: () => context.push('/waitlist'),
+                            child: const Text('Voir la liste d’attente'),
+                          ),
+                        ),
+                      if (showComposition && isInternal)
+                        InternalTeamCompositionView(
+                          matchId: matchId,
+                          editable: false,
+                        )
+                      else if (showComposition)
+                        PlayerCompositionTab(
+                          matchId: matchId,
+                          fromNotification: queryParameters['from'] ==
+                              compositionOpenedFromNotification,
+                          lineupBuilder: (landing) => PublishedLineupPreview(
+                            matchId: matchId,
+                            expanded: true,
+                            fallbackToEffectif: false,
+                            emptyMessage: 'Composition non publiée.',
+                            landing: landing,
+                          ),
+                        ),
+                      if (showLive) MatchLiveTab(matchId: matchId),
+                      if (showPrediction)
+                        InlineMatchPredictionCard(matchId: matchId),
+                    ],
+            ),
           ),
         ),
       ),

@@ -68,6 +68,26 @@ class _FakeInbox implements NotificationInboxRepository {
     deleted.add(id);
     entries = entries.where((entry) => entry.id != id).toList();
   }
+
+  int deleteAllCalls = 0;
+  final List<(List<String>, String?)> markedFor = [];
+
+  @override
+  Future<int> deleteAll() async {
+    if (failDelete) {
+      throw StateError('Les notifications n’ont pas pu être supprimées.');
+    }
+    deleteAllCalls += 1;
+    final count = entries.length;
+    entries = [];
+    return count;
+  }
+
+  @override
+  Future<int> markReadFor(List<String> kinds, {String? matchId}) async {
+    markedFor.add((kinds, matchId));
+    return 0;
+  }
 }
 
 NotificationHistoryEntry _entry(
@@ -306,6 +326,53 @@ void main() {
       expect(find.text('Reste là'), findsOneWidget);
       expect(
         find.text('La notification n’a pas pu être supprimée.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('« Effacer toutes » vide la liste après confirmation', (
+      tester,
+    ) async {
+      final inbox = _FakeInbox([_entry(1, 'Une'), _entry(2, 'Deux')]);
+      await _pumpHistory(tester, inbox);
+
+      await tester.tap(find.byKey(const ValueKey('notification-clear-all')));
+      await tester.pumpAndSettle();
+      // Annuler ne supprime rien.
+      await tester.tap(find.text('Annuler'));
+      await tester.pumpAndSettle();
+      expect(find.text('Une'), findsOneWidget);
+      expect(inbox.deleteAllCalls, 0);
+
+      await tester.tap(find.byKey(const ValueKey('notification-clear-all')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('notification-clear-all-confirm')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Une'), findsNothing);
+      expect(find.text('Deux'), findsNothing);
+      expect(inbox.deleteAllCalls, 1);
+      expect(find.text('Aucune notification pour l’instant'), findsOneWidget);
+    });
+
+    testWidgets('un échec d’« Effacer toutes » remet la liste et le dit', (
+      tester,
+    ) async {
+      final inbox = _FakeInbox([_entry(1, 'Reste là')])..failDelete = true;
+      await _pumpHistory(tester, inbox);
+
+      await tester.tap(find.byKey(const ValueKey('notification-clear-all')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('notification-clear-all-confirm')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Reste là'), findsOneWidget);
+      expect(
+        find.text('Les notifications n’ont pas pu être supprimées.'),
         findsOneWidget,
       );
     });

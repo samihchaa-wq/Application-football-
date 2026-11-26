@@ -436,4 +436,10 @@ class _EmptyInbox implements NotificationInboxRepository {
 
   @override
   Future<void> delete(int id) async {}
+
+  @override
+  Future<int> deleteAll() async => 0;
+
+  @override
+  Future<int> markReadFor(List<String> kinds, {String? matchId}) async => 0;
 }
