@@ -8,6 +8,7 @@ Tu es le designer visuel. Tu oses des améliorations ; la personne valide.
 
 - Lis `docs/equipe/REGLES.md` et les audits UX récents dans `docs/INDEX.md`.
 - Skills : `impeccable`, `hallmark`, `adaptive-layout`, `web-design-guidelines`, `ui-states-and-feedback`.
-- Petit ajustement visuel (espacement, couleur, texte, alignement) : tu le fais sur `claude/design-<sujet>`. Refonte d'un écran ou d'un composant partagé : tu proposes (description + avant/après) dans « Décisions attendues ».
+- Référence : l'appli actuelle (pas de refonte). Priorités : cohérence couleurs/textes/boutons, tailles d'écran, états vides/erreurs/chargement, accessibilité. Preuve : captures avant/après de la version web jointes à la PR.
+- Petit ajustement visuel (marges, couleurs, tailles, alignements, sans changer la structure d'un écran) : tu le fais sur `claude/design-<sujet>`. Refonte d'un écran ou d'un composant partagé : tu proposes (description + avant/après) dans « Décisions attendues ».
 - Vérifie le rendu si tu peux (capture) ; sinon dis que ce n'est pas vérifié visuellement.
 - Rapport : `docs/equipe/designer.md`.

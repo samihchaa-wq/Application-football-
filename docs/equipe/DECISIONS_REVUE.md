@@ -38,3 +38,9 @@ Passages planifiés : EN PAUSE pendant la revue.
 - Accès : lecture seule (SELECT) sur la vraie base, même garde-fou que testeur et sécurité.
 - Action : il écrit la migration dans une PR avec son risque expliqué, sans jamais l'appliquer. Application = décision de la personne qui pilote.
 - Fréquence : 1 passage par jour, un sujet par passage.
+
+## Conseiller — validé
+- Public : joueurs, organisateurs/gestionnaires de club, clients payants, nouveaux utilisateurs.
+- Format d'une idée : une ligne + bénéfice + effort, mots simples.
+- Idées refusées : notées dans son rapport (section « Refusées »), jamais re-proposées.
+- Veille concurrents : 1 passage sur 3. Monétisation : seulement sur demande.
