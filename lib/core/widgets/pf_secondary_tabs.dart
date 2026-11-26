@@ -31,61 +31,65 @@ class PfSecondaryTabs<T> extends StatelessWidget {
         AppSpacing.screenGutter,
         AppSpacing.sectionGap,
       ),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-          border: Border.all(color: AppTheme.outline.withValues(alpha: .24)),
+      child: Row(
+        children: [
+          for (var i = 0; i < segments.length; i++) ...[
+            if (i > 0) const SizedBox(width: AppSpacing.contentGap),
+            Expanded(
+                child: _Pill(
+              segment: segments[i],
+              isSelected: selected.contains(segments[i].value),
+              onTap: () => onSelectionChanged({segments[i].value}),
+            )),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Une bulle (forme arrondie) : même style que les boutons du reste de l'appli.
+class _Pill<T> extends StatelessWidget {
+  const _Pill({
+    required this.segment,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final ButtonSegment<T> segment;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isSelected ? AppTheme.primaryBright : AppTheme.textPrimary;
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      child: Material(
+        color: isSelected ? AppTheme.selectedSurface : AppTheme.surface,
+        shape: StadiumBorder(
+          side: BorderSide(
+            color: isSelected
+                ? AppTheme.primary.withValues(alpha: .55)
+                : AppTheme.outline.withValues(alpha: .28),
+          ),
         ),
-        child: SizedBox(
-          width: double.infinity,
-          height: height,
-          child: SegmentedButton<T>(
-            expandedInsets: EdgeInsets.zero,
-            showSelectedIcon: false,
-            segments: segments,
-            selected: selected,
-            onSelectionChanged: onSelectionChanged,
-            style: ButtonStyle(
-              minimumSize: const WidgetStatePropertyAll(Size(0, height)),
-              maximumSize: const WidgetStatePropertyAll(
-                Size(double.infinity, height),
-              ),
-              padding: const WidgetStatePropertyAll(
-                EdgeInsets.symmetric(horizontal: AppSpacing.contentGap),
-              ),
-              backgroundColor: WidgetStateProperty.resolveWith((states) {
-                return states.contains(WidgetState.selected)
-                    ? AppTheme.selectedSurface
-                    : Colors.transparent;
-              }),
-              foregroundColor: WidgetStateProperty.resolveWith((states) {
-                return states.contains(WidgetState.selected)
-                    // Même couleur que les onglets principaux : seule la
-                    // taille distingue les deux niveaux.
-                    ? AppTheme.primaryBright
-                    // Blanc comme les onglets du dessus : le gris ressemblait à
-                    // des onglets désactivés.
-                    : AppTheme.textPrimary;
-              }),
-              overlayColor: WidgetStatePropertyAll(
-                AppTheme.primary.withValues(alpha: .08),
-              ),
-              side: const WidgetStatePropertyAll(BorderSide.none),
-              shape: WidgetStatePropertyAll(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSm - 2),
-                ),
-              ),
-              textStyle: const WidgetStatePropertyAll(
-                TextStyle(
-                  fontSize: 12.5,
+        child: InkWell(
+          customBorder: const StadiumBorder(),
+          onTap: onTap,
+          child: SizedBox(
+            height: PfSecondaryTabs.height,
+            child: Center(
+              child: DefaultTextStyle.merge(
+                style: TextStyle(
+                  fontSize: 14,
                   height: 1,
-                  fontWeight: FontWeight.w400,
-                  letterSpacing: .05,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: color,
                 ),
+                child: segment.label ?? const SizedBox.shrink(),
               ),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
           ),
         ),
