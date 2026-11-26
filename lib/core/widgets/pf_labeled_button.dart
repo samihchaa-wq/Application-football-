@@ -1,29 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 
-/// Bouton d'en-tête avec son nom écrit juste dessous.
+/// Bouton d'en-tête avec son nom écrit à sa droite (le nom est aussi cliquable).
 class PfLabeledButton extends StatelessWidget {
-  const PfLabeledButton({required this.label, required this.child, super.key});
+  const PfLabeledButton({
+    required this.label,
+    required this.child,
+    required this.onTap,
+    super.key,
+  });
+
+  final VoidCallback onTap;
 
   final String label;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
       mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         child,
         ExcludeSemantics(
-          child: Text(
-            label,
-            maxLines: 1,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  fontSize: 10,
-                  height: 1.1,
-                  color: AppTheme.textSecondary,
-                ),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 2, right: 3),
+              child: Text(
+                label,
+                maxLines: 1,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      fontSize: 10,
+                      color: AppTheme.textSecondary,
+                    ),
+              ),
+            ),
           ),
         ),
       ],

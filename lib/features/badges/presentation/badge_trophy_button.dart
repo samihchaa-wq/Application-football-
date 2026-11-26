@@ -20,6 +20,16 @@ class BadgeTrophyButton extends ConsumerWidget {
     }
     final hasUnseen = ref.watch(hasUnseenBadgeProvider).valueOrNull ?? false;
 
+    Future<void> open() async {
+      try {
+        await ref.read(badgeInboxRepositoryProvider).markSeen();
+        ref.invalidate(hasUnseenBadgeProvider);
+      } catch (_) {
+        // L'armoire reste accessible même si l'acquittement échoue.
+      }
+      if (context.mounted) context.push('/armoire');
+    }
+
     final button = IconButton(
       tooltip: 'Armoire à badges',
       visualDensity: VisualDensity.compact,
@@ -69,16 +79,10 @@ class BadgeTrophyButton extends ConsumerWidget {
           ],
         ),
       ),
-      onPressed: () async {
-        try {
-          await ref.read(badgeInboxRepositoryProvider).markSeen();
-          ref.invalidate(hasUnseenBadgeProvider);
-        } catch (_) {
-          // L'armoire reste accessible même si l'acquittement échoue.
-        }
-        if (context.mounted) context.push('/armoire');
-      },
+      onPressed: open,
     );
-    return showLabel ? PfLabeledButton(label: 'Badges', child: button) : button;
+    return showLabel
+        ? PfLabeledButton(label: 'Badges', onTap: open, child: button)
+        : button;
   }
 }
