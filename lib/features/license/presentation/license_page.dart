@@ -3,18 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:petit_filet/core/widgets/pf_app_bar.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
-import 'package:petit_filet/features/billing/presentation/invoice_download.dart'
-    show shareFile;
-import 'package:petit_filet/features/club/data/club_repository.dart';
 import 'package:petit_filet/features/license/data/license_repository.dart';
 import 'package:petit_filet/features/license/domain/license_models.dart';
-// Chargé à la demande : la bibliothèque PDF reste hors du bundle principal.
-import 'package:petit_filet/features/license/domain/license_pdf.dart'
-    deferred as license_pdf;
 import 'package:petit_filet/features/players/data/roster_repository.dart';
 
-/// Espace « Licence » de l'admin : qui a payé sa licence, qui a payé l'autre
-/// dépense demandée par le club, et l'attestation de licence en PDF.
+/// Espace « Licence » de l'admin : qui a payé sa licence, et qui a payé les
+/// autres dépenses du club (ajoutées avec « + », renommables).
 class LicensePage extends ConsumerStatefulWidget {
   const LicensePage({super.key});
 
@@ -24,7 +18,6 @@ class LicensePage extends ConsumerStatefulWidget {
 
 class _LicensePageState extends ConsumerState<LicensePage> {
   bool _onlyUnpaid = false;
-  String _city = '';
 
   void _toast(String message) {
     if (!mounted) return;
@@ -32,74 +25,83 @@ class _LicensePageState extends ConsumerState<LicensePage> {
         .showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Future<void> _save(PlayerLicense license, String seasonId) async {
+  /// Exécute une écriture puis recharge ; signale l'échec.
+  Future<void> _run(Future<void> Function() action, {String? seasonId}) async {
     try {
-      await ref.read(licenseRepositoryProvider).saveLicense(license);
-      ref.invalidate(seasonLicensesProvider(seasonId));
+      await action();
     } catch (error) {
       _toast('Enregistrement impossible. ${humanizeError(error)}');
     }
+    ref.invalidate(licenseExpensesProvider);
+    if (seasonId != null) ref.invalidate(seasonLicensesProvider(seasonId));
   }
 
-  Future<void> _editSettings(LicenseSettings current) async {
-    final saved = await showDialog<LicenseSettings>(
+  Future<String?> _askLabel({String initial = '', required String title}) {
+    return showDialog<String>(
       context: context,
-      builder: (_) => _SettingsDialog(initial: current),
+      builder: (_) => _LabelDialog(title: title, initial: initial),
     );
-    if (saved == null) return;
-    try {
-      await ref.read(licenseRepositoryProvider).saveSettings(saved);
-      ref.invalidate(licenseSettingsProvider);
-      _toast('Réglages enregistrés.');
-    } catch (error) {
-      _toast('Enregistrement impossible. ${humanizeError(error)}');
-    }
   }
 
-  Future<void> _attestation({
-    required RosterPlayer player,
-    required PlayerLicense license,
-    required LicenseSettings settings,
-    required String seasonId,
-  }) async {
-    final answer = await showDialog<({String city, String number})>(
+  Future<void> _addExpense(String seasonId) async {
+    final label = await _askLabel(title: 'Nouvelle dépense');
+    if (label == null) return;
+    await _run(
+      () => ref.read(licenseRepositoryProvider).addExpense(label),
+      seasonId: seasonId,
+    );
+  }
+
+  Future<void> _editExpense(LicenseExpense expense, String seasonId) async {
+    final choice = await showModalBottomSheet<String>(
       context: context,
-      builder: (_) => _AttestationDialog(
-        playerName: player.fullName,
-        city: _city,
-        number: license.licenseNumber,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit_outlined),
+              title: const Text('Renommer'),
+              onTap: () => Navigator.pop(context, 'rename'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline),
+              title: const Text('Supprimer cette dépense'),
+              onTap: () => Navigator.pop(context, 'delete'),
+            ),
+          ],
+        ),
       ),
     );
-    if (answer == null) return;
-    _city = answer.city;
-    try {
-      final repository = ref.read(licenseRepositoryProvider);
-      final club = await ref.read(myClubProvider.future);
-      final contact = await repository.clubContact();
-      final seasonName = await repository.seasonName(seasonId);
-      if (answer.number.trim() != license.licenseNumber.trim()) {
-        await _save(
-            license.copyWith(licenseNumber: answer.number.trim()), seasonId);
-      }
-      final data = LicenseAttestation(
-        clubName: club.name,
-        clubNumber: settings.clubNumber,
-        clubAddress: contact.address,
-        clubEmail: contact.email,
-        presidentName: settings.presidentName,
-        leagueName: settings.leagueName,
-        playerName: player.fullName,
-        licenseNumber: answer.number.trim(),
-        seasonName: seasonName,
-        amountCents: settings.licenseAmountCents,
-        city: answer.city,
-        date: DateTime.now(),
+    if (!mounted || choice == null) return;
+    final repository = ref.read(licenseRepositoryProvider);
+    if (choice == 'rename') {
+      final label = await _askLabel(title: 'Renommer', initial: expense.label);
+      if (label == null) return;
+      await _run(() => repository.renameExpense(expense.id, label),
+          seasonId: seasonId);
+    } else {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Supprimer « ${expense.label} » ?'),
+          content: const Text(
+              'Les paiements cochés pour cette dépense seront effacés.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Annuler'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Supprimer'),
+            ),
+          ],
+        ),
       );
-      await license_pdf.loadLibrary();
-      final bytes = await license_pdf.buildLicenseAttestationPdf(data);
-      await shareFile(bytes, data.fileName, 'application/pdf');
-    } catch (error) {
-      _toast('Attestation impossible. ${humanizeError(error)}');
+      if (ok != true) return;
+      await _run(() => repository.deleteExpense(expense.id),
+          seasonId: seasonId);
     }
   }
 
@@ -124,43 +126,42 @@ class _LicensePageState extends ConsumerState<LicensePage> {
   Widget _body(String seasonId) {
     final rosterAsync = ref.watch(rosterProvider(seasonId));
     final licensesAsync = ref.watch(seasonLicensesProvider(seasonId));
-    final settingsAsync = ref.watch(licenseSettingsProvider);
+    final expensesAsync = ref.watch(licenseExpensesProvider);
 
     final error =
-        rosterAsync.error ?? licensesAsync.error ?? settingsAsync.error;
+        rosterAsync.error ?? licensesAsync.error ?? expensesAsync.error;
     if (error != null) {
       return _Message(
         'Impossible de charger les licences. ${humanizeError(error)}',
         onRetry: () {
           ref.invalidate(rosterProvider(seasonId));
           ref.invalidate(seasonLicensesProvider(seasonId));
-          ref.invalidate(licenseSettingsProvider);
+          ref.invalidate(licenseExpensesProvider);
         },
       );
     }
     final roster = rosterAsync.asData?.value;
-    final licenses = licensesAsync.asData?.value;
-    final settings = settingsAsync.asData?.value;
-    if (roster == null || licenses == null || settings == null) {
+    final paid = licensesAsync.asData?.value;
+    final expenses = expensesAsync.asData?.value;
+    if (roster == null || paid == null || expenses == null) {
       return const Center(child: PfProgressIndicator());
     }
 
     final players = roster.where((p) => p.isActive).toList()
       ..sort((a, b) =>
           a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase()));
-    PlayerLicense of(RosterPlayer p) =>
-        licenses[p.id] ?? PlayerLicense(seasonPlayerId: p.id);
-    final licensePaid = players.where((p) => of(p).licensePaid).length;
-    final otherPaid = players.where((p) => of(p).otherPaid).length;
-    final shown = _onlyUnpaid
-        ? players.where((p) => !of(p).licensePaid || !of(p).otherPaid).toList()
-        : players;
+    bool upToDate(RosterPlayer p) =>
+        paid.hasPaidLicense(p.id) &&
+        expenses.every((e) => paid.hasPaidExpense(e.id, p.id));
+    final shown =
+        _onlyUnpaid ? players.where((p) => !upToDate(p)).toList() : players;
+    final repository = ref.read(licenseRepositoryProvider);
 
     return RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(rosterProvider(seasonId));
+        ref.invalidate(licenseExpensesProvider);
         ref.invalidate(seasonLicensesProvider(seasonId));
-        ref.invalidate(licenseSettingsProvider);
         await ref.read(seasonLicensesProvider(seasonId).future);
       },
       child: ListView(
@@ -174,22 +175,30 @@ class _LicensePageState extends ConsumerState<LicensePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Licences payées : $licensePaid / ${players.length}',
+                    'Licences payées : '
+                    '${players.where((p) => paid.hasPaidLicense(p.id)).length}'
+                    ' / ${players.length}',
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${settings.otherTitle} payée : $otherPaid / ${players.length}',
-                  ),
+                  for (final e in expenses)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        '${e.label} : '
+                        '${players.where((p) => paid.hasPaidExpense(e.id, p.id)).length}'
+                        ' / ${players.length}',
+                      ),
+                    ),
                   const SizedBox(height: 10),
-                  Row(
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
                     children: [
                       OutlinedButton.icon(
-                        onPressed: () => _editSettings(settings),
-                        icon: const Icon(Icons.tune_outlined),
-                        label: const Text('Réglages'),
+                        onPressed: () => _addExpense(seasonId),
+                        icon: const Icon(Icons.add),
+                        label: const Text('Ajouter une dépense'),
                       ),
-                      const SizedBox(width: 8),
                       FilterChip(
                         label: const Text('Impayés seulement'),
                         selected: _onlyUnpaid,
@@ -215,17 +224,50 @@ class _LicensePageState extends ConsumerState<LicensePage> {
               ),
             ),
           for (final player in shown)
-            _PlayerLicenseCard(
+            Card(
               key: ValueKey(player.id),
-              player: player,
-              license: of(player),
-              otherTitle: settings.otherTitle,
-              onChanged: (next) => _save(next, seasonId),
-              onAttestation: () => _attestation(
-                player: player,
-                license: of(player),
-                settings: settings,
-                seasonId: seasonId,
+              margin: const EdgeInsets.only(bottom: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                    child: Text(
+                      player.fullName.isEmpty
+                          ? player.displayName
+                          : player.fullName,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  CheckboxListTile(
+                    dense: true,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    title: const Text('Licence'),
+                    value: paid.hasPaidLicense(player.id),
+                    onChanged: (value) => _run(
+                      () =>
+                          repository.setLicensePaid(player.id, value ?? false),
+                      seasonId: seasonId,
+                    ),
+                  ),
+                  for (final e in expenses)
+                    CheckboxListTile(
+                      dense: true,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      title: Text(e.label),
+                      secondary: IconButton(
+                        tooltip: 'Renommer ou supprimer « ${e.label} »',
+                        icon: const Icon(Icons.more_horiz),
+                        onPressed: () => _editExpense(e, seasonId),
+                      ),
+                      value: paid.hasPaidExpense(e.id, player.id),
+                      onChanged: (value) => _run(
+                        () => repository.setExpensePaid(
+                            e.id, player.id, value ?? false),
+                        seasonId: seasonId,
+                      ),
+                    ),
+                ],
               ),
             ),
         ],
@@ -253,239 +295,49 @@ class _Message extends StatelessWidget {
       );
 }
 
-class _PlayerLicenseCard extends StatelessWidget {
-  const _PlayerLicenseCard({
-    super.key,
-    required this.player,
-    required this.license,
-    required this.otherTitle,
-    required this.onChanged,
-    required this.onAttestation,
-  });
+class _LabelDialog extends StatefulWidget {
+  const _LabelDialog({required this.title, required this.initial});
 
-  final RosterPlayer player;
-  final PlayerLicense license;
-  final String otherTitle;
-  final ValueChanged<PlayerLicense> onChanged;
-  final VoidCallback onAttestation;
+  final String title;
+  final String initial;
 
   @override
-  Widget build(BuildContext context) {
-    final number = license.licenseNumber.trim();
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      child: Column(
-        children: [
-          ListTile(
-            title: Text(
-                player.fullName.isEmpty ? player.displayName : player.fullName),
-            subtitle: Text(number.isEmpty
-                ? 'N° de licence : à saisir'
-                : 'N° de licence : $number'),
-            trailing: IconButton(
-              tooltip: 'Attestation de licence (PDF)',
-              icon: const Icon(Icons.picture_as_pdf_outlined),
-              onPressed: onAttestation,
-            ),
-          ),
-          CheckboxListTile(
-            dense: true,
-            controlAffinity: ListTileControlAffinity.leading,
-            title: const Text('Licence payée'),
-            value: license.licensePaid,
-            onChanged: (value) =>
-                onChanged(license.copyWith(licensePaid: value ?? false)),
-          ),
-          CheckboxListTile(
-            dense: true,
-            controlAffinity: ListTileControlAffinity.leading,
-            title: Text('$otherTitle payée'),
-            value: license.otherPaid,
-            onChanged: (value) =>
-                onChanged(license.copyWith(otherPaid: value ?? false)),
-          ),
-        ],
-      ),
-    );
-  }
+  State<_LabelDialog> createState() => _LabelDialogState();
 }
 
-class _SettingsDialog extends StatefulWidget {
-  const _SettingsDialog({required this.initial});
-
-  final LicenseSettings initial;
-
-  @override
-  State<_SettingsDialog> createState() => _SettingsDialogState();
-}
-
-class _SettingsDialogState extends State<_SettingsDialog> {
-  late final _clubNumber =
-      TextEditingController(text: widget.initial.clubNumber);
-  late final _president =
-      TextEditingController(text: widget.initial.presidentName);
-  late final _league = TextEditingController(text: widget.initial.leagueName);
-  late final _amount = TextEditingController(
-    text: formatLicenseAmount(widget.initial.licenseAmountCents),
-  );
-  late final _otherLabel =
-      TextEditingController(text: widget.initial.otherLabel);
-  late final _otherAmount = TextEditingController(
-    text: formatLicenseAmount(widget.initial.otherAmountCents),
-  );
-  String? _error;
+class _LabelDialogState extends State<_LabelDialog> {
+  late final _controller = TextEditingController(text: widget.initial);
 
   @override
   void dispose() {
-    for (final c in [
-      _clubNumber,
-      _president,
-      _league,
-      _amount,
-      _otherLabel,
-      _otherAmount
-    ]) {
-      c.dispose();
-    }
+    _controller.dispose();
     super.dispose();
   }
 
   void _submit() {
-    final amount = parseLicenseAmount(_amount.text);
-    final other = parseLicenseAmount(_otherAmount.text);
-    if (_amount.text.trim().isNotEmpty && amount == null ||
-        _otherAmount.text.trim().isNotEmpty && other == null) {
-      setState(() => _error = 'Montant invalide (exemple : 120 ou 12,50).');
-      return;
-    }
-    final president = _president.text.trim();
-    final league = _league.text.trim();
-    final label = _otherLabel.text.trim();
-    if ((president.isNotEmpty && president.length < 2) ||
-        (league.isNotEmpty && league.length < 2) ||
-        (label.isNotEmpty && label.length < 2)) {
-      setState(
-          () => _error = 'Les textes doivent faire au moins 2 caractères.');
-      return;
-    }
-    Navigator.pop(
-      context,
-      LicenseSettings(
-        clubNumber: _clubNumber.text,
-        presidentName: president,
-        leagueName: league,
-        licenseAmountCents: amount,
-        otherLabel: label,
-        otherAmountCents: other,
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    Widget field(TextEditingController c, String label,
-            {String? hint, TextInputType? type}) =>
-        Padding(
-          padding: const EdgeInsets.only(top: 10),
-          child: TextField(
-            controller: c,
-            keyboardType: type,
-            decoration: InputDecoration(labelText: label, hintText: hint),
-          ),
-        );
-    return AlertDialog(
-      title: const Text('Réglages de la licence'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            field(_clubNumber, 'N° de club', hint: 'ex. 860395'),
-            field(_president, 'Nom du président'),
-            field(_league, 'Ligue', hint: 'ex. Ligue Occitanie de Football'),
-            field(_amount, 'Montant de la licence (€)',
-                hint: 'ex. 120', type: TextInputType.number),
-            field(_otherLabel, 'Autre dépense demandée',
-                hint: 'ex. Équipement'),
-            field(_otherAmount, 'Montant de l’autre dépense (€)',
-                type: TextInputType.number),
-            if (_error != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: Text(
-                  _error!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-              ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Annuler')),
-        FilledButton(onPressed: _submit, child: const Text('Enregistrer')),
-      ],
-    );
-  }
-}
-
-class _AttestationDialog extends StatefulWidget {
-  const _AttestationDialog({
-    required this.playerName,
-    required this.city,
-    required this.number,
-  });
-
-  final String playerName;
-  final String city;
-  final String number;
-
-  @override
-  State<_AttestationDialog> createState() => _AttestationDialogState();
-}
-
-class _AttestationDialogState extends State<_AttestationDialog> {
-  late final _city = TextEditingController(text: widget.city);
-  late final _number = TextEditingController(text: widget.number);
-
-  @override
-  void dispose() {
-    _city.dispose();
-    _number.dispose();
-    super.dispose();
+    final text = _controller.text.trim();
+    if (text.length >= 2) Navigator.pop(context, text);
   }
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-        title: Text('Attestation de ${widget.playerName}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _number,
-              decoration: const InputDecoration(labelText: 'N° de licence'),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _city,
-              decoration: const InputDecoration(
-                labelText: 'Ville (pour « Toulouse le … »)',
-              ),
-            ),
-          ],
+        title: Text(widget.title),
+        content: TextField(
+          controller: _controller,
+          autofocus: true,
+          maxLength: 60,
+          decoration: const InputDecoration(
+            labelText: 'Nom de la dépense',
+            hintText: 'ex. Équipement',
+          ),
+          onSubmitted: (_) => _submit(),
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Annuler')),
-          FilledButton.icon(
-            onPressed: () => Navigator.pop(
-              context,
-              (city: _city.text.trim(), number: _number.text.trim()),
-            ),
-            icon: const Icon(Icons.picture_as_pdf_outlined),
-            label: const Text('Générer'),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
           ),
+          FilledButton(onPressed: _submit, child: const Text('Valider')),
         ],
       );
 }

@@ -10,55 +10,81 @@ class LicenseRepository {
 
   final SupabaseClient _client;
 
-  Future<LicenseSettings> fetchSettings() async {
-    final row =
-        await _client.from('club_license_settings').select().maybeSingle();
-    return LicenseSettings.fromJson(row);
-  }
-
-  Future<void> saveSettings(LicenseSettings settings) async {
-    await _client
-        .from('club_license_settings')
-        .upsert(settings.toJson(), onConflict: 'club_id');
-  }
-
-  Future<Map<String, PlayerLicense>> fetchLicenses(String seasonId) async {
+  Future<List<LicenseExpense>> fetchExpenses() async {
     final rows = await _client
-        .from('season_player_licenses')
-        .select('*, season_players!inner(season_id)')
-        .eq('season_players.season_id', seasonId);
-    return {
+        .from('club_license_expenses')
+        .select('id, label')
+        .order('created_at');
+    return [
       for (final row in rows)
-        row['season_player_id'].toString():
-            PlayerLicense.fromJson(Map<String, dynamic>.from(row)),
-    };
+        LicenseExpense.fromJson(Map<String, dynamic>.from(row)),
+    ];
   }
 
-  Future<void> saveLicense(PlayerLicense license) async {
+  Future<void> addExpense(String label) async {
+    await _client.from('club_license_expenses').insert({'label': label.trim()});
+  }
+
+  Future<void> renameExpense(String id, String label) async {
     await _client
+        .from('club_license_expenses')
+        .update({'label': label.trim()}).eq('id', id);
+  }
+
+  Future<void> deleteExpense(String id) async {
+    await _client.from('club_license_expenses').delete().eq('id', id);
+  }
+
+  Future<SeasonLicenses> fetchSeason(String seasonId) async {
+    final licenses = await _client
         .from('season_player_licenses')
-        .upsert(license.toJson(), onConflict: 'season_player_id');
-  }
-
-  Future<String> seasonName(String seasonId) async {
-    final row = await _client
-        .from('seasons')
-        .select('name')
-        .eq('id', seasonId)
-        .maybeSingle();
-    return (row?['name'] ?? '').toString();
-  }
-
-  /// Adresse postale et e-mail du club (réglages du club, déjà lisibles).
-  Future<({String address, String email})> clubContact() async {
-    final row = await _client
-        .from('club_settings')
-        .select('postal_address, contact_email')
-        .maybeSingle();
-    return (
-      address: (row?['postal_address'] ?? '').toString(),
-      email: (row?['contact_email'] ?? '').toString(),
+        .select(
+            'season_player_id, license_paid, season_players!inner(season_id)')
+        .eq('season_players.season_id', seasonId);
+    final payments = await _client
+        .from('season_player_expense_payments')
+        .select('expense_id, season_player_id, season_players!inner(season_id)')
+        .eq('season_players.season_id', seasonId);
+    final expensePaid = <String, Set<String>>{};
+    for (final row in payments) {
+      expensePaid
+          .putIfAbsent(row['expense_id'].toString(), () => <String>{})
+          .add(row['season_player_id'].toString());
+    }
+    return SeasonLicenses(
+      licensePaid: {
+        for (final row in licenses)
+          if (row['license_paid'] == true) row['season_player_id'].toString(),
+      },
+      expensePaid: expensePaid,
     );
+  }
+
+  Future<void> setLicensePaid(String playerId, bool paid) async {
+    await _client.from('season_player_licenses').upsert({
+      'season_player_id': playerId,
+      'license_paid': paid,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    }, onConflict: 'season_player_id');
+  }
+
+  Future<void> setExpensePaid(
+    String expenseId,
+    String playerId,
+    bool paid,
+  ) async {
+    final table = _client.from('season_player_expense_payments');
+    if (paid) {
+      await table.upsert({
+        'expense_id': expenseId,
+        'season_player_id': playerId,
+      }, onConflict: 'expense_id,season_player_id');
+    } else {
+      await table
+          .delete()
+          .eq('expense_id', expenseId)
+          .eq('season_player_id', playerId);
+    }
   }
 }
 
@@ -66,12 +92,12 @@ final licenseRepositoryProvider = Provider<LicenseRepository>(
   (ref) => LicenseRepository(ref.watch(supabaseClientProvider)),
 );
 
-final licenseSettingsProvider = FutureProvider.autoDispose<LicenseSettings>(
-  (ref) => ref.watch(licenseRepositoryProvider).fetchSettings(),
+final licenseExpensesProvider =
+    FutureProvider.autoDispose<List<LicenseExpense>>(
+  (ref) => ref.watch(licenseRepositoryProvider).fetchExpenses(),
 );
 
 final seasonLicensesProvider =
-    FutureProvider.autoDispose.family<Map<String, PlayerLicense>, String>(
-  (ref, seasonId) =>
-      ref.watch(licenseRepositoryProvider).fetchLicenses(seasonId),
+    FutureProvider.autoDispose.family<SeasonLicenses, String>(
+  (ref, seasonId) => ref.watch(licenseRepositoryProvider).fetchSeason(seasonId),
 );

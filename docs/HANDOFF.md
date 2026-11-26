@@ -148,6 +148,5 @@ Restent à vérifier sur GitHub avant intégration : PR #69 (+1 manuel), #72 (é
 
 ## Espace « Licence » (25/11/2026, branche claude/blissful-dijkstra-so3qo6)
 
-- Fait : Plus → Club · admin → « Licence » (/admin/licence) : cases « licence payée » et « autre dépense payée » par joueur, n° de licence, filtre impayés, réglages (n° de club, président, ligue, montants, intitulé de l'autre dépense), attestation PDF par joueur (modèle de l'attestation papier AS La Grinta).
-- Base : migration 20261207000000_licences_joueurs.sql (2 tables réservées aux admins). **Non appliquée** : à faire avec l'accord du propriétaire (voir règle 3). Non testée contre une vraie base.
-- Pas fait : logo et signature/tampon dans le PDF (cadre vide à tamponner), adresse postale du joueur.
+- Fait : Plus → Club · admin → « Licence » (/admin/licence) : case « Licence » par joueur, bouton « Ajouter une dépense » (nom libre, renommable, supprimable) avec une case par joueur, filtre impayés. Pas de PDF.
+- Base : migration 20261207000000_licences_joueurs.sql (3 tables réservées aux admins). **Non appliquée** : à faire avec l accord du propriétaire (règle 3). Non testée contre une vraie base.
