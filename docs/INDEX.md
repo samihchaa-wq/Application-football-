@@ -113,6 +113,10 @@ Régénérer après ajout de notes : `python3 tool/docs_index.py`.
 - [Petit Filet — correctif de la liste d'attente : +1 réservés aux administrateurs](changes/waitlist-admin-only-correctif-20261113.md) — Décision produit en vigueur : aucun +1 automatique. Les changements de crédits
 - [Liste d'attente : corrections issues de l'audit du 15 novembre](changes/waitlist-consistency-20261115.md) — Correctif commercial de ATT-01, ATT-02 et ATT-03 du rapport
 
+## equipe
+
+- [Équipe d'agents](equipe/README.md) — Agents : chef-de-projet, developpeur, testeur, conseiller (voir .claude/agents/).
+
 ## legal
 
 - [Textes légaux et conformité](legal/README.md) — Mis à jour le 12/11/2026. Le dossier complet destiné à Samih (risques,
