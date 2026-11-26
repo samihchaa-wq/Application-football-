@@ -332,7 +332,6 @@ select is(
         -- Singleton global non lie a un club : identique a l activation moteur.
         'private.waitlist_auto_activation',
         'private.platform_operators',
-        'private.client_incident_log_unassigned',
         'private.email_confirmations',
         'private.email_attempts',
         -- Coordonnées de l'éditeur et compteur de numéros de facture :
