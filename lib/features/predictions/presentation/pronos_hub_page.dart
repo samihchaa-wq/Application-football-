@@ -82,11 +82,14 @@ class _PronosHubPageState extends ConsumerState<PronosHubPage> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: PfAppBar(
-        title: Text(switch (_category) {
-          _PronosCategory.matches => '',
-          _PronosCategory.general => 'Classements',
-        }),
-        actions: pfHomeActions(context, labeled: true),
+        title: switch (_category) {
+          _PronosCategory.matches => const SizedBox.shrink(),
+          _PronosCategory.general => const Text('Classements'),
+        },
+        actions: pfHomeActions(
+          context,
+          labeled: _category == _PronosCategory.matches,
+        ),
       ),
       body: Material(
         type: MaterialType.transparency,
