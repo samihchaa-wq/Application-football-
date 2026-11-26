@@ -1,0 +1,20 @@
+# Recherche de mots de passe et de clés oubliés dans le code (gitleaks).
+# Règles par défaut de gitleaks, plus les fausses alertes relues à la main.
+# Ajouter une exception ici seulement après avoir vérifié que la valeur n'est
+# pas un secret.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Exemples factices dans les fiches de compétences de Claude (documentation)"
+paths = ['''^\.claude/skills/''']
+
+[[allowlists]]
+description = "Clé publique Supabase (sb_publishable_) : faite pour être livrée dans l'appli"
+regexTarget = "match"
+regexes = ['''sb_publishable_[A-Za-z0-9_-]+''']
+
+[[allowlists]]
+description = "Empreinte SHA-256 d'un jeton (pas le jeton), dans une fonction supprimée depuis"
+paths = ['''^supabase/functions/sync-as-grinta/index\.ts$''']
