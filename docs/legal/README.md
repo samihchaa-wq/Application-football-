@@ -129,5 +129,12 @@ annoncent quelque chose de faux :
   ajouté à la politique de confidentialité **et** à l'accord sur les données
   (les clubs doivent être prévenus 30 jours avant).
 - Vidéo/photo du stade (`assets/composition/`) et icône
-  `assets/images/icons/assist_boot.png` : origine et licence inconnues, à
-  vérifier ou remplacer avant tout usage commercial.
+  `assets/images/icons/assist_boot.png` : créées par l'éditeur avec Claude
+  Code (abonnement payant), déclaré le 26/11/2026 ; droits considérés comme
+  appartenant à l'éditeur. Reste à retirer l'inscription « AS Grinta »
+  visible dans la vidéo (issue #71).
+- Polices : si un caractère manque (emoji…), le navigateur peut charger une
+  police chez Google (`fonts.gstatic.com`, autorisé dans `web/index.html`) :
+  l'adresse IP du visiteur lui est alors transmise. À tester ; sinon citer
+  Google dans la politique de confidentialité (changer la version dans les
+  trois fichiers).
