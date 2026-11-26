@@ -14,6 +14,9 @@ class AccountLocalData {
     'calendar_matches_v',
     'calendar_history_all_v',
     'club_events_v',
+    // Nom et logo du club (voir ClubIdentityCache) : liés au compte, mais
+    // lisibles dans le navigateur par la personne suivante.
+    'club_identity_v',
   ];
 
   static Future<void> clear() async {

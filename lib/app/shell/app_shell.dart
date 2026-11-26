@@ -369,6 +369,10 @@ class ShellNavButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(18);
+    // Texte agrandi (réglage du téléphone) : l'icône laisse sa place au
+    // libellé, qui sinon était coupé (« Statisti… » à 130 %).
+    final showIcon =
+        icon != null && MediaQuery.textScalerOf(context).scale(17) <= 17 * 1.25;
     return Semantics(
       button: true,
       selected: selected,
@@ -398,13 +402,17 @@ class ShellNavButton extends StatelessWidget {
           child: InkWell(
             borderRadius: radius,
             onTap: onTap,
-            child: SizedBox(
-              height: 52,
-              child: Center(
+            // Hauteur minimale, pas figée : le bouton grandit avec le texte
+            // au lieu de le couper.
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 52),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    if (icon != null) ...[
+                    if (showIcon) ...[
                       Icon(
                         icon,
                         size: 22,
