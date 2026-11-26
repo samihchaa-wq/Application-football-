@@ -32,3 +32,9 @@ Passages planifiés : EN PAUSE pendant la revue.
 - Base : lecture seule (SELECT) sur la vraie base. Même garde-fou et même risque que le testeur (écriture non bloquée techniquement). Jamais de données personnelles réelles dans les rapports.
 - Alerte : rapport, notification si grave (fuite de données, droits trop larges, secret exposé).
 - Fréquence : 1 passage par jour, un sujet par passage.
+
+## Base de données — validé
+- Périmètre : lenteurs et requêtes coûteuses, structure et cohérence des tables, migrations (91 existantes), sauvegardes et fiabilité.
+- Accès : lecture seule (SELECT) sur la vraie base, même garde-fou que testeur et sécurité.
+- Action : il écrit la migration dans une PR avec son risque expliqué, sans jamais l'appliquer. Application = décision de la personne qui pilote.
+- Fréquence : 1 passage par jour, un sujet par passage.
