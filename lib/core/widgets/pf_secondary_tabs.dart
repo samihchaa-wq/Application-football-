@@ -90,7 +90,7 @@ class _Pill<T> extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14,
                   height: 1,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  fontWeight: FontWeight.w400,
                   color: color,
                 ),
                 child: Row(
