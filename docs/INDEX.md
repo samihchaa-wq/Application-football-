@@ -115,7 +115,8 @@ Régénérer après ajout de notes : `python3 tool/docs_index.py`.
 
 ## equipe
 
-- [Équipe d'agents](equipe/README.md) — Agents : chef-de-projet, developpeur, testeur, conseiller (voir .claude/agents/).
+- [Équipe d'agents](equipe/README.md) — Agents (.claude/agents/) : chef-de-projet, developpeur, testeur, conseiller, designer, securite,…
+- [Règles communes de l'équipe (à lire à chaque passage)](equipe/REGLES.md) — 1. Petit ajustement (texte, marge, couleur, bug évident, test manquant) : tu le fais, sur ta branche…
 
 ## legal
 
