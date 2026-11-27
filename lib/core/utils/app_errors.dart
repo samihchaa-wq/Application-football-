@@ -237,5 +237,9 @@ String _fromMessage(String raw) {
   // Message déjà rédigé en français par l'application : on le garde tel quel.
   if (knownFrench.any(lower.contains)) return message;
 
+  // Les messages du serveur (Live, compte rendu…) sont rédigés en français
+  // simple : on les montre tels quels plutôt qu'un message générique.
+  if (looksFrench(message)) return message;
+
   return 'Une erreur est survenue. Réessaie dans un instant.';
 }

@@ -115,7 +115,31 @@ void main() {
       expect(_lastRepository.claimCount, 0);
     });
 
-    testWidgets('le coach arrive directement en pilotage, sans la barre', (
+    testWidgets('ouvrir le Live n’envoie rien : la place se prend sur appui', (
+      tester,
+    ) async {
+      final container =
+          await _pump(tester, state: 'not_started', tapPilot: false);
+      LivePilot pilot() => container.read(livePilotProvider('match-1'));
+
+      expect(_lastRepository.claimCount, 0);
+      expect(pilot(), LivePilot.nobody);
+      expect(find.text('Piloter le Live'), findsOneWidget);
+
+      // Un retour au premier plan sans appui préalable n'envoie rien non plus.
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await _settle(tester);
+      expect(_lastRepository.claimCount, 0);
+
+      await tester.tap(find.text('Piloter le Live'));
+      await _settle(tester);
+      expect(_lastRepository.claimCount, 1);
+      expect(pilot(), LivePilot.me);
+      expect(find.text('Démarrer le match'), findsOneWidget);
+    });
+
+    testWidgets('le coach pilote après un appui, sans la barre', (
       tester,
     ) async {
       final container = await _pump(tester, state: 'running');
@@ -233,6 +257,7 @@ Future<ProviderContainer> _pump(
   bool coach = true,
   bool admin = false,
   bool otherPilot = false,
+  bool tapPilot = true,
 }) async {
   tester.view
     ..physicalSize = const Size(1170, 2532)
@@ -270,6 +295,13 @@ Future<ProviderContainer> _pump(
     tester.element(find.byType(MatchLiveTab)),
   );
   await _settle(tester);
+  // La place de pilote ne se prend plus toute seule : le coach appuie sur
+  // « Piloter le Live ».
+  final pilotButton = find.text('Piloter le Live');
+  if (tapPilot && pilotButton.evaluate().isNotEmpty) {
+    await tester.tap(pilotButton);
+    await _settle(tester);
+  }
   return container;
 }
 

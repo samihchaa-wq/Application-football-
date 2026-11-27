@@ -175,7 +175,7 @@ class _MatchLivePreKickoffPageState
         if (widget.canEdit) ...[
           const SizedBox(height: 20),
           FilledButton.icon(
-            onPressed: _busy ? null : _confirmAndStart,
+            onPressed: _busy ? null : () => _confirmAndStart(lineup),
             icon: const Icon(Icons.play_circle_fill_outlined),
             label: const Text('Démarrer le match'),
           ),
@@ -369,7 +369,7 @@ class _MatchLivePreKickoffPageState
     );
   }
 
-  Future<void> _confirmAndStart() async {
+  Future<void> _confirmAndStart(MatchComposition lineup) async {
     final minutes = int.tryParse(_durationController.text.trim());
     if (minutes == null || minutes < 1) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -377,10 +377,26 @@ class _MatchLivePreKickoffPageState
       );
       return;
     }
+    // Terrain vide : le Live démarrait sans titulaire, puis le compte rendu
+    // proposait « 0 titulaire ». Le coach doit le confirmer clairement.
+    final noStarter = lineup.entriesFor(MatchCompositionZone.field).isEmpty;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Démarrer le match\u00A0?'),
+        title: Text(
+          noStarter
+              ? 'Aucun titulaire sur le terrain'
+              : 'Démarrer le match\u00A0?',
+        ),
+        content: noStarter
+            ? const Text(
+                'Le terrain est vide : le match démarrera sans titulaire et '
+                'le compte rendu comptera 0 titulaire. Place tes joueurs sur '
+                'le terrain avant de démarrer, ou confirme pour démarrer quand '
+                'même.',
+                key: ValueKey('live-start-no-starter-warning'),
+              )
+            : null,
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -388,7 +404,7 @@ class _MatchLivePreKickoffPageState
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Démarrer'),
+            child: Text(noStarter ? 'Démarrer sans titulaire' : 'Démarrer'),
           ),
         ],
       ),

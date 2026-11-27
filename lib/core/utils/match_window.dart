@@ -67,6 +67,26 @@ DateTime matchEffectiveFeaturesOpenAt(
 DateTime matchLiveOpensAt(DateTime kickoffAt) =>
     kickoffAt.toUtc().subtract(kMatchLiveOpensBeforeKickoff);
 
+/// « Le Live ouvre à 14:45 », ou « Le Live ouvre le 30/11 à 14:45 » si ce
+/// n'est pas aujourd'hui. Heure de Paris, quel que soit le fuseau du
+/// téléphone.
+String matchLiveOpensLabel(DateTime opensAt, {DateTime? now}) {
+  final open = _toParisWallClock(opensAt);
+  final today = _toParisWallClock(now ?? DateTime.now());
+  String two(int value) => value.toString().padLeft(2, '0');
+  final time = '${two(open.hour)}:${two(open.minute)}';
+  final sameDay = open.year == today.year &&
+      open.month == today.month &&
+      open.day == today.day;
+  if (sameDay) return 'Le Live ouvre à $time.';
+  return 'Le Live ouvre le ${two(open.day)}/${two(open.month)} à $time.';
+}
+
+DateTime _toParisWallClock(DateTime instant) {
+  final utc = instant.toUtc();
+  return utc.add(_parisOffsetAt(utc));
+}
+
 DateTime matchPredictionClosesAt(DateTime kickoffAt) =>
     kickoffAt.toUtc().subtract(kMatchPredictionClosesBeforeKickoff);
 

@@ -324,7 +324,7 @@ select throws_ok(
     )::text)
   ),
   '22023',
-  'The score must match the recorded goals exactly',
+  'Le score doit correspondre exactement aux buts saisis.',
   'un score supérieur au nombre de buts est refusé'
 );
 
@@ -341,7 +341,7 @@ select throws_ok(
     )::text)
   ),
   '22023',
-  'A goal minute must be between 0 and 90',
+  'La minute d’un but doit être comprise entre 0 et 90.',
   'une minute au-delà de la 90ᵉ est refusée'
 );
 
@@ -359,7 +359,7 @@ select throws_ok(
     )::text)
   ),
   '22023',
-  'An assist requires a different scorer',
+  'Le passeur doit être différent du buteur.',
   'un joueur ne peut pas être son propre passeur'
 );
 
@@ -376,7 +376,7 @@ select throws_ok(
     )::text)
   ),
   '22023',
-  'An opponent goal cannot be credited to an AS Grinta player',
+  'Un but adverse ne peut pas être attribué à un joueur de ton équipe.',
   'un but adverse ne crédite jamais un joueur d’AS Grinta'
 );
 
@@ -393,7 +393,7 @@ select throws_ok(
     )::text)
   ),
   '22023',
-  'An own goal cannot be credited to a player',
+  'Un but contre son camp ne peut pas être attribué à un joueur.',
   'un CSC ne crédite jamais un buteur'
 );
 
@@ -411,7 +411,7 @@ select throws_ok(
     )::text)
   ),
   '22023',
-  'A scorer or assist must be part of the match squad',
+  'Le buteur ou le passeur doit faire partie de l’effectif du match.',
   'un buteur hors de l’effectif du compte rendu est refusé'
 );
 
@@ -422,7 +422,7 @@ select throws_ok(
     quote_literal(pg_temp.report_lineup(12,2)::text)
   ),
   '22023',
-  'A match cannot have more than eleven actual starters',
+  'Un match ne peut pas avoir plus de 11 titulaires.',
   'un douzième titulaire est refusé'
 );
 
@@ -674,7 +674,7 @@ select throws_ok(
     )::text)
   ),
   '22023',
-  'Only upcoming or finished matches can be validated',
+  'Seul un match à venir ou terminé peut être validé.',
   'un match archivé refuse toute nouvelle validation'
 );
 
