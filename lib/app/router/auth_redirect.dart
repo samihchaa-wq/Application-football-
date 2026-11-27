@@ -162,7 +162,10 @@ String? resolveAuthRedirect({
         return _sportsManagementDisabledFallback(destination);
       }
     }
-    return redirect;
+    // La destination mémorisée passe le même contrôle de rôle qu'une adresse
+    // tapée : sinon, un joueur qui ouvrait /admin/waitlist à froid y
+    // arrivait après l'écran de chargement (puis erreur 403 du serveur).
+    return _roleRedirect(authState, destination) ?? redirect;
   }
 
   if (location == '/' || location == '/home' || location == '/accueil') {
@@ -183,6 +186,14 @@ String? resolveAuthRedirect({
     return _sportsManagementDisabledFallback(uri);
   }
 
+  return _roleRedirect(authState, uri);
+}
+
+/// Pages réservées : un membre qui n'a pas le rôle requis (adresse tapée à la
+/// main, favori, lien partagé) repart vers le calendrier au lieu d'ouvrir un
+/// écran qui échouerait ensuite côté serveur.
+String? _roleRedirect(AuthState authState, Uri uri) {
+  final location = uri.path;
   final role = authState.profile?.role;
   final isAdmin = role?.isAdmin == true;
   final segments =

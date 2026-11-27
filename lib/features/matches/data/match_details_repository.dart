@@ -143,6 +143,26 @@ class MatchDetailsData {
   }
 }
 
+/// Le match demandé n'existe pas (supprimé, mauvais lien, autre club).
+///
+/// Distincte d'une panne : la fiche dit « Ce match n'existe plus » et
+/// propose de revenir au calendrier, sans « Réessayer » qui ne changerait rien.
+class MatchNotFoundException implements Exception {
+  const MatchNotFoundException();
+
+  String get message => 'Ce match n’existe plus.';
+
+  @override
+  String toString() => message;
+}
+
+/// Erreur « match introuvable » renvoyée par le serveur : code `PT404`
+/// (réponse HTTP 404) depuis la migration 20261209023100, `P0002` avant ;
+/// `22P02` quand l'identifiant du lien n'a même pas la forme d'un match.
+bool isMatchNotFoundError(Object error) =>
+    error is PostgrestException &&
+    const {'PT404', 'P0002', '22P02'}.contains(error.code);
+
 class MatchDetailsRepository {
   MatchDetailsRepository(this._client);
 
@@ -165,11 +185,16 @@ class MatchDetailsRepository {
         'match_prediction_participant_count',
         params: {'p_match_id': matchId},
       ),
-    ]);
+    ]).catchError(
+      // Un match inexistant fait aussi échouer le compteur : Future.wait
+      // remontait cette erreur technique (500) au lieu de « introuvable ».
+      (Object _) => throw const MatchNotFoundException(),
+      test: isMatchNotFoundError,
+    );
     final match = firstWave[0] as Map<String, dynamic>?;
     final countResult = firstWave[1];
     if (match == null) {
-      throw StateError('Ce match est introuvable ou a été supprimé.');
+      throw const MatchNotFoundException();
     }
     // Un match entre nous n'a pas d'adversaire réel : ni opponent_id, ni
     // ligne opponents jointe.

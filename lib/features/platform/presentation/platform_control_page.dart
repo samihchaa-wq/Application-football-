@@ -103,6 +103,14 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
   @override
   Widget build(BuildContext context) {
     final auth = ref.watch(authControllerProvider);
+    final snapshotAsync = ref.watch(platformSnapshotProvider);
+    // Les rubriques n'apparaissent qu'une fois l'accès confirmé par le
+    // serveur : un compte refusé ne voyait pas les données, mais gardait la
+    // barre « À faire / Clubs / Caisse / Réglages » sous le message de refus.
+    final accessGranted = auth.hasSession &&
+        !auth.isLoading &&
+        snapshotAsync.hasValue &&
+        snapshotAsync.error is! PlatformAccessDenied;
     final scheme = ColorScheme.fromSeed(
       seedColor: AppTheme.defaultPrimary,
       brightness: Brightness.dark,
@@ -154,7 +162,7 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                 ),
               ],
             ),
-            bottomNavigationBar: wide
+            bottomNavigationBar: wide || !accessGranted
                 ? null
                 : NavigationBar(
                     selectedIndex: _section,
@@ -169,7 +177,7 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                   ),
             body: Row(
               children: [
-                if (wide)
+                if (wide && accessGranted)
                   NavigationRail(
                     extended: true,
                     selectedIndex: _section,
@@ -185,17 +193,17 @@ class _PlatformControlPageState extends ConsumerState<PlatformControlPage>
                 Expanded(
                   child: _obscured || !auth.hasSession || auth.isLoading
                       ? const Center(child: Text('Vérification de l’accès…'))
-                      : ref.watch(platformSnapshotProvider).when(
-                            // Le rafraîchissement automatique (chaque minute,
-                            // retour d'onglet) garde la page affichée.
-                            skipLoadingOnRefresh: true,
-                            skipLoadingOnReload: true,
-                            loading: () => const Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                            error: (error, _) => _failure(error),
-                            data: (snapshot) => _content(snapshot),
+                      : snapshotAsync.when(
+                          // Le rafraîchissement automatique (chaque minute,
+                          // retour d'onglet) garde la page affichée.
+                          skipLoadingOnRefresh: true,
+                          skipLoadingOnReload: true,
+                          loading: () => const Center(
+                            child: CircularProgressIndicator(),
                           ),
+                          error: (error, _) => _failure(error),
+                          data: (snapshot) => _content(snapshot),
+                        ),
                 ),
               ],
             ),
