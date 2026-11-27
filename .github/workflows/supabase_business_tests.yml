@@ -67,7 +67,7 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Test push delivery, notification history, request security, password policy and weather geocoding
+      - name: Test push delivery, notification history, request security, password policy, weather geocoding and AS Grinta copy rules
         shell: bash
         run: |
           deno test \
@@ -86,7 +86,8 @@ jobs:
             supabase/functions/stripe-webhook/handler_test.ts \
             supabase/functions/stripe-refund/handler_test.ts \
             supabase/functions/account-email/subscription_reminder_test.ts \
-            supabase/functions/account-email/inactive_accounts_test.ts
+            supabase/functions/account-email/inactive_accounts_test.ts \
+            supabase/functions/sync-as-grinta/logic_test.ts
 
       - name: Start isolated Supabase database from canonical history
         shell: bash
