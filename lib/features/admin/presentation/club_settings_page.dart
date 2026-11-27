@@ -9,8 +9,9 @@ import 'package:petit_filet/features/club/presentation/club_rules_sync.dart';
 import 'package:petit_filet/features/feature_flags/presentation/feature_flags_controller.dart';
 import 'package:petit_filet/features/season_wrapped/domain/wrapped_stat_selection.dart';
 import 'package:flutter/material.dart';
+import 'package:petit_filet/core/widgets/word_safe_text.dart';
+import 'package:petit_filet/core/widgets/copy_link_or_show.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -331,10 +332,12 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
   Future<void> _copyInviteLink() async {
     final club = _club;
     if (club == null) return;
-    await Clipboard.setData(ClipboardData(text: club.inviteLink));
-    if (mounted) {
-      _showMessage('Lien d’inscription copié — partage-le à tes joueurs.');
-    }
+    await copyLinkOrShow(
+      context,
+      link: club.inviteLink,
+      title: 'Lien d’inscription',
+      copiedMessage: 'Lien d’inscription copié — partage-le à tes joueurs.',
+    );
   }
 
   Future<void> _renewInviteCode() async {
@@ -445,9 +448,38 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
         onPressed: () => _showInfo(title, description),
       );
 
+  /// Réglage chiffré avec boutons − / +. Sur un écran étroit, les boutons
+  /// passent sous le libellé : à côté, ils ne lui laissaient qu'une
+  /// soixantaine de pixels et les mots se coupaient en deux
+  /// (« Convoqué / s par défaut »).
+  Widget _stepperTile({
+    required Key key,
+    required Widget title,
+    required Widget stepper,
+  }) =>
+      LayoutBuilder(
+        key: key,
+        builder: (context, constraints) {
+          if (constraints.maxWidth >= _stepperInlineMinWidth) {
+            return ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: title,
+              trailing: stepper,
+            );
+          }
+          return ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: title,
+            subtitle: Align(alignment: Alignment.centerRight, child: stepper),
+          );
+        },
+      );
+
+  static const double _stepperInlineMinWidth = 420;
+
   Widget _labelWithInfo(String key, String label, String description) => Row(
         children: [
-          Expanded(child: Text(label)),
+          Expanded(child: WordSafeText(label)),
           _infoButton(key, label, description),
         ],
       );
@@ -838,11 +870,10 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           max: rule.max,
         );
     final locked = _ruleLocked(rule);
-    return ListTile(
+    return _stepperTile(
       key: ValueKey('club-rule-${rule.key}'),
-      contentPadding: EdgeInsets.zero,
       title: _labelWithInfo('rule-${rule.key}', rule.label, _ruleInfo(rule)),
-      trailing: Row(
+      stepper: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
@@ -1164,15 +1195,14 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
         ),
         _section('squad', 'Effectif et convocations', [
           const SizedBox(height: 8),
-          ListTile(
+          _stepperTile(
             key: const Key('club-usual-squad-size'),
-            contentPadding: EdgeInsets.zero,
             title: _labelWithInfo(
               'quota',
               'Convoqués par défaut',
               'Nombre prévu à la création d’un match (1 à 30). Peut être modifié par rencontre.',
             ),
-            trailing: Row(
+            stepper: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(

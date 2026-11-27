@@ -625,12 +625,15 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  Expanded(
-                    child: FilledButton(
-                      style: PfButtonStyles.danger,
-                      onPressed: deleteAccount,
-                      child: const Text('Supprimer'),
+                  // Action rare et définitive : discrète, à côté d'Archiver
+                  // qui reste le choix conseillé. Elle demande confirmation.
+                  TextButton(
+                    key: const Key('admin-member-delete'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.error,
                     ),
+                    onPressed: deleteAccount,
+                    child: const Text('Supprimer'),
                   ),
                 ],
               ),

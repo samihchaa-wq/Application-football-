@@ -214,6 +214,21 @@ void main() {
     expect(repository.joined, isNull);
   });
 
+  testWidgets('sans e-mail, le refus s’affiche près du bouton et du champ',
+      (tester) async {
+    await pumpPage(tester, code: 'ABCDEFGH', size: const Size(320, 2600));
+    await fillIdentity(tester, email: '');
+    final button = find.widgetWithText(FilledButton, 'Créer mon compte');
+    await tester.ensureVisible(button);
+    await tester.pumpAndSettle();
+    await tester.tap(button);
+    await tester.pump();
+    expect(find.byKey(const Key('register-form-error')), findsOneWidget);
+    expect(find.text('Adresse e-mail obligatoire.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    expect(repository.joined, isNull);
+  });
+
   testWidgets('l’adresse e-mail est transmise ou refusée', (tester) async {
     await pumpPage(tester, code: 'ABCDEFGH');
     await fillIdentity(tester);

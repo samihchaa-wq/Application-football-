@@ -71,6 +71,56 @@ void main() {
       );
     }
   });
+
+  test('un joueur qui ouvre la compo d’admin voit la fiche joueur', () {
+    expect(
+      resolveAuthRedirect(
+        authState: _playerState,
+        uri: Uri.parse('/matches/match-1/composition?step=composition'),
+        matchedLocation: '/matches/match-1/composition',
+        sportsManagementEnabled: true,
+      ),
+      '/matches/match-1/lineup?section=composition',
+    );
+    expect(
+      resolveAuthRedirect(
+        authState: _playerState,
+        uri: Uri.parse('/matches/match-1/composition?step=live'),
+        matchedLocation: '/matches/match-1/composition',
+        sportsManagementEnabled: true,
+      ),
+      '/matches/match-1/lineup?section=live',
+    );
+  });
+
+  test('après connexion, la destination d’admin est aussi refusée au joueur',
+      () {
+    const target = '/matches/match-1/composition?step=composition';
+    final uri = Uri.parse(
+      '/auth/loading?redirect=${Uri.encodeComponent(target)}',
+    );
+    expect(
+      resolveAuthRedirect(
+        authState: _playerState,
+        uri: uri,
+        matchedLocation: '/auth/loading',
+        sportsManagementEnabled: true,
+      ),
+      '/matches/match-1/lineup?section=composition',
+    );
+    final adminUri = Uri.parse(
+      '/auth/sign-in?redirect=${Uri.encodeComponent('/admin/composition')}',
+    );
+    expect(
+      resolveAuthRedirect(
+        authState: _playerState,
+        uri: adminUri,
+        matchedLocation: '/auth/sign-in',
+        sportsManagementEnabled: true,
+      ),
+      '/matches',
+    );
+  });
 }
 
 const _adminState = AuthState(

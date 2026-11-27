@@ -19,6 +19,17 @@ Color? parseBadgeColor(String? hex) {
   return parsed == null ? null : Color(parsed);
 }
 
+/// Emoji tel qu'il s'affiche sur un badge.
+///
+/// L'icône calendrier (📅, 📆) est dessinée avec une date en anglais
+/// (« JULY 17 ») par la plupart des téléphones : elle est remplacée par le
+/// calendrier à spirale, sans texte. Les badges déjà créés gardent leur
+/// emoji en base ; seul l'affichage change.
+String displayBadgeEmoji(String emoji) => switch (emoji.trim()) {
+      '📅' || '📆' => '🗓️',
+      _ => emoji,
+    };
+
 String? baremeLabelFor(String? metric, int? value) {
   if (metric == null || value == null) return null;
   if (metric == 'max_match_goals' ||
@@ -74,7 +85,10 @@ class BadgeEmblem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final base = parseBadgeColor(color) ?? kDefaultBadgeColor;
-    final fallback = Text(emoji, style: TextStyle(fontSize: size * 0.49));
+    final fallback = Text(
+      displayBadgeEmoji(emoji),
+      style: TextStyle(fontSize: size * 0.49),
+    );
     final sourceUrl = imageUrl?.trim();
     final localBytes = imageBytes;
     final decodedWidth = (size * MediaQuery.devicePixelRatioOf(context))

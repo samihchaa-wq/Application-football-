@@ -64,6 +64,16 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (authState.notice case final notice?
+              when error == null || error.isEmpty) ...[
+            PfStatusBanner(
+              key: const Key('sign-in-notice'),
+              message: notice,
+              tone: PfStatusTone.success,
+              compact: true,
+            ),
+            const SizedBox(height: 16),
+          ],
           if (error != null && error.isNotEmpty) ...[
             PfStatusBanner(
               title: signInErrorTitle(error),

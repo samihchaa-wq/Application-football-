@@ -15,6 +15,7 @@ import 'package:petit_filet/features/badges/presentation/badge_emblem.dart';
 import 'package:petit_filet/features/badges/presentation/badge_emblem_body.dart';
 import 'package:petit_filet/features/badges/presentation/locked_badge_emblem.dart';
 import 'package:flutter/material.dart';
+import 'package:petit_filet/core/widgets/word_safe_text.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -455,7 +456,9 @@ class _BadgeTile extends ConsumerWidget {
           ),
           if (showName) ...[
             const SizedBox(height: 7),
-            Text(
+            // Petit écran : la police rapetisse plutôt que de couper un mot
+            // en deux (« Compétite / ur »).
+            WordSafeText(
               badge.def.name,
               textAlign: TextAlign.center,
               maxLines: 2,

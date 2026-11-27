@@ -24,8 +24,11 @@ void main() {
     AppTheme.resetClubColors();
   });
 
-  Future<void> pumpPage(WidgetTester tester) async {
-    tester.view.physicalSize = const Size(900, 3000);
+  Future<void> pumpPage(
+    WidgetTester tester, {
+    Size size = const Size(900, 3000),
+  }) async {
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
@@ -228,6 +231,37 @@ void main() {
     await tester.pumpAndSettle();
     expect(repository.homeAddress, isNull);
     expect(find.text('Adresse du terrain effacée.'), findsOneWidget);
+  });
+
+  testWidgets('à 320 px, « Convoqués par défaut » n’est pas coupé en deux',
+      (tester) async {
+    await pumpPage(tester, size: const Size(320, 3000));
+    await openSection(tester, 'squad');
+    final label = find.text('Convoqués par défaut');
+    await tester.ensureVisible(label);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    final width = tester.getSize(label).width;
+    final text = tester.widget<Text>(label);
+    for (final word in ['Convoqués', 'défaut']) {
+      final painter = TextPainter(
+        text: TextSpan(
+          text: word,
+          style: DefaultTextStyle.of(tester.element(label))
+              .style
+              .merge(text.style),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      expect(painter.width, lessThanOrEqualTo(width + 0.5), reason: word);
+      painter.dispose();
+    }
+    // Les boutons − / + passent sous le libellé.
+    final plus = find.byKey(const Key('club-usual-squad-size-plus'));
+    expect(
+      tester.getTopLeft(plus).dy,
+      greaterThan(tester.getBottomLeft(label).dy - 1),
+    );
   });
 
   testWidgets('le quota habituel est réglable de 1 à 30', (tester) async {

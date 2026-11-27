@@ -43,6 +43,15 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
   final _confirmController = TextEditingController();
   bool _obscurePassword = true;
   bool _submitting = false;
+
+  /// Dernier refus du formulaire, répété juste au-dessus du bouton : le
+  /// message éphémère du bas de l'écran passait inaperçu et le bouton
+  /// semblait ne rien faire.
+  String? _formError;
+
+  /// Erreur propre au champ e-mail (vide ou mal écrit).
+  String? _emailError;
+  final _emailFocus = FocusNode();
   bool _acceptedTerms = false;
   bool _acceptedClubContract = false;
   AgeConfirmation? _ageConfirmation;
@@ -66,17 +75,22 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
+    _emailFocus.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
     super.dispose();
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    if (!mounted) return;
+    setState(() => _formError = message);
   }
 
   Future<void> _submit() async {
+    setState(() {
+      _formError = null;
+      _emailError = null;
+    });
     final firstName = _firstNameController.text.trim();
     final lastName = _lastNameController.text.trim();
     final password = _passwordController.text;
@@ -117,6 +131,8 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
     }
     final email = _emailController.text.trim();
     if (email.isEmpty) {
+      setState(() => _emailError = 'Adresse e-mail obligatoire.');
+      _emailFocus.requestFocus();
       _showError(
         _mode == RegisterMode.create
             ? 'Pour créer un club, indique ton adresse e-mail : c’est par '
@@ -127,6 +143,8 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
       return;
     }
     if (!looksLikeEmail(email)) {
+      setState(() => _emailError = 'Adresse e-mail non valide.');
+      _emailFocus.requestFocus();
       _showError('Cette adresse e-mail n’est pas valide.');
       return;
     }
@@ -319,6 +337,10 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
           TextField(
             key: const Key('register-email'),
             controller: _emailController,
+            focusNode: _emailFocus,
+            onChanged: (_) {
+              if (_emailError != null) setState(() => _emailError = null);
+            },
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
             autofillHints: const [AutofillHints.email],
@@ -330,6 +352,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                   : 'Sert à retrouver ton compte si tu perds ton mot '
                       'de passe. Un lien de confirmation te sera envoyé.',
               helperMaxLines: 4,
+              errorText: _emailError,
               prefixIcon: const Icon(Icons.mail_outlined),
             ),
           ),
@@ -395,6 +418,17 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                 setState(() => _acceptedClubContract = value),
           ),
           const SizedBox(height: 24),
+          if (_formError case final formError?) ...[
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                formError,
+                key: const Key('register-form-error'),
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           FilledButton.icon(
             onPressed: _submitting ? null : _submit,
             icon: _submitting
