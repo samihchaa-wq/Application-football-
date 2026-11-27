@@ -120,7 +120,8 @@ Future<void> _resetPassword(
     'Réinitialiser le mot de passe\u00A0?',
     'Un lien à usage unique sera généré pour ${profile.displayName}.',
   );
-  if (!confirmed) return;
+  if (!confirmed || !context.mounted) return;
+  if (!await confirmTwoFactorForSensitiveAction(context, ref)) return;
 
   try {
     final link = await repository.resetAccountPassword(profile.id);

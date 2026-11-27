@@ -317,7 +317,8 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
         '${profile.displayName} sera supprimé définitivement. '
             'Pour bloquer uniquement la connexion, utilise « Archiver ».',
       );
-      if (!confirmed) return;
+      if (!confirmed || !context.mounted) return;
+      if (!await confirmTwoFactorForSensitiveAction(context, ref)) return;
       await run(
         () => repository.deleteAccount(profile.id),
         success: 'Compte supprimé.',
@@ -694,7 +695,13 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
                           'Refuser et supprimer ce compte\u00A0?',
                           '${profile.displayName} sera supprimé définitivement.',
                         );
-                        if (!confirmed) return;
+                        if (!confirmed || !context.mounted) return;
+                        if (!await confirmTwoFactorForSensitiveAction(
+                          context,
+                          ref,
+                        )) {
+                          return;
+                        }
                         await run(
                           () => repository.deleteAccount(profile.id),
                           success: 'Compte supprimé.',

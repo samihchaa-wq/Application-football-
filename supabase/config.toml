@@ -49,3 +49,12 @@ verify_jwt = true
 enabled = false
 client_id = "env(FACEBOOK_APP_ID)"
 secret = "env(FACEBOOK_APP_SECRET)"
+# Double authentification par code à 6 chiffres (TOTP), proposée aux
+# administrateurs (audit du 26/11/2026, point 39). Sur la base en ligne :
+# Authentication > Multi-Factor dans le tableau de bord Supabase (TOTP est
+# ouvert par défaut).
+[auth.mfa]
+max_enrolled_factors = 10
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
