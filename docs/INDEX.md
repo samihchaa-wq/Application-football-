@@ -42,6 +42,7 @@ Régénérer après ajout de notes : `python3 tool/docs_index.py`.
 - [Mission 08 — Kit d'exécution des séances pilotes (sans données réelles)](PILOTE_FICHES_EXECUTION.md) — Aucun statut ci-dessus ne permet d'affirmer que le lancement est autorisé. Les PR #24, #25, #26, #29 et…
 - [Plan d'audit complet — 25/11/2026](PLAN_AUDIT_COMPLET_20261125.md) — Statut : plan validé par QCM, audit pas commencé.
 - [Plan d'audit UX/UI complet (4 axes)](PLAN_AUDIT_UX_COMPLET.md) — Statut : plan à valider. Aucun code modifié.
+- [Plan de découpage des modules (27/11/2026)](PLAN_DECOUPAGE_MODULES_20261127.md) — Point 37 de l'audit du 26/11. Mesuré sur lib/ au commit de cette note, en
 - [Petit Filet — Plan directeur 2027–2028 et prompts de missions](PLAN_DIRECTEUR_2027_2028.md) — Document de pilotage proposé par le fil 00 le 15 novembre 2026, actualisé le 16 novembre 2026 (Europe/Paris).
 - [PETIT FILET — PLAN DIRECTEUR DE LANCEMENT 2026–2027](PLAN_DIRECTEUR_LANCEMENT_STORES_2026_2027.md) — Édition : 14 novembre 2026 — document de pilotage proposé, non encore approuvé.
 - [Prompt de relais — suite du chantier UX/UI de Petit Filet](PROMPT_SUITE_UX_UI.md) — À coller tel quel au début d'une nouvelle session d'assistant (Claude Code ou
