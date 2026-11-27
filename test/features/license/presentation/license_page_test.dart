@@ -31,8 +31,13 @@ class _MemoryLicenseRepository implements LicenseRepository {
   final calls = <String>[];
   Object? failure;
 
+  final expenseSeasons = <String>[];
+
   @override
-  Future<List<LicenseExpense>> fetchExpenses() async => List.of(expenses);
+  Future<List<LicenseExpense>> fetchExpenses(String seasonId) async {
+    expenseSeasons.add(seasonId);
+    return List.of(expenses);
+  }
 
   @override
   Future<SeasonLicenses> fetchSeason(String seasonId) async => SeasonLicenses(
@@ -63,8 +68,8 @@ class _MemoryLicenseRepository implements LicenseRepository {
   }
 
   @override
-  Future<void> addExpense(String label) async {
-    calls.add('ajout $label');
+  Future<void> addExpense(String seasonId, String label) async {
+    calls.add('ajout $seasonId $label');
     expenses.add(LicenseExpense(id: 'e${expenses.length + 1}', label: label));
   }
 
@@ -104,10 +109,12 @@ Future<_MemoryLicenseRepository> _pump(
 void main() {
   testWidgets('résume les paiements des joueurs actifs seulement',
       (tester) async {
-    await _pump(tester);
+    final repository = await _pump(tester);
 
     expect(find.text('Licences payées : 1 / 2'), findsOneWidget);
     expect(find.text('Survêtement : 1 / 2'), findsOneWidget);
+    expect(repository.expenseSeasons.toSet(), {'season-1'},
+        reason: 'les dépenses lues sont celles de la saison ouverte');
     expect(find.text('Adam Test'), findsOneWidget);
     expect(find.text('Zoé Test'), findsOneWidget);
     expect(find.text('Parti Test'), findsNothing);
@@ -181,7 +188,7 @@ void main() {
     await tester.tap(find.text('Valider'));
     await tester.pumpAndSettle();
 
-    expect(repository.calls, ['ajout Maillot']);
+    expect(repository.calls, ['ajout season-1 Maillot']);
     expect(find.text('Maillot : 0 / 2'), findsOneWidget);
   });
 
