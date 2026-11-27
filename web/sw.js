@@ -9,6 +9,7 @@ const APP_SHELL = [
   'index.html',
   'build_version.js',
   'app_shell.js',
+  'history_swipe.js',
   'petit_filet_logo.webp',
   'flutter_bootstrap.js',
   'manifest.json',
@@ -23,10 +24,68 @@ const APP_SHELL = [
 // d'une version ne peut donc jamais recevoir le programme d'une autre.
 const VERSIONED_MAIN_JS = `main.dart.js?v=${encodeURIComponent(WEB_VERSION)}`;
 
+// Fichiers de démarrage sous l'adresse EXACTE que la page de cette version
+// demande (tool/stamp_web_release.py et web/app_shell.js) : le cache compare
+// l'adresse entière, `?v=` compris. Sans eux, l'appli rouverte sans réseau
+// restait bloquée sur le logo : seule la variante sans `?v=` était gardée.
+// Obligatoires : une version incapable de démarrer hors ligne ne s'installe
+// pas, l'ancienne reste en place et l'installation est retentée plus tard.
+const VERSIONED_BOOT_FILES = WEB_VERSION === 'dev' ? [] : [
+  `build_version.js?v=${WEB_VERSION}`,
+  `app_shell.js?v=${WEB_VERSION}`,
+  `flutter_bootstrap.js?v=${encodeURIComponent(WEB_VERSION)}`,
+];
+
+// Fichiers que la page a réellement chargés pour démarrer (moteur graphique,
+// polices, manifestes d'assets, morceaux de programme…). La page en envoie
+// la liste après son premier affichage (web/app_shell.js) : ils sont gardés
+// pour le prochain démarrage hors ligne. Le navigateur les a déjà dans son
+// cache HTTP, la copie ne retélécharge donc presque rien.
+const BOOT_CACHE_MAX = 200;
+const NEVER_KEEP = /\.(mp4|webm|mov|mp3|m4a|ogg|wav)$/i;
+
+function keepableBootUrl(raw) {
+  let url;
+  try {
+    url = new URL(raw, self.registration.scope);
+  } catch (_) {
+    return null;
+  }
+  if (url.origin !== self.location.origin) return null;
+  if (!url.href.startsWith(self.registration.scope)) return null;
+  const path = url.pathname;
+  if (path.endsWith('/sw.js') || NEVER_KEEP.test(path)) return null;
+  // Vérifications de version : adresses à usage unique.
+  if (url.searchParams.has('version-check') ||
+      url.searchParams.has('notification-check')) {
+    return null;
+  }
+  url.hash = '';
+  return url.href;
+}
+
+async function keepBootFiles(urls) {
+  const cache = await caches.open(CACHE_NAME);
+  const wanted = [...new Set(urls.map(keepableBootUrl).filter(Boolean))]
+    .slice(0, BOOT_CACHE_MAX);
+  await Promise.all(wanted.map(async (href) => {
+    try {
+      if (await cache.match(href)) return;
+      const response = await fetch(href);
+      if (response && response.ok && response.status === 200 &&
+          response.type === 'basic') {
+        await cache.put(href, response);
+      }
+    } catch (_) {
+      // Un fichier manquant ne doit pas empêcher de garder les autres.
+    }
+  }));
+}
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
-      await cache.addAll(APP_SHELL);
+      await cache.addAll([...APP_SHELL, ...VERSIONED_BOOT_FILES]);
       // Préchargement : une nouvelle version découverte pendant que
       // l'application est ouverte télécharge son programme tout de suite, en
       // arrière-plan. L'ouverture suivante n'attend plus ce téléchargement.
@@ -42,6 +101,14 @@ self.addEventListener('install', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
+    return;
+  }
+  // Seule une page de CETTE version remplit le cache de cette version : une
+  // ancienne page y glisserait des fichiers qui ne lui servent plus.
+  if (event.data && event.data.type === 'ASG_KEEP_BOOT_FILES' &&
+      event.data.version === WEB_VERSION &&
+      Array.isArray(event.data.urls)) {
+    event.waitUntil(keepBootFiles(event.data.urls));
   }
 });
 

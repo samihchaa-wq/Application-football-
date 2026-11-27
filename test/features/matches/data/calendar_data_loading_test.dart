@@ -139,6 +139,39 @@ void main() {
       await done;
       expect(emissions, ['FC Ancien', 'FC Nouveau']);
     });
+
+    test('la copie de l’appareil est propre au compte connecté', () async {
+      await CalendarHistoryRepository(client()).fetchAll();
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('calendar_history_all_v2_user-1'), isNotNull);
+      expect(prefs.containsKey('calendar_history_all_v2'), isFalse);
+
+      // Un autre compte sur le même navigateur, serveur injoignable : il ne
+      // voit pas l'historique du premier.
+      await _signInAs('user-2');
+      addTearDown(() => _signInAs('user-1'));
+      server.historicalOpponent = 'FC Autre club';
+      final gate = server.holdNextResponse();
+      final emissions = <String>[];
+      final done = CalendarHistoryRepository(client())
+          .watchAllLocalFirst()
+          .listen((matches) => emissions.add(matches.single.opponentName))
+          .asFuture<void>();
+      gate.complete();
+      await done;
+      expect(emissions, ['FC Autre club']);
+    });
+
+    test('l’ancienne copie commune à tous les comptes est effacée', () async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('calendar_history_all_v2', '[]');
+
+      await CalendarHistoryRepository(client())
+          .watchAllLocalFirst()
+          .drain<void>();
+
+      expect(prefs.containsKey('calendar_history_all_v2'), isFalse);
+    });
   });
 
   test('l’écran reçoit la copie de l’appareil puis celle du serveur', () async {
