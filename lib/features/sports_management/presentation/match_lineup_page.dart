@@ -110,8 +110,13 @@ class MatchLineupPage extends ConsumerWidget {
                 : section;
 
     // À partir de T-15, le Live occupe toute la fiche : ni encadré du
-    // match ni onglets Info / Effectif / Compo / Prono.
-    final liveTakesOver = !isInternal && !tooFarAway && !liveTooEarly;
+    // match ni onglets Info / Effectif / Compo / Prono. Tant que l'heure du
+    // match n'est pas chargée, on ne bascule pas : sinon le Live s'affichait
+    // une fraction de seconde plusieurs jours avant le match.
+    final liveTakesOver = matchInfo?.kickoffAt != null &&
+        !isInternal &&
+        !tooFarAway &&
+        !liveTooEarly;
     final showInfo = resolvedSection == 'info';
     final showEffectif = resolvedSection == 'effectif';
     final showComposition = resolvedSection == 'composition';

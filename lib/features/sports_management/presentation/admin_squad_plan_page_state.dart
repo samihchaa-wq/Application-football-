@@ -454,9 +454,13 @@ class _AdminSquadPlanPageState extends ConsumerState<AdminSquadPlanPage> {
                 : _step;
 
     // À partir de T-15, le Live occupe toute la page, comme sur la fiche du
-    // match des coachs : ni encadré du match ni onglets.
-    final liveTakesOver =
-        _selectedMatchId != null && !isInternal && !tooFarAway && !liveTooEarly;
+    // match des coachs : ni encadré du match ni onglets. Pas avant que
+    // l'heure du match soit connue (chargement en cours).
+    final liveTakesOver = _selectedMatchId != null &&
+        kickoffAt != null &&
+        !isInternal &&
+        !tooFarAway &&
+        !liveTooEarly;
     if (liveTakesOver) {
       return RefreshIndicator(
         onRefresh: _loadMatches,

@@ -80,6 +80,10 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
   bool _saving = false;
   String? _error;
 
+  /// Dernier refus du serveur à la validation. Il reste affiché au-dessus du
+  /// bouton (un simple message en bas d'écran passait inaperçu).
+  String? _submitError;
+
   @override
   void initState() {
     super.initState();
@@ -435,7 +439,10 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
         false;
     if (!confirmed) return;
 
-    setState(() => _saving = true);
+    setState(() {
+      _saving = true;
+      _submitError = null;
+    });
     try {
       final saved = await ref.read(matchSportReportRepositoryProvider).submit(
             matchId: widget.matchId,
@@ -473,7 +480,11 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
         );
       }
     } catch (error) {
-      if (mounted) _showMessage(humanizeError(error));
+      if (mounted) {
+        final message = humanizeError(error);
+        setState(() => _submitError = message);
+        _showMessage(message);
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -646,23 +657,42 @@ class _MatchReportViewState extends ConsumerState<MatchReportView>
           top: false,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-            child: FilledButton.icon(
-              onPressed: _editable && !_saving ? _submit : null,
-              icon: _saving
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: PfProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.verified_outlined),
-              // Une fois validé, le bouton enregistre une correction (journal
-              // et nouveau calcul des statistiques) : l'ancien libellé laissait
-              // croire que la validation n'avait pas été prise en compte.
-              label: Text(
-                report.isCorrection
-                    ? 'Corriger le compte rendu'
-                    : 'Valider le compte rendu',
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (_submitError != null) ...[
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      'Validation refusée : $_submitError',
+                      key: const ValueKey('match-report-submit-error'),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+                FilledButton.icon(
+                  onPressed: _editable && !_saving ? _submit : null,
+                  icon: _saving
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: PfProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.verified_outlined),
+                  // Une fois validé, le bouton enregistre une correction (journal
+                  // et nouveau calcul des statistiques) : l'ancien libellé laissait
+                  // croire que la validation n'avait pas été prise en compte.
+                  label: Text(
+                    report.isCorrection
+                        ? 'Corriger le compte rendu'
+                        : 'Valider le compte rendu',
+                  ),
+                ),
+              ],
             ),
           ),
         ),

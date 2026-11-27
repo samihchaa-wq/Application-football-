@@ -156,10 +156,12 @@ Widget _spectatorView(MatchLiveStateBundle bundle) {
   return MatchLivePreKickoffSpectatorView(bundle: bundle);
 }
 
-/// Coach de T-15 à la fin du match : directement en pilotage, sans passer par
-/// une vue spectateur. La place est demandée au serveur à l'ouverture et au
-/// retour au premier plan ; si un autre téléphone du coach la tient encore,
-/// l'écran propose « Prendre la main ».
+/// Coach de T-15 à la fin du match. La place de pilote n'est demandée au
+/// serveur que sur un appui explicite sur « Piloter le Live » : ouvrir
+/// l'écran (Effectif, Compo, Admin > Composition) n'envoie plus rien. Après
+/// cet appui, un retour au premier plan reprend la place automatiquement
+/// (elle est libérée quand l'appli passe en arrière-plan). Si un autre
+/// téléphone tient la place, l'écran propose « Prendre la main ».
 class _CoachLiveView extends ConsumerStatefulWidget {
   const _CoachLiveView({required this.matchId, required this.bundle});
 
@@ -174,11 +176,13 @@ class _CoachLiveViewState extends ConsumerState<_CoachLiveView>
     with WidgetsBindingObserver {
   bool _claiming = false;
 
+  /// Vrai une fois que le coach a demandé la place sur ce téléphone.
+  bool _wantsPilot = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(_claim()));
   }
 
   @override
@@ -190,8 +194,15 @@ class _CoachLiveViewState extends ConsumerState<_CoachLiveView>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Passer en arrière-plan libère la place (voir _PilotSession) : au retour,
-    // le coach la reprend sans rien toucher.
-    if (state == AppLifecycleState.resumed) unawaited(_claim());
+    // le coach qui pilotait la reprend sans rien toucher.
+    if (state == AppLifecycleState.resumed && _wantsPilot) {
+      unawaited(_claim());
+    }
+  }
+
+  Future<void> _claimFromButton() async {
+    _wantsPilot = true;
+    await _claim();
   }
 
   Future<void> _claim() async {
@@ -221,6 +232,9 @@ class _CoachLiveViewState extends ConsumerState<_CoachLiveView>
     final matchId = widget.matchId;
     final bundle = widget.bundle;
     final pilot = ref.watch(livePilotProvider(matchId));
+    // Un autre téléphone a pris la main : ne pas la lui reprendre tout seul
+    // au prochain retour au premier plan.
+    if (pilot == LivePilot.other) _wantsPilot = false;
     final started = bundle.session.sessionExists &&
         bundle.session.state != MatchLiveState.notStarted;
 
@@ -240,7 +254,10 @@ class _CoachLiveViewState extends ConsumerState<_CoachLiveView>
                   canEdit: true,
                 ),
         ),
-      LivePilot.other => _SomeoneElsePilots(matchId: matchId),
+      LivePilot.other => _SomeoneElsePilots(
+          matchId: matchId,
+          onTookOver: () => _wantsPilot = true,
+        ),
       LivePilot.nobody when _claiming => const Padding(
           padding: EdgeInsets.symmetric(vertical: 48),
           child: Center(
@@ -250,28 +267,110 @@ class _CoachLiveViewState extends ConsumerState<_CoachLiveView>
             ),
           ),
         ),
-      LivePilot.nobody => _PilotPlaceAvailable(onClaim: _claim),
+      LivePilot.nobody => PilotPlaceAvailable(
+          kickoffAt:
+              ref.watch(matchInfoProvider(matchId)).valueOrNull?.kickoffAt,
+          onClaim: _claimFromButton,
+        ),
     };
   }
 }
 
-/// La place n'a pas pu être prise automatiquement (par exemple sans réseau)
-/// ou a expiré après une coupure d'une minute. Un clic suffit pour la reprendre.
-class _PilotPlaceAvailable extends StatelessWidget {
-  const _PilotPlaceAvailable({required this.onClaim});
+/// Personne ne pilote : bouton « Piloter le Live ». Avant l'ouverture du
+/// Live (coup d'envoi moins le délai de fermeture des pronostics), le bouton
+/// est grisé et l'heure d'ouverture est affichée ; il s'active tout seul à
+/// cette heure-là.
+@visibleForTesting
+class PilotPlaceAvailable extends StatefulWidget {
+  const PilotPlaceAvailable({
+    super.key,
+    required this.kickoffAt,
+    required this.onClaim,
+    this.now,
+  });
 
+  final DateTime? kickoffAt;
   final Future<void> Function() onClaim;
+
+  /// Horloge injectable pour les tests.
+  final DateTime Function()? now;
+
+  @override
+  State<PilotPlaceAvailable> createState() => _PilotPlaceAvailableState();
+}
+
+class _PilotPlaceAvailableState extends State<PilotPlaceAvailable> {
+  Timer? _openTimer;
+
+  DateTime _now() => (widget.now ?? DateTime.now)().toUtc();
+
+  DateTime? get _opensAt {
+    final kickoff = widget.kickoffAt;
+    return kickoff == null ? null : matchLiveOpensAt(kickoff);
+  }
+
+  bool get _tooEarly {
+    final opensAt = _opensAt;
+    return opensAt != null && _now().isBefore(opensAt);
+  }
+
+  void _scheduleOpening() {
+    _openTimer?.cancel();
+    _openTimer = null;
+    final opensAt = _opensAt;
+    if (opensAt == null) return;
+    final wait = opensAt.difference(_now());
+    // Au-delà d'une journée, l'écran aura été rouvert entre-temps.
+    if (wait <= Duration.zero || wait > const Duration(days: 1)) return;
+    _openTimer = Timer(wait + const Duration(milliseconds: 200), () {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleOpening();
+  }
+
+  @override
+  void didUpdateWidget(PilotPlaceAvailable oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.kickoffAt != widget.kickoffAt) _scheduleOpening();
+  }
+
+  @override
+  void dispose() {
+    _openTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final tooEarly = _tooEarly;
+    final opensAt = _opensAt;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 32, 16, 32),
       child: Column(
         children: [
-          const Text('Personne ne pilote le Live', textAlign: TextAlign.center),
+          Text(
+            tooEarly
+                ? 'Le Live n’est pas encore ouvert'
+                : 'Personne ne pilote le Live',
+            textAlign: TextAlign.center,
+          ),
+          if (tooEarly && opensAt != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              matchLiveOpensLabel(opensAt, now: _now()),
+              key: const ValueKey('live-pilot-opens-at'),
+              textAlign: TextAlign.center,
+            ),
+          ],
           const SizedBox(height: 16),
           FilledButton(
-            onPressed: () => unawaited(onClaim()),
+            key: const ValueKey('live-pilot-button'),
+            onPressed: tooEarly ? null : () => unawaited(widget.onClaim()),
             child: const Text('Piloter le Live'),
           ),
         ],
@@ -282,9 +381,10 @@ class _PilotPlaceAvailable extends StatelessWidget {
 
 /// Onglet « Piloter » alors qu'un autre téléphone pilote.
 class _SomeoneElsePilots extends ConsumerWidget {
-  const _SomeoneElsePilots({required this.matchId});
+  const _SomeoneElsePilots({required this.matchId, required this.onTookOver});
 
   final String matchId;
+  final VoidCallback onTookOver;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -318,6 +418,7 @@ class _SomeoneElsePilots extends ConsumerWidget {
                   ),
                 );
                 if (confirmed != true) return;
+                onTookOver();
                 try {
                   await ref
                       .read(matchLiveStateProvider(matchId).notifier)
