@@ -35,8 +35,6 @@ import {
   TARGET_USERNAME_DOMAIN,
 } from "./logic.ts";
 
-// Empreinte du jeton que seule la planification interne connaît.
-const TOKEN_SHA256 = "3c635888965336c32f13d08390e8875fe1fc7a4a967da386e6e5e5985a7247ba";
 
 async function sha256(text: string) {
   const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
@@ -58,7 +56,7 @@ type Tx = postgres.TransactionSql;
 export type SyncDeps = {
   env: (name: string) => string | undefined;
   fetch: typeof fetch;
-  /** Empreinte du jeton attendu (tests seulement). */
+  /** Empreinte SHA-256 du jeton attendu (fixée dans index.ts). Absente : tout est refusé. */
   tokenSha256?: string;
 };
 
@@ -224,10 +222,11 @@ async function recordFailure(sql: Sql, error: unknown) {
   }
 }
 
-export async function handleSync(req: Request, override?: SyncDeps): Promise<Response> {
-  deps = override ?? defaultDeps;
+export async function handleSync(req: Request, override?: Partial<SyncDeps>): Promise<Response> {
+  deps = { ...defaultDeps, ...override };
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
-  if ((await sha256(req.headers.get("x-sync-token") ?? "")) !== (deps.tokenSha256 ?? TOKEN_SHA256)) {
+  const expected = deps.tokenSha256;
+  if (!expected || (await sha256(req.headers.get("x-sync-token") ?? "")) !== expected) {
     return json({ error: "Forbidden" }, 403);
   }
   const clubId = TARGET_CLUB_ID;

@@ -86,6 +86,7 @@ leurs saisies seront écrasées.
 ## Tests
 
 - Règles pures (sans réseau) : `deno test supabase/functions/sync-as-grinta/logic_test.ts` (lancé en CI).
+- Refus sans jeton : `handler_test.ts` (lancé en CI).
 - Essai complet sur une base Postgres jetable (liste d'attente renumérotée,
   compteurs, badges, photos, alerte, échec sans écriture partielle) :
   `supabase/functions/sync-as-grinta/handler_db_test.ts`, mode d'emploi en tête
