@@ -152,4 +152,19 @@ void main() {
     expect(published.matchesPublishedTerms, isTrue);
     expect(changed.matchesPublishedTerms, isFalse);
   });
+
+  test('une copie AS Grinta en échec a son propre titre dans « À faire »', () {
+    final alert = PlatformAlert.fromJson(const {
+      'id': 'a1',
+      'kind': 'sync_failed',
+      'message': 'La copie automatique AS Grinta a échoué : duplicate key',
+      'club_name': 'AS Grinta',
+    });
+    expect(alert.title, 'Copie AS Grinta en échec');
+    expect(alert.clubName, 'AS Grinta');
+    expect(
+      PlatformAlert.fromJson(const {'id': 'a2', 'kind': 'dispute'}).title,
+      'Contestation de carte',
+    );
+  });
 }

@@ -60,6 +60,9 @@ def main() -> int:
         "stripe-checkout": True,
         "stripe-webhook": False,
         "stripe-refund": True,
+        # Copie temporaire AS Grinta, appelée par la tâche planifiée avec un
+        # jeton (x-sync-token) : voir docs/COPIE_AS_GRINTA.md.
+        "sync-as-grinta": False,
     }
     versioned_functions = {
         path.name
@@ -423,6 +426,24 @@ def main() -> int:
         '.eq("clubs.status", "active")',
         'if (isBrowserNavigation(req))',
         "calendar-feed doit vérifier le club actif avant toute redirection",
+    )
+
+    sync = function_file("sync-as-grinta", "handler.ts")
+    require_in_order(
+        sync,
+        'req.method !== "POST"',
+        'req.headers.get("x-sync-token")',
+        "sync-as-grinta doit filtrer la méthode avant le jeton",
+    )
+    require_in_order(
+        sync,
+        'req.headers.get("x-sync-token")',
+        'postgres(deps.env("SUPABASE_DB_URL")',
+        "sync-as-grinta doit vérifier le jeton avant d’ouvrir la base",
+    )
+    require(
+        "where t.club_id = $1" in sync and "where club_id = $1" in sync,
+        "sync-as-grinta: suppressions non bornées au club cible",
     )
 
     for slug in ("claim-account", "send-prediction-reminders"):
