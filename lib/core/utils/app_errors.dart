@@ -180,6 +180,15 @@ String _fromMessage(String raw) {
         'Termine le match avant d’exporter le compte rendu.',
     'already been exported': 'Ce match a déjà été exporté.',
     'the match is not currently live': 'Le match n’est pas en cours.',
+    // Messages serveur hérités qui citent « AS Grinta » quel que soit le
+    // club : on les traduit sans nom de club.
+    'only an as grinta goal can have a scorer':
+        'Seul un but de ton équipe peut avoir un buteur.',
+    'attributed goals exceed the as grinta score':
+        'Il y a plus de buteurs que de buts marqués par ton équipe.',
+    'event not found': 'Cette action du match a déjà été supprimée.',
+    'match kickoff is required':
+        'Indique l’heure du coup d’envoi avant d’ouvrir le Live.',
     'coach or administrator role required':
         'Action réservée au coach ou à l’administrateur.',
     'administrator role required': 'Action réservée à l’administrateur.',

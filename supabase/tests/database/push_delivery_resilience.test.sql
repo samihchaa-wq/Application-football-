@@ -310,5 +310,41 @@ select is(
 
 reset role;
 
+-- Couper les notifications : chacun ne peut retirer que son propre appareil.
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"e3000000-0000-0000-0000-000000000002","role":"authenticated","aud":"authenticated"}',
+  true
+);
+set local role authenticated;
+select public.unregister_push_subscription('https://push.invalid/device-alpha-laptop');
+reset role;
+
+select is(
+  (select count(*) from public.push_subscriptions
+   where endpoint = 'https://push.invalid/device-alpha-laptop'),
+  1::bigint,
+  'un compte ne peut pas retirer l’appareil d’un autre compte'
+);
+
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"e3000000-0000-0000-0000-000000000001","role":"authenticated","aud":"authenticated"}',
+  true
+);
+set local role authenticated;
+select lives_ok(
+  $$select public.unregister_push_subscription('https://push.invalid/device-alpha-laptop')$$,
+  'couper les notifications de son appareil ne renvoie plus d’erreur'
+);
+reset role;
+
+select is(
+  (select count(*) from public.push_subscriptions
+   where endpoint = 'https://push.invalid/device-alpha-laptop'),
+  0::bigint,
+  'l’appareil du demandeur est bien retiré'
+);
+
 select * from finish();
 rollback;
