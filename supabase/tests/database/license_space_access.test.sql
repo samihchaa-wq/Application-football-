@@ -190,7 +190,9 @@ update public.club_license_expenses set label = 'Piratée'
 where id = '7d000000-0000-0000-0000-00000000000a';
 delete from public.season_player_expense_payments
 where expense_id = '7d000000-0000-0000-0000-00000000000a';
-delete from public.season_player_licenses
+-- Personne ne supprime une licence (droit non accordé) : Bravo tente donc
+-- de la décocher.
+update public.season_player_licenses set license_paid = false
 where season_player_id = '7c000000-0000-0000-0000-00000000000a';
 
 reset role;
@@ -207,10 +209,10 @@ select is(
   'la tentative de Bravo ne supprime pas le paiement d’Alpha'
 );
 select is(
-  (select count(*) from public.season_player_licenses
+  (select license_paid from public.season_player_licenses
    where season_player_id = '7c000000-0000-0000-0000-00000000000a'),
-  1::bigint,
-  'la tentative de Bravo ne supprime pas la licence d’Alpha'
+  true,
+  'la tentative de Bravo ne décoche pas la licence d’Alpha'
 );
 
 -- ---------------------------------------------------------------------------
