@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/core/providers/supabase_provider.dart';
 import 'package:petit_filet/features/matches/domain/convocation_launch.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,8 +37,7 @@ class MatchEditScheduleRepository {
 
     return (
       mode: mode,
-      customAt:
-          mode == ConvocationLaunchMode.custom ? opensAt?.toLocal() : null,
+      customAt: mode == ConvocationLaunchMode.custom ? opensAt?.toClub() : null,
     );
   }
 

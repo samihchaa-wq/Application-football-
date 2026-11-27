@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
 import 'package:petit_filet/features/sports_management/domain/match_goal_action.dart';
 import 'package:petit_filet/features/sports_management/domain/sport_match_finalization.dart';
@@ -136,5 +137,5 @@ String? _nullableText(Object? value) {
 DateTime? _dateOrNull(Object? value) {
   final text = value?.toString();
   if (text == null || text.isEmpty || text == 'null') return null;
-  return DateTime.tryParse(text)?.toLocal();
+  return DateTime.tryParse(text)?.toClub();
 }

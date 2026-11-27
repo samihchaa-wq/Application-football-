@@ -653,11 +653,11 @@ Map<String, dynamic>? _seasonForMonth(
 DateTime _initialMonthForSeason(Map<String, dynamic> season) {
   final range = _seasonRange(season['name']?.toString());
   if (range == null) {
-    return DateTime(DateTime.now().year, DateTime.now().month);
+    return DateTime(ClubTime.now().year, ClubTime.now().month);
   }
   final start = DateTime(range.$1, DateTime.july);
   final end = DateTime(range.$2, DateTime.june);
-  final now = DateTime(DateTime.now().year, DateTime.now().month);
+  final now = DateTime(ClubTime.now().year, ClubTime.now().month);
   if (!now.isBefore(start) && !now.isAfter(end)) return now;
   return now.isBefore(start) ? start : end;
 }

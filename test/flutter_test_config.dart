@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:petit_filet/core/club/club_identity.dart';
+import 'package:petit_filet/core/utils/club_time.dart';
 
 /// Taille du texte forcée pour tout un passage de tests (contrôle manuel, pas
 /// utilisé par la CI) :
@@ -23,6 +24,9 @@ final _textScale = double.tryParse(
 /// club d'exemple qu'ils attendent.
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   ClubIdentity.set(name: 'AS Grinta', shortName: 'ASG');
+  // Le téléphone simulé est à l'heure du club : pas de mention « heure de
+  // Paris » dans les textes attendus. Les tests du fuseau la changent.
+  ClubTime.deviceOffset = (instant) => ClubTime.of(instant).timeZoneOffset;
   if (_textScale != 1) {
     final binding = TestWidgetsFlutterBinding.ensureInitialized();
     setUp(

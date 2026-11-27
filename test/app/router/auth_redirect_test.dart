@@ -659,6 +659,83 @@ void main() {
         '/auth/sign-in',
       );
     });
+
+    group('admin pages for a player (audit point 56)', () {
+      const player = AuthState(
+        isLoading: false,
+        isAuthenticated: true,
+        hasSession: true,
+        profile: _userProfile,
+      );
+      const admin = AuthState(
+        isLoading: false,
+        isAuthenticated: true,
+        hasSession: true,
+        profile: _adminProfile,
+      );
+
+      for (final path in [
+        '/admin',
+        '/admin/waitlist',
+        '/admin/club',
+        '/admin/abonnement',
+        '/admin/matches',
+      ]) {
+        test('typed address $path sends a player to the calendar', () {
+          expect(
+            resolveAuthRedirect(
+              authState: player,
+              uri: Uri.parse(path),
+              matchedLocation: path,
+              sportsManagementEnabled: true,
+            ),
+            '/matches',
+          );
+        });
+
+        test('cold start on $path sends a player to the calendar', () {
+          final uri = Uri.parse(
+            '/auth/loading?redirect=${Uri.encodeComponent(path)}',
+          );
+          expect(
+            resolveAuthRedirect(
+              authState: player,
+              uri: uri,
+              matchedLocation: '/auth/loading',
+              sportsManagementEnabled: true,
+            ),
+            '/matches',
+          );
+        });
+
+        test('cold start on $path still reaches it for an admin', () {
+          final uri = Uri.parse(
+            '/auth/loading?redirect=${Uri.encodeComponent(path)}',
+          );
+          expect(
+            resolveAuthRedirect(
+              authState: admin,
+              uri: uri,
+              matchedLocation: '/auth/loading',
+              sportsManagementEnabled: true,
+            ),
+            path,
+          );
+        });
+      }
+
+      test('sign-in redirect to an admin page sends a player away', () {
+        expect(
+          resolveAuthRedirect(
+            authState: player,
+            uri: Uri.parse('/auth/sign-in?redirect=%2Fadmin%2Fwaitlist'),
+            matchedLocation: '/auth/sign-in',
+            sportsManagementEnabled: true,
+          ),
+          '/matches',
+        );
+      });
+    });
   });
 }
 

@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:petit_filet/core/widgets/pf_empty_state.dart';
 import 'package:petit_filet/app/router/auth_redirect.dart';
 import 'package:petit_filet/app/router/deferred_route_page.dart';
 import 'package:petit_filet/app/router/initial_app_location.dart';
+import 'package:petit_filet/app/router/not_found_page.dart';
 import 'package:petit_filet/app/shell/app_shell.dart';
 import 'package:petit_filet/features/admin/presentation/club_kits_page.dart';
 import 'package:petit_filet/features/admin/presentation/club_settings_page.dart';
@@ -75,6 +75,14 @@ bool shouldUseNoTransitionPageForWebKitHistory({
       (platform == TargetPlatform.iOS || platform == TargetPlatform.macOS);
 }
 
+/// Destination de l'ancienne adresse `/matches/<id>/live` : l'onglet
+/// Direct de la fiche du match.
+@visibleForTesting
+String liveRedirectLocation(String matchId) => Uri(
+      path: '/matches/$matchId/lineup',
+      queryParameters: const {'section': 'live'},
+    ).toString();
+
 Page<void> _browserSafeMatchPage({
   required GoRouterState state,
   required Widget child,
@@ -107,23 +115,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: initialAppLocation(),
     overridePlatformDefaultLocation: kIsWeb,
     refreshListenable: refreshNotifier,
-    // Adresse inconnue : page en français avec retour, au lieu de la page
-    // d'erreur anglaise par défaut.
-    errorBuilder: (context, state) => Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: PfEmptyState(
-            icon: Icons.explore_off_outlined,
-            title: 'Page introuvable',
-            message: 'Cette adresse n’existe pas ou n’est plus disponible.',
-            action: FilledButton(
-              onPressed: () => context.go('/matches'),
-              child: const Text('Retour au calendrier'),
-            ),
-          ),
-        ),
-      ),
-    ),
+    // Adresse inconnue : vraie page « Page introuvable », en français.
+    errorBuilder: (context, state) =>
+        NotFoundPage(location: state.uri.toString()),
     redirect: (context, state) => resolveAuthRedirect(
       authState: ref.read(authControllerProvider),
       uri: state.uri,
@@ -175,6 +169,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                         : null,
                   ),
                 ),
+              ),
+              // Ancienne adresse du direct (liens partagés) : elle menait à
+              // « Page introuvable ». Le direct se suit depuis l'onglet
+              // Direct de la fiche du match.
+              GoRoute(
+                path: '/matches/:matchId/live',
+                redirect: (_, state) =>
+                    liveRedirectLocation(state.pathParameters['matchId'] ?? ''),
               ),
               GoRoute(
                 path: '/matches/:matchId/lineup',
@@ -360,21 +362,31 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     child: StatsHubPage(initialSection: section),
                   );
                 },
-              ),
-              GoRoute(
-                path: '/stats/joueur',
-                builder: (context, state) =>
-                    PlayerCardPage(playerKey: playerCardKeyFromUri(state.uri)),
-              ),
-              GoRoute(
-                path: '/stats/joueur/classement',
-                builder: (context, state) => PlayerStatRankingPage(
-                  stat: PlayerStat.fromSlug(state.uri.queryParameters['stat']),
-                  initialPeriod: statisticsPeriodFromKey(
-                    state.uri.queryParameters['periode'],
+                // Fiche et classement sont des sous-pages des Statistiques :
+                // on les ouvre avec go(), donc l'adresse du navigateur suit
+                // (lien partageable) et le retour ramène au tableau.
+                routes: [
+                  GoRoute(
+                    path: 'joueur',
+                    builder: (context, state) => PlayerCardPage(
+                      playerKey: playerCardKeyFromUri(state.uri),
+                    ),
+                    routes: [
+                      GoRoute(
+                        path: 'classement',
+                        builder: (context, state) => PlayerStatRankingPage(
+                          stat: PlayerStat.fromSlug(
+                            state.uri.queryParameters['stat'],
+                          ),
+                          initialPeriod: statisticsPeriodFromKey(
+                            state.uri.queryParameters['periode'],
+                          ),
+                          playerKey: playerCardKeyFromUri(state.uri),
+                        ),
+                      ),
+                    ],
                   ),
-                  playerKey: playerCardKeyFromUri(state.uri),
-                ),
+                ],
               ),
             ],
           ),

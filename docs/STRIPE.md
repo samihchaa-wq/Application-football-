@@ -50,3 +50,5 @@ lien du reçu (visibles dans la Caisse et la fiche club).
 
 Sans `STRIPE_SECRET_KEY`, le bouton affiche « Le paiement par carte n'est pas
 encore disponible » : rien n'est cassé.
+
+Tester de bout en bout (mode test, pile locale) : `docs/STRIPE_TEST_BOUT_EN_BOUT.md`.

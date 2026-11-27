@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/features/notifications/presentation/notification_seen_marker.dart';
 import 'package:petit_filet/core/widgets/pf_error_retry.dart';
 import 'package:petit_filet/core/club/club_identity.dart';
@@ -354,9 +355,9 @@ class _VoteHeader extends StatelessWidget {
     };
     final date = switch (vote.state) {
       SportMotmVoteState.open when vote.closesAt != null =>
-        'Clôture ${AppFormats.dateTime(vote.closesAt!.toLocal())}',
+        'Clôture ${AppFormats.dateTime(vote.closesAt!.toClub())}',
       SportMotmVoteState.closed when vote.closedAt != null =>
-        'Clôturé ${AppFormats.dateTime(vote.closedAt!.toLocal())}',
+        'Clôturé ${AppFormats.dateTime(vote.closedAt!.toClub())}',
       _ => null,
     };
 

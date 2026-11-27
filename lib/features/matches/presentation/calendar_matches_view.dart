@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/core/club/club_identity.dart';
 import 'dart:math' as math;
 
@@ -47,7 +48,7 @@ class CalendarMatchesView extends ConsumerStatefulWidget {
 
 class _CalendarMatchesViewState extends ConsumerState<CalendarMatchesView> {
   _CalendarDisplayMode _displayMode = _CalendarDisplayMode.scroll;
-  DateTime _monthCursor = DateTime(DateTime.now().year, DateTime.now().month);
+  DateTime _monthCursor = DateTime(ClubTime.now().year, ClubTime.now().month);
   final Map<String, Future<List<HistoricalMatchResult>>> _historyLoads = {};
 
   @override
@@ -121,7 +122,7 @@ class _CalendarMatchesViewState extends ConsumerState<CalendarMatchesView> {
   Widget build(BuildContext context) {
     ref.listen<int>(matchesFocusRequestProvider, (previous, next) {
       if (_displayMode != _CalendarDisplayMode.month) return;
-      final now = DateTime.now();
+      final now = ClubTime.now();
       final currentMonth = DateTime(now.year, now.month);
       if (_monthCursor == currentMonth) return;
       setState(() => _monthCursor = currentMonth);

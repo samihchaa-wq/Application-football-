@@ -362,6 +362,43 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
+  // Audit point 30 : un compte refusé ne voit pas les rubriques.
+  for (final width in [390.0, 1280.0]) {
+    testWidgets('a refused account sees no sections at $width pixels', (
+      tester,
+    ) async {
+      await open(
+        tester,
+        width: width,
+        fetch: () async => throw const PlatformAccessDenied(),
+      );
+      expect(find.text('Accès gestionnaire requis'), findsOneWidget);
+      expect(find.byType(NavigationBar), findsNothing);
+      expect(find.byType(NavigationRail), findsNothing);
+      expect(find.text('Caisse'), findsNothing);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
+
+  testWidgets('revoked access hides the sections after a refresh', (
+    tester,
+  ) async {
+    var revoked = false;
+    await open(
+      tester,
+      fetch: () async {
+        if (revoked) throw const PlatformAccessDenied();
+        return _snapshot;
+      },
+    );
+    expect(find.byType(NavigationBar), findsOneWidget);
+    revoked = true;
+    await tester.tap(find.byTooltip('Actualiser les données'));
+    await tester.pumpAndSettle();
+    expect(find.byType(NavigationBar), findsNothing);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   testWidgets('network failure never displays raw errors or sample metrics', (
     tester,
   ) async {

@@ -317,31 +317,4 @@ class _FakeInternalMatchCompositionRepository
     );
     return current;
   }
-
-  @override
-  Future<InternalMatchComposition> save({
-    required String matchId,
-    required String team1Name,
-    required String team2Name,
-    required List<InternalCompositionEntry> entries,
-    String team1JerseyId = 'orange',
-    String team2JerseyId = 'blue',
-  }) async {
-    saveCalls += 1;
-    savedEntries = List.of(entries);
-    savedTeam1Name = team1Name;
-    savedTeam2Name = team2Name;
-    savedTeam1JerseyId = team1JerseyId;
-    savedTeam2JerseyId = team2JerseyId;
-    current = InternalMatchComposition(
-      matchId: matchId,
-      team1Name: team1Name,
-      team2Name: team2Name,
-      team1JerseyId: team1JerseyId,
-      team2JerseyId: team2JerseyId,
-      notificationSent: current.notificationSent,
-      entries: List.of(entries),
-    );
-    return current;
-  }
 }

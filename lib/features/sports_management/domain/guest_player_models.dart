@@ -1,3 +1,5 @@
+import 'package:petit_filet/core/utils/club_time.dart';
+
 class GuestPlayer {
   const GuestPlayer({
     required this.id,
@@ -129,5 +131,5 @@ Map<String, dynamic> _map(Object? raw) {
 DateTime? _dateOrNull(Object? raw) {
   final value = raw?.toString();
   if (value == null || value.isEmpty || value == 'null') return null;
-  return DateTime.tryParse(value)?.toLocal();
+  return DateTime.tryParse(value)?.toClub();
 }

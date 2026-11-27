@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'dart:async';
 
 import 'package:petit_filet/core/providers/supabase_provider.dart';
@@ -24,7 +25,7 @@ class MatchLiveNotificationStatus {
     return MatchLiveNotificationStatus(
       eligible: map['eligible'] == true,
       subscribed: map['subscribed'] == true,
-      opensAt: DateTime.tryParse('${map['opens_at'] ?? ''}')?.toLocal(),
+      opensAt: DateTime.tryParse('${map['opens_at'] ?? ''}')?.toClub(),
     );
   }
 }

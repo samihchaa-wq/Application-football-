@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:petit_filet/features/club/data/club_subscription.dart';
@@ -1111,7 +1112,7 @@ class _BillingDetailsDialogState
 /// Jour à la française, dans le fuseau de l'appareil.
 String platformDay(DateTime? date) {
   if (date == null) return 'date inconnue';
-  final local = date.toLocal();
+  final local = date.toClub();
   return '${local.day.toString().padLeft(2, '0')}/'
       '${local.month.toString().padLeft(2, '0')}/${local.year}';
 }

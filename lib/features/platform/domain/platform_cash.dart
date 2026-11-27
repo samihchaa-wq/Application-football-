@@ -283,7 +283,8 @@ String ledgerToCsv(PlatformLedger ledger) {
   return '﻿${rows.join('\r\n')}\r\n';
 }
 
-/// Alerte de paiement à traiter (contestation de carte…).
+/// Alerte à traiter : paiement (contestation de carte…) ou copie AS Grinta
+/// en échec.
 class PlatformAlert {
   const PlatformAlert({
     required this.id,
@@ -314,6 +315,7 @@ class PlatformAlert {
         'dispute' => 'Contestation de carte',
         'refund_unmatched' => 'Remboursement Stripe inconnu',
         'payment_failed' => 'Paiement en échec',
+        'sync_failed' => 'Copie AS Grinta en échec',
         _ => 'Alerte de paiement',
       };
 }

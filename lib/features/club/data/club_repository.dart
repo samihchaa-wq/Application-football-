@@ -21,6 +21,7 @@ class Club {
     this.secondaryColor,
     this.logoPath,
     this.kits,
+    this.timezone,
   });
 
   factory Club.fromJson(Map<String, dynamic> json) => Club(
@@ -32,6 +33,7 @@ class Club {
         secondaryColor: json['secondary_color'] as String?,
         logoPath: json['logo_path'] as String?,
         kits: json['kits'],
+        timezone: json['timezone'] as String?,
       );
 
   final String id;
@@ -49,6 +51,10 @@ class Club {
   /// Maillots réglés par le club (null : maillots par défaut). Voir
   /// [ClubKits.parse].
   final Object? kits;
+
+  /// Fuseau du club (« Europe/Paris ») : toutes les heures s'affichent et se
+  /// saisissent dans ce fuseau. Null : Paris.
+  final String? timezone;
 
   /// Lien d'inscription à partager : il ouvre la page d'inscription avec le
   /// code du club déjà rempli.
@@ -303,7 +309,7 @@ class ClubRepository {
         final row = await _client
             .from('clubs')
             .select(
-              'id,name,short_name,invite_code,primary_color,secondary_color,logo_path,kits',
+              'id,name,short_name,invite_code,primary_color,secondary_color,logo_path,kits,timezone',
             )
             .single();
         return Club.fromJson(row);
