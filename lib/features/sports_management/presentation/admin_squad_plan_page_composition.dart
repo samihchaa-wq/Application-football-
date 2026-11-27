@@ -338,9 +338,30 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
   Future<void> _simulateComposition() async {
     final composition = _composition;
     if (composition == null ||
-        _compositionLocked ||
-        _postMatch ||
+        _busy ||
         !ClubRules.enabled(ClubFeature.compositionSimulation)) {
+      return;
+    }
+    // Un appui sans effet visible laissait croire à une panne : on dit
+    // pourquoi rien ne bouge.
+    if (_postMatch) {
+      _showMessage(
+        'La simulation sert à préparer un match à venir : elle n’est pas '
+        'proposée pour un match terminé.',
+      );
+      return;
+    }
+    if (_compositionLocked) {
+      _showMessage(
+        'La composition ne se modifie plus : le Live du match est ouvert.',
+      );
+      return;
+    }
+    if (_simulationCandidates(composition).isEmpty) {
+      _showMessage(
+        'Personne n’est convoqué pour ce match. Convoque d’abord des '
+        'joueurs dans l’onglet Effectif, puis relance la simulation.',
+      );
       return;
     }
 
@@ -806,7 +827,9 @@ extension _AdminSquadPlanComposition on _AdminSquadPlanPageState {
                         child: SizedBox(
                           height: 56,
                           child: OutlinedButton(
-                            onPressed: _compositionLocked ||
+                            // Reste appuyable quand la compo est verrouillée :
+                            // l'appui explique pourquoi rien ne se passe.
+                            onPressed: _busy ||
                                     !ClubRules.enabled(
                                       ClubFeature.compositionSimulation,
                                     )

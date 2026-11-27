@@ -77,8 +77,9 @@ class _AcceptUpdatedTermsPageState
     try {
       await ref.read(personalDataRepositoryProvider).deleteMyAccount();
       if (!mounted) return;
-      _showMessage('Ton compte a été supprimé.');
-      await ref.read(authControllerProvider.notifier).signOut();
+      await ref
+          .read(authControllerProvider.notifier)
+          .signOutAfterAccountDeletion();
     } on StateError catch (error) {
       if (mounted) _showMessage(error.message);
     } catch (_) {

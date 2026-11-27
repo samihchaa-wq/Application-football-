@@ -162,7 +162,8 @@ String? resolveAuthRedirect({
         return _sportsManagementDisabledFallback(destination);
       }
     }
-    return redirect;
+    return _roleRedirect(authState, destination, destination.path) ??
+        redirect;
   }
 
   if (location == '/' || location == '/home' || location == '/accueil') {
@@ -183,6 +184,13 @@ String? resolveAuthRedirect({
     return _sportsManagementDisabledFallback(uri);
   }
 
+  return _roleRedirect(authState, uri, location);
+}
+
+/// Pages réservées à un rôle. Aussi appliqué à la destination mémorisée
+/// pendant la connexion ou le chargement : sinon un joueur qui recharge une
+/// page d'admin y entrait quand même.
+String? _roleRedirect(AuthState authState, Uri uri, String location) {
   final role = authState.profile?.role;
   final isAdmin = role?.isAdmin == true;
   final segments =
@@ -197,6 +205,18 @@ String? resolveAuthRedirect({
   final isPlayersRoute = location == '/players';
 
   if (isFinalizationRoute && !isAdmin) return '/matches';
+  if (isMatchAdminRoute && segments.last == 'composition' && !isAdmin) {
+    // Lien d'admin ouvert par un joueur (lien partagé, rechargement) : il voit
+    // la fiche joueur du match, avec la compo publiée, au lieu d'un écran
+    // « Action réservée à l'administrateur ».
+    final section = switch (uri.queryParameters['step']) {
+      'live' => 'live',
+      'effectif' => 'effectif',
+      'prediction' => 'prediction',
+      _ => 'composition',
+    };
+    return '/matches/${segments[1]}/lineup?section=$section';
+  }
   if ((isAdminRoute || isMatchAdminRoute || isPlayersRoute) && !isAdmin) {
     return '/matches';
   }

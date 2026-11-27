@@ -14,6 +14,7 @@ import 'package:petit_filet/features/profile/data/personal_data_repository.dart'
 import 'package:petit_filet/features/players/presentation/players_registry_page.dart';
 import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:flutter/material.dart';
+import 'package:petit_filet/core/widgets/copy_link_or_show.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
@@ -138,19 +139,11 @@ class _UsersAdminSection extends ConsumerWidget {
               onPressed: () async {
                 // Même bouton que dans l'administration d'origine, mais l'invitation doit rester
                 // propre au club courant de Petit Filet.
+                final String link;
                 try {
                   final club =
                       await ref.read(clubRepositoryProvider).fetchMyClub();
-                  await Clipboard.setData(ClipboardData(text: club.inviteLink));
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Lien d’inscription copié — partage-le sur WhatsApp.',
-                        ),
-                      ),
-                    );
-                  }
+                  link = club.inviteLink;
                 } catch (_) {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -161,7 +154,18 @@ class _UsersAdminSection extends ConsumerWidget {
                       ),
                     );
                   }
+                  return;
                 }
+                if (!context.mounted) return;
+                // Copie refusée par le navigateur : le lien s'affiche pour
+                // être copié à la main.
+                await copyLinkOrShow(
+                  context,
+                  link: link,
+                  title: 'Lien d’inscription',
+                  copiedMessage:
+                      'Lien d’inscription copié — partage-le sur WhatsApp.',
+                );
               },
               child: const Text('Lien d’inscription'),
             ),

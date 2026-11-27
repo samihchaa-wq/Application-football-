@@ -242,6 +242,15 @@ String? _expectedRedirect({
       const {'composition', 'guests'}.contains(suffix);
 
   if (finalization && !admin) return '/matches';
+  if (matchAdmin && suffix == 'composition' && !admin) {
+    final section = switch (uri.queryParameters['step']) {
+      'live' => 'live',
+      'effectif' => 'effectif',
+      'prediction' => 'prediction',
+      _ => 'composition',
+    };
+    return '/matches/${segments[1]}/lineup?section=$section';
+  }
   if ((adminRoot || matchAdmin || matchedLocation == '/players') && !admin) {
     return '/matches';
   }

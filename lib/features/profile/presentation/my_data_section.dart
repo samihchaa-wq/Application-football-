@@ -64,8 +64,11 @@ class _MyDataSectionState extends ConsumerState<MyDataSection> {
     try {
       await ref.read(personalDataRepositoryProvider).deleteMyAccount();
       if (!mounted) return;
-      _showMessage('Ton compte a été supprimé.');
-      await ref.read(authControllerProvider.notifier).signOut();
+      // Le message s'affiche sur l'écran de connexion : un message éphémère
+      // ici disparaissait avec la page au moment de la déconnexion.
+      await ref
+          .read(authControllerProvider.notifier)
+          .signOutAfterAccountDeletion();
     } on StateError catch (error) {
       if (mounted) _showMessage(error.message);
     } catch (_) {

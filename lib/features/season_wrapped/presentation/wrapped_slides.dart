@@ -811,7 +811,10 @@ class _BadgeChip extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (badge.emoji.isNotEmpty) ...[
-            Text(badge.emoji, style: const TextStyle(fontSize: 15)),
+            Text(
+              displayBadgeEmoji(badge.emoji),
+              style: const TextStyle(fontSize: 15),
+            ),
             const SizedBox(width: 7),
           ],
           Text(badge.name, style: WrappedType.body(skin.text, size: 18)),

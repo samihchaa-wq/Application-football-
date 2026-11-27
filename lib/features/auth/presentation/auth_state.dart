@@ -29,6 +29,9 @@ String authSignInErrorMessage(Object error) {
   return _signInUnavailableMessage;
 }
 
+/// Message affiché sur l'écran de connexion après la suppression du compte.
+const String accountDeletedNotice = 'Ton compte a été supprimé.';
+
 class AuthState {
   const AuthState({
     this.isLoading = true,
@@ -39,6 +42,7 @@ class AuthState {
     this.isPlatformOperator = false,
     this.profile,
     this.error,
+    this.notice,
   });
 
   /// Résolution de session ou connexion en cours. Le routeur utilise ce
@@ -61,6 +65,10 @@ class AuthState {
   final bool isPlatformOperator;
   final AuthProfile? profile;
   final String? error;
+
+  /// Information à afficher sur l'écran de connexion, qui n'est pas une
+  /// erreur (par exemple « Ton compte a été supprimé. »).
+  final String? notice;
 
   /// Pour les écrans : désactive les actions pendant un chargement comme
   /// pendant un enregistrement.
@@ -87,6 +95,8 @@ class AuthState {
       isPlatformOperator: isPlatformOperator ?? this.isPlatformOperator,
       profile: clearProfile ? null : (profile ?? this.profile),
       error: clearError ? null : (error ?? this.error),
+      // Effacée avec l'erreur : une nouvelle tentative de connexion la retire.
+      notice: clearError ? null : notice,
     );
   }
 }
@@ -120,8 +130,15 @@ class AuthController extends StateNotifier<AuthState> {
         _retryRefreshQueued = false;
         _profileFromCache = false;
         unawaited(_profileCache?.clear());
-        state = AuthState(isLoading: false, error: preservedError);
+        state = AuthState(
+          isLoading: false,
+          error: preservedError,
+          notice: _accountDeleted ? accountDeletedNotice : null,
+        );
         return;
+      }
+      if (event.event == supabase.AuthChangeEvent.signedIn) {
+        _accountDeleted = false;
       }
       // La boucle de réessai n'a de sens qu'après une vraie connexion, le
       // temps que le profil devienne visible.
@@ -165,6 +182,10 @@ class AuthController extends StateNotifier<AuthState> {
   Future<void>? _refreshInFlight;
   bool _retryRefreshQueued = false;
   String? _signedOutErrorToPreserve;
+
+  /// Le compte vient d'être supprimé : plus aucun appel au nom de ce compte
+  /// (profil, désinscription des notifications), le serveur les refuserait.
+  bool _accountDeleted = false;
   int _authGeneration = 0;
 
   /// Affiche tout de suite le dernier profil confirmé de ce compte, le temps
@@ -187,6 +208,7 @@ class AuthController extends StateNotifier<AuthState> {
   }
 
   Future<void> _refreshProfile({bool retryAfterSignIn = false}) {
+    if (_accountDeleted) return Future.value();
     if (retryAfterSignIn) {
       _retryRefreshQueued = true;
     }
@@ -409,7 +431,27 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
+  /// Déconnexion juste après « Supprimer mon compte ».
+  ///
+  /// Le compte n'existe plus côté serveur : on ne désinscrit pas l'appareil
+  /// (ses abonnements sont partis avec le profil) et on ne recharge pas le
+  /// profil. L'écran de connexion affiche ensuite [accountDeletedNotice].
+  Future<void> signOutAfterAccountDeletion() async {
+    _accountDeleted = true;
+    _signedOutErrorToPreserve = null;
+    _retryRefreshQueued = false;
+    _profileFromCache = false;
+    await _profileCache?.clear();
+    try {
+      // La session locale est effacée avant l'appel au serveur, qui peut
+      // refuser (compte disparu) : ce refus n'a pas à être signalé.
+      await _repository.signOut();
+    } catch (_) {}
+    state = const AuthState(isLoading: false, notice: accountDeletedNotice);
+  }
+
   Future<void> signOut() async {
+    _accountDeleted = false;
     _signedOutErrorToPreserve = null;
     state = state.copyWith(isLoading: true, clearError: true);
     await _unsubscribeDeviceBestEffort();
