@@ -548,14 +548,91 @@
     }, 30000);
   }
 
+  // Hors ligne avant le premier affichage : on le dit, au lieu de laisser
+  // le logo tourner sans fin, et le démarrage repart seul au retour du
+  // réseau (sans fermer l'onglet ni rouvrir l'appli).
+  function showSplashOffline() {
+    if (splashDismissed) return;
+    var inner = document.querySelector('#asg-splash .asg-splash-inner');
+    if (!inner) return;
+    var block = document.querySelector('.asg-stalled');
+    if (block) block.parentNode.removeChild(block);
+    if (splashStalledTimer) {
+      clearTimeout(splashStalledTimer);
+      splashStalledTimer = null;
+    }
+    block = document.createElement('div');
+    block.className = 'asg-stalled';
+    block.setAttribute('role', 'alert');
+    var text = document.createElement('p');
+    text.style.margin = '0';
+    text.textContent = 'Pas de connexion internet. L’appli démarrera ' +
+      'toute seule dès le retour du réseau.';
+    block.appendChild(text);
+    inner.appendChild(block);
+  }
+
+  function restartBootWhenOnline() {
+    if (flutterFirstFrameSeen || updateNavigationInProgress) return;
+    window.location.reload();
+  }
+  window.addEventListener('online', restartBootWhenOnline);
+
+  // Après le premier affichage, le service worker garde tous les fichiers
+  // que ce démarrage a chargés (web/sw.js) : le prochain démarrage sans
+  // réseau les retrouve sur le téléphone.
+  function keepBootFilesForOffline() {
+    if (!('serviceWorker' in navigator) || !window.performance ||
+        typeof performance.getEntriesByType !== 'function') {
+      return;
+    }
+    navigator.serviceWorker.ready.then(function (registration) {
+      var worker = registration && registration.active;
+      if (!worker) return;
+      var urls = [];
+      performance.getEntriesByType('resource').forEach(function (entry) {
+        if (entry && typeof entry.name === 'string') urls.push(entry.name);
+      });
+      worker.postMessage({
+        type: 'ASG_KEEP_BOOT_FILES',
+        version: asGrintaWebVersion,
+        urls: urls
+      });
+    }).catch(function () {});
+  }
+
   window.addEventListener('flutter-first-frame', function () {
     flutterFirstFrameSeen = true;
     dismissSplash();
+    // Laisse d'abord passer les polices et images demandées juste après
+    // le premier affichage.
+    setTimeout(keepBootFilesForOffline, 5000);
   });
-  splashStalledTimer = setTimeout(showSplashStalled, 15000);
+  splashStalledTimer = setTimeout(function () {
+    if (navigator.onLine === false) {
+      showSplashOffline();
+    } else {
+      showSplashStalled();
+    }
+  }, 15000);
+  window.addEventListener('offline', function () {
+    if (!flutterFirstFrameSeen) showSplashOffline();
+  });
+  if (navigator.onLine === false) {
+    // Le démarrage peut réussir depuis le téléphone : on attend un peu
+    // avant d'annoncer l'absence de réseau.
+    setTimeout(function () {
+      if (!flutterFirstFrameSeen && navigator.onLine === false) {
+        showSplashOffline();
+      }
+    }, 4000);
+  }
 
   var bootstrap = document.createElement('script');
   bootstrap.src = 'flutter_bootstrap.js?v=' + encodeURIComponent(asGrintaWebVersion);
   bootstrap.async = true;
+  bootstrap.addEventListener('error', function () {
+    if (navigator.onLine === false) showSplashOffline();
+  });
   document.body.appendChild(bootstrap);
 })();

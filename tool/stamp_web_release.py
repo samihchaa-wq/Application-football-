@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 from urllib.parse import quote
 
@@ -22,11 +23,31 @@ def encode_version(version: str) -> str:
     return quote(version, safe="-_.!~*'()")
 
 
+BASE_HREF_PATTERN = re.compile(r'<base href="([^"]*)">')
+
+
+def absolute_prefix(html: str) -> str:
+    """Préfixe absolu des fichiers du site, tiré de `<base href>`.
+
+    Sur un lien direct (`/auth/sign-in`), une adresse relative dépend de la
+    bonne lecture de `<base>` par chaque outil ; une adresse absolue ne
+    dépend de rien. Sans base absolue (fichier source non construit), les
+    adresses restent relatives.
+    """
+    match = BASE_HREF_PATTERN.search(html)
+    base = match.group(1) if match else ""
+    if base.startswith("/") and base.endswith("/") and not base.startswith("//"):
+        return base
+    return ""
+
+
 def stamp_index() -> None:
     html = INDEX_PATH.read_text(encoding="utf-8")
+    prefix = absolute_prefix(html)
     replacements = {
-        'src="build_version.js"': f'src="build_version.js?v={WEB_VERSION}"',
-        'src="app_shell.js"': f'src="app_shell.js?v={WEB_VERSION}"',
+        'src="build_version.js"': f'src="{prefix}build_version.js?v={WEB_VERSION}"',
+        'src="history_swipe.js"': f'src="{prefix}history_swipe.js"',
+        'src="app_shell.js"': f'src="{prefix}app_shell.js?v={WEB_VERSION}"',
     }
 
     for source, stamped in replacements.items():
@@ -40,8 +61,8 @@ def stamp_index() -> None:
     # fois.
     encoded = encode_version(WEB_VERSION)
     preloads = {
-        'href="flutter_bootstrap.js"': f'href="flutter_bootstrap.js?v={encoded}"',
-        'href="main.dart.js"': f'href="main.dart.js?v={encoded}"',
+        'href="flutter_bootstrap.js"': f'href="{prefix}flutter_bootstrap.js?v={encoded}"',
+        'href="main.dart.js"': f'href="{prefix}main.dart.js?v={encoded}"',
     }
     for source, stamped in preloads.items():
         if html.count(source) != 1:
