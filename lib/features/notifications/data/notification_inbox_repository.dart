@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/core/providers/supabase_provider.dart';
 import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,9 +26,9 @@ class NotificationHistoryEntry {
       body: row['body']?.toString() ?? '',
       url: row['url']?.toString(),
       createdAt:
-          DateTime.tryParse(row['created_at']?.toString() ?? '')?.toLocal() ??
+          DateTime.tryParse(row['created_at']?.toString() ?? '')?.toClub() ??
               DateTime.now(),
-      readAt: DateTime.tryParse(row['read_at']?.toString() ?? '')?.toLocal(),
+      readAt: DateTime.tryParse(row['read_at']?.toString() ?? '')?.toClub(),
     );
   }
 

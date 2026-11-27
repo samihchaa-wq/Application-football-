@@ -1,3 +1,5 @@
+import 'package:petit_filet/core/utils/club_time.dart';
+
 class MatchWeatherHour {
   const MatchWeatherHour({
     required this.forecastAt,
@@ -23,9 +25,8 @@ class MatchWeatherHour {
 
   factory MatchWeatherHour.fromJson(Map<String, dynamic> json) {
     return MatchWeatherHour(
-      forecastAt:
-          DateTime.tryParse('${json['forecast_at'] ?? ''}')?.toLocal() ??
-              DateTime.fromMillisecondsSinceEpoch(0),
+      forecastAt: DateTime.tryParse('${json['forecast_at'] ?? ''}')?.toClub() ??
+          DateTime.fromMillisecondsSinceEpoch(0),
       label: (json['label'] ?? '').toString(),
       temperature: _double(json['temperature']),
       apparentTemperature: _double(json['apparent_temperature']),
@@ -88,7 +89,7 @@ class MatchWeather {
     return MatchWeather(
       matchId: (json['match_id'] ?? '').toString(),
       forecastFor:
-          DateTime.tryParse('${json['forecast_for'] ?? ''}')?.toLocal() ??
+          DateTime.tryParse('${json['forecast_for'] ?? ''}')?.toClub() ??
               DateTime.fromMillisecondsSinceEpoch(0),
       latitude: _double(json['latitude']) ?? 0,
       longitude: _double(json['longitude']) ?? 0,
@@ -102,7 +103,7 @@ class MatchWeather {
       windGusts: _double(json['wind_gusts']),
       humidity: _int(json['humidity']),
       hourlyForecast: hourly,
-      fetchedAt: DateTime.tryParse('${json['fetched_at'] ?? ''}')?.toLocal() ??
+      fetchedAt: DateTime.tryParse('${json['fetched_at'] ?? ''}')?.toClub() ??
           DateTime.fromMillisecondsSinceEpoch(0),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/core/theme/app_spacing.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
@@ -411,7 +412,7 @@ class _ClubUnavailabilityCard extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.microGap),
             Text(
-              'Saisie le ${formatUnavailabilityDay(unavailability.createdAt.toLocal())}',
+              'Saisie le ${formatUnavailabilityDay(unavailability.createdAt.toClub())}',
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: AppTheme.textFaint),
             ),

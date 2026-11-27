@@ -1,3 +1,5 @@
+import 'package:petit_filet/core/utils/club_time.dart';
+
 const defaultMatchMeetingOffset = Duration(minutes: 30);
 
 DateTime resolvedMatchMeetingAt({
@@ -12,7 +14,14 @@ DateTime matchMeetingAtOnKickoffDate({
   required int hour,
   required int minute,
 }) {
-  return DateTime(kickoffAt.year, kickoffAt.month, kickoffAt.day, hour, minute);
+  kickoffAt = ClubTime.asClub(kickoffAt);
+  return ClubTime.wallClock(
+    kickoffAt.year,
+    kickoffAt.month,
+    kickoffAt.day,
+    hour,
+    minute,
+  );
 }
 
 /// Keeps an explicit rendez-vous coherent when the kickoff changes.
@@ -27,6 +36,12 @@ DateTime? preserveCustomMeetingTime({
   DateTime? previousKickoffAt,
 }) {
   if (customMeetingAt == null) return null;
+  // Tout est lu à l'heure du club, même si le téléphone est ailleurs.
+  kickoffAt = ClubTime.asClub(kickoffAt);
+  customMeetingAt = ClubTime.asClub(customMeetingAt);
+  if (previousKickoffAt != null) {
+    previousKickoffAt = ClubTime.asClub(previousKickoffAt);
+  }
 
   if (previousKickoffAt == null) {
     final shifted = matchMeetingAtOnKickoffDate(
@@ -53,15 +68,16 @@ DateTime? preserveCustomMeetingTime({
     kickoffAt.month,
     kickoffAt.day,
   ).add(Duration(days: dayOffset));
-  final shifted = DateTime(
-    newMeetingDate.year,
-    newMeetingDate.month,
-    newMeetingDate.day,
-    customMeetingAt.hour,
-    customMeetingAt.minute,
-    customMeetingAt.second,
-    customMeetingAt.millisecond,
-    customMeetingAt.microsecond,
+  final shifted = ClubTime.fromWallClock(
+    DateTime(
+      newMeetingDate.year,
+      newMeetingDate.month,
+      newMeetingDate.day,
+      customMeetingAt.hour,
+      customMeetingAt.minute,
+      customMeetingAt.second,
+      customMeetingAt.millisecond,
+    ),
   );
   return shifted.isBefore(kickoffAt) ? shifted : null;
 }

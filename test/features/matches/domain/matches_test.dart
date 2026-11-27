@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/features/matches/domain/match_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -68,7 +69,7 @@ void main() {
         'status': 'a_venir',
       });
 
-      expect(match.kickoffAt, DateTime(2026, 8, 20, 20, 45));
+      expect(match.kickoffAt, ClubTime.wallClock(2026, 8, 20, 20, 45));
       expect(match.locationLabel, 'Extérieur');
     });
   });

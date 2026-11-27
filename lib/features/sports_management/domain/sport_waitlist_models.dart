@@ -1,3 +1,5 @@
+import 'package:petit_filet/core/utils/club_time.dart';
+
 enum ConvocationStatus {
   notApplicable,
   convoked,
@@ -133,7 +135,7 @@ class AdminSportMatch {
     return AdminSportMatch(
       id: json['id'].toString(),
       opponentName: (json['opponent_name'] ?? 'Adversaire').toString(),
-      kickoffAt: DateTime.parse(json['kickoff_at'].toString()).toLocal(),
+      kickoffAt: DateTime.parse(json['kickoff_at'].toString()).toClub(),
       matchType: (json['match_type'] ?? 'competition').toString(),
     );
   }
@@ -322,7 +324,7 @@ class MatchConvocations {
     return MatchConvocations(
       matchId: json['match_id'].toString(),
       opponentName: (json['opponent_name'] ?? 'Adversaire').toString(),
-      kickoffAt: DateTime.parse(json['kickoff_at'].toString()).toLocal(),
+      kickoffAt: DateTime.parse(json['kickoff_at'].toString()).toClub(),
       seasonId: json['season_id'].toString(),
       squadSizeLimit: squadSizeLimit,
       publishedSquadSizeLimit:
@@ -376,5 +378,5 @@ String? _nullableText(Object? value) {
 DateTime? _dateOrNull(Object? raw) {
   final value = raw?.toString();
   if (value == null || value.isEmpty || value == 'null') return null;
-  return DateTime.tryParse(value)?.toLocal();
+  return DateTime.tryParse(value)?.toClub();
 }

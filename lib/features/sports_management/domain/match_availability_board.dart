@@ -1,3 +1,5 @@
+import 'package:petit_filet/core/utils/club_time.dart';
+
 enum MatchAvailabilityBoardStatus {
   present,
   absent,
@@ -129,8 +131,8 @@ class MatchAvailabilityBoard {
 
     return MatchAvailabilityBoard(
       matchId: matchId,
-      kickoffAt: kickoffAt.toLocal(),
-      opensAt: opensAt.toLocal(),
+      kickoffAt: kickoffAt.toClub(),
+      opensAt: opensAt.toClub(),
       state: (json['availability_state'] ?? 'pending').toString(),
       compositionPublished: json['composition_published'] == true,
       squadSizeLimit: (json['squad_size_limit'] as num?)?.toInt() ?? 14,

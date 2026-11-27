@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -1178,13 +1179,13 @@ String _rate(double? value) => value == null
 
 String _day(DateTime? date) {
   if (date == null) return 'Non renseigné';
-  final local = date.toLocal();
+  final local = date.toClub();
   return '${local.day.toString().padLeft(2, '0')}/${local.month.toString().padLeft(2, '0')}/${local.year}';
 }
 
 String _date(DateTime? date) {
   if (date == null) return 'Non renseigné';
-  final local = date.toLocal();
+  final local = date.toClub();
   return '${_day(date)} à ${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
 }
 

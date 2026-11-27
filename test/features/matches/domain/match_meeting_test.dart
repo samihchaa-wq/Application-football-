@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/features/matches/domain/match_meeting.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -30,7 +31,7 @@ void main() {
         kickoffAt: newKickoff,
         customMeetingAt: previousCustom,
       ),
-      DateTime(2026, 9, 2, 19, 45),
+      ClubTime.wallClock(2026, 9, 2, 19, 45),
     );
   });
 
@@ -46,7 +47,7 @@ void main() {
         kickoffAt: newKickoff,
         customMeetingAt: previousCustom,
       ),
-      DateTime(2026, 9, 1, 20, 30),
+      ClubTime.wallClock(2026, 9, 1, 20, 30),
     );
   });
 

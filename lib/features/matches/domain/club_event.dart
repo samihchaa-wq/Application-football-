@@ -1,3 +1,5 @@
+import 'package:petit_filet/core/utils/club_time.dart';
+
 class ClubEvent {
   const ClubEvent({
     required this.id,
@@ -20,7 +22,7 @@ class ClubEvent {
       id: json['id'].toString(),
       seasonId: json['season_id'].toString(),
       title: json['title']?.toString().trim() ?? '',
-      startsAt: DateTime.parse(json['starts_at'].toString()).toLocal(),
+      startsAt: DateTime.parse(json['starts_at'].toString()).toClub(),
       location: json['location']?.toString().trim() ?? '',
       createdBy: json['created_by']?.toString() ?? '',
     );

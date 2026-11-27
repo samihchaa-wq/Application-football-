@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/features/matches/domain/match_meeting.dart';
 import 'package:petit_filet/features/matches/presentation/widgets/match_wheel_picker.dart';
 import 'package:flutter/material.dart';
@@ -68,7 +69,7 @@ class MatchMeetingTimePicker extends StatelessWidget {
 
   Future<void> _pickCustom(BuildContext context) async {
     final latest = kickoffAt.subtract(const Duration(minutes: 1));
-    final earliest = DateTime(
+    final earliest = ClubTime.wallClock(
       kickoffAt.year - 1,
       kickoffAt.month,
       kickoffAt.day,

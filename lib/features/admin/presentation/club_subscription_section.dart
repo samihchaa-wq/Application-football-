@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/core/widgets/support_contact.dart';
 import 'package:petit_filet/features/admin/presentation/card_payment_button.dart';
 import 'package:petit_filet/features/admin/presentation/club_referral_section.dart';
@@ -205,7 +206,7 @@ class _SubscriptionCard extends StatelessWidget {
 }
 
 String _day(DateTime date) {
-  final local = date.toLocal();
+  final local = date.toClub();
   return '${local.day.toString().padLeft(2, '0')}/'
       '${local.month.toString().padLeft(2, '0')}/${local.year}';
 }
