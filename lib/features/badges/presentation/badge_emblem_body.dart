@@ -271,10 +271,15 @@ class _BandText extends StatelessWidget {
         alignment: Alignment.center,
         clipBehavior: Clip.none,
         children: [
-          Text(
-            text,
-            maxLines: 1,
-            style: _style(foreground: outline),
+          // Le contour est une copie du texte : exclu de l'arbre
+          // d'accessibilité, sinon le lecteur d'écran lisait tout deux fois
+          // (« 50 50 MATCHS MATCHS »).
+          ExcludeSemantics(
+            child: Text(
+              text,
+              maxLines: 1,
+              style: _style(foreground: outline),
+            ),
           ),
           Text(text, maxLines: 1, style: _style(fill: color)),
         ],
@@ -400,7 +405,9 @@ class _TitleText extends StatelessWidget {
         alignment: Alignment.center,
         clipBehavior: Clip.none,
         children: [
-          layer(_style(size, foreground: outline)),
+          // Contour exclu de l'arbre d'accessibilité : le titre n'est lu
+          // qu'une fois.
+          ExcludeSemantics(child: layer(_style(size, foreground: outline))),
           layer(_style(size, fill: color)),
         ],
       ),

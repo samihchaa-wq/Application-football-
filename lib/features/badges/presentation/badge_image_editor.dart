@@ -128,18 +128,37 @@ class _BadgeImageEditorButtonState
     final hasImage = widget.badge.imageUrl?.trim().isNotEmpty == true;
     final tooltip = hasImage ? 'Recadrer l’image' : 'Ajouter une image';
     final icon = hasImage ? Icons.crop_outlined : Icons.photo_camera_outlined;
+    // Le nom du badge dans le libellé lu : sur la liste admin, tous les
+    // boutons se ressemblaient (« Recadrer l’image », « Recadrer l’image »…).
+    final badgeName = widget.badge.name.trim();
+    final spokenLabel =
+        badgeName.isEmpty ? tooltip : '$tooltip du badge « $badgeName »';
 
     if (widget.compact) {
-      return IconButton.filledTonal(
-        tooltip: tooltip,
-        onPressed: _busy ? null : _editImage,
-        icon: Icon(icon),
+      return Semantics(
+        label: spokenLabel,
+        button: true,
+        enabled: !_busy,
+        excludeSemantics: true,
+        onTap: _busy ? null : _editImage,
+        child: IconButton.filledTonal(
+          tooltip: tooltip,
+          onPressed: _busy ? null : _editImage,
+          icon: Icon(icon),
+        ),
       );
     }
 
-    return FilledButton.tonal(
-      onPressed: _busy ? null : _editImage,
-      child: Text(hasImage ? 'Image' : 'Ajouter une image'),
+    return Semantics(
+      label: spokenLabel,
+      button: true,
+      enabled: !_busy,
+      excludeSemantics: true,
+      onTap: _busy ? null : _editImage,
+      child: FilledButton.tonal(
+        onPressed: _busy ? null : _editImage,
+        child: Text(hasImage ? 'Image' : 'Ajouter une image'),
+      ),
     );
   }
 }

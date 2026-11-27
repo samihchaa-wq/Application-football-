@@ -587,10 +587,17 @@ StickyTableRow _playersRow(
 }) {
   final valueStyle = pfTableCellTextStyle(context);
 
-  Widget value(int number) {
+  // Chaque chiffre est annoncé avec le nom de sa colonne et du joueur :
+  // un lecteur d'écran lisait « 8, 12, 6, 3… » sans dire de quoi ni de qui.
+  Widget value(int number, String column) {
     return Expanded(
       flex: _playerValueFlex,
-      child: Text('$number', textAlign: TextAlign.center, style: valueStyle),
+      child: Semantics(
+        container: true,
+        label: '${capitalizePersonName(player.playerName)}, $column : $number',
+        excludeSemantics: true,
+        child: Text('$number', textAlign: TextAlign.center, style: valueStyle),
+      ),
     );
   }
 
@@ -622,14 +629,14 @@ StickyTableRow _playersRow(
     padding: pfTableScrollableRowPadding,
     child: Row(
       children: [
-        value(player.matchesPlayed ?? 0),
-        value(player.goals),
-        if (showsAssists) value(player.assists),
-        value(player.teamCleanSheets),
-        value(player.hdm ?? 0),
-        value(player.wins ?? 0),
-        value(player.draws ?? 0),
-        value(player.losses ?? 0),
+        value(player.matchesPlayed ?? 0, _playerColumnNames['J']!),
+        value(player.goals, _playerColumnNames['B']!),
+        if (showsAssists) value(player.assists, _playerColumnNames['PD']!),
+        value(player.teamCleanSheets, _playerColumnNames['CS']!),
+        value(player.hdm ?? 0, _playerColumnNames['HDM']!),
+        value(player.wins ?? 0, _playerColumnNames['G']!),
+        value(player.draws ?? 0, _playerColumnNames['N']!),
+        value(player.losses ?? 0, _playerColumnNames['P']!),
       ],
     ),
   );
@@ -649,6 +656,13 @@ StickyTableRow _playersRow(
     );
   }
 
+  // Nœud d'accessibilité à part pour la cellule du nom : sans lui, le nom
+  // était posé sur le nœud de toute la ligne (qui contient aussi les
+  // chiffres) et le lecteur d'écran du web ne le lisait pas.
+  pinned = Semantics(
+    container: true,
+    child: MergeSemantics(child: pinned),
+  );
   return StickyTableRow(pinned: pinned, scrollable: scrollable);
 }
 

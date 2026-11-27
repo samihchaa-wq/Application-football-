@@ -78,22 +78,29 @@ class PfStatusBanner extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // Textes exclus de l'arbre d'accessibilité :
+                              // le libellé du bandeau les dit déjà, sinon le
+                              // lecteur d'écran lisait le message deux fois.
                               if (title case final value?
                                   when value.trim().isNotEmpty) ...[
-                                Text(
-                                  value,
-                                  style: theme.textTheme.titleSmall?.copyWith(
-                                    color: AppTheme.textPrimary,
-                                    fontWeight: FontWeight.w700,
+                                ExcludeSemantics(
+                                  child: Text(
+                                    value,
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      color: AppTheme.textPrimary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 2),
                               ],
-                              Text(
-                                message,
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: AppTheme.textSecondary,
-                                  height: 1.4,
+                              ExcludeSemantics(
+                                child: Text(
+                                  message,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: AppTheme.textSecondary,
+                                    height: 1.4,
+                                  ),
                                 ),
                               ),
                               if (action != null) ...[

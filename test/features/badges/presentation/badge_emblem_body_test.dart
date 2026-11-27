@@ -323,4 +323,49 @@ void main() {
       expect(await socleOf(tester, base), expected, reason: '$base');
     }
   });
+
+  testWidgets(
+      'lecteur d’écran : le nombre et les mots du badge ne sont lus qu’une fois',
+      (tester) async {
+    final semantics = tester.ensureSemantics();
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: BadgeEmblemBody(
+            size: 100,
+            base: Color(0xFF57C785),
+            descriptor: BadgeDescriptor('MATCHS', 'CARRIÈRE'),
+            value: '50',
+            child: SizedBox.shrink(),
+          ),
+        ),
+      ),
+    );
+
+    // Avant : « 50 50 MATCHS MATCHS CARRIÈRE CARRIÈRE » (contour + texte).
+    expect(find.bySemanticsLabel('50'), findsOneWidget);
+    expect(find.bySemanticsLabel('MATCHS'), findsOneWidget);
+    expect(find.bySemanticsLabel('CARRIÈRE'), findsOneWidget);
+    semantics.dispose();
+  });
+
+  testWidgets('lecteur d’écran : un titre de badge sans nombre est lu une fois',
+      (tester) async {
+    final semantics = tester.ensureSemantics();
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: BadgeEmblemBody(
+            size: 100,
+            base: Color(0xFF57C785),
+            descriptor: BadgeDescriptor('LA GLISSADE', null),
+            child: SizedBox.shrink(),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.bySemanticsLabel('LA GLISSADE'), findsOneWidget);
+    semantics.dispose();
+  });
 }

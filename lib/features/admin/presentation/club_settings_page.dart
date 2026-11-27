@@ -3,6 +3,7 @@ import 'package:petit_filet/core/club/club_rules.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/widgets/pf_app_bar.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
+import 'package:petit_filet/core/widgets/pf_switch_tile.dart';
 import 'package:petit_filet/features/admin/presentation/club_season_tile.dart';
 import 'package:petit_filet/features/club/data/club_repository.dart';
 import 'package:petit_filet/features/club/presentation/club_rules_sync.dart';
@@ -680,10 +681,10 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
               (_searchMatches(_sectionTitles[category] ?? '') ||
                   _searchMatches(
                       '${module.label} ${module.description} ${module.key}')))
-            SwitchListTile.adaptive(
+            PfSwitchTile(
               key: ValueKey('club-module-${module.key}'),
-              contentPadding: EdgeInsets.zero,
-              title: _labelWithInfo(
+              label: module.label,
+              trailingInfo: _infoButton(
                 'module-${module.key}',
                 module.label,
                 '${module.description}\n\nLa désactivation conserve les données existantes.',
@@ -789,10 +790,11 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
     await _setRule(rule, selected);
   }
 
-  Widget _boolRuleTile(ClubRule rule) => SwitchListTile.adaptive(
+  Widget _boolRuleTile(ClubRule rule) => PfSwitchTile(
         key: ValueKey('club-rule-${rule.key}'),
-        contentPadding: EdgeInsets.zero,
-        title: _labelWithInfo('rule-${rule.key}', rule.label, _ruleInfo(rule)),
+        label: rule.label,
+        trailingInfo:
+            _infoButton('rule-${rule.key}', rule.label, _ruleInfo(rule)),
         value: rule.value == 1,
         onChanged:
             _ruleLocked(rule) ? null : (value) => _setRule(rule, value ? 1 : 0),
@@ -838,29 +840,64 @@ class _ClubSettingsPageState extends ConsumerState<ClubSettingsPage> {
           max: rule.max,
         );
     final locked = _ruleLocked(rule);
-    return ListTile(
+    final valueLabel = _ruleValueLabel(rule, rule.value);
+    final canDecrease = !locked && rule.value > rule.min;
+    final canIncrease = !locked && rule.value < rule.max;
+    // Pas de ListTile : il fusionnait libellé, valeur et boutons dans un
+    // seul nœud d'accessibilité, et le lecteur d'écran ne lisait que
+    // « Diminuer, Augmenter ». La valeur est maintenant un nœud à part,
+    // annoncée avec le nom du réglage, et chaque bouton dit ce qu'il règle.
+    return ConstrainedBox(
       key: ValueKey('club-rule-${rule.key}'),
-      contentPadding: EdgeInsets.zero,
-      title: _labelWithInfo('rule-${rule.key}', rule.label, _ruleInfo(rule)),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
+      constraints: const BoxConstraints(minHeight: 56),
+      child: Row(
         children: [
-          IconButton(
-            key: ValueKey('club-rule-${rule.key}-minus'),
-            tooltip: 'Diminuer',
-            icon: const Icon(Icons.remove_circle_outlined),
-            onPressed: locked || rule.value <= rule.min
-                ? null
-                : () => _setRule(rule, stepped(up: false)),
+          Expanded(
+            child: ExcludeSemantics(
+              child: Text(
+                rule.label,
+                style: Theme.of(context).listTileTheme.titleTextStyle ??
+                    Theme.of(context).textTheme.bodyLarge,
+              ),
+            ),
           ),
-          Text(_ruleValueLabel(rule, rule.value)),
-          IconButton(
-            key: ValueKey('club-rule-${rule.key}-plus'),
-            tooltip: 'Augmenter',
-            icon: const Icon(Icons.add_circle_outlined),
-            onPressed: locked || rule.value >= rule.max
-                ? null
-                : () => _setRule(rule, stepped(up: true)),
+          _infoButton('rule-${rule.key}', rule.label, _ruleInfo(rule)),
+          Semantics(
+            label: 'Diminuer : ${rule.label}',
+            button: true,
+            enabled: canDecrease,
+            excludeSemantics: true,
+            onTap:
+                canDecrease ? () => _setRule(rule, stepped(up: false)) : null,
+            child: IconButton(
+              key: ValueKey('club-rule-${rule.key}-minus'),
+              tooltip: 'Diminuer',
+              icon: const Icon(Icons.remove_circle_outlined),
+              onPressed:
+                  canDecrease ? () => _setRule(rule, stepped(up: false)) : null,
+            ),
+          ),
+          Semantics(
+            key: ValueKey('club-rule-${rule.key}-value'),
+            container: true,
+            label: rule.label,
+            value: valueLabel,
+            excludeSemantics: true,
+            child: Text(valueLabel),
+          ),
+          Semantics(
+            label: 'Augmenter : ${rule.label}',
+            button: true,
+            enabled: canIncrease,
+            excludeSemantics: true,
+            onTap: canIncrease ? () => _setRule(rule, stepped(up: true)) : null,
+            child: IconButton(
+              key: ValueKey('club-rule-${rule.key}-plus'),
+              tooltip: 'Augmenter',
+              icon: const Icon(Icons.add_circle_outlined),
+              onPressed:
+                  canIncrease ? () => _setRule(rule, stepped(up: true)) : null,
+            ),
           ),
         ],
       ),

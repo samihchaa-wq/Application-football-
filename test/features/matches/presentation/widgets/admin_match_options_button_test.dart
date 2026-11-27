@@ -60,4 +60,47 @@ void main() {
     expect(find.text('Modifier'), findsOneWidget);
     expect(find.text('Supprimer'), findsOneWidget);
   });
+
+  testWidgets(
+      'lecteur d’écran : chaque ligne du menu Options du match a son nom',
+      (tester) async {
+    final semantics = tester.ensureSemantics();
+    await _pump(
+      tester,
+      _match(
+        kickoffAt: DateTime.now().add(const Duration(days: 5)),
+        status: 'a_venir',
+      ),
+    );
+    await tester.tap(find.byIcon(Icons.edit_outlined));
+    await tester.pumpAndSettle();
+
+    // Avant : la ligne de menu n'avait ni nom ni action (conflit avec le
+    // ListTile placé dedans).
+    expect(
+      tester.getSemantics(find.text('Modifier')),
+      matchesSemantics(
+        label: 'Modifier',
+        isButton: true,
+        hasEnabledState: true,
+        isEnabled: true,
+        isFocusable: true,
+        hasTapAction: true,
+        hasFocusAction: true,
+      ),
+    );
+    expect(
+      tester.getSemantics(find.text('Supprimer')),
+      matchesSemantics(
+        label: 'Supprimer',
+        isButton: true,
+        hasEnabledState: true,
+        isEnabled: true,
+        isFocusable: true,
+        hasTapAction: true,
+        hasFocusAction: true,
+      ),
+    );
+    semantics.dispose();
+  });
 }

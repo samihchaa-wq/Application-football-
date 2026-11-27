@@ -373,12 +373,14 @@ class ShellNavButton extends StatelessWidget {
     // libellé, qui sinon était coupé (« Statisti… » à 130 %).
     final showIcon =
         icon != null && MediaQuery.textScalerOf(context).scale(17) <= 17 * 1.25;
+    // Le libellé est posé ici et le contenu exclu, mais l'InkWell reste dans
+    // l'arbre d'accessibilité : c'est lui qui rend le bouton atteignable à
+    // la touche Tab (sémantique activée sur le web).
     return Semantics(
+      container: true,
       button: true,
       selected: selected,
       label: label,
-      onTap: onTap,
-      excludeSemantics: true,
       child: Material(
         color: Colors.transparent,
         child: Ink(
@@ -408,32 +410,34 @@ class ShellNavButton extends StatelessWidget {
               constraints: const BoxConstraints(minHeight: 52),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (showIcon) ...[
-                      Icon(
-                        icon,
-                        size: 22,
-                        color: selected ? Colors.white : Colors.white70,
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                    Flexible(
-                      child: Text(
-                        label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontFamily: AppTheme.displayFont,
-                          fontSize: 17,
-                          letterSpacing: .6,
+                child: ExcludeSemantics(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (showIcon) ...[
+                        Icon(
+                          icon,
+                          size: 22,
                           color: selected ? Colors.white : Colors.white70,
                         ),
+                        const SizedBox(width: 8),
+                      ],
+                      Flexible(
+                        child: Text(
+                          label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: AppTheme.displayFont,
+                            fontSize: 17,
+                            letterSpacing: .6,
+                            color: selected ? Colors.white : Colors.white70,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

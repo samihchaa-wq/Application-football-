@@ -65,37 +65,38 @@ class NotificationInboxButton extends ConsumerWidget {
     );
     void open() => context.push('/notifications');
 
-    return Semantics(
-      label: label,
-      button: true,
-      excludeSemantics: true,
-      child: showLabel
-          ? PfLabeledButton(
-              label: 'Notifications',
-              color: AppTheme.primaryBright,
-              icon: iconWidget,
-              onTap: open,
-            )
-          : IconButton(
-              key: const ValueKey('notification-inbox-button'),
-              tooltip: 'Notifications',
-              visualDensity: VisualDensity.compact,
-              padding: const EdgeInsets.all(4),
-              constraints: BoxConstraints(
-                minWidth: compact ? 38 : 44,
-                minHeight: compact ? 38 : 44,
-              ),
-              style: IconButton.styleFrom(
-                foregroundColor: AppTheme.primaryBright,
-                backgroundColor: AppTheme.primaryBright.withValues(alpha: .08),
-                side: BorderSide(
-                  color: AppTheme.primaryBright.withValues(alpha: .18),
-                ),
-              ),
-              icon: iconWidget,
-              onPressed: open,
+    // Pas de Semantics(excludeSemantics) autour du bouton : il retirait
+    // l'appui et le focus de l'arbre d'accessibilité, et la touche Tab
+    // sautait la cloche. Le libellé détaillé passe par le bouton lui-même.
+    return showLabel
+        ? PfLabeledButton(
+            label: 'Notifications',
+            semanticLabel: label,
+            color: AppTheme.primaryBright,
+            icon: iconWidget,
+            onTap: open,
+          )
+        : IconButton(
+            key: const ValueKey('notification-inbox-button'),
+            tooltip: 'Notifications',
+            visualDensity: VisualDensity.compact,
+            padding: const EdgeInsets.all(4),
+            constraints: BoxConstraints(
+              minWidth: compact ? 38 : 44,
+              minHeight: compact ? 38 : 44,
             ),
-    );
+            style: IconButton.styleFrom(
+              foregroundColor: AppTheme.primaryBright,
+              backgroundColor: AppTheme.primaryBright.withValues(alpha: .08),
+              side: BorderSide(
+                color: AppTheme.primaryBright.withValues(alpha: .18),
+              ),
+            ),
+            // Libellé détaillé (non lues, appareil muet) pour le lecteur
+            // d'écran, posé sur le nœud même du bouton.
+            icon: Semantics(label: label, child: iconWidget),
+            onPressed: open,
+          );
   }
 }
 
