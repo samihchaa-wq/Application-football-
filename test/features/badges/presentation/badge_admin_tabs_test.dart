@@ -150,4 +150,59 @@ void main() {
     expect(find.text('Description'), findsOneWidget);
     expect(find.text('Créer le badge'), findsOneWidget);
   });
+
+  testWidgets(
+      'lecteur d’écran : onglets, Manuel / Automatique et boutons d’image '
+      'sont nommés', (tester) async {
+    final semantics = tester.ensureSemantics();
+    tester.view.physicalSize = const Size(1200, 2200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          badgeCatalogProvider.overrideWith(
+            (ref) async => const [_manualMysteryBadge],
+          ),
+        ],
+        child: const MaterialApp(home: BadgeAdminPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.bySemanticsLabel(RegExp('^Badges mystères')), findsWidgets);
+    expect(find.bySemanticsLabel(RegExp('^Badges communs')), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp('^Créer un badge')), findsOneWidget);
+
+    // Deux nœuds distincts, l'un choisi, l'autre non (avant : un seul nœud
+    // « Manuel Automatique »).
+    expect(
+      tester.getSemantics(find.text('Manuel')),
+      matchesSemantics(
+        label: 'Badges mystères : Manuel',
+        isButton: true,
+        isSelected: true,
+        hasSelectedState: true,
+        isInMutuallyExclusiveGroup: true,
+      ),
+    );
+    expect(
+      tester.getSemantics(find.text('Automatique')),
+      matchesSemantics(
+        label: 'Badges mystères : Automatique',
+        isButton: true,
+        hasSelectedState: true,
+        isInMutuallyExclusiveGroup: true,
+        hasTapAction: true,
+      ),
+    );
+
+    // Le bouton d'image dit de quel badge il s'agit.
+    expect(
+      find.bySemanticsLabel('Ajouter une image du badge « La glissade »'),
+      findsOneWidget,
+    );
+    semantics.dispose();
+  });
 }

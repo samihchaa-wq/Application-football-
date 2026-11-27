@@ -78,6 +78,30 @@ void main() {
     expect(find.text('Valider ce compte'), findsOneWidget);
   });
 
+  testWidgets('lecteur d’écran : « Valider » et « Refuser » disent quel compte',
+      (tester) async {
+    final semantics = tester.ensureSemantics();
+    repository.profiles = [_profile('p-2', 'Maxime', status: 'pending')];
+
+    await pumpAdmin(tester);
+    await tester.tap(find.textContaining('En attente'));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.getSemantics(find.text('Valider ce compte')),
+      matchesSemantics(
+        label: 'Valider le compte de Maxime Test',
+        isButton: true,
+        hasTapAction: true,
+      ),
+    );
+    expect(
+      find.bySemanticsLabel('Refuser et supprimer le compte de Maxime Test'),
+      findsOneWidget,
+    );
+    semantics.dispose();
+  });
+
   testWidgets(
       'deux comptes en attente au même prénom se distinguent par leur nom',
       (tester) async {

@@ -8,6 +8,7 @@ import 'package:petit_filet/features/season_wrapped/data/season_wrapped_reposito
 import 'package:petit_filet/features/club/data/club_repository.dart';
 import 'package:petit_filet/features/preferences/data/push_subscriptions_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -208,6 +209,25 @@ void main() {
         find.bySemanticsLabel('Notifications, désactivées sur cet appareil'),
         findsOneWidget,
       );
+    });
+
+    testWidgets('clavier : la cloche reste atteignable avec son libellé',
+        (tester) async {
+      final semantics = tester.ensureSemantics();
+      await pumpBell(tester, 2);
+      final node = tester.getSemantics(
+        find.byKey(const ValueKey('notification-inbox-button')),
+      );
+      expect(node.label, contains('Notifications, 2 non lues'));
+      expect(
+        node.getSemanticsData().hasAction(SemanticsAction.tap),
+        isTrue,
+      );
+      expect(
+        node.getSemanticsData().hasAction(SemanticsAction.focus),
+        isTrue,
+      );
+      semantics.dispose();
     });
 
     testWidgets('pas de point quand l’appareil reçoit les notifications',

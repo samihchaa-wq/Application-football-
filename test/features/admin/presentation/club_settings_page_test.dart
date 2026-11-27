@@ -588,6 +588,57 @@ void main() {
     expect(ClubRules.oddsDisabled, isTrue);
   });
 
+  testWidgets(
+      'lecteur d’écran : chaque interrupteur annonce son état, '
+      'chaque compteur sa valeur', (tester) async {
+    final semantics = tester.ensureSemantics();
+    addRule('odds_h2h_memory_days', 'Cotes : mémoire des confrontations',
+        'jours', 900, 90, 3600);
+    addRule(
+        'notify_live_goals', 'Notification : buts en direct', 'bool', 1, 0, 1);
+    await pumpPage(tester);
+
+    await openSection(tester, 'predictions');
+    final value =
+        find.byKey(const ValueKey('club-rule-odds_h2h_memory_days-value'));
+    await tester.ensureVisible(value);
+    expect(
+      tester.getSemantics(value),
+      matchesSemantics(
+        label: 'Cotes : mémoire des confrontations',
+        value: '900 jours',
+      ),
+    );
+    expect(
+      find.bySemanticsLabel('Augmenter : Cotes : mémoire des confrontations'),
+      findsOneWidget,
+    );
+    expect(
+      find.bySemanticsLabel('Diminuer : Cotes : mémoire des confrontations'),
+      findsOneWidget,
+    );
+
+    await openSection(tester, 'live');
+    final tile = find.byKey(const ValueKey('club-rule-notify_live_goals'));
+    await tester.ensureVisible(tile);
+    expect(
+      tester.getSemantics(
+        find.descendant(of: tile, matching: find.byType(Switch)),
+      ),
+      matchesSemantics(
+        label: 'Notification : buts en direct',
+        hasToggledState: true,
+        isToggled: true,
+        hasEnabledState: true,
+        isEnabled: true,
+        isFocusable: true,
+        hasTapAction: true,
+        hasFocusAction: true,
+      ),
+    );
+    semantics.dispose();
+  });
+
   testWidgets('les longues durées avancent par grands pas', (tester) async {
     addRule('odds_h2h_memory_days', 'Cotes : mémoire des confrontations',
         'jours', 900, 90, 3600);
