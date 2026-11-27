@@ -2,6 +2,12 @@
 
 **Actualisé le 25 novembre 2026 (audit complet, voir plus bas ; sections datées du 17 au 25/11 ci-dessous).** Source de vérité opérationnelle : branche `main`, PR ouvertes et contrôles GitHub sur le dernier SHA ; les états ci-dessous peuvent évoluer.
 
+## Copie AS Grinta réparée (27/11/2026, branche claude/project-thread-zijikz)
+
+- Fait : code de la copie dans le dépôt (supabase/functions/sync-as-grinta), liste d'attente réécrite d'un bloc, compteurs d'id recalés (migration 20261210050000 + à chaque copie), alerte « Copie AS Grinta en échec » dans « À faire », images de badge recopiées dans Petit Filet, photos de profil introuvables remplacées, appli qui ne redemande plus une photo introuvable.
+- Vérifié : essai complet sur Postgres local (handler_db_test.ts), tests Deno et Flutter ciblés verts, contrat de sécurité Edge OK.
+- Non fait : rien déployé ni lancé en production (migration + déploiement à faire, voir docs/COPIE_AS_GRINTA.md). Pas d'alerte si la fonction ne répond pas du tout.
+
 ## Corrections des audits sécurité + design du 26/11/2026 (branche claude/quirky-galileo-lf4ti7)
 
 - Fait : jeton interne signé par fonction et par club (`x-push-signature`, migration 20261208000000) ; alerte e-mail quand un admin réinitialise un autre admin ; plafond de demandes de confirmation par compte ; corps de requête borné (manage-user, stripe-refund) ; lien d'agenda régénérable (migration 20261208010000 + bouton « Changer mon lien ») ; cache du club effacé à la déconnexion ; contrôle gitleaks (`secrets_scan.yml`, `.gitleaks.toml`) ; bouton du bas qui grandit avec le texte ; sous-onglets à 44 px ; Paramètres à 8 px et 760 px max.
