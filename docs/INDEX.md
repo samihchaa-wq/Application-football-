@@ -52,6 +52,7 @@ Régénérer après ajout de notes : `python3 tool/docs_index.py`.
 - [Réglages manquants — enquête et extension du 14 novembre 2026](REGLAGES_COMPLEMENTAIRES_20261114.md) — Petit Filet : base de travail 3aa5b9054d4032f0520644c80eec2afcc343fd8c de main.
 - [Média du stade neutre — contrôle préalable obligatoire](STADIUM_MEDIA_AUDIT.md) — Problème de l'[issue #71](https://github.com/samihchaa-wq/Application-football-/issues/71) : les mots AS…
 - [Paiement par carte (Stripe)](STRIPE.md) — 1. L'admin du club appuie sur « Payer par carte » (écran Abonnement, ou écran
+- [Tester le paiement par carte de bout en bout (Stripe, mode test)](STRIPE_TEST_BOUT_EN_BOUT.md) — But : vérifier toute la chaîne avant d'encaisser un vrai club. Un admin paie
 - [Correction vidéo — stade Petit Filet, 13 novembre 2026](VIDEO_STADE_NEUTRE_20261113.md) — assets/composition/stade.mp4 : 1080 × 2338, H.264, 30 images/seconde, 451 images, 15,033 secondes.
 - [Matrice de sécurité métier](business-security-matrix.md) — Cette matrice décrit les invariants de sécurité actuels. PostgreSQL, Storage et les Edge Functions font…
 - [Processus de livraison Supabase](database-release-process.md) — La production distante est la source de vérité de l’état réellement en service.

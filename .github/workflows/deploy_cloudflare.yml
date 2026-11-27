@@ -207,6 +207,10 @@ jobs:
           # Pas de 404.html : Cloudflare Pages renvoie alors index.html pour
           # toute adresse inconnue (navigation de l'appli).
           rm -f build/web/404.html
+          # Contact sécurité (security.txt) : copié explicitement, le dossier
+          # caché .well-known n'étant pas garanti par flutter build web.
+          mkdir -p build/web/.well-known
+          cp web/.well-known/security.txt build/web/.well-known/security.txt
           cat > build/web/_headers <<'TXT'
           /*
             Strict-Transport-Security: max-age=31536000; includeSubDomains
@@ -230,6 +234,11 @@ jobs:
             test -s "build/web/$f"
           done
           grep -Fq "$WEB_VERSION" build/web/build_version.js
+          test -s build/web/.well-known/security.txt
+          expires=$(sed -n 's/^Expires: //p' build/web/.well-known/security.txt)
+          if (( $(date -d "$expires" +%s) < $(date -d '+30 days' +%s) )); then
+            echo "::warning::security.txt expire le $expires : repousser la date (web/.well-known/security.txt)."
+          fi
           grep -q '<base href="/">' build/web/index.html
           grep -q 'Content-Security-Policy' build/web/index.html
           if grep -Fq 'a-remplacer.supabase.co' build/web/index.html; then
@@ -286,4 +295,6 @@ jobs:
           curl -I -LfsS "$base" -o /tmp/headers.txt
           grep -qi '^strict-transport-security:' /tmp/headers.txt
           grep -qi '^permissions-policy:' /tmp/headers.txt
+          curl -LfsS "${base}.well-known/security.txt" -o /tmp/security.txt
+          grep -q '^Contact: ' /tmp/security.txt
           echo "Site publié et vérifié : $base"
