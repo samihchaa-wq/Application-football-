@@ -55,6 +55,30 @@ void main() {
     expect(container.read(authControllerProvider).isLoading, isFalse);
     expect(container.read(authControllerProvider).error, isNull);
   });
+
+  test('après suppression du compte : pas de désinscription, message affiché',
+      () async {
+    final events = <String>[];
+    final auth = _FakeAuthRepository(events);
+    final push = _FakePushRepository(events);
+    final container = ProviderContainer(
+      overrides: [
+        authRepositoryProvider.overrideWithValue(auth),
+        pushSubscriptionsRepositoryProvider.overrideWithValue(push),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container
+        .read(authControllerProvider.notifier)
+        .signOutAfterAccountDeletion();
+
+    final state = container.read(authControllerProvider);
+    expect(events, ['auth.signOut']);
+    expect(state.isAuthenticated, isFalse);
+    expect(state.error, isNull);
+    expect(state.notice, accountDeletedNotice);
+  });
 }
 
 class _FakePushRepository implements PushSubscriptionsRepository {

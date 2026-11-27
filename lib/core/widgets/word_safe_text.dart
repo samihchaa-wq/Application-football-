@@ -50,7 +50,9 @@ class WordSafeText extends StatelessWidget {
       painter.dispose();
     }
     if (widest <= maxWidth) return 1;
-    return math.max(minScale, maxWidth / widest);
+    // Petite marge : sans elle, les arrondis du tracé faisaient encore
+    // tomber la dernière lettre sur la ligne suivante.
+    return math.max(minScale, maxWidth * 0.97 / widest);
   }
 
   @override

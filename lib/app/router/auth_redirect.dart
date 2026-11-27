@@ -162,8 +162,7 @@ String? resolveAuthRedirect({
         return _sportsManagementDisabledFallback(destination);
       }
     }
-    return _roleRedirect(authState, destination, destination.path) ??
-        redirect;
+    return _roleRedirect(authState, destination, destination.path) ?? redirect;
   }
 
   if (location == '/' || location == '/home' || location == '/accueil') {
