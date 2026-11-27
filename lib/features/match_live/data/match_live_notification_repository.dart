@@ -51,7 +51,10 @@ class SupabaseMatchLiveNotificationRepository
 
   @override
   Future<MatchLiveNotificationStatus> fetchStatus(String matchId) async {
-    final grouped = await statesLoader?.load(matchId);
+    final grouped = await statesLoader?.load(
+      matchId,
+      part: UpcomingMatchPart.liveNotifications,
+    );
     if (grouped != null && grouped.liveNotificationsRead) {
       return MatchLiveNotificationStatus.fromRpc(grouped.liveNotifications);
     }

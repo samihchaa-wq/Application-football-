@@ -31,4 +31,9 @@ void main() {
     expect(bell, inInclusiveRange(start, policy));
     expect(full, greaterThan(policy));
   });
+
+  test('une simple perte de focus ne relit rien', () {
+    expect(shouldRefreshOnResume(wasBackgrounded: false), isFalse);
+    expect(shouldRefreshOnResume(wasBackgrounded: true), isTrue);
+  });
 }

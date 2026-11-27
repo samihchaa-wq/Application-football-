@@ -10,7 +10,8 @@ const APP_SHELL = [
   'build_version.js',
   'app_shell.js',
   'history_swipe.js',
-  'petit_filet_logo.webp',
+  // Même adresse que le logo de Flutter : téléchargé une seule fois.
+  'assets/assets/images/petit_filet_logo.webp',
   'flutter_bootstrap.js',
   'manifest.json',
   'favicon.png',

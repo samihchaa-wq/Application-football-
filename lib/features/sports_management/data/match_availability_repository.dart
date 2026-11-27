@@ -102,7 +102,10 @@ class SupabaseMatchAvailabilityRepository
   }
 
   Future<MatchAvailability?> _fetchMyAvailability(String matchId) async {
-    final grouped = await statesLoader?.load(matchId);
+    final grouped = await statesLoader?.load(
+      matchId,
+      part: UpcomingMatchPart.availability,
+    );
     if (grouped != null && grouped.availabilityRead) {
       final availability = grouped.availability;
       return availability == null
