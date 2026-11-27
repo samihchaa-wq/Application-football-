@@ -127,11 +127,19 @@ select is(
   'seul l’appareil coupé disparaît ; l’ordinateur du même joueur et le téléphone de l’autre restent'
 );
 
--- Un compte suspendu peut encore couper son téléphone.
+-- Un compte non actif peut encore couper son téléphone. Le changement de
+-- statut se fait hors de toute identité (sinon le garde des champs sensibles
+-- du profil le refuse), puis on redevient le joueur.
+select set_config('request.jwt.claims', '', true);
 update public.profiles
 set status = 'pending', updated_at = now()
 where id = 'e5000000-0000-0000-0000-000000000001';
 
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"e5000000-0000-0000-0000-000000000001","role":"authenticated","aud":"authenticated"}',
+  true
+);
 set local role authenticated;
 
 select is(

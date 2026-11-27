@@ -206,7 +206,6 @@ class _CollapsedWarning extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: AppTheme.textPrimary,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
