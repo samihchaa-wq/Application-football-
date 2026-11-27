@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:petit_filet/core/utils/match_window.dart';
@@ -156,16 +157,27 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
         .map((match) => match.championshipRound);
   }
 
+  int _suggestedRound(List<MatchModel> matches) =>
+      suggestedChampionshipRoundAfterLatest(
+        matches
+            .where((match) =>
+                match.seasonId == _seasonId && match.matchType == 'championnat')
+            .map((match) => (
+                  kickoffAt: match.kickoffAt,
+                  round: match.championshipRound,
+                )),
+      );
+
   @override
   void initState() {
     super.initState();
     final event = widget.event;
-    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    final tomorrow = ClubTime.now().add(const Duration(days: 1));
     _kind = event == null
         ? _CalendarEntryKind.championnat
         : _CalendarEntryKind.event;
     _startsAt = event?.startsAt ??
-        DateTime(tomorrow.year, tomorrow.month, tomorrow.day, 21);
+        ClubTime.wallClock(tomorrow.year, tomorrow.month, tomorrow.day, 21);
     _initialStartsAt = _startsAt;
     _seasonId = event?.seasonId ?? '';
     _eventTitleController.text = event?.title ?? '';
@@ -258,7 +270,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
         _seasonId.isNotEmpty &&
         !state.isLoading) {
       _championshipRoundDefaultApplied = true;
-      _championshipRound = suggestedChampionshipRound(seasonRounds);
+      _championshipRound = _suggestedRound(state.matches);
     }
 
     final busy = _saving || state.isLoading;
@@ -318,7 +330,12 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
                       .toList(growable: false),
                   onChanged: busy
                       ? null
-                      : (value) => setState(() => _seasonId = value ?? ''),
+                      : (value) => setState(() {
+                            _seasonId = value ?? '';
+                            // Journée proposée recalculée pour la saison
+                            // choisie.
+                            _championshipRoundDefaultApplied = false;
+                          }),
                   validator: (value) => value == null || value.isEmpty
                       ? 'Sélectionne une saison'
                       : null,
@@ -621,7 +638,9 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
       Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (!_isEvent) ...[
+          // Un match entre nous n'a pas d'adversaire, donc pas de stade
+          // adverse à reprendre.
+          if (_isNormalMatch) ...[
             TextFormField(
               controller: _stadiumNameController,
               // Le nom du stade vient de la fiche de l'adversaire : le
@@ -688,7 +707,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
           const SizedBox(width: 8),
           Expanded(
             child: MatchFormPickerTile(
-              label: 'Heure',
+              label: 'Heure${ClubTime.suffix}',
               value: _formatTime(_startsAt),
               enabled: !busy,
               onTap: _pickTime,
@@ -964,7 +983,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
 
   Future<void> _pickDate() async {
     final previousKickoff = _startsAt;
-    final today = DateUtils.dateOnly(DateTime.now());
+    final today = DateUtils.dateOnly(ClubTime.now());
     final firstDate = widget.event == null
         ? today
         : DateUtils.dateOnly(_startsAt).isBefore(today)
@@ -978,7 +997,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
     );
     if (date == null || !mounted) return;
     setState(() {
-      _startsAt = DateTime(
+      _startsAt = ClubTime.wallClock(
         date.year,
         date.month,
         date.day,
@@ -1001,7 +1020,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
     );
     if (time == null || !mounted) return;
     setState(() {
-      _startsAt = DateTime(
+      _startsAt = ClubTime.wallClock(
         _startsAt.year,
         _startsAt.month,
         _startsAt.day,
@@ -1028,12 +1047,10 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
   }
 
   Future<void> _pickChampionshipRound() async {
-    final rounds = _championshipRoundsOfSeason(
-      ref.read(matchesControllerProvider).matches,
-    ).toList(growable: false);
     final value = await MatchWheelPicker.pickInt(
       context: context,
-      initialValue: _championshipRound ?? suggestedChampionshipRound(rounds),
+      initialValue: _championshipRound ??
+          _suggestedRound(ref.read(matchesControllerProvider).matches),
       minValue: 1,
       maxValue: maxChampionshipRound,
       title: 'Journée de championnat',
@@ -1074,7 +1091,9 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
     if (!_formKey.currentState!.validate()) return;
 
     if (widget.event == null) {
-      final pastError = pastKickoffError(_startsAt);
+      final pastError = _isEvent
+          ? pastKickoffError(_startsAt)
+          : newMatchKickoffError(_startsAt);
       if (pastError != null) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(pastError)));

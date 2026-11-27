@@ -1,3 +1,5 @@
+import 'package:petit_filet/core/utils/club_time.dart';
+
 enum SportFinalSelectionStatus {
   starter,
   substitute,
@@ -152,7 +154,7 @@ class SportMatchFinalization {
       matchId: json['match_id'].toString(),
       opponentName: (json['opponent_name'] ?? 'Adversaire').toString(),
       isHome: json['is_home'] != false,
-      kickoffAt: DateTime.parse(json['kickoff_at'].toString()).toLocal(),
+      kickoffAt: DateTime.parse(json['kickoff_at'].toString()).toClub(),
       matchStatus: (json['match_status'] ?? 'a_venir').toString(),
       isValidated: json['is_validated'] == true,
       version: (json['version'] as num?)?.toInt() ?? 0,
@@ -250,5 +252,5 @@ String? _nullableText(Object? value) {
 DateTime? _dateOrNull(Object? value) {
   final text = value?.toString();
   if (text == null || text.isEmpty || text == 'null') return null;
-  return DateTime.tryParse(text)?.toLocal();
+  return DateTime.tryParse(text)?.toClub();
 }

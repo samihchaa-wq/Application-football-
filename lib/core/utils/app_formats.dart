@@ -1,13 +1,17 @@
+import 'club_time.dart';
+
 /// Utilitaires de formatage de dates et heures uniformisés pour toute l'app.
 ///
 /// Format date : DD/MM/YY (ex. 12/07/26)
 /// Format heure : 21h00
+///
+/// Toujours à l'heure du club (voir [ClubTime]), jamais à celle du téléphone.
 class AppFormats {
   AppFormats._();
 
   /// Retourne la date au format DD/MM/YY.
   static String date(DateTime dt) {
-    final local = dt.toLocal();
+    final local = dt.toClub();
     final day = local.day.toString().padLeft(2, '0');
     final month = local.month.toString().padLeft(2, '0');
     final year = (local.year % 100).toString().padLeft(2, '0');
@@ -16,7 +20,7 @@ class AppFormats {
 
   /// Retourne l'heure au format 21h00.
   static String time(DateTime dt) {
-    final local = dt.toLocal();
+    final local = dt.toClub();
     final hour = local.hour.toString().padLeft(2, '0');
     final minute = local.minute.toString().padLeft(2, '0');
     return '${hour}h$minute';
@@ -93,25 +97,25 @@ class AppFormats {
 
   /// Jour de la semaine abrégé : "Lun", "Mar"… (DateTime.weekday va de 1 à 7).
   static String weekdayShort(DateTime dt) =>
-      _weekdaysShort[dt.toLocal().weekday - 1];
+      _weekdaysShort[dt.toClub().weekday - 1];
 
   /// Jour de la semaine en toutes lettres : "Lundi", "Mardi"…
   static String weekdayLong(DateTime dt) =>
-      _weekdaysLong[dt.toLocal().weekday - 1];
+      _weekdaysLong[dt.toClub().weekday - 1];
 
   /// Mois abrégé : "Janv", "Sept"…
-  static String monthShort(DateTime dt) => _monthsShort[dt.toLocal().month - 1];
+  static String monthShort(DateTime dt) => _monthsShort[dt.toClub().month - 1];
 
   /// Mois en toutes lettres : "Janvier", "Septembre"…
-  static String monthLong(DateTime dt) => _monthsLong[dt.toLocal().month - 1];
+  static String monthLong(DateTime dt) => _monthsLong[dt.toClub().month - 1];
 
   /// Numéro du jour sur deux chiffres : "07".
   static String dayNumber(DateTime dt) =>
-      dt.toLocal().day.toString().padLeft(2, '0');
+      dt.toClub().day.toString().padLeft(2, '0');
 
   /// Heure au format "20:45" (deux points, pour l'affichage calendrier).
   static String hourMinute(DateTime dt) {
-    final local = dt.toLocal();
+    final local = dt.toClub();
     final hour = local.hour.toString().padLeft(2, '0');
     final minute = local.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
@@ -123,13 +127,16 @@ class AppFormats {
     DateTime dt, {
     bool includeTime = true,
   }) {
-    final local = dt.toLocal();
+    final local = dt.toClub();
     // « Dim. 22 nov. 2026 » plutôt que « Dimanche 22 Novembre 2026 » : même
     // information, mais la ligne tient avec le type de match (« Championnat ·
     // J8 ») au lieu de passer sur deux lignes sur un téléphone.
     final fullDate =
         '${weekdayShort(local)}. ${local.day} ${_monthsAbbreviated[local.month - 1]} ${local.year}';
-    return includeTime ? '$fullDate • ${hourMinute(local)}' : fullDate;
+    // Téléphone sur un autre fuseau : « 20:45 (heure de Paris) ».
+    return includeTime
+        ? '$fullDate • ${hourMinute(local)}${ClubTime.suffix}'
+        : fullDate;
   }
 
   /// Accorde un nom en français : le pluriel n'apparaît qu'à partir de 2.

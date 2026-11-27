@@ -249,7 +249,7 @@ class _StageLayer extends StatelessWidget {
     final firstLine = [
       if (kickoffAt != null)
         '${AppFormats.weekdayShort(kickoffAt)}. '
-            '${kickoffAt.toLocal().day} '
+            '${kickoffAt.toClub().day} '
             '${AppFormats.monthShort(kickoffAt)}.',
       if (kickoffAt != null) AppFormats.hourMinute(kickoffAt),
       if (data.typeLabel != null) data.typeLabel!,

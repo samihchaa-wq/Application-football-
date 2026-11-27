@@ -21,6 +21,7 @@ class Club {
     this.secondaryColor,
     this.logoPath,
     this.kits,
+    this.timezone,
   });
 
   factory Club.fromJson(Map<String, dynamic> json) => Club(
@@ -32,6 +33,7 @@ class Club {
         secondaryColor: json['secondary_color'] as String?,
         logoPath: json['logo_path'] as String?,
         kits: json['kits'],
+        timezone: json['timezone'] as String?,
       );
 
   final String id;
@@ -49,6 +51,10 @@ class Club {
   /// Maillots réglés par le club (null : maillots par défaut). Voir
   /// [ClubKits.parse].
   final Object? kits;
+
+  /// Fuseau du club (« Europe/Paris ») : toutes les heures s'affichent et se
+  /// saisissent dans ce fuseau. Null : Paris.
+  final String? timezone;
 
   /// Lien d'inscription à partager : il ouvre la page d'inscription avec le
   /// code du club déjà rempli.
@@ -264,17 +270,46 @@ class ClubRegistration {
 }
 
 class ClubRepository {
-  ClubRepository(this._client);
+  ClubRepository(this._client, {DateTime Function()? now})
+      : _now = now ?? DateTime.now;
 
   final SupabaseClient _client;
+  final DateTime Function() _now;
+
+  /// Début de la dernière lecture réussie de chaque réglage du club.
+  final Map<String, DateTime> _configurationReadStarts = {};
+
+  /// Début de la plus ancienne des trois dernières lectures réussies (club,
+  /// modules, règles), ou `null` si l'une d'elles n'a jamais abouti.
+  ///
+  /// Tout changement fait avant ce moment est déjà dans ce que l'appli
+  /// affiche : inutile de tout relire quand le temps réel le rappelle en se
+  /// branchant.
+  DateTime? get configurationReadSince {
+    const keys = ['club', 'modules', 'rules'];
+    if (!keys.every(_configurationReadStarts.containsKey)) return null;
+    return keys
+        .map((key) => _configurationReadStarts[key]!)
+        .reduce((a, b) => a.isBefore(b) ? a : b);
+  }
+
+  Future<T> _readConfiguration<T>(
+    String key,
+    Future<T> Function() read,
+  ) async {
+    final startedAt = _now();
+    final value = await _readAtStartup(read);
+    _configurationReadStarts[key] = startedAt;
+    return value;
+  }
 
   /// Le club du compte connecté. Les règles de la base ne laissent voir que
   /// celui-là.
-  Future<Club> fetchMyClub() => _readAtStartup(() async {
+  Future<Club> fetchMyClub() => _readConfiguration('club', () async {
         final row = await _client
             .from('clubs')
             .select(
-              'id,name,short_name,invite_code,primary_color,secondary_color,logo_path,kits',
+              'id,name,short_name,invite_code,primary_color,secondary_color,logo_path,kits,timezone',
             )
             .single();
         return Club.fromJson(row);
@@ -465,7 +500,8 @@ class ClubRepository {
   }
 
   /// Les fonctionnalités activées pour le club du compte connecté.
-  Future<ClubModules> fetchModules() => _readAtStartup(
+  Future<ClubModules> fetchModules() => _readConfiguration(
+        'modules',
         () async => ClubModules.fromJson(await _client.rpc('get_club_modules')),
       );
 
@@ -483,7 +519,8 @@ class ClubRepository {
   }
 
   /// Les règles du club avec leur valeur actuelle.
-  Future<List<ClubRule>> fetchRules() => _readAtStartup(_fetchRules);
+  Future<List<ClubRule>> fetchRules() =>
+      _readConfiguration('rules', _fetchRules);
 
   Future<List<ClubRule>> _fetchRules() async {
     final result = await _client.rpc('get_club_rules');

@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'dart:async';
 
 import 'package:petit_filet/core/providers/supabase_provider.dart';
@@ -24,7 +25,7 @@ class MatchLiveNotificationStatus {
     return MatchLiveNotificationStatus(
       eligible: map['eligible'] == true,
       subscribed: map['subscribed'] == true,
-      opensAt: DateTime.tryParse('${map['opens_at'] ?? ''}')?.toLocal(),
+      opensAt: DateTime.tryParse('${map['opens_at'] ?? ''}')?.toClub(),
     );
   }
 }
@@ -50,7 +51,10 @@ class SupabaseMatchLiveNotificationRepository
 
   @override
   Future<MatchLiveNotificationStatus> fetchStatus(String matchId) async {
-    final grouped = await statesLoader?.load(matchId);
+    final grouped = await statesLoader?.load(
+      matchId,
+      part: UpcomingMatchPart.liveNotifications,
+    );
     if (grouped != null && grouped.liveNotificationsRead) {
       return MatchLiveNotificationStatus.fromRpc(grouped.liveNotifications);
     }

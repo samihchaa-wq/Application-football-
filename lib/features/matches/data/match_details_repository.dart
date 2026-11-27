@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/core/providers/supabase_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -132,6 +133,7 @@ class MatchDetailsData {
   final List<MatchPredictionResult> predictions;
 
   bool get isValidated => status == 'termine' || status == 'archive';
+  bool get isCancelled => status == 'annule';
   bool get isFriendly => matchType == 'amical';
 
   String get matchTypeLabel {
@@ -141,6 +143,26 @@ class MatchDetailsData {
     return round == null ? 'Championnat' : 'Championnat · J$round';
   }
 }
+
+/// Le match demandé n'existe pas (supprimé, mauvais lien, autre club).
+///
+/// Distincte d'une panne : la fiche dit « Ce match n'existe plus » et
+/// propose de revenir au calendrier, sans « Réessayer » qui ne changerait rien.
+class MatchNotFoundException implements Exception {
+  const MatchNotFoundException();
+
+  String get message => 'Ce match n’existe plus.';
+
+  @override
+  String toString() => message;
+}
+
+/// Erreur « match introuvable » renvoyée par le serveur : code `PT404`
+/// (réponse HTTP 404) depuis la migration 20261209023100, `P0002` avant ;
+/// `22P02` quand l'identifiant du lien n'a même pas la forme d'un match.
+bool isMatchNotFoundError(Object error) =>
+    error is PostgrestException &&
+    const {'PT404', 'P0002', '22P02'}.contains(error.code);
 
 class MatchDetailsRepository {
   MatchDetailsRepository(this._client);
@@ -164,11 +186,16 @@ class MatchDetailsRepository {
         'match_prediction_participant_count',
         params: {'p_match_id': matchId},
       ),
-    ]);
+    ]).catchError(
+      // Un match inexistant fait aussi échouer le compteur : Future.wait
+      // remontait cette erreur technique (500) au lieu de « introuvable ».
+      (Object _) => throw const MatchNotFoundException(),
+      test: isMatchNotFoundError,
+    );
     final match = firstWave[0] as Map<String, dynamic>?;
     final countResult = firstWave[1];
     if (match == null) {
-      throw StateError('Ce match est introuvable ou a été supprimé.');
+      throw const MatchNotFoundException();
     }
     // Un match entre nous n'a pas d'adversaire réel : ni opponent_id, ni
     // ligne opponents jointe.
@@ -179,7 +206,7 @@ class MatchDetailsRepository {
         ? Map<String, dynamic>.from(match['opponents'] as Map)
         : const <String, dynamic>{};
     final serverKickoff =
-        DateTime.tryParse('${match['kickoff_at'] ?? ''}')?.toLocal();
+        DateTime.tryParse('${match['kickoff_at'] ?? ''}')?.toClub();
     final kickoffAt = serverKickoff ??
         DateTime.tryParse('${match['match_date']}T${match['match_time']}') ??
         DateTime(1970);
@@ -362,7 +389,7 @@ class MatchDetailsRepository {
       status: status,
       resultValidatedAt: DateTime.tryParse(
         '${match['result_validated_at'] ?? ''}',
-      )?.toLocal(),
+      )?.toClub(),
       location: location,
       address:
           directAddress ?? (location == 'exterieur' ? opponentAddress : null),

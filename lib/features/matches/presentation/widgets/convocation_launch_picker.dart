@@ -1,3 +1,5 @@
+import 'package:petit_filet/core/utils/club_time.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/club/club_rules.dart';
 import 'package:petit_filet/features/matches/domain/convocation_launch.dart';
 import 'package:petit_filet/features/matches/presentation/widgets/match_wheel_picker.dart';
@@ -12,6 +14,7 @@ class ConvocationLaunchPicker extends StatelessWidget {
     required this.onModeChanged,
     required this.onCustomAtChanged,
     this.enabled = true,
+    this.now,
   });
 
   final DateTime kickoffAt;
@@ -21,9 +24,16 @@ class ConvocationLaunchPicker extends StatelessWidget {
   final ValueChanged<DateTime> onCustomAtChanged;
   final bool enabled;
 
+  /// Heure de référence, injectable pour les tests.
+  final DateTime? now;
+
   @override
   Widget build(BuildContext context) {
     final automaticAt = defaultConvocationLaunchAt(kickoffAt);
+    // Un match proche (moins de J-6) : l'ouverture automatique est déjà
+    // passée, donc tout s'ouvre dès l'enregistrement. Le dire au lieu
+    // d'afficher une date passée comme si elle était à venir.
+    final automaticAlreadyPassed = !automaticAt.isAfter(now ?? DateTime.now());
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -68,22 +78,32 @@ class ConvocationLaunchPicker extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           switch (mode) {
-            ConvocationLaunchMode.automatic =>
-              'Ouverture le ${_formatDateTime(automaticAt)}',
+            ConvocationLaunchMode.automatic => automaticAlreadyPassed
+                ? 'J-${ClubRules.featuresOpenDays} tombait le '
+                    '${_formatDateTime(automaticAt)}, c’est déjà passé : '
+                    'les disponibilités s’ouvrent tout de suite. '
+                    'Pour les ouvrir plus tard, touche « Choisir ».'
+                : 'Ouverture le ${_formatDateTime(automaticAt)}',
             ConvocationLaunchMode.now => 'Ouverture dès l’enregistrement',
             ConvocationLaunchMode.custom => customAt == null
                 ? 'Choisis une date et une heure'
                 : 'Ouverture le ${_formatDateTime(customAt!)}',
           },
-          style: Theme.of(context).textTheme.bodySmall,
+          style:
+              mode == ConvocationLaunchMode.automatic && automaticAlreadyPassed
+                  ? Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: AppTheme.info)
+                  : Theme.of(context).textTheme.bodySmall,
         ),
       ],
     );
   }
 
   Future<void> _pickCustom(BuildContext context) async {
-    final now = DateTime.now();
-    final minimum = DateTime(
+    final now = ClubTime.now();
+    final minimum = ClubTime.wallClock(
       now.year,
       now.month,
       now.day,

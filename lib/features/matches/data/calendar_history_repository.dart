@@ -76,7 +76,16 @@ class CalendarHistoryRepository {
   DateTime? _allCacheAt;
 
   static const _allCacheTtl = Duration(minutes: 10);
-  static const _persistentKey = 'calendar_history_all_v2';
+  static const _persistentKeyPrefix = 'calendar_history_all_v2';
+
+  /// Copie locale propre au compte connecté, comme les autres caches : deux
+  /// personnes de clubs différents sur le même navigateur ne voient jamais
+  /// l'historique l'une de l'autre. Sans compte, rien n'est gardé.
+  String? get _persistentKey {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null || userId.isEmpty) return null;
+    return '${_persistentKeyPrefix}_$userId';
+  }
 
   List<HistoricalMatchResult> _parseRows(Object? response) {
     return (response as List? ?? const [])
@@ -186,9 +195,15 @@ class CalendarHistoryRepository {
   }
 
   Future<List<HistoricalMatchResult>?> _readPersistent() async {
+    final key = _persistentKey;
+    if (key == null) return null;
     try {
       final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_persistentKey);
+      // Ancienne copie commune à tous les comptes : effacée, jamais relue.
+      if (prefs.containsKey(_persistentKeyPrefix)) {
+        await prefs.remove(_persistentKeyPrefix);
+      }
+      final raw = prefs.getString(key);
       if (raw == null || raw.isEmpty) return null;
       final decoded = jsonDecode(raw);
       if (decoded is! List) return null;
@@ -217,10 +232,12 @@ class CalendarHistoryRepository {
   }
 
   Future<void> _writePersistent(List<HistoricalMatchResult> matches) async {
+    final key = _persistentKey;
+    if (key == null) return;
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(
-        _persistentKey,
+        key,
         jsonEncode(
           matches
               .map(

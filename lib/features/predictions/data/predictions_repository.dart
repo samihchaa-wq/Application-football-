@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'dart:async';
 
 import 'package:petit_filet/core/providers/supabase_provider.dart';
@@ -188,7 +189,7 @@ class PredictionsRepository {
     final matchId = matchMap['id'].toString();
     final serverKickoff = DateTime.tryParse(
       '${matchMap['kickoff_at'] ?? ''}',
-    )?.toLocal();
+    )?.toClub();
     final date = matchMap['match_date']?.toString() ?? '';
     final time = matchMap['match_time']?.toString() ?? '00:00:00';
     final kickoffAt =
@@ -225,7 +226,7 @@ class PredictionsRepository {
           : int.tryParse('${matchMap['score_adverse']}'),
       predictionsClosedAt: DateTime.tryParse(
         '${matchMap['predictions_closed_at'] ?? ''}',
-      )?.toLocal(),
+      )?.toClub(),
       availabilityOpensAt: embeddedAvailabilityOpensAt(
         matchMap['match_sport_workflows'],
       ),

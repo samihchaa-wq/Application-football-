@@ -102,9 +102,16 @@ class _PetitFiletAppState extends ConsumerState<PetitFiletApp>
 
     final backgroundedAt = _backgroundedAt;
     _backgroundedAt = null;
-    final awayFor = backgroundedAt == null
-        ? null
-        : DateTime.now().difference(backgroundedAt);
+    // Sur le web, cliquer hors de la page puis revenir (barre d'adresse,
+    // autre fenêtre) ou baisser le volet de notifications donne aussi
+    // « resumed », sans passage par l'arrière-plan. L'application n'a pas
+    // été suspendue : le temps réel est resté branché, rien n'est relu.
+    // Avant, chacun de ces retours relisait le club, les modules, les règles
+    // et tout le calendrier.
+    if (!shouldRefreshOnResume(wasBackgrounded: backgroundedAt != null)) {
+      return;
+    }
+    final awayFor = DateTime.now().difference(backgroundedAt!);
 
     // Reconnecte le signal Realtime : un iPhone peut suspendre le websocket
     // pendant l'arrière-plan. La reconnexion relit la révision courante ; si

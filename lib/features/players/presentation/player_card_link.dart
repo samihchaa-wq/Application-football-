@@ -3,10 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 /// Adresse de la fiche joueur dans l'onglet Statistiques.
-String playerCardLocation(PlayerCardKey key) {
+///
+/// [section] reprend l'onglet des Statistiques d'où l'on vient : la page
+/// Statistiques reste dessous, et le retour la retrouve telle quelle.
+String playerCardLocation(PlayerCardKey key, {String? section}) {
   return Uri(
     path: '/stats/joueur',
     queryParameters: {
+      if (section != null && section.isNotEmpty) 'section': section,
       if (key.profileId != null) 'profil': key.profileId!,
       if (key.fullName.isNotEmpty) 'nom': key.fullName,
       if (key.isGoalkeeper) 'gardien': '1',
@@ -28,6 +32,13 @@ PlayerCardKey? playerCardKeyFromUri(Uri uri) {
     fullName: fullName,
     isGoalkeeper: params['gardien'] == '1',
   );
+}
+
+/// Onglet des Statistiques de l'adresse courante (`?section=`), s'il y en a.
+String? currentStatsSection(BuildContext context) {
+  final router = GoRouter.maybeOf(context);
+  if (router == null) return null;
+  return router.state.uri.queryParameters['section'];
 }
 
 /// Active l'ouverture de la fiche joueur au toucher d'un nom.
@@ -74,7 +85,9 @@ class PlayerCardLink extends StatelessWidget {
       button: true,
       hint: 'Ouvrir la fiche joueur',
       child: InkWell(
-        onTap: () => context.push(playerCardLocation(playerKey)),
+        onTap: () => context.go(
+          playerCardLocation(playerKey, section: currentStatsSection(context)),
+        ),
         child: child,
       ),
     );

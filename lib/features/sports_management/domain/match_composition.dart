@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/core/utils/name_validation.dart';
 import 'package:petit_filet/features/sports_management/domain/sport_match_finalization.dart';
 import 'package:petit_filet/features/sports_management/domain/sport_waitlist_models.dart';
@@ -431,7 +432,7 @@ String? _nullableText(Object? value) {
 DateTime? _dateOrNull(Object? value) {
   final text = value?.toString();
   if (text == null || text.isEmpty) return null;
-  return DateTime.tryParse(text)?.toLocal();
+  return DateTime.tryParse(text)?.toClub();
 }
 
 /// Première lettre d'un nom de famille, en majuscule, ou null quand l'écran ne

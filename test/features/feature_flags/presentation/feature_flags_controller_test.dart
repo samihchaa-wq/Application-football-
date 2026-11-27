@@ -250,6 +250,68 @@ void main() {
     expect(refreshes, 1);
   });
 
+  test(
+      'la première révision ne relit pas des réglages déjà à jour '
+      '(ouverture, retour dans l’appli)', () async {
+    final repository = _FakeFeatureFlagsRepository();
+    addTearDown(repository.dispose);
+    var refreshes = 0;
+    final container = ProviderContainer(overrides: [
+      featureFlagsRepositoryProvider.overrideWithValue(repository),
+      featureFlagsSessionReadyProvider.overrideWithValue(true),
+      clubSessionIdentityProvider.overrideWithValue('a'),
+      featureFlagsConfigurationRefreshProvider
+          .overrideWithValue(() => refreshes++),
+      featureFlagsConfigurationDebounceProvider
+          .overrideWithValue(Duration.zero),
+      clubConfigurationReadSinceProvider
+          .overrideWithValue(() => DateTime.utc(2026, 7, 21, 9)),
+    ]);
+    addTearDown(container.dispose);
+    await container.read(featureFlagsControllerProvider.future);
+    // Réglage modifié la veille : déjà dans la lecture du matin.
+    repository.publishSignal(
+        key: 'club_configuration',
+        revision: 8,
+        updatedAt: DateTime.utc(2026, 7, 20, 12));
+    await pumpEventQueue();
+    expect(refreshes, 0);
+    // Un vrai changement ensuite est toujours appliqué.
+    repository.publishSignal(
+        key: 'club_configuration',
+        revision: 9,
+        updatedAt: DateTime.utc(2026, 7, 21, 9, 30));
+    await pumpEventQueue();
+    expect(refreshes, 1);
+  });
+
+  test('première révision : modification récente ou lecture inconnue = relire',
+      () {
+    final readAt = DateTime.utc(2026, 7, 21, 9);
+    expect(
+      shouldRefreshOnFirstConfigurationSignal(
+        signalUpdatedAt: DateTime.utc(2026, 7, 21, 8, 55),
+        configurationReadSince: readAt,
+      ),
+      isTrue,
+      reason: 'dans la marge d’horloge',
+    );
+    expect(
+      shouldRefreshOnFirstConfigurationSignal(
+        signalUpdatedAt: DateTime.utc(2026, 7, 21, 8),
+        configurationReadSince: null,
+      ),
+      isTrue,
+    );
+    expect(
+      shouldRefreshOnFirstConfigurationSignal(
+        signalUpdatedAt: DateTime.utc(2026, 7, 21, 8),
+        configurationReadSince: readAt,
+      ),
+      isFalse,
+    );
+  });
+
   test('une réponse de chargement A ne remplace jamais les flags de B',
       () async {
     final session = StateProvider<String?>((ref) => 'a');

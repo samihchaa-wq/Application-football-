@@ -21,7 +21,7 @@
   <meta name="apple-mobile-web-app-title" content="Petit Filet">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>Petit Filet</title>
-  <link rel="preload" as="image" href="petit_filet_logo.webp">
+  <link rel="preload" as="image" href="assets/assets/images/petit_filet_logo.webp">
   <!-- Téléchargés dès l'arrivée de la page, sans attendre app_shell.js puis
        flutter_bootstrap.js (1,4 s de petits fichiers en file sur mobile).
        Les adresses reçoivent la version à la publication
@@ -85,11 +85,11 @@
       background-repeat: no-repeat;
       background-size: 260% 100%;
     }
-    @supports ((-webkit-mask-image: url("petit_filet_logo.webp")) or (mask-image: url("petit_filet_logo.webp"))) {
+    @supports ((-webkit-mask-image: url("assets/assets/images/petit_filet_logo.webp")) or (mask-image: url("assets/assets/images/petit_filet_logo.webp"))) {
       .asg-shine {
         opacity: 1;
-        -webkit-mask-image: url("petit_filet_logo.webp");
-        mask-image: url("petit_filet_logo.webp");
+        -webkit-mask-image: url("assets/assets/images/petit_filet_logo.webp");
+        mask-image: url("assets/assets/images/petit_filet_logo.webp");
         -webkit-mask-size: 100% 100%;
         mask-size: 100% 100%;
         animation: asg-shine 2.8s ease-in-out infinite;
@@ -153,7 +153,7 @@
   <div id="asg-splash" role="status" aria-label="Démarrage de l'application">
     <div class="asg-splash-inner">
       <div class="asg-crest">
-        <img src="petit_filet_logo.webp" alt="Petit Filet" width="720" height="480" fetchpriority="high">
+        <img src="assets/assets/images/petit_filet_logo.webp" alt="Petit Filet" width="720" height="480" fetchpriority="high">
         <span class="asg-shine" aria-hidden="true"></span>
       </div>
       <div class="asg-track" aria-hidden="true"><i></i></div>

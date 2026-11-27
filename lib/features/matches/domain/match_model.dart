@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/core/utils/match_window.dart';
 import 'package:petit_filet/features/matches/domain/match_meeting.dart';
 
@@ -144,11 +145,15 @@ class MatchModel {
 
   factory MatchModel.fromJson(Map<String, dynamic> json) {
     final serverKickoff =
-        DateTime.tryParse('${json['kickoff_at'] ?? ''}')?.toLocal();
+        DateTime.tryParse('${json['kickoff_at'] ?? ''}')?.toClub();
     final date = (json['match_date'] ?? '').toString();
     final time = (json['match_time'] ?? '00:00:00').toString();
-    final kickoffAt =
-        serverKickoff ?? DateTime.tryParse('${date}T$time') ?? DateTime(1970);
+    // Sans instant serveur, date et heure sont celles du club.
+    final wallKickoff = DateTime.tryParse('${date}T$time');
+    final kickoffAt = serverKickoff ??
+        (wallKickoff == null
+            ? DateTime(1970)
+            : ClubTime.fromWallClock(wallKickoff));
     final oddsRaw = json['match_odds'];
     final odds = oddsRaw is List && oddsRaw.isNotEmpty
         ? Map<String, dynamic>.from(oddsRaw.first as Map)
@@ -179,20 +184,20 @@ class MatchModel {
           : int.tryParse('${json['score_adverse']}'),
       predictionsClosedAt: DateTime.tryParse(
         '${json['predictions_closed_at'] ?? ''}',
-      )?.toLocal(),
+      )?.toClub(),
       resultValidatedAt: DateTime.tryParse(
         '${json['result_validated_at'] ?? ''}',
-      )?.toLocal(),
+      )?.toClub(),
       liveState: live['state']?.toString(),
       liveFinishedAt:
-          DateTime.tryParse('${live['finished_at'] ?? ''}')?.toLocal(),
+          DateTime.tryParse('${live['finished_at'] ?? ''}')?.toClub(),
       liveExported: live['exported'] == true,
       oddsWin: (odds['odds_victoire_as_grinta'] as num?)?.toDouble(),
       oddsDraw: (odds['odds_nul'] as num?)?.toDouble(),
       oddsLoss: (odds['odds_victoire_adverse'] as num?)?.toDouble(),
       createdBy: json['created_by']?.toString(),
-      createdAt: DateTime.tryParse('${json['created_at'] ?? ''}')?.toLocal(),
-      updatedAt: DateTime.tryParse('${json['updated_at'] ?? ''}')?.toLocal(),
+      createdAt: DateTime.tryParse('${json['created_at'] ?? ''}')?.toClub(),
+      updatedAt: DateTime.tryParse('${json['updated_at'] ?? ''}')?.toClub(),
       opponentName: json['opponents'] is Map
           ? json['opponents']['name']?.toString()
           : null,
@@ -201,7 +206,7 @@ class MatchModel {
       address: (json['address']?.toString().trim().isNotEmpty ?? false)
           ? json['address'].toString()
           : null,
-      meetingAt: DateTime.tryParse('${json['meeting_at'] ?? ''}')?.toLocal(),
+      meetingAt: DateTime.tryParse('${json['meeting_at'] ?? ''}')?.toClub(),
       matchType: (json['match_type'] ?? 'championnat').toString(),
       championshipRound: (json['championship_round'] as num?)?.toInt(),
       jerseyNote: (json['jersey_note']?.toString().trim().isNotEmpty ?? false)

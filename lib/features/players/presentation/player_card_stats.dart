@@ -25,25 +25,16 @@ class _StatGrid extends StatelessWidget {
     );
     bool eligible(PlayerStatistics p) => (p.matchesPlayed ?? 0) >= minMatches;
 
-    // Une valeur nulle ne classe personne : sans cela, une saison où personne
-    // n'a encore fait de passe décisive sacrerait tout l'effectif « 1er ».
-    int? rankOf(PlayerStat stat, {bool Function(PlayerStatistics)? among}) {
-      final mine = stat.valueOf(player);
-      if (mine <= 0) return null;
-      return 1 +
-          players
-              .where(
-                (p) => (among == null || among(p)) && stat.valueOf(p) > mine,
-              )
-              .length;
-    }
+    int? rankOf(PlayerStat stat, {bool Function(PlayerStatistics)? among}) =>
+        statRankOf(players, player, stat, among: among);
 
     // Toucher une case ouvre le classement complet de la statistique.
-    VoidCallback openRanking(PlayerStat stat) => () => context.push(
+    VoidCallback openRanking(PlayerStat stat) => () => context.go(
           playerStatRankingLocation(
             key: playerKey,
             stat: stat,
             period: data.period,
+            section: currentStatsSection(context),
           ),
         );
 

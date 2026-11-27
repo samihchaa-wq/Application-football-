@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/core/providers/supabase_provider.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -51,7 +52,7 @@ class ClubSubscription {
 
   factory ClubSubscription.fromJson(Map<String, dynamic> json) {
     DateTime? date(Object? value) =>
-        value is String ? DateTime.tryParse(value)?.toLocal() : null;
+        value is String ? DateTime.tryParse(value)?.toClub() : null;
     int number(Object? value) => value is num ? value.toInt() : 0;
     return ClubSubscription(
       state: ClubSubscriptionState.parse(json['state']),
@@ -156,7 +157,7 @@ class ClubReferrals {
               clubName: item['club_name']?.toString() ?? 'Club',
               state: ClubReferralState.parse(item['state']),
               joinedAt: item['joined_at'] is String
-                  ? DateTime.tryParse(item['joined_at'] as String)?.toLocal()
+                  ? DateTime.tryParse(item['joined_at'] as String)?.toClub()
                   : null,
             ),
       ],

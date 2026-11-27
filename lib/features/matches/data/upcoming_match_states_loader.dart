@@ -34,6 +34,18 @@ class UpcomingMatchStates {
   final Object? liveNotifications;
 }
 
+/// Les deux parts d'une réponse groupée, chacune lue par un écran différent.
+enum UpcomingMatchPart { availability, liveNotifications }
+
+/// Une réponse groupée (en cours ou reçue) et les parts déjà servies.
+class _SharedResponse {
+  _SharedResponse(this.future);
+
+  final Future<UpcomingMatchStates?> future;
+  final Set<UpcomingMatchPart> served = {};
+  DateTime? receivedAt;
+}
+
 /// Regroupe en une seule requête les lectures « ma dispo » et « cloche des
 /// buts » demandées en même temps par les cartes du calendrier.
 ///
@@ -44,8 +56,12 @@ class UpcomingMatchStates {
 /// `get_my_upcoming_match_states`, qui appelle côté serveur les deux mêmes
 /// fonctions, avec les mêmes droits.
 ///
-/// Aucune réponse n'est gardée après coup : une relecture (après une
-/// modification, un signal de synchronisation…) repart toujours au serveur.
+/// Une réponse sert au plus une fois chaque part ([UpcomingMatchPart]), et
+/// seulement pendant [reuseFor] : la cloche demandée juste après « ma dispo »
+/// (carte construite un peu plus tard, en défilant) profite de la même
+/// réponse au lieu de relancer la requête groupée. Une relecture de la même
+/// part (après une modification, un signal de synchronisation…) repart
+/// toujours au serveur.
 ///
 /// Repli : si la fonction groupée n'existe pas encore en production, ou si
 /// la requête groupée échoue, [load] rend `null` et l'appelant refait son
@@ -56,13 +72,21 @@ class UpcomingMatchStatesLoader {
     this._client, {
     this.window = const Duration(milliseconds: 20),
     this.maxBatchSize = 50,
-  });
+    this.reuseFor = const Duration(seconds: 2),
+    DateTime Function()? now,
+  }) : _now = now ?? DateTime.now;
 
   final SupabaseClient _client;
   final Duration window;
 
   /// Le serveur refuse au-delà de 60 matchs par appel.
   final int maxBatchSize;
+
+  /// Durée pendant laquelle l'autre part d'une réponse reçue peut encore
+  /// être servie sans nouvelle requête.
+  final Duration reuseFor;
+  final DateTime Function() _now;
+  final Map<String, _SharedResponse> _shared = {};
 
   static const _rpc = 'get_my_upcoming_match_states';
   static const _timeout = Duration(seconds: 8);
@@ -73,13 +97,32 @@ class UpcomingMatchStatesLoader {
 
   /// État groupé de [matchId], ou `null` si l'appelant doit faire son appel
   /// individuel.
-  Future<UpcomingMatchStates?> load(String matchId) {
+  ///
+  /// Avec [part], une réponse groupée en cours ou toute récente qui n'a pas
+  /// encore servi cette part est réutilisée.
+  Future<UpcomingMatchStates?> load(String matchId, {UpcomingMatchPart? part}) {
     if (_unsupported || matchId.isEmpty) return Future.value();
     final existing = _pending[matchId];
-    if (existing != null) return existing.future;
+    if (existing != null) {
+      if (part != null) _shared[matchId]?.served.add(part);
+      return existing.future;
+    }
+    if (part != null) {
+      final shared = _shared[matchId];
+      final receivedAt = shared?.receivedAt;
+      if (shared != null &&
+          !shared.served.contains(part) &&
+          (receivedAt == null || _now().difference(receivedAt) < reuseFor)) {
+        shared.served.add(part);
+        return shared.future;
+      }
+    }
 
     final completer = Completer<UpcomingMatchStates?>();
     _pending[matchId] = completer;
+    final shared = _SharedResponse(completer.future);
+    if (part != null) shared.served.add(part);
+    _shared[matchId] = shared;
     if (_pending.length >= maxBatchSize) {
       _flush();
     } else {
@@ -125,11 +168,27 @@ class UpcomingMatchStatesLoader {
       AppLogger.error('calendar.upcoming_states', error, stackTrace);
     }
 
+    final receivedAt = _now();
     for (final entry in batch.entries) {
+      final shared = _shared[entry.key];
+      if (shared != null && identical(shared.future, entry.value.future)) {
+        if (states?[entry.key] == null) {
+          // Rien d'utile à partager : chaque part refera son appel.
+          _shared.remove(entry.key);
+        } else {
+          shared.receivedAt = receivedAt;
+        }
+      }
       if (!entry.value.isCompleted) {
         entry.value.complete(states?[entry.key]);
       }
     }
+    _shared.removeWhere(
+      (_, shared) {
+        final at = shared.receivedAt;
+        return at != null && receivedAt.difference(at) >= reuseFor;
+      },
+    );
   }
 
   static bool _isMissingFunction(PostgrestException error) {

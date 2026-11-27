@@ -26,6 +26,28 @@ void main() {
       );
       expect(pastKickoffError(null, now: now), isNull);
     });
+
+    test('refuse la création d’un match à moins de 15 min du coup d’envoi', () {
+      final now = DateTime.utc(2026, 8, 13, 12);
+
+      expect(
+        newMatchKickoffError(now.add(const Duration(minutes: 10)), now: now),
+        'Impossible de créer un match qui commence dans moins de 15 minutes.',
+      );
+      expect(
+        newMatchKickoffError(now.add(const Duration(minutes: 15)), now: now),
+        isNotNull,
+      );
+      expect(
+        newMatchKickoffError(now.subtract(const Duration(hours: 1)), now: now),
+        'Impossible de créer un match dont l’heure est déjà passée.',
+      );
+      expect(
+        newMatchKickoffError(now.add(const Duration(minutes: 16)), now: now),
+        isNull,
+      );
+      expect(newMatchKickoffError(null, now: now), isNull);
+    });
   });
 
   group('AppFormats', () {

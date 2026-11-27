@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:petit_filet/core/widgets/pf_app_bar.dart';
 import 'package:petit_filet/features/sports_management/data/guest_players_repository.dart';
@@ -591,7 +592,7 @@ class _NewGuestInput {
 }
 
 String _formatDate(DateTime value) {
-  final local = value.toLocal();
+  final local = value.toClub();
   return '${local.day.toString().padLeft(2, '0')}/'
       '${local.month.toString().padLeft(2, '0')} '
       '${local.hour.toString().padLeft(2, '0')}:'
