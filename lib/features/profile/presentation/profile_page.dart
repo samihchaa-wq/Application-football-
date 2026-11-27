@@ -10,6 +10,7 @@ import 'package:petit_filet/core/widgets/photo_crop_preview.dart';
 import 'package:petit_filet/features/auth/data/account_email_repository.dart';
 import 'package:petit_filet/features/auth/domain/auth_profile.dart';
 import 'package:petit_filet/features/auth/presentation/auth_state.dart';
+import 'package:petit_filet/features/auth/presentation/two_factor_page.dart';
 import 'package:petit_filet/features/profile/data/personal_data_repository.dart';
 import 'package:petit_filet/features/profile/presentation/my_data_section.dart';
 import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
@@ -341,6 +342,22 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 onPressed: busy ? null : () => _changePassword(context),
                 child: const Text('Changer le mot de passe'),
               ),
+              // Proposée aux admins, qui peuvent agir sur les comptes des
+              // membres (audit du 26/11/2026, point 39).
+              if (ref.watch(isRealAdminProvider)) ...[
+                SizedBox(height: compact ? 6 : 8),
+                OutlinedButton.icon(
+                  onPressed: busy
+                      ? null
+                      : () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const TwoFactorPage(),
+                            ),
+                          ),
+                  icon: const Icon(Icons.shield_outlined),
+                  label: const Text('Double authentification'),
+                ),
+              ],
               SizedBox(height: compact ? 6 : 8),
               OutlinedButton.icon(
                 onPressed: busy ? null : () => _editEmail(context, profile),

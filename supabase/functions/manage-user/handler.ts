@@ -121,6 +121,54 @@ export function adminPasswordResetAlertMail(
 const DEMO_ACCOUNT_ERROR =
   "Compte de démonstration : il ne peut être ni supprimé ni changé de mot de passe.";
 
+/// Niveau d'authentification porté par le jeton déjà vérifié par Auth :
+/// « aal2 » après un code de double authentification, « aal1 » sinon.
+/// Un jeton illisible compte comme « aal1 » (jamais plus de droits).
+export function tokenAssuranceLevel(token: string): "aal1" | "aal2" {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return "aal1";
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized + "=".repeat((4 - normalized.length % 4) % 4);
+    const claims = JSON.parse(atob(padded));
+    return claims?.aal === "aal2" ? "aal2" : "aal1";
+  } catch {
+    return "aal1";
+  }
+}
+
+/// Double authentification des administrateurs (audit du 26/11/2026, point 39).
+///
+/// - Un admin qui a activé la double authentification doit avoir saisi son
+///   code dans cette session : un mot de passe volé seul ne suffit plus.
+/// - Un admin qui ne l'a pas activée passe, sauf si ADMIN_MFA_REQUIRED vaut
+///   « true » sur le serveur. Ce réglage reste éteint tant que la propriétaire
+///   n'a pas décidé de rendre la double authentification obligatoire.
+///
+/// Retourne null si l'action est permise, sinon le refus à renvoyer.
+export function adminMfaRefusal(input: {
+  aal: "aal1" | "aal2";
+  hasVerifiedFactor: boolean;
+  required: boolean;
+}): { error: string; code: string } | null {
+  if (input.aal === "aal2") return null;
+  if (input.hasVerifiedFactor) {
+    return {
+      error:
+        "Saisis le code de ton application d'authentification pour continuer.",
+      code: "mfa_required",
+    };
+  }
+  if (input.required) {
+    return {
+      error:
+        "Active la double authentification dans ton profil pour faire cette action.",
+      code: "mfa_enrollment_required",
+    };
+  }
+  return null;
+}
+
 export function createManageUserHandler({
   createClient,
   getEnv,
@@ -256,6 +304,19 @@ export function createManageUserHandler({
           { error: "Active club administrator required" },
           403,
         );
+      }
+
+      // Actions sensibles (lien de nouveau mot de passe, suppression d'un
+      // compte) : code de double authentification exigé si l'admin l'a activée.
+      const mfaRefusal = adminMfaRefusal({
+        aal: tokenAssuranceLevel(token),
+        hasVerifiedFactor: (userData.user.factors ?? []).some(
+          (factor) => factor.status === "verified",
+        ),
+        required: getEnv("ADMIN_MFA_REQUIRED")?.trim().toLowerCase() === "true",
+      });
+      if (mfaRefusal) {
+        return jsonResponse(mfaRefusal, 403);
       }
 
       // La clé de service passe outre les règles d'accès de la base : le

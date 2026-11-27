@@ -1,6 +1,8 @@
 import {
+  adminMfaRefusal,
   createManageUserHandler,
   isDemoAccount,
+  tokenAssuranceLevel,
   type ManageUserDependencies,
 } from "./handler.ts";
 
@@ -35,6 +37,8 @@ function fixture() {
     memberCount: 1,
     profileDeleted: false,
     targetContactEmail: null as string | null,
+    token: "verified-token",
+    factors: [] as { status: string }[],
   };
   const alerts: string[] = [];
 
@@ -109,15 +113,19 @@ function fixture() {
     if (key === "anon-test") {
       assertEquals(
         options.global?.headers?.Authorization,
-        "Bearer verified-token",
+        `Bearer ${state.token}`,
       );
       return {
         auth: {
           getUser: (token: string) => {
             events.push("auth.verify");
-            assertEquals(token, "verified-token");
+            assertEquals(token, state.token);
             return Promise.resolve({
-              data: { user: state.jwtValid ? { id: ADMIN } : null },
+              data: {
+                user: state.jwtValid
+                  ? { id: ADMIN, factors: state.factors }
+                  : null,
+              },
               error: state.jwtValid ? null : new Error("expired"),
             });
           },
@@ -179,7 +187,7 @@ function fixture() {
     };
   };
 
-  const env: Record<string, string> = {
+  const env: Record<string, string | undefined> = {
     SUPABASE_URL: "https://database.example.invalid",
     SUPABASE_ANON_KEY: "anon-test",
     SUPABASE_SERVICE_ROLE_KEY: "service-test",
@@ -201,14 +209,14 @@ function fixture() {
         {
           method: "POST",
           headers: {
-            Authorization: "Bearer verified-token",
+            Authorization: `Bearer ${state.token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(body),
         },
       ),
     );
-  return { events, state, handler, request, alerts };
+  return { events, state, handler, request, alerts, env };
 }
 
 function assertNoPrivilegedAction(events: string[]): void {
@@ -435,4 +443,83 @@ Deno.test("manage-user : un corps plus long que déclaré est refusé", async ()
   );
   assertEquals(response.status, 413);
   assertNoPrivilegedAction(f.events);
+});
+
+// Double authentification des administrateurs (audit du 26/11/2026, point 39).
+
+function fakeJwt(claims: Record<string, unknown>): string {
+  const encode = (value: unknown) =>
+    btoa(JSON.stringify(value)).replace(/=+$/, "").replace(/\+/g, "-")
+      .replace(/\//g, "_");
+  return `${encode({ alg: "HS256" })}.${encode(claims)}.signature`;
+}
+
+Deno.test("manage-user 2FA : niveau lu dans le jeton, illisible = aal1", () => {
+  assertEquals(tokenAssuranceLevel(fakeJwt({ aal: "aal2" })), "aal2");
+  assertEquals(tokenAssuranceLevel(fakeJwt({ aal: "aal1" })), "aal1");
+  assertEquals(tokenAssuranceLevel("pas-un-jeton"), "aal1");
+  assertEquals(tokenAssuranceLevel("a.%%%.b"), "aal1");
+});
+
+Deno.test("manage-user 2FA : règle sans obligation", () => {
+  assertEquals(
+    adminMfaRefusal({ aal: "aal1", hasVerifiedFactor: false, required: false }),
+    null,
+  );
+  assertEquals(
+    adminMfaRefusal({ aal: "aal1", hasVerifiedFactor: true, required: false })
+      ?.code,
+    "mfa_required",
+  );
+  assertEquals(
+    adminMfaRefusal({ aal: "aal2", hasVerifiedFactor: true, required: true }),
+    null,
+  );
+  assertEquals(
+    adminMfaRefusal({ aal: "aal1", hasVerifiedFactor: false, required: true })
+      ?.code,
+    "mfa_enrollment_required",
+  );
+});
+
+Deno.test("manage-user 2FA : admin avec code activé mais non saisi, refusé avant toute action", async () => {
+  const f = fixture();
+  f.state.factors = [{ status: "verified" }];
+  const response = await f.request({ action: "reset-password", userId: TARGET });
+  assertEquals(response.status, 403);
+  assertEquals((await response.json()).code, "mfa_required");
+  assertNoPrivilegedAction(f.events);
+});
+
+Deno.test("manage-user 2FA : admin avec code saisi (aal2), lien créé", async () => {
+  const f = fixture();
+  f.state.factors = [{ status: "verified" }];
+  f.state.token = fakeJwt({ sub: ADMIN, aal: "aal2" });
+  const response = await f.request({ action: "reset-password", userId: TARGET });
+  assertEquals(response.status, 200);
+  assertEquals(f.events.includes("auth.generateLink"), true);
+});
+
+Deno.test("manage-user 2FA : facteur non terminé (unverified) ne bloque pas", async () => {
+  const f = fixture();
+  f.state.factors = [{ status: "unverified" }];
+  const response = await f.request({ action: "reset-password", userId: TARGET });
+  assertEquals(response.status, 200);
+});
+
+Deno.test("manage-user 2FA : obligation serveur, admin sans code refusé", async () => {
+  const f = fixture();
+  f.env.ADMIN_MFA_REQUIRED = "true";
+  const response = await f.request({ action: "delete", userId: TARGET });
+  assertEquals(response.status, 403);
+  assertEquals((await response.json()).code, "mfa_enrollment_required");
+  assertNoPrivilegedAction(f.events);
+});
+
+Deno.test("manage-user 2FA : la suppression de son propre compte ne demande pas de code", async () => {
+  const f = fixture();
+  f.state.factors = [{ status: "verified" }];
+  f.env.ADMIN_MFA_REQUIRED = "true";
+  const response = await f.request({ action: "delete-self" });
+  assertEquals(response.status, 200);
 });
