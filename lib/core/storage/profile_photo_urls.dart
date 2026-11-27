@@ -18,6 +18,13 @@ const Duration profilePhotoSignedUrlTtl = Duration(hours: 12);
 /// est resignée plutôt que servie à un widget qui l'afficherait trop tard.
 const Duration _renewMargin = Duration(minutes: 10);
 
+/// Délai avant de redemander la signature d'une photo introuvable.
+///
+/// Un chemin qui ne correspond à aucun fichier (photo supprimée, chemin
+/// recopié d'une autre application) renvoyait une erreur à chaque écran.
+/// On l'oublie pendant ce délai : les initiales restent affichées.
+const Duration profilePhotoMissingRetry = Duration(minutes: 30);
+
 /// Clé du cache disque des URLs signées.
 const String profilePhotoSignedUrlsPrefsKey = 'profile_photo_signed_urls_v1';
 
@@ -45,6 +52,7 @@ class ProfilePhotoUrlCache {
   final Map<String, Completer<String?>> _pending =
       <String, Completer<String?>>{};
   final Set<String> _batch = <String>{};
+  final Map<String, DateTime> _missing = <String, DateTime>{};
 
   Timer? _batchTimer;
   bool _restored = false;
@@ -99,6 +107,8 @@ class ProfilePhotoUrlCache {
     final path = storagePath(trimmed);
     if (path == null) return trimmed;
 
+    if (isMissing(path)) return null;
+
     await _restore();
 
     final entry = _entries[path];
@@ -123,6 +133,36 @@ class ProfilePhotoUrlCache {
     unawaited(_persist());
   }
 
+  /// Vrai si ce chemin a été signalé introuvable il y a moins de
+  /// [profilePhotoMissingRetry].
+  bool isMissing(String? value) {
+    final path = storagePath(value);
+    if (path == null) return false;
+    final since = _missing[path];
+    if (since == null) return false;
+    if (DateTime.now().difference(since) < profilePhotoMissingRetry) {
+      return true;
+    }
+    _missing.remove(path);
+    return false;
+  }
+
+  /// Note qu'aucun fichier n'existe à ce chemin.
+  void markMissing(String? value) {
+    final path = storagePath(value);
+    if (path != null) _missing[path] = DateTime.now();
+  }
+
+  /// Erreur du stockage qui veut dire « fichier introuvable » (Supabase
+  /// répond 400 « Object not found » ou 404), et non une coupure réseau.
+  static bool isMissingObjectError(Object error) {
+    if (error is! StorageException) return false;
+    final status = error.statusCode;
+    return status == '400' ||
+        status == '404' ||
+        error.message.toLowerCase().contains('not found');
+  }
+
   Future<void> _flush() async {
     _batchTimer = null;
     final paths = _batch.toList(growable: false);
@@ -135,12 +175,24 @@ class ProfilePhotoUrlCache {
     var resolved = <String, String>{};
     try {
       if (paths.length == 1) {
-        resolved[paths.first] = await storage.createSignedUrl(paths.first, ttl);
+        try {
+          resolved[paths.first] =
+              await storage.createSignedUrl(paths.first, ttl);
+        } catch (error) {
+          if (!isMissingObjectError(error)) rethrow;
+          markMissing(paths.first);
+        }
       } else {
         final results = await storage.createSignedUrlsResult(paths, ttl);
         for (var index = 0; index < results.length; index++) {
           final result = results[index];
-          if (result is! SignedUrlSuccess) continue;
+          if (result is! SignedUrlSuccess) {
+            // Réponse groupée : une ligne en échec veut dire que ce fichier
+            // précis est introuvable (les coupures réseau lèvent une erreur).
+            final path = _normalize(result.path);
+            markMissing(paths.contains(path) ? path : paths[index]);
+            continue;
+          }
           final path = _normalize(result.path);
           resolved[paths.contains(path) ? path : paths[index]] =
               result.signedUrl;
@@ -223,6 +275,7 @@ class ProfilePhotoUrlCache {
   /// Vide le cache (déconnexion, ou tests).
   Future<void> clear() async {
     _entries.clear();
+    _missing.clear();
     _batch.clear();
     _batchTimer?.cancel();
     _batchTimer = null;
