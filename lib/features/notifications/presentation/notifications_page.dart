@@ -468,6 +468,12 @@ final setNotificationsPausedProvider =
           );
         });
 
+/// Ce que la pause fait perdre aux membres, affiché tant qu'elle dure.
+const _pausedConsequence =
+    'Pendant la pause, rien n’est envoyé et rien n’est rangé dans '
+    'l’historique des membres : ils ne retrouveront pas ces messages '
+    'après la réactivation.';
+
 class _AdminResumeNotificationsCard extends ConsumerStatefulWidget {
   const _AdminResumeNotificationsCard();
 
@@ -514,6 +520,17 @@ class _AdminResumeNotificationsCardState
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text('Les notifications du club sont en pause.'),
+            const SizedBox(height: 4),
+            // Le serveur n'envoie rien ET ne range rien dans l'historique
+            // pendant la pause : sans ce rappel, l'admin croyait les
+            // messages simplement retardés.
+            Text(
+              _pausedConsequence,
+              key: const Key('notifications-paused-consequence'),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppTheme.textSecondary,
+                  ),
+            ),
             const SizedBox(height: 8),
             FilledButton(
               onPressed: _busy ? null : _resume,

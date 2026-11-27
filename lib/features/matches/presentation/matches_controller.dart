@@ -2,7 +2,6 @@ import 'package:petit_filet/features/auth/domain/auth_profile.dart';
 import 'package:petit_filet/features/auth/presentation/auth_state.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:petit_filet/features/matches/data/calendar_matches_local_cache.dart';
-import 'package:petit_filet/features/matches/data/match_info_repository.dart';
 import 'package:petit_filet/features/matches/data/matches_repository.dart';
 import 'package:petit_filet/features/matches/domain/match_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -274,89 +273,6 @@ class MatchesController extends StateNotifier<MatchesState> {
     }
   }
 
-  Future<void> updateMatch({
-    required String id,
-    required String seasonId,
-    required String opponentId,
-    required DateTime kickoffAt,
-    required bool isHome,
-    required String status,
-    required double oddsWin,
-    required double oddsDraw,
-    required double oddsLoss,
-    required DateTime? expectedUpdatedAt,
-    int? squadSizeLimit,
-    String? address,
-    bool rememberAddressAsDefault = false,
-    String matchType = 'championnat',
-    String? jerseyNote,
-    DateTime? meetingAt,
-  }) async {
-    if (!_canManageMatches) {
-      state = state.copyWith(isLoading: false, error: 'Droits insuffisants.');
-      return;
-    }
-    if (id.isEmpty || seasonId.isEmpty || opponentId.isEmpty) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Match, saison et adversaire sont obligatoires.',
-      );
-      return;
-    }
-    if (!_validOdds(oddsWin, oddsDraw, oddsLoss)) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Chaque cote doit être comprise entre 1,01 et 100.',
-      );
-      return;
-    }
-    if (squadSizeLimit != null && (squadSizeLimit < 1 || squadSizeLimit > 30)) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Le nombre de convoqués doit être compris entre 1 et 30.',
-      );
-      return;
-    }
-    if (expectedUpdatedAt == null) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Le match a changé. Recharge l’écran avant d’enregistrer.',
-      );
-      return;
-    }
-    state = state.copyWith(isLoading: true, clearError: true);
-    try {
-      await _repository.updateMatch(
-        id: id,
-        seasonId: seasonId,
-        opponentId: opponentId,
-        kickoffAt: kickoffAt,
-        isHome: isHome,
-        status: status,
-        oddsWin: oddsWin,
-        oddsDraw: oddsDraw,
-        oddsLoss: oddsLoss,
-        expectedUpdatedAt: expectedUpdatedAt,
-        squadSizeLimit: squadSizeLimit,
-        address: address,
-        rememberAddressAsDefault: rememberAddressAsDefault,
-        matchType: matchType,
-        jerseyNote: jerseyNote,
-        meetingAt: meetingAt,
-      );
-      await load(
-        seasonId: state.selectedSeasonId,
-        allSeasons: state.includesAllSeasons,
-        forceRefresh: true,
-      );
-      _ref
-        ..invalidate(matchCoreProvider(id))
-        ..invalidate(matchInfoProvider(id));
-    } catch (error) {
-      state = state.copyWith(isLoading: false, error: humanizeError(error));
-    }
-  }
-
   /// Crée un « match entre nous » : pas d'adversaire, pas de cotes, pas de
   /// limite convocable.
   Future<void> createInternalMatch({
@@ -378,53 +294,6 @@ class MatchesController extends StateNotifier<MatchesState> {
       await _repository.createInternalMatch(
         seasonId: seasonId,
         kickoffAt: kickoffAt,
-        address: address,
-        meetingAt: meetingAt,
-      );
-      await load(
-        seasonId: state.selectedSeasonId,
-        allSeasons: state.includesAllSeasons,
-        forceRefresh: true,
-      );
-    } catch (error) {
-      state = state.copyWith(isLoading: false, error: humanizeError(error));
-    }
-  }
-
-  Future<void> updateInternalMatch({
-    required String id,
-    required String seasonId,
-    required DateTime kickoffAt,
-    required DateTime? expectedUpdatedAt,
-    String? address,
-    bool rememberAddressAsDefault = false,
-    DateTime? meetingAt,
-  }) async {
-    if (!_canManageMatches) {
-      state = state.copyWith(isLoading: false, error: 'Droits insuffisants.');
-      return;
-    }
-    if (id.isEmpty || seasonId.isEmpty) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Match et saison obligatoires.',
-      );
-      return;
-    }
-    if (expectedUpdatedAt == null) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Le match a changé. Recharge l’écran avant d’enregistrer.',
-      );
-      return;
-    }
-    state = state.copyWith(isLoading: true, clearError: true);
-    try {
-      await _repository.updateInternalMatch(
-        id: id,
-        seasonId: seasonId,
-        kickoffAt: kickoffAt,
-        expectedUpdatedAt: expectedUpdatedAt,
         address: address,
         meetingAt: meetingAt,
       );

@@ -10,10 +10,12 @@ class LicenseRepository {
 
   final SupabaseClient _client;
 
-  Future<List<LicenseExpense>> fetchExpenses() async {
+  /// Dépenses de la saison : chaque saison a les siennes.
+  Future<List<LicenseExpense>> fetchExpenses(String seasonId) async {
     final rows = await _client
         .from('club_license_expenses')
         .select('id, label')
+        .eq('season_id', seasonId)
         .order('created_at');
     return [
       for (final row in rows)
@@ -21,8 +23,10 @@ class LicenseRepository {
     ];
   }
 
-  Future<void> addExpense(String label) async {
-    await _client.from('club_license_expenses').insert({'label': label.trim()});
+  Future<void> addExpense(String seasonId, String label) async {
+    await _client
+        .from('club_license_expenses')
+        .insert({'season_id': seasonId, 'label': label.trim()});
   }
 
   Future<void> renameExpense(String id, String label) async {
@@ -93,8 +97,9 @@ final licenseRepositoryProvider = Provider<LicenseRepository>(
 );
 
 final licenseExpensesProvider =
-    FutureProvider.autoDispose<List<LicenseExpense>>(
-  (ref) => ref.watch(licenseRepositoryProvider).fetchExpenses(),
+    FutureProvider.autoDispose.family<List<LicenseExpense>, String>(
+  (ref, seasonId) =>
+      ref.watch(licenseRepositoryProvider).fetchExpenses(seasonId),
 );
 
 final seasonLicensesProvider =
