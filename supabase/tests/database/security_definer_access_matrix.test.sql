@@ -95,6 +95,8 @@ insert into reviewed_open_definers (fonction, motif) values
    'ne marque comme lues que les notifications du demandeur, profil actif exigé'),
   ('register_push_subscription(text,text,text,text)',
    'n’enregistre que l’abonnement du demandeur, profil actif exigé'),
+  ('unregister_push_subscription(text)',
+   'ne supprime que l’abonnement du demandeur'),
   ('report_my_push_device(text,text,jsonb)',
    'n’écrit que l’abonnement et les accusés du demandeur, profil actif exigé'),
   ('set_badge_featured(text,boolean)',

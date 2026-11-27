@@ -128,10 +128,7 @@ class SupabasePushSubscriptionsRepository
     final oldEndpoint = endpointOf(stale);
     if (oldEndpoint.isEmpty || oldEndpoint == endpointOf(keep)) return;
     try {
-      await _client
-          .from('push_subscriptions')
-          .delete()
-          .eq('endpoint', oldEndpoint);
+      await _unregister(oldEndpoint);
     } catch (_) {
       // Sans gravité : le serveur retire seul un point d'envoi refusé (410).
     }
@@ -168,8 +165,15 @@ class SupabasePushSubscriptionsRepository
     final endpoint = subscription['endpoint']?.toString() ?? '';
     if (endpoint.isEmpty) return;
 
-    await _client.from('push_subscriptions').delete().eq('endpoint', endpoint);
+    await _unregister(endpoint);
   }
+
+  /// Suppression côté serveur par une fonction dédiée : le rôle connecté n'a
+  /// pas le droit de lire la table, donc un DELETE filtré serait refusé.
+  Future<void> _unregister(String endpoint) => _client.rpc(
+        'unregister_push_subscription',
+        params: {'p_endpoint': endpoint},
+      );
 }
 
 final pushSubscriptionsRepositoryProvider =
