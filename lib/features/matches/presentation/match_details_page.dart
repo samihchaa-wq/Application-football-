@@ -1,4 +1,5 @@
 import 'package:petit_filet/core/widgets/pf_error_retry.dart';
+import 'package:petit_filet/core/widgets/pf_empty_state.dart';
 import 'package:petit_filet/core/club/club_rules.dart';
 import 'package:petit_filet/core/club/club_identity.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
@@ -114,10 +115,24 @@ class MatchDetailsPage extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               children: [
                 const MatchSheetTopRow(),
-                PfInlineErrorRetry(
-                  message: humanizeError(error),
-                  onRetry: () => ref.invalidate(matchDetailsProvider(matchId)),
-                ),
+                if (error is MatchNotFoundException)
+                  PfEmptyState(
+                    key: const Key('match-not-found'),
+                    icon: Icons.event_busy_outlined,
+                    title: error.message,
+                    message: 'Il a peut-être été supprimé, ou le lien est '
+                        'incorrect.',
+                    action: FilledButton(
+                      onPressed: () => context.go('/matches'),
+                      child: const Text('Retour au calendrier'),
+                    ),
+                  )
+                else
+                  PfInlineErrorRetry(
+                    message: humanizeError(error),
+                    onRetry: () =>
+                        ref.invalidate(matchDetailsProvider(matchId)),
+                  ),
               ],
             ),
             data: (details) {

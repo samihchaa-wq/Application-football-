@@ -16,6 +16,7 @@ import 'package:petit_filet/features/badges/presentation/badge_emblem_body.dart'
 import 'package:petit_filet/features/club/data/club_repository.dart';
 import 'package:petit_filet/features/players/data/player_card_repository.dart';
 import 'package:petit_filet/features/players/data/player_stat_ranking.dart';
+import 'package:petit_filet/features/players/presentation/player_card_link.dart';
 import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
 import 'package:petit_filet/features/statistics/data/statistics_repository.dart';
 import 'package:petit_filet/features/statistics/presentation/stats_hub_page.dart';

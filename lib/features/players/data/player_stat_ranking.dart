@@ -59,6 +59,18 @@ enum PlayerStat {
     };
   }
 
+  /// Valeur qui sert à classer : arrondie comme à l'affichage. Deux joueurs
+  /// affichés « 88 % » (87,5 et 88,2) sont ex aequo ; sans cet arrondi, la
+  /// fiche annonçait « 3e du club » à côté d'égalités visibles.
+  num rankingValueOf(PlayerStatistics p) {
+    final value = valueOf(p);
+    return switch (this) {
+      PlayerStat.winRate => value.round(),
+      PlayerStat.goalsPerMatch => (value * 100).round(),
+      _ => value,
+    };
+  }
+
   /// La valeur telle qu'elle s'affiche : « 75 % », « 1,75 »… Une moyenne
   /// sans match joué n'a pas de valeur.
   String display(PlayerStatistics p) {
@@ -100,13 +112,14 @@ String playerStatRankingLocation({
   required PlayerCardKey key,
   required PlayerStat stat,
   required StatisticsPeriod period,
+  String? section,
 }) {
   return Uri(
     path: '/stats/joueur/classement',
     queryParameters: {
       'stat': stat.slug,
       'periode': period.databaseKey,
-      ...Uri.parse(playerCardLocation(key)).queryParameters,
+      ...Uri.parse(playerCardLocation(key, section: section)).queryParameters,
     },
   ).toString();
 }
@@ -116,6 +129,26 @@ StatisticsPeriod statisticsPeriodFromKey(String? key) {
     if (period.databaseKey == key) return period;
   }
   return StatisticsPeriod.current;
+}
+
+/// Rang de [player] sur [stat] parmi [players] (filtrés par [among]), selon
+/// la même règle que [rankPlayersOnStat] : 1 + le nombre de joueurs devant
+/// lui, ex aequo au même rang. `null` pour une valeur nulle : sinon, une
+/// saison sans passe décisive sacrerait tout l'effectif « 1er ».
+int? statRankOf(
+  List<PlayerStatistics> players,
+  PlayerStatistics player,
+  PlayerStat stat, {
+  bool Function(PlayerStatistics)? among,
+}) {
+  if (stat.valueOf(player) <= 0) return null;
+  final mine = stat.rankingValueOf(player);
+  return 1 +
+      players
+          .where(
+            (p) => (among == null || among(p)) && stat.rankingValueOf(p) > mine,
+          )
+          .length;
 }
 
 /// Une ligne du classement. [rank] est `null` pour un joueur qui n'a pas
@@ -144,7 +177,7 @@ List<PlayerStatRankingEntry> rankPlayersOnStat(
       !stat.isAverage || (p.matchesPlayed ?? 0) >= minMatches;
 
   int compare(PlayerStatistics a, PlayerStatistics b) {
-    final byValue = stat.valueOf(b).compareTo(stat.valueOf(a));
+    final byValue = stat.rankingValueOf(b).compareTo(stat.rankingValueOf(a));
     if (byValue != 0) return byValue;
     return a.playerName.toLowerCase().compareTo(b.playerName.toLowerCase());
   }
@@ -154,9 +187,9 @@ List<PlayerStatRankingEntry> rankPlayersOnStat(
 
   final entries = <PlayerStatRankingEntry>[];
   for (var i = 0; i < ranked.length; i++) {
-    final value = stat.valueOf(ranked[i]);
+    final value = stat.rankingValueOf(ranked[i]);
     // Rang « competition » : deux ex aequo partagent le meilleur rang.
-    final rank = i > 0 && stat.valueOf(ranked[i - 1]) == value
+    final rank = i > 0 && stat.rankingValueOf(ranked[i - 1]) == value
         ? entries[i - 1].rank
         : i + 1;
     entries.add(PlayerStatRankingEntry(player: ranked[i], rank: rank));
