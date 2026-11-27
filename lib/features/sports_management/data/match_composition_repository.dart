@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/core/providers/supabase_provider.dart';
 import 'package:petit_filet/features/sports_management/domain/match_composition.dart';
 import 'package:petit_filet/features/sports_management/domain/player_position_history.dart';
@@ -183,7 +184,7 @@ class SupabaseMatchCompositionRepository implements MatchCompositionRepository {
     return PlayedPosition(
       playerId: playerId,
       position: Offset(x, y),
-      kickoffAt: kickoffAt.toLocal(),
+      kickoffAt: kickoffAt.toClub(),
     );
   }
 

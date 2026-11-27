@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/core/providers/supabase_provider.dart';
 import 'package:petit_filet/features/matches/domain/match_meeting.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -195,7 +196,7 @@ final matchCoreProvider = FutureProvider.family<MatchCore?, String>((
   return MatchCore(
     kickoffAt: kickoffAt,
     address: address,
-    meetingAt: DateTime.tryParse('${match['meeting_at'] ?? ''}')?.toLocal(),
+    meetingAt: DateTime.tryParse('${match['meeting_at'] ?? ''}')?.toClub(),
     opponentId: _clean(match['opponent_id']),
     status: (match['status'] ?? '').toString(),
     location: location,
@@ -216,7 +217,7 @@ DateTime? embeddedAvailabilityOpensAt(Object? workflow) {
   final row =
       workflow is List ? (workflow.isEmpty ? null : workflow.first) : workflow;
   if (row is! Map) return null;
-  return DateTime.tryParse('${row['availability_opens_at'] ?? ''}')?.toLocal();
+  return DateTime.tryParse('${row['availability_opens_at'] ?? ''}')?.toClub();
 }
 
 /// Version légère utilisée par la structure de la fiche (onglets, temporalité,
@@ -251,7 +252,7 @@ final matchDetailedInfoProvider = FutureProvider.family<MatchInfo, String>((
         MatchEncounter(
           ownScore: (map['grinta_score'] as num?)?.toInt() ?? 0,
           opponentScore: (map['opponent_score'] as num?)?.toInt() ?? 0,
-          date: DateTime.tryParse('${map['encounter_date'] ?? ''}')?.toLocal(),
+          date: DateTime.tryParse('${map['encounter_date'] ?? ''}')?.toClub(),
           id: _clean(map['encounter_id']),
           isHistorical: map['is_historical'] == true,
           ownIsHome: map['is_home'] as bool?,

@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:petit_filet/core/utils/app_formats.dart';
 import 'package:petit_filet/core/utils/match_window.dart';
@@ -104,11 +105,11 @@ class _MatchFormPageState extends ConsumerState<MatchFormPage> {
   void initState() {
     super.initState();
     final match = widget.match;
-    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    final tomorrow = ClubTime.now().add(const Duration(days: 1));
     _seasonId = match?.seasonId ?? '';
     _opponentId = match?.opponentId ?? '';
     _kickoffAt = match?.kickoffAt ??
-        DateTime(tomorrow.year, tomorrow.month, tomorrow.day, 21);
+        ClubTime.wallClock(tomorrow.year, tomorrow.month, tomorrow.day, 21);
     _isHome = match?.isHome ?? true;
     _matchType = match?.matchType ?? 'championnat';
     _isInternal = match?.isInternal ?? false;
@@ -437,7 +438,7 @@ class _MatchFormPageState extends ConsumerState<MatchFormPage> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: MatchFormPickerTile(
-                        label: 'Heure',
+                        label: 'Heure${ClubTime.suffix}',
                         value: _formatTime(_kickoffAt),
                         icon: Icons.schedule_outlined,
                         enabled: !busy,
@@ -747,7 +748,7 @@ class _MatchFormPageState extends ConsumerState<MatchFormPage> {
 
   Future<void> _pickDate() async {
     final previousKickoff = _kickoffAt;
-    final today = DateUtils.dateOnly(DateTime.now());
+    final today = DateUtils.dateOnly(ClubTime.now());
     final firstDate = DateUtils.dateOnly(_kickoffAt).isBefore(today)
         ? DateUtils.dateOnly(_kickoffAt)
         : today;
@@ -759,7 +760,7 @@ class _MatchFormPageState extends ConsumerState<MatchFormPage> {
     );
     if (date == null || !mounted) return;
     setState(() {
-      _kickoffAt = DateTime(
+      _kickoffAt = ClubTime.wallClock(
         date.year,
         date.month,
         date.day,
@@ -782,7 +783,7 @@ class _MatchFormPageState extends ConsumerState<MatchFormPage> {
     );
     if (time == null || !mounted) return;
     setState(() {
-      _kickoffAt = DateTime(
+      _kickoffAt = ClubTime.wallClock(
         _kickoffAt.year,
         _kickoffAt.month,
         _kickoffAt.day,

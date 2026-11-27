@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/core/providers/supabase_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -205,7 +206,7 @@ class MatchDetailsRepository {
         ? Map<String, dynamic>.from(match['opponents'] as Map)
         : const <String, dynamic>{};
     final serverKickoff =
-        DateTime.tryParse('${match['kickoff_at'] ?? ''}')?.toLocal();
+        DateTime.tryParse('${match['kickoff_at'] ?? ''}')?.toClub();
     final kickoffAt = serverKickoff ??
         DateTime.tryParse('${match['match_date']}T${match['match_time']}') ??
         DateTime(1970);
@@ -388,7 +389,7 @@ class MatchDetailsRepository {
       status: status,
       resultValidatedAt: DateTime.tryParse(
         '${match['result_validated_at'] ?? ''}',
-      )?.toLocal(),
+      )?.toClub(),
       location: location,
       address:
           directAddress ?? (location == 'exterieur' ? opponentAddress : null),

@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/club/club_rules.dart';
 import 'package:petit_filet/features/matches/domain/convocation_launch.dart';
@@ -101,8 +102,8 @@ class ConvocationLaunchPicker extends StatelessWidget {
   }
 
   Future<void> _pickCustom(BuildContext context) async {
-    final now = DateTime.now();
-    final minimum = DateTime(
+    final now = ClubTime.now();
+    final minimum = ClubTime.wallClock(
       now.year,
       now.month,
       now.day,

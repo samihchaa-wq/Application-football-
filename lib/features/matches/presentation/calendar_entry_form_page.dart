@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:petit_filet/core/utils/match_window.dart';
@@ -171,12 +172,12 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
   void initState() {
     super.initState();
     final event = widget.event;
-    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    final tomorrow = ClubTime.now().add(const Duration(days: 1));
     _kind = event == null
         ? _CalendarEntryKind.championnat
         : _CalendarEntryKind.event;
     _startsAt = event?.startsAt ??
-        DateTime(tomorrow.year, tomorrow.month, tomorrow.day, 21);
+        ClubTime.wallClock(tomorrow.year, tomorrow.month, tomorrow.day, 21);
     _initialStartsAt = _startsAt;
     _seasonId = event?.seasonId ?? '';
     _eventTitleController.text = event?.title ?? '';
@@ -706,7 +707,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
           const SizedBox(width: 8),
           Expanded(
             child: MatchFormPickerTile(
-              label: 'Heure',
+              label: 'Heure${ClubTime.suffix}',
               value: _formatTime(_startsAt),
               enabled: !busy,
               onTap: _pickTime,
@@ -982,7 +983,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
 
   Future<void> _pickDate() async {
     final previousKickoff = _startsAt;
-    final today = DateUtils.dateOnly(DateTime.now());
+    final today = DateUtils.dateOnly(ClubTime.now());
     final firstDate = widget.event == null
         ? today
         : DateUtils.dateOnly(_startsAt).isBefore(today)
@@ -996,7 +997,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
     );
     if (date == null || !mounted) return;
     setState(() {
-      _startsAt = DateTime(
+      _startsAt = ClubTime.wallClock(
         date.year,
         date.month,
         date.day,
@@ -1019,7 +1020,7 @@ class _CalendarEntryFormPageState extends ConsumerState<CalendarEntryFormPage> {
     );
     if (time == null || !mounted) return;
     setState(() {
-      _startsAt = DateTime(
+      _startsAt = ClubTime.wallClock(
         _startsAt.year,
         _startsAt.month,
         _startsAt.day,

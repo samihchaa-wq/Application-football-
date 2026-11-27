@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:petit_filet/core/club/club_identity.dart';
 import 'package:petit_filet/core/club/club_kits.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/features/club/data/club_identity_cache.dart';
 import 'package:petit_filet/features/club/data/club_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -37,6 +38,7 @@ final clubIdentitySyncProvider = Provider<void>((ref) {
     ClubIdentity.reset();
     AppTheme.resetClubColors();
     ClubKits.reset();
+    ClubTime.reset();
   }
 
   // Le changement de session efface l'identité précédente avant le prochain
@@ -76,6 +78,7 @@ final clubIdentitySyncProvider = Provider<void>((ref) {
         ClubIdentity.set(name: club.name, shortName: club.shortName);
         applyClubColors(club);
         ClubKits.setFromJson(club.kits);
+        ClubTime.use(club.timezone);
         ClubIdentity.setLogoUrl(ref.read(clubRepositoryProvider).logoUrl(club));
       }),
     );

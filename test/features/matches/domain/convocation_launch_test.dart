@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/features/matches/domain/convocation_launch.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -7,7 +8,7 @@ void main() {
       final kickoff = DateTime(2026, 9, 20, 18, 30);
       expect(
         defaultConvocationLaunchAt(kickoff),
-        DateTime(2026, 9, 14, 12),
+        ClubTime.wallClock(2026, 9, 14, 12),
       );
     });
 
@@ -16,7 +17,7 @@ void main() {
       final kickoff = DateTime(2026, 9, 20, 18);
       expect(
         suggestedCustomConvocationLaunchAt(kickoffAt: kickoff, now: now),
-        DateTime(2026, 9, 14, 12),
+        ClubTime.wallClock(2026, 9, 14, 12),
       );
     });
 

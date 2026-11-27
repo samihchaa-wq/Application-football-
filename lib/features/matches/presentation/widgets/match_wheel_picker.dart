@@ -1,11 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:petit_filet/core/utils/club_time.dart';
 
 /// Compact pickers used by the match/event forms.
 ///
 /// Dates use a month calendar so the user can see the surrounding days at a
 /// glance. Time and numeric values keep the Cupertino wheels so their gesture
 /// remains identical in the PWA and on iPhone.
+///
+/// Les roues montrent l'heure du club : les valeurs reçues sont lues « au mur »
+/// (jour, heure, minute) et la valeur choisie revient à l'heure du club, quel
+/// que soit le fuseau du téléphone.
 class MatchWheelPicker {
   const MatchWheelPicker._();
 
@@ -16,7 +21,9 @@ class MatchWheelPicker {
     required DateTime lastDate,
     String title = 'Date',
   }) {
-    final initial = _clampDate(initialDate, firstDate, lastDate);
+    final initial = DateUtils.dateOnly(
+      _clampDate(initialDate, firstDate, lastDate),
+    );
     final minimum = DateUtils.dateOnly(firstDate);
     final maximum = DateUtils.dateOnly(lastDate);
     final scheme = Theme.of(context).colorScheme;
@@ -71,13 +78,14 @@ class MatchWheelPicker {
     required BuildContext context,
     required DateTime initialDateTime,
     String title = 'Heure',
-  }) {
-    return _showDateTimeSheet(
+  }) async {
+    final picked = await _showDateTimeSheet(
       context: context,
       title: title,
-      initialDateTime: initialDateTime,
+      initialDateTime: _wall(initialDateTime),
       mode: CupertinoDatePickerMode.time,
     );
+    return picked == null ? null : ClubTime.fromWallClock(picked);
   }
 
   static Future<DateTime?> pickDateTime({
@@ -86,20 +94,27 @@ class MatchWheelPicker {
     required DateTime minimumDate,
     required DateTime maximumDate,
     String title = 'Date et heure',
-  }) {
-    final initial = _clampDateTime(
-      initialDateTime,
-      minimumDate,
-      maximumDate,
-    );
-    return _showDateTimeSheet(
+  }) async {
+    final minimum = _wall(minimumDate);
+    final maximum = _wall(maximumDate);
+    final initial = _clampDateTime(_wall(initialDateTime), minimum, maximum);
+    final picked = await _showDateTimeSheet(
       context: context,
       title: title,
       initialDateTime: initial,
       mode: CupertinoDatePickerMode.dateAndTime,
-      minimumDate: minimumDate,
-      maximumDate: maximumDate,
+      minimumDate: minimum,
+      maximumDate: maximum,
     );
+    return picked == null ? null : ClubTime.fromWallClock(picked);
+  }
+
+  /// Les champs du club (jour, heure, minute) dans une date simple, que les
+  /// roues affichent telles quelles. Une date UTC est d'abord passée à
+  /// l'heure du club ; les autres sont déjà « au mur ».
+  static DateTime _wall(DateTime value) {
+    final club = value.isUtc ? ClubTime.of(value) : value;
+    return DateTime(club.year, club.month, club.day, club.hour, club.minute);
   }
 
   static Future<int?> pickInt({

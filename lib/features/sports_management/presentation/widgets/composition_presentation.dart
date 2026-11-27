@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/utils/club_time.dart';
 import 'package:petit_filet/core/club/club_rules.dart';
 import 'package:petit_filet/core/club/club_identity.dart';
 import 'package:petit_filet/core/club/club_kits.dart';
