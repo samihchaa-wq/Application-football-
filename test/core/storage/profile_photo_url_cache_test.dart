@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:petit_filet/core/storage/profile_photo_urls.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -141,6 +142,61 @@ void main() {
       );
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString(profilePhotoSignedUrlsPrefsKey), isNull);
+    });
+  });
+
+  group('photo introuvable', () {
+    test('un chemin introuvable n’est plus redemandé', () async {
+      const path = 'profil/avatar_1.png';
+      final cache = ProfilePhotoUrlCache.instance;
+      expect(cache.isMissing(path), isFalse);
+      cache.markMissing(path);
+      expect(cache.isMissing(path), isTrue);
+      // Aucun appel au stockage : la réponse est immédiate et vide.
+      expect(await cache.resolve(path), isNull);
+      expect(cache.cached(path), isNull);
+    });
+
+    test('la même photo donnée en URL complète est reconnue', () {
+      final cache = ProfilePhotoUrlCache.instance;
+      cache.markMissing('profil/avatar_2.png');
+      expect(
+        cache.isMissing('https://exemple.supabase.co/storage/v1/object/sign/'
+            'profile-photos/profil/avatar_2.png?token=x'),
+        isTrue,
+      );
+    });
+
+    test('la déconnexion oublie les photos introuvables', () async {
+      final cache = ProfilePhotoUrlCache.instance;
+      cache.markMissing('profil/avatar_3.png');
+      await cache.clear();
+      expect(cache.isMissing('profil/avatar_3.png'), isFalse);
+    });
+
+    test('seule une erreur « fichier introuvable » compte', () {
+      expect(
+        ProfilePhotoUrlCache.isMissingObjectError(
+          const StorageException('Object not found', statusCode: '400'),
+        ),
+        isTrue,
+      );
+      expect(
+        ProfilePhotoUrlCache.isMissingObjectError(
+          const StorageException('Not found', statusCode: '404'),
+        ),
+        isTrue,
+      );
+      expect(
+        ProfilePhotoUrlCache.isMissingObjectError(
+          const StorageException('Failed host lookup'),
+        ),
+        isFalse,
+      );
+      expect(
+        ProfilePhotoUrlCache.isMissingObjectError(Exception('réseau')),
+        isFalse,
+      );
     });
   });
 }
