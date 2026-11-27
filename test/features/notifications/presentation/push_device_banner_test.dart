@@ -112,6 +112,10 @@ void main() {
     final repository = _FakePushSubscriptions();
     await _pump(tester, repository);
 
+    // « Non merci » est dans le bandeau déplié.
+    expect(find.text('Non merci'), findsNothing);
+    await tester.tap(find.byKey(const Key('push-banner-toggle')));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Non merci'));
     await tester.pumpAndSettle();
 
@@ -159,6 +163,43 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.textContaining('Toujours bloquées'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'sur un téléphone de 320 px, le bandeau tient sur une ligne, et se déplie',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await _pump(
+        tester,
+        _FakePushSubscriptions(),
+        forcedAlert: PushDeviceAlert.blocked,
+      );
+
+      final collapsed = tester.getSize(find.byType(PushDeviceBanner)).height;
+      // Une ligne : moins de 10 % de la hauteur (il en prenait un quart).
+      expect(collapsed, lessThan(64));
+      expect(find.text('Notifications bloquées'), findsOneWidget);
+      expect(find.text('J’ai autorisé'), findsOneWidget);
+      expect(find.textContaining('réglages de cet appareil'), findsNothing);
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.byKey(const Key('push-banner-toggle')));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('réglages de cet appareil'), findsOneWidget);
+      expect(find.text('Non merci'), findsOneWidget);
+      expect(
+        tester.getSize(find.byType(PushDeviceBanner)).height,
+        greaterThan(collapsed),
+      );
+
+      await tester.tap(find.byKey(const Key('push-banner-toggle')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('réglages de cet appareil'), findsNothing);
     },
   );
 
