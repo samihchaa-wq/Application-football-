@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:petit_filet/features/auth/data/mfa_repository.dart';
-import 'package:petit_filet/features/auth/presentation/two_factor_page.dart';
+import 'package:petit_filet/features/profile/presentation/two_factor_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Double authentification des admins (audit du 26/11/2026, point 39).

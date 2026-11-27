@@ -18,7 +18,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
 import 'package:petit_filet/core/theme/pf_button_styles.dart';
-import 'package:petit_filet/features/auth/presentation/two_factor_page.dart';
+import 'package:petit_filet/features/profile/presentation/two_factor_page.dart';
 
 part 'admin_season_section.dart';
 part 'admin_profiles_section_v2.dart';

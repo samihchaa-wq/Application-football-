@@ -10,7 +10,7 @@ import 'package:petit_filet/core/widgets/photo_crop_preview.dart';
 import 'package:petit_filet/features/auth/data/account_email_repository.dart';
 import 'package:petit_filet/features/auth/domain/auth_profile.dart';
 import 'package:petit_filet/features/auth/presentation/auth_state.dart';
-import 'package:petit_filet/features/auth/presentation/two_factor_page.dart';
+import 'package:petit_filet/features/profile/presentation/two_factor_page.dart';
 import 'package:petit_filet/features/profile/data/personal_data_repository.dart';
 import 'package:petit_filet/features/profile/presentation/my_data_section.dart';
 import 'package:petit_filet/features/sports_management/presentation/widgets/composition_pitch.dart';
