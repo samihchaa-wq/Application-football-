@@ -121,6 +121,21 @@ class MatchDetailsPage extends ConsumerWidget {
               ],
             ),
             data: (details) {
+              // Match annulé : la fiche le dit clairement et ne propose plus
+              // rien (ni direct, ni effectif, ni composition, ni pronostic).
+              if (details.isCancelled) {
+                return MatchSheetListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                  children: [
+                    MatchSheetTopRow(
+                      header: _UpcomingHeader(details: details),
+                      bottomSpacing: 0,
+                    ),
+                    const SizedBox(height: 16),
+                    const CancelledMatchBanner(),
+                  ],
+                );
+              }
               if (!details.isValidated) {
                 return MatchSheetListView(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
@@ -135,7 +150,10 @@ class MatchDetailsPage extends ConsumerWidget {
                         matchId: matchId,
                         isAdmin: isAdmin,
                         liveOpen: details.matchType != 'entre_nous' &&
-                            !isMatchLiveTooEarly(details.kickoffAt),
+                            isMatchDirectShortcutVisible(
+                              status: details.status,
+                              kickoffAt: details.kickoffAt,
+                            ),
                       )
                     else if (!sportsKnown)
                       const Padding(
@@ -479,6 +497,73 @@ class _UpcomingModules extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [live, const SizedBox(height: 12), modulesView],
+    );
+  }
+}
+
+/// Le raccourci « Suivre le direct » de la fiche n'a de sens que pour un
+/// match à venir dont le Live est ouvert (dès T-15) et pas encore loin
+/// derrière nous. Un match annulé ou passé n'en a pas : sur un match annulé,
+/// l'écran de composition retombait sur un autre match.
+@visibleForTesting
+bool isMatchDirectShortcutVisible({
+  required String status,
+  required DateTime kickoffAt,
+  DateTime? now,
+}) {
+  if (status != 'a_venir') return false;
+  if (isMatchLiveTooEarly(kickoffAt, now: now)) return false;
+  final reference = (now ?? DateTime.now()).toUtc();
+  return reference.isBefore(
+    kickoffAt.toUtc().add(kMatchDirectShortcutHiddenAfterKickoff),
+  );
+}
+
+/// Au-delà, le match est passé : plus de raccourci vers le direct. Couvre un
+/// match de 90 min, la mi-temps et un direct terminé en retard.
+const Duration kMatchDirectShortcutHiddenAfterKickoff = Duration(hours: 4);
+
+/// Bandeau de la fiche d'un match annulé.
+class CancelledMatchBanner extends StatelessWidget {
+  const CancelledMatchBanner({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      container: true,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppTheme.error.withValues(alpha: .12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+          border: Border.all(color: AppTheme.error.withValues(alpha: .5)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.block_outlined, color: AppTheme.error),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Match annulé',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: AppTheme.error,
+                        ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Ce match n’aura pas lieu. Pronostics, effectif, '
+                    'composition et direct sont fermés.',
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

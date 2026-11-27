@@ -15,14 +15,17 @@ import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 const _matchId = 'upcoming-1';
 
-MatchDetailsData _upcoming({Duration untilKickoff = const Duration(days: 3)}) =>
+MatchDetailsData _upcoming({
+  Duration untilKickoff = const Duration(days: 3),
+  String status = 'a_venir',
+}) =>
     MatchDetailsData(
       matchId: _matchId,
       opponentId: 'opp',
       opponentName: 'FC Test',
       isInternal: false,
       kickoffAt: DateTime.now().add(untilKickoff),
-      status: 'a_venir',
+      status: status,
       resultValidatedAt: null,
       location: 'domicile',
       address: null,
@@ -62,12 +65,13 @@ Future<void> _pump(
   bool sportsEnabled = true,
   bool? routing = true,
   Duration untilKickoff = const Duration(days: 3),
+  String status = 'a_venir',
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         matchDetailsProvider(_matchId).overrideWith(
-          (ref) async => _upcoming(untilKickoff: untilKickoff),
+          (ref) async => _upcoming(untilKickoff: untilKickoff, status: status),
         ),
         sportsManagementEnabledProvider.overrideWithValue(sportsEnabled),
         sportsManagementRoutingStateProvider.overrideWithValue(routing),
@@ -193,6 +197,69 @@ void main() {
       );
       expect(find.text('Suivre le direct'), findsOneWidget);
       expect(find.text('Effectif'), findsOneWidget);
+    });
+
+    testWidgets('match passé non validé : plus de carte « Suivre le direct »',
+        (tester) async {
+      await _pump(
+        tester,
+        isAdmin: true,
+        board: board,
+        untilKickoff: const Duration(hours: -5),
+      );
+      expect(find.text('Suivre le direct'), findsNothing);
+    });
+  });
+
+  group('match annulé', () {
+    final board =
+        _board(convocationState: 'published', compositionPublished: true);
+
+    for (final (label, untilKickoff) in [
+      ('à venir', const Duration(days: 2)),
+      ('pendant l’heure du match', const Duration(minutes: -20)),
+      ('passé', const Duration(days: -1)),
+    ]) {
+      for (final isAdmin in [true, false]) {
+        testWidgets(
+            '$label, ${isAdmin ? 'admin' : 'joueur'} : bandeau « Match annulé », '
+            'ni direct, ni effectif, ni composition', (tester) async {
+          await _pump(
+            tester,
+            isAdmin: isAdmin,
+            board: board,
+            untilKickoff: untilKickoff,
+            status: 'annule',
+          );
+
+          expect(find.byType(CancelledMatchBanner), findsOneWidget);
+          expect(find.text('Match annulé'), findsOneWidget);
+          expect(find.text('Suivre le direct'), findsNothing);
+          expect(find.text('Effectif'), findsNothing);
+          expect(find.text('Composition'), findsNothing);
+          expect(find.text('Prono'), findsNothing);
+        });
+      }
+    }
+  });
+
+  group('isMatchDirectShortcutVisible', () {
+    final kickoff = DateTime.utc(2026, 11, 29, 14);
+
+    test('fenêtre du direct : de T-15 à 4 h après le coup d’envoi', () {
+      bool at(Duration offset, {String status = 'a_venir'}) =>
+          isMatchDirectShortcutVisible(
+            status: status,
+            kickoffAt: kickoff,
+            now: kickoff.add(offset),
+          );
+
+      expect(at(const Duration(minutes: -16)), isFalse);
+      expect(at(const Duration(minutes: -10)), isTrue);
+      expect(at(const Duration(hours: 2)), isTrue);
+      expect(at(const Duration(hours: 4)), isFalse);
+      expect(at(const Duration(minutes: 30), status: 'annule'), isFalse);
+      expect(at(const Duration(minutes: 30), status: 'termine'), isFalse);
     });
   });
 }
