@@ -33,9 +33,16 @@ abstract interface class PushSubscriptionsRepository {
 
 class SupabasePushSubscriptionsRepository
     implements PushSubscriptionsRepository {
-  SupabasePushSubscriptionsRepository(this._client);
+  SupabasePushSubscriptionsRepository(
+    this._client, {
+    Future<String?> Function()? unsubscribe,
+  }) : _unsubscribe = unsubscribe ?? pushUnsubscribe;
 
   final SupabaseClient _client;
+
+  /// Désabonnement du navigateur ; remplaçable dans les tests, où le
+  /// navigateur n'existe pas.
+  final Future<String?> Function() _unsubscribe;
 
   @override
   Future<bool> isSupported() => pushSupported();
@@ -128,10 +135,7 @@ class SupabasePushSubscriptionsRepository
     final oldEndpoint = endpointOf(stale);
     if (oldEndpoint.isEmpty || oldEndpoint == endpointOf(keep)) return;
     try {
-      await _client
-          .from('push_subscriptions')
-          .delete()
-          .eq('endpoint', oldEndpoint);
+      await _unregister(oldEndpoint);
     } catch (_) {
       // Sans gravité : le serveur retire seul un point d'envoi refusé (410).
     }
@@ -161,14 +165,26 @@ class SupabasePushSubscriptionsRepository
   /// Désabonne le navigateur et supprime la ligne correspondante.
   @override
   Future<void> disable() async {
-    final json = await pushUnsubscribe();
+    final json = await _unsubscribe();
     if (json == null) return;
 
     final subscription = Map<String, dynamic>.from(jsonDecode(json) as Map);
     final endpoint = subscription['endpoint']?.toString() ?? '';
     if (endpoint.isEmpty) return;
 
-    await _client.from('push_subscriptions').delete().eq('endpoint', endpoint);
+    await _unregister(endpoint);
+  }
+
+  /// Retire côté serveur l'abonnement du compte connecté pour [endpoint].
+  ///
+  /// Passe par une fonction serveur : un delete direct sur la table était
+  /// refusé (le compte n'a pas le droit de la lire), si bien que couper les
+  /// notifications échouait toujours, y compris à la déconnexion.
+  Future<void> _unregister(String endpoint) async {
+    await _client.rpc(
+      'unregister_push_subscription',
+      params: {'p_endpoint': endpoint},
+    );
   }
 }
 
