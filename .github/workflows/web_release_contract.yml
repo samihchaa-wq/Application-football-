@@ -63,5 +63,17 @@ jobs:
           grep -Fq 'build_version.js?v=contract-0.1.0+2-0123456789ab' /tmp/as-grinta-index.html
           grep -Fq 'app_shell.js?v=contract-0.1.0+2-0123456789ab' /tmp/as-grinta-index.html
           grep -Fq '"mainJsPath":"main.dart.js?v=contract-0.1.0%2B2-0123456789ab"' /tmp/as-grinta-bootstrap.js
+          # Base absolue (build réel) : préchargements et scripts en
+          # adresses absolues, justes même sur un lien direct (/auth/...).
+          sed 's#\$FLUTTER_BASE_HREF#/#' web/index.html > /tmp/as-grinta-index-abs.html
+          printf '%s\n' '_flutter.buildConfig = {"builds":[{"mainJsPath":"main.dart.js"}]};' \
+            > /tmp/as-grinta-bootstrap-abs.js
+          WEB_INDEX_PATH=/tmp/as-grinta-index-abs.html \
+          WEB_BOOTSTRAP_PATH=/tmp/as-grinta-bootstrap-abs.js \
+          WEB_VERSION='contract-0.1.0+2-0123456789ab' \
+            python3 tool/stamp_web_release.py
+          grep -Fq 'href="/main.dart.js?v=contract-0.1.0%2B2-0123456789ab"' /tmp/as-grinta-index-abs.html
+          grep -Fq 'href="/flutter_bootstrap.js?v=contract-0.1.0%2B2-0123456789ab"' /tmp/as-grinta-index-abs.html
+          grep -Fq 'src="/app_shell.js?v=contract-0.1.0+2-0123456789ab"' /tmp/as-grinta-index-abs.html
           grep -Fq 'version-check' web/app_shell.js
           grep -Fq "window.location.replace" web/app_shell.js

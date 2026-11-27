@@ -290,6 +290,19 @@ acceptée, toute autre valeur ouvre l’accueil.
 
 `notifications_paused` reste prioritaire sur les envois lorsqu’il est activé.
 
+Pendant la pause, rien n’est rangé dans l’historique non plus : une vingtaine
+de fonctions SQL s’arrêtent avant même d’appeler `send-push`. Les membres ne
+retrouvent donc pas ces messages après la réactivation ; l’écran des
+notifications le dit à l’administrateur tant que la pause dure.
+
+## Désabonnement d’un appareil
+
+Couper les notifications (ou se déconnecter) passe par
+`unregister_push_subscription(p_endpoint)`, qui ne supprime que la ligne du
+demandeur. Un `delete` direct sur `push_subscriptions` est refusé (42501) :
+`authenticated` n’a pas le droit de lire la table, qui porte les clés des
+appareils.
+
 Ce coupe-circuit ne doit pas arrêter les transitions métier : les disponibilités,
 le cycle du match et les autres états continuent d’évoluer normalement même si
 les push sont temporairement suspendus.

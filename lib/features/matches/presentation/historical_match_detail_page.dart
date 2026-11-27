@@ -74,7 +74,10 @@ class HistoricalMatchDetailPage extends ConsumerWidget {
                   );
                 },
               ),
-              if (ref.watch(isAdminViewProvider))
+              // Pas de « Supprimer » sur une archive introuvable : il n'y a
+              // rien à supprimer, et le bouton contredisait le message.
+              if (ref.watch(isAdminViewProvider) &&
+                  _archiveExists(ref, matchId, initialMatch))
                 _DeleteHistoricalMatchButton(matchId: matchId),
             ],
           ),
@@ -82,6 +85,18 @@ class HistoricalMatchDetailPage extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Le match figure dans les archives. Ouvert depuis une liste, il est connu
+/// d'avance ; sinon (lien direct) on attend la liste des archives.
+bool _archiveExists(
+  WidgetRef ref,
+  String matchId,
+  HistoricalMatchResult? initialMatch,
+) {
+  if (initialMatch != null) return true;
+  final all = ref.watch(allHistoricalMatchesProvider).valueOrNull;
+  return all?.any((m) => m.id == matchId) ?? false;
 }
 
 class _HistoricalMatchHeaderSection extends ConsumerWidget {

@@ -74,6 +74,46 @@ void main() {
       expect(find.text('fiche ouverte'), findsOneWidget);
     });
 
+    testWidgets(
+        'l’adresse du navigateur suit la fiche et garde l’onglet des stats '
+        '(audit point 31)', (tester) async {
+      const link = PlayerCardLink(
+        playerKey: (profileId: 'p-1', fullName: '', isGoalkeeper: false),
+        child: Text('Karim'),
+      );
+      final router = GoRouter(
+        initialLocation: '/stats?section=players',
+        routes: [
+          GoRoute(
+            path: '/stats',
+            builder: (_, __) => const Scaffold(
+              body: PlayerCardLinkScope(enabled: true, child: link),
+            ),
+            routes: [
+              GoRoute(
+                path: 'joueur',
+                builder: (_, __) => const Scaffold(body: Text('fiche ouverte')),
+              ),
+            ],
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+
+      await tester.tap(find.text('Karim'));
+      await tester.pumpAndSettle();
+
+      final uri = router.routeInformationProvider.value.uri;
+      expect(uri.path, '/stats/joueur');
+      expect(uri.queryParameters['profil'], 'p-1');
+      expect(uri.queryParameters['section'], 'players');
+
+      router.pop();
+      await tester.pumpAndSettle();
+      expect(find.text('Karim'), findsOneWidget);
+    });
+
     testWidgets('ailleurs, le nom reste un simple texte', (tester) async {
       await pumpLink(tester, scoped: false);
 

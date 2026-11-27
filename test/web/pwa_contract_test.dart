@@ -65,6 +65,33 @@ void main() {
       expect(worker, contains("request.mode === 'navigate'"));
     });
 
+    test('les fichiers de démarrage versionnés sont gardés pour le hors ligne',
+        () {
+      // Adresses exactes demandées par la page (`?v=` compris) : sans elles,
+      // l'appli rouverte sans réseau restait bloquée sur le logo.
+      expect(worker, contains('build_version.js?v=\${WEB_VERSION}'));
+      expect(worker, contains('app_shell.js?v=\${WEB_VERSION}'));
+      expect(
+        worker,
+        contains('flutter_bootstrap.js?v=\${encodeURIComponent(WEB_VERSION)}'),
+      );
+      expect(worker, contains('...VERSIONED_BOOT_FILES'));
+      expect(worker, contains("'history_swipe.js'"));
+      // Le reste du démarrage (moteur, polices…) est gardé après le premier
+      // affichage, seulement pour la version de la page.
+      expect(shell, contains("type: 'ASG_KEEP_BOOT_FILES'"));
+      expect(worker, contains('event.data.version === WEB_VERSION'));
+      // Cache par version : un nouveau déploiement remplace l'ancien.
+      expect(worker, contains('const CACHE_NAME = `as-grinta-\${'));
+      expect(worker, contains('name !== CACHE_NAME'));
+    });
+
+    test('le démarrage repart seul au retour du réseau', () {
+      expect(shell, contains("window.addEventListener('online'"));
+      expect(shell, contains('if (flutterFirstFrameSeen'));
+      expect(shell, contains('Pas de connexion internet.'));
+    });
+
     test('le logo complet garde sa transparence sur le web et dans Flutter',
         () {
       final webBytes = File('web/petit_filet_logo.webp').readAsBytesSync();

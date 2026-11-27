@@ -52,6 +52,35 @@ void main() {
       );
     });
 
+    test(
+        'deux joueurs affichés au même pourcentage sont ex aequo, '
+        'sur la fiche comme dans le classement (audit point 31)', () {
+      // 7/8 = 87,5 % et 15/17 = 88,2 % s'affichent tous deux « 88 % ».
+      final karim = _player('Karim Ben', played: 8, wins: 7);
+      final paul = _player('Paul Dia', played: 17, wins: 15);
+      final ali = _player('Ali Ka', played: 10, wins: 9);
+      final squad = [karim, paul, ali];
+
+      expect(PlayerStat.winRate.display(karim), '88 %');
+      expect(PlayerStat.winRate.display(paul), '88 %');
+      final entries = rankPlayersOnStat(
+        squad,
+        PlayerStat.winRate,
+        minMatches: 0,
+      );
+      expect(
+        entries.map((e) => (e.player.playerName, e.rank)),
+        [('Ali', 1), ('Karim', 2), ('Paul', 2)],
+      );
+      for (final entry in entries) {
+        expect(
+          statRankOf(squad, entry.player, PlayerStat.winRate),
+          entry.rank,
+          reason: 'la fiche annonce le même rang que le classement',
+        );
+      }
+    });
+
     test('les valeurs affichées reprennent celles de la fiche', () {
       final p = _player('Karim Ben', played: 4, goals: 7, wins: 3);
       expect(PlayerStat.winRate.display(p), '75 %');
@@ -180,21 +209,35 @@ void main() {
         'la flèche retour y ramène', (tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 2000));
       addTearDown(() => tester.binding.setSurfaceSize(null));
+      // Même arborescence que l'appli : la fiche et le classement sont des
+      // sous-pages de /stats, ouvertes avec go() (l'adresse suit).
       final router = GoRouter(
+        initialLocation: playerCardLocation(karim),
         routes: [
           GoRoute(
-            path: '/',
-            builder: (_, __) => const PlayerCardPage(playerKey: karim),
-          ),
-          GoRoute(
-            path: '/stats/joueur/classement',
-            builder: (_, state) => PlayerStatRankingPage(
-              stat: PlayerStat.fromSlug(state.uri.queryParameters['stat']),
-              initialPeriod: statisticsPeriodFromKey(
-                state.uri.queryParameters['periode'],
+            path: '/stats',
+            builder: (_, __) => const Text('statistiques'),
+            routes: [
+              GoRoute(
+                path: 'joueur',
+                builder: (_, state) =>
+                    PlayerCardPage(playerKey: playerCardKeyFromUri(state.uri)),
+                routes: [
+                  GoRoute(
+                    path: 'classement',
+                    builder: (_, state) => PlayerStatRankingPage(
+                      stat: PlayerStat.fromSlug(
+                        state.uri.queryParameters['stat'],
+                      ),
+                      initialPeriod: statisticsPeriodFromKey(
+                        state.uri.queryParameters['periode'],
+                      ),
+                      playerKey: playerCardKeyFromUri(state.uri),
+                    ),
+                  ),
+                ],
               ),
-              playerKey: playerCardKeyFromUri(state.uri),
-            ),
+            ],
           ),
         ],
       );
@@ -214,6 +257,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Paul'), findsOneWidget);
       expect(find.text('BUTS'), findsNothing);
+      // L'adresse affichée suit : le classement a un lien partageable.
+      expect(
+        router.routeInformationProvider.value.uri.path,
+        '/stats/joueur/classement',
+      );
 
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();

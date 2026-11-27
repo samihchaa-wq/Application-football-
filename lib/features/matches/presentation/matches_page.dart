@@ -443,6 +443,9 @@ String adminMatchTitle(MatchModel match) {
         : clean;
   }
 
+  // Un match entre nous n'a pas d'adversaire : « AS Grinta 0 - 0
+  // Adversaire » laissait croire à un vrai match.
+  if (match.isInternal) return 'Match entre nous';
   final opponent = team(match.opponentName ?? 'Adversaire');
   final own = team(ClubIdentity.name);
   if (!match.isFinished) {

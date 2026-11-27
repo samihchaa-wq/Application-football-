@@ -17,6 +17,7 @@ import 'package:petit_filet/features/players/data/player_stat_ranking.dart';
 import 'package:petit_filet/features/players/presentation/player_card_link.dart';
 import 'package:petit_filet/features/predictions/presentation/pronos_hub_page.dart';
 import 'package:petit_filet/features/statistics/data/statistics_repository.dart';
+import 'package:petit_filet/features/statistics/presentation/statistics_offline.dart';
 import 'package:petit_filet/features/statistics/presentation/team_statistics_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -265,20 +266,35 @@ class _PlayersPanelState extends ConsumerState<_PlayersPanel> {
           ],
         );
 
+    refreshStatisticsWhenOnline(ref, statisticsPeriodProvider(widget.period));
+    final offline = watchStatisticsOffline(ref);
+    Widget offlineMessage() => withPeriodTabs(
+          _Message(
+            title: statisticsOfflineTitle,
+            message: statisticsOfflineMessage,
+            onRefresh: _refresh,
+          ),
+        );
+
     return async.when(
-      loading: () => withPeriodTabs(
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          child: PfSkeleton.rows(itemCount: 7),
-        ),
-      ),
-      error: (error, _) => withPeriodTabs(
-        _Message(
-          title: 'Statistiques indisponibles',
-          message: humanizeError(error),
-          onRefresh: _refresh,
-        ),
-      ),
+      loading: () => offline
+          ? offlineMessage()
+          : withPeriodTabs(
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                child: PfSkeleton.rows(itemCount: 7),
+              ),
+            ),
+      error: (error, _) => offline
+          ? offlineMessage()
+          : withPeriodTabs(
+              _Message(
+                title: 'Statistiques indisponibles',
+                message: humanizeError(error),
+                onRefresh: _refresh,
+              ),
+            ),
       data: (data) {
         if (data.players.isEmpty) {
           return withPeriodTabs(

@@ -97,6 +97,8 @@ insert into reviewed_open_definers (fonction, motif) values
    'n’enregistre que l’abonnement du demandeur, profil actif exigé'),
   ('report_my_push_device(text,text,jsonb)',
    'n’écrit que l’abonnement et les accusés du demandeur, profil actif exigé'),
+  ('unregister_push_subscription(text)',
+   'ne supprime que l’abonnement du demandeur pour ce point d’envoi'),
   ('set_badge_featured(text,boolean)',
    'ne modifie que les badges déjà détenus par le demandeur'),
   ('update_my_notification_preferences(boolean,boolean,boolean,boolean)',
