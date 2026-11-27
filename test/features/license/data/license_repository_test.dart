@@ -64,24 +64,27 @@ void main() {
         {'id': 'e2', 'label': null},
       ];
 
-      final expenses = await repository.fetchExpenses();
+      final expenses = await repository.fetchExpenses('s1');
 
       expect(requests.single.method, 'GET');
       expect(requests.single.query['select'], 'id,label');
+      expect(requests.single.query['season_id'], 'eq.s1',
+          reason: 'chaque saison a ses propres dépenses');
       expect(requests.single.query['order'], 'created_at.desc.nullslast');
       expect(expenses.map((e) => e.id), ['e1', 'e2']);
       expect(expenses.first.label, 'Survêtement');
       expect(expenses.last.label, '', reason: 'un nom absent reste lisible');
     });
 
-    test('ajouter envoie le nom sans espaces autour, sans club', () async {
-      await repository.addExpense('  Survêtement  ');
+    test('ajouter envoie la saison et le nom sans espaces, sans club',
+        () async {
+      await repository.addExpense('s1', '  Survêtement  ');
 
       final request = requests.single;
       expect(request.method, 'POST');
       expect(request.path, 'club_license_expenses');
       // Le club est fixé par le serveur (valeur par défaut), jamais par l'appli.
-      expect(request.body, {'label': 'Survêtement'});
+      expect(request.body, {'season_id': 's1', 'label': 'Survêtement'});
     });
 
     test('renommer ne touche que la dépense visée', () async {

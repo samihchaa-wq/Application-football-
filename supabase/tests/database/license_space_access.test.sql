@@ -36,6 +36,14 @@ select '7b000000-0000-0000-0000-00000000000a', '2097-2098', 'open', id from test
 insert into public.seasons (id, name, status, club_id)
 select '7b000000-0000-0000-0000-00000000000b', '2097-2098', 'open', id from test_clubs where label = 'b';
 
+-- Saison précédente d'Alpha, avec le même joueur.
+insert into public.seasons (id, name, status, club_id)
+select '7b000000-0000-0000-0000-0000000000a0', '2096-2097', 'terminee', id from test_clubs where label = 'a';
+insert into public.season_players (id, season_id, first_name, last_name, club_id)
+select '7c000000-0000-0000-0000-0000000000a0', '7b000000-0000-0000-0000-0000000000a0',
+       'Joueur', 'Alpha', id
+from test_clubs where label = 'a';
+
 insert into public.season_players (id, season_id, first_name, last_name, club_id, profile_id)
 select '7c000000-0000-0000-0000-00000000000a', '7b000000-0000-0000-0000-00000000000a',
        'Joueur', 'Alpha', id, '7a000000-0000-0000-0000-0000000000aa'
@@ -53,8 +61,8 @@ select set_config('request.jwt.claims',
 set local role authenticated;
 
 select lives_ok(
-  $$insert into public.club_license_expenses (id, label)
-    values ('7d000000-0000-0000-0000-00000000000a', 'Survêtement')$$,
+  $$insert into public.club_license_expenses (id, season_id, label)
+    values ('7d000000-0000-0000-0000-00000000000a', '7b000000-0000-0000-0000-00000000000a', 'Survêtement')$$,
   'l’admin crée une dépense pour son club'
 );
 select is(
@@ -68,7 +76,8 @@ select lives_ok(
   'l’admin renomme la dépense'
 );
 select throws_ok(
-  $$insert into public.club_license_expenses (label) values (' ')$$,
+  $$insert into public.club_license_expenses (season_id, label)
+    values ('7b000000-0000-0000-0000-00000000000a', ' ')$$,
   '23514', null,
   'un intitulé vide est refusé'
 );
@@ -97,6 +106,36 @@ select throws_ok(
   'l’admin ne peut pas suivre la licence d’un joueur d’un autre club'
 );
 
+-- Chaque saison a ses propres dépenses.
+select throws_ok(
+  $$insert into public.club_license_expenses (label) values ('Sans saison')$$,
+  '23502', null,
+  'une dépense sans saison est refusée'
+);
+select throws_ok(
+  $$insert into public.club_license_expenses (season_id, label)
+    values ('7b000000-0000-0000-0000-00000000000b', 'Chez Bravo')$$,
+  '42501', null,
+  'l’admin ne peut pas créer de dépense dans une saison d’un autre club'
+);
+select throws_ok(
+  $$insert into public.season_player_expense_payments (expense_id, season_player_id)
+    values ('7d000000-0000-0000-0000-00000000000a', '7c000000-0000-0000-0000-0000000000a0')$$,
+  '23514', null,
+  'une dépense de cette saison ne peut pas être payée par une fiche de la saison précédente'
+);
+select lives_ok(
+  $$insert into public.club_license_expenses (id, season_id, label)
+    values ('7d000000-0000-0000-0000-0000000000a0', '7b000000-0000-0000-0000-0000000000a0', 'Survêtement')$$,
+  'la saison précédente peut avoir sa propre dépense du même nom'
+);
+select is(
+  (select count(*) from public.club_license_expenses
+   where season_id = '7b000000-0000-0000-0000-00000000000a'),
+  1::bigint,
+  'la dépense de la saison précédente n’apparaît pas dans la saison en cours'
+);
+
 reset role;
 
 -- ---------------------------------------------------------------------------
@@ -113,7 +152,8 @@ select is((select count(*) from public.season_player_licenses), 0::bigint,
 select is((select count(*) from public.season_player_expense_payments), 0::bigint,
   'un joueur du club ne voit pas les paiements');
 select throws_ok(
-  $$insert into public.club_license_expenses (label) values ('Chaussettes')$$,
+  $$insert into public.club_license_expenses (season_id, label)
+    values ('7b000000-0000-0000-0000-00000000000a', 'Chaussettes')$$,
   '42501', null,
   'un joueur ne peut pas créer de dépense'
 );
