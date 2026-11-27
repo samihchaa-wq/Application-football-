@@ -55,6 +55,38 @@ void main() {
     expect(server.hits(grouped), 2);
   });
 
+  test(
+      'la cloche demandée juste après « ma dispo » réutilise la même réponse, '
+      'une relecture de « ma dispo » repart au serveur', () async {
+    final loader = UpcomingMatchStatesLoader(client);
+    final availabilityRepository =
+        SupabaseMatchAvailabilityRepository(client, statesLoader: loader);
+    final bellRepository =
+        SupabaseMatchLiveNotificationRepository(client, statesLoader: loader);
+
+    await availabilityRepository.fetchMyAvailability('m1');
+    // Carte construite un peu plus tard (défilement) : même réponse.
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    await bellRepository.fetchStatus('m1');
+    expect(server.hits(grouped), 1);
+    expect(server.hits(bell), 0);
+
+    // Relecture après une modification : jamais la réponse gardée.
+    await availabilityRepository.fetchMyAvailability('m1');
+    expect(server.hits(grouped), 2);
+  });
+
+  test('passé le délai, la réponse n’est plus réutilisée', () async {
+    var now = DateTime.utc(2026, 11, 27, 10);
+    final loader = UpcomingMatchStatesLoader(client, now: () => now);
+
+    await loader.load('m1', part: UpcomingMatchPart.availability);
+    now = now.add(const Duration(seconds: 3));
+    await loader.load('m1', part: UpcomingMatchPart.liveNotifications);
+
+    expect(server.hits(grouped), 2);
+  });
+
   test('les cartes du calendrier ne font qu’une requête pour deux états',
       () async {
     final loader = UpcomingMatchStatesLoader(client);

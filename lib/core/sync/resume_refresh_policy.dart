@@ -17,3 +17,10 @@ const Duration appResumeFullRefreshAfter = Duration(minutes: 30);
 bool shouldFullyRefreshOnResume(Duration? awayFor) {
   return awayFor == null || awayFor >= appResumeFullRefreshAfter;
 }
+
+/// `true` si un retour au premier plan doit relire quoi que ce soit.
+///
+/// Seul un vrai passage en arrière-plan (page masquée, application
+/// suspendue) peut couper le temps réel. Une simple perte de focus (clic
+/// hors de la page sur ordinateur, volet de notifications) n'en est pas un.
+bool shouldRefreshOnResume({required bool wasBackgrounded}) => wasBackgrounded;

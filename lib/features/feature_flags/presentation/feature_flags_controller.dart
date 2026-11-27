@@ -39,6 +39,30 @@ final featureFlagsConfigurationRefreshProvider = Provider<void Function()>((
   };
 });
 
+/// Début des lectures des réglages du club actuellement affichés.
+final clubConfigurationReadSinceProvider = Provider<DateTime? Function()>((
+  ref,
+) {
+  return () => ref.read(clubRepositoryProvider).configurationReadSince;
+});
+
+/// Marge pour une horloge de téléphone mal réglée : le moment de la lecture
+/// vient du téléphone, celui de la modification vient du serveur.
+const Duration configurationSignalClockMargin = Duration(minutes: 10);
+
+/// `true` si la première révision « configuration du club » reçue après un
+/// branchement du temps réel peut contenir un changement que l'appli n'a pas
+/// encore lu.
+bool shouldRefreshOnFirstConfigurationSignal({
+  required DateTime signalUpdatedAt,
+  required DateTime? configurationReadSince,
+  Duration clockMargin = configurationSignalClockMargin,
+}) {
+  if (configurationReadSince == null) return true;
+  return !signalUpdatedAt
+      .isBefore(configurationReadSince.subtract(clockMargin));
+}
+
 final featureFlagsConfigurationDebounceProvider = Provider<Duration>(
   (ref) => const Duration(milliseconds: 350),
 );
@@ -155,8 +179,18 @@ class FeatureFlagsController extends AsyncNotifier<FeatureFlagsSnapshot> {
     _lastRevisions[signal.key] = signal.revision;
 
     if (signal.key == 'club_configuration') {
-      // La première révision rattrape aussi une modification survenue entre
-      // les lectures initiales et la connexion de l'abonnement Realtime.
+      // La première révision arrive à chaque branchement du temps réel
+      // (ouverture, retour dans l'appli). Elle rattrape une modification
+      // survenue entre les lectures initiales et ce branchement, mais ne
+      // relance plus tout quand la modification est bien plus ancienne que
+      // ces lectures : c'était un second chargement complet à chaque fois.
+      if (previous == null &&
+          !shouldRefreshOnFirstConfigurationSignal(
+            signalUpdatedAt: signal.updatedAt,
+            configurationReadSince: _configurationReadSince(),
+          )) {
+        return;
+      }
       _configurationTimer?.cancel();
       _configurationTimer = Timer(
         ref.read(featureFlagsConfigurationDebounceProvider),
@@ -177,6 +211,15 @@ class FeatureFlagsController extends AsyncNotifier<FeatureFlagsSnapshot> {
     }
     _signalRefreshRequested = true;
     if (!_signalRefreshInProgress) unawaited(_refreshFromSignals(generation));
+  }
+
+  /// Inconnu (lecture impossible) : `null`, donc on relit, comme avant.
+  DateTime? _configurationReadSince() {
+    try {
+      return ref.read(clubConfigurationReadSinceProvider)();
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> _refreshFromSignals(int generation) async {
