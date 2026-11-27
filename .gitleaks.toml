@@ -16,5 +16,5 @@ regexTarget = "match"
 regexes = ['''sb_publishable_[A-Za-z0-9_-]+''']
 
 [[allowlists]]
-description = "Empreinte SHA-256 du jeton de la tâche planifiée (pas le jeton) de la copie AS Grinta"
-paths = ['''^supabase/functions/sync-as-grinta/handler\.ts$''']
+description = "Empreinte SHA-256 du jeton de la tâche planifiée (pas le jeton) de la copie AS Grinta, ancien et nouveau fichier"
+paths = ['''^supabase/functions/sync-as-grinta/(index|handler)\.ts$''']
