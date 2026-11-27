@@ -3,6 +3,7 @@ import 'package:petit_filet/core/widgets/pf_labeled_button.dart';
 import 'package:petit_filet/core/widgets/pf_status_banner.dart';
 import 'package:petit_filet/core/widgets/pf_switch_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -129,7 +130,7 @@ void main() {
                 child: ListView(
                   controller: controller,
                   // Les cartes au-dessus de la vue restent construites.
-                  cacheExtent: 2000,
+                  scrollCacheExtent: const ScrollCacheExtent.pixels(2000),
                   children: [
                     for (var i = 0; i < 20; i++)
                       SizedBox(
