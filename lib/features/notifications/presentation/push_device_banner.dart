@@ -1,5 +1,6 @@
 import 'package:petit_filet/core/push/home_screen_install.dart';
 import 'package:petit_filet/core/push/push_client.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/widgets/pf_status_banner.dart';
 import 'package:petit_filet/features/preferences/data/push_subscriptions_repository.dart';
 import 'package:flutter/material.dart';
@@ -33,6 +34,10 @@ class PushDeviceBanner extends ConsumerStatefulWidget {
 
 class _PushDeviceBannerState extends ConsumerState<PushDeviceBanner> {
   bool _busy = false;
+
+  /// Replié par défaut : une seule ligne. Déplié, il prenait un quart de la
+  /// hauteur d'un téléphone de 320 px de large.
+  bool _expanded = false;
 
   void _say(String message) {
     ScaffoldMessenger.maybeOf(context)
@@ -97,36 +102,117 @@ class _PushDeviceBannerState extends ConsumerState<PushDeviceBanner> {
     }
 
     final blocked = alert == PushDeviceAlert.blocked;
+    final title =
+        blocked ? 'Notifications bloquées' : 'Notifications désactivées';
+    final primary = TextButton(
+      onPressed: _busy ? null : (blocked ? _recheck : _enable),
+      child: Text(blocked ? 'J’ai autorisé' : 'Activer'),
+    );
+    final toggle = IconButton(
+      key: const Key('push-banner-toggle'),
+      tooltip: _expanded ? 'Replier' : 'Plus de détails',
+      visualDensity: VisualDensity.compact,
+      onPressed: () => setState(() => _expanded = !_expanded),
+      icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
+    );
+
     return Material(
       color: Theme.of(context).colorScheme.surface,
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-          child: PfStatusBanner(
-            title: blocked
-                ? 'Notifications bloquées'
-                : 'Notifications désactivées',
-            message: blocked
-                // Court exprès : le bandeau reste en haut de chaque écran.
-                // « appareil » : il s'affiche aussi sur ordinateur.
-                ? 'Autorise-les dans les réglages de cet appareil.'
-                : 'Active-les pour être prévenu des convocations.',
-            tone: PfStatusTone.warning,
-            compact: true,
-            action: Wrap(
-              alignment: WrapAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: _busy ? null : (blocked ? _recheck : _enable),
-                  child: Text(blocked ? 'J’ai autorisé' : 'Activer'),
+          padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+          child: _expanded
+              ? PfStatusBanner(
+                  title: title,
+                  message: blocked
+                      // « appareil » : il s'affiche aussi sur ordinateur.
+                      ? 'Autorise-les dans les réglages de cet appareil.'
+                      : 'Active-les pour être prévenu des convocations.',
+                  tone: PfStatusTone.warning,
+                  compact: true,
+                  action: Wrap(
+                    alignment: WrapAlignment.end,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      primary,
+                      TextButton(
+                        onPressed: _busy ? null : _decline,
+                        child: const Text('Non merci'),
+                      ),
+                      toggle,
+                    ],
+                  ),
+                )
+              : _CollapsedWarning(
+                  title: title,
+                  action: primary,
+                  toggle: toggle,
                 ),
-                TextButton(
-                  onPressed: _busy ? null : _decline,
-                  child: const Text('Non merci'),
+        ),
+      ),
+    );
+  }
+}
+
+/// Bandeau replié : icône, titre et action principale sur une seule ligne.
+/// Le titre s'abrège plutôt que de passer à la ligne sur un écran étroit.
+class _CollapsedWarning extends StatelessWidget {
+  const _CollapsedWarning({
+    required this.title,
+    required this.action,
+    required this.toggle,
+  });
+
+  final String title;
+  final Widget action;
+  final Widget toggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Semantics(
+      container: true,
+      label: title,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Color.alphaBlend(
+            AppTheme.warning.withValues(alpha: .06),
+            AppTheme.surface,
+          ),
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+          border: Border.all(color: Colors.white.withValues(alpha: .09)),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+          child: Row(
+            children: [
+              // Liseré de couleur, comme le bandeau déplié.
+              const ColoredBox(
+                color: AppTheme.warning,
+                child: SizedBox(width: 4, height: 40),
+              ),
+              const SizedBox(width: 10),
+              const Icon(
+                Icons.warning_amber_outlined,
+                size: 18,
+                color: AppTheme.warning,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: AppTheme.textPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ],
-            ),
+              ),
+              action,
+              toggle,
+            ],
           ),
         ),
       ),
