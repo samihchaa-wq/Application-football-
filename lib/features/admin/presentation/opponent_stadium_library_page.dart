@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/widgets/pf_menu_item_label.dart';
 import 'package:petit_filet/core/providers/supabase_provider.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:petit_filet/core/widgets/pf_app_bar.dart';
@@ -281,19 +282,14 @@ class _OpponentStadiumLibraryPageState
                         itemBuilder: (context) => const [
                           PopupMenuItem(
                             value: 'edit',
-                            child: ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: Icon(Icons.edit_outlined),
-                              title: Text('Modifier'),
-                            ),
+                            child: PfMenuItemLabel(
+                                icon: Icons.edit_outlined, label: 'Modifier'),
                           ),
                           PopupMenuItem(
                             value: 'delete',
-                            child: ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: Icon(Icons.delete_outlined),
-                              title: Text('Supprimer'),
-                            ),
+                            child: PfMenuItemLabel(
+                                icon: Icons.delete_outlined,
+                                label: 'Supprimer'),
                           ),
                         ],
                       ),

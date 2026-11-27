@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/widgets/pf_menu_item_label.dart';
 import 'package:petit_filet/app/shell/module_navigation.dart';
 import 'package:petit_filet/core/utils/match_window.dart';
 import 'package:petit_filet/features/matches/data/match_details_repository.dart';
@@ -192,47 +193,32 @@ class AdminMatchOptionsButton extends ConsumerWidget {
         if (options.canEditIdentity)
           const PopupMenuItem(
             value: 'edit',
-            child: ListTile(
-              leading: Icon(Icons.settings_outlined),
-              title: Text('Modifier'),
-              contentPadding: EdgeInsets.zero,
-            ),
+            child: PfMenuItemLabel(
+                icon: Icons.settings_outlined, label: 'Modifier'),
           ),
         if (options.canEnterStats)
           const PopupMenuItem(
             value: 'stats',
-            child: ListTile(
-              leading: Icon(Icons.query_stats_outlined),
-              title: Text('Saisir les stats'),
-              contentPadding: EdgeInsets.zero,
-            ),
+            child: PfMenuItemLabel(
+                icon: Icons.query_stats_outlined, label: 'Saisir les stats'),
           ),
         if (options.canFinishInternal)
           const PopupMenuItem(
             value: 'finish',
-            child: ListTile(
-              leading: Icon(Icons.check_circle_outlined),
-              title: Text('Terminer'),
-              contentPadding: EdgeInsets.zero,
-            ),
+            child: PfMenuItemLabel(
+                icon: Icons.check_circle_outlined, label: 'Terminer'),
           ),
         if (options.canCancel)
           const PopupMenuItem(
             value: 'cancel',
-            child: ListTile(
-              leading: Icon(Icons.block_outlined),
-              title: Text('Annuler'),
-              contentPadding: EdgeInsets.zero,
-            ),
+            child:
+                PfMenuItemLabel(icon: Icons.block_outlined, label: 'Annuler'),
           ),
         if (options.canDelete)
           const PopupMenuItem(
             value: 'delete',
-            child: ListTile(
-              leading: Icon(Icons.delete_outlined),
-              title: Text('Supprimer'),
-              contentPadding: EdgeInsets.zero,
-            ),
+            child: PfMenuItemLabel(
+                icon: Icons.delete_outlined, label: 'Supprimer'),
           ),
       ],
     );

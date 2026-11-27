@@ -1,3 +1,4 @@
+import 'package:petit_filet/core/widgets/pf_switch_tile.dart';
 import 'package:petit_filet/core/club/club_identity.dart';
 import 'package:petit_filet/core/club/club_rules.dart';
 import 'package:petit_filet/core/theme/app_theme.dart';
@@ -65,7 +66,9 @@ void main() {
   Future<void> openSection(WidgetTester tester, String key) async {
     final finder = find.byKey(ValueKey('club-section-$key'));
     await tester.ensureVisible(finder);
-    await tester.tap(finder);
+    // On touche l'en-tête : le centre d'une section ouverte tombe sur une
+    // de ses lignes (et basculait un interrupteur au passage).
+    await tester.tapAt(tester.getTopLeft(finder) + const Offset(40, 24));
     await tester.pumpAndSettle();
   }
 
@@ -169,7 +172,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repository.modules['weather'], isFalse);
-    final tile = tester.widget<SwitchListTile>(
+    final tile = tester.widget<PfSwitchTile>(
       find.byKey(const ValueKey('club-module-weather')),
     );
     expect(tile.value, isFalse);
@@ -549,7 +552,7 @@ void main() {
 
     final finder = find.byKey(const ValueKey('club-rule-notify_live_goals'));
     await tester.ensureVisible(finder);
-    expect(tester.widget<SwitchListTile>(finder).value, isTrue);
+    expect(tester.widget<PfSwitchTile>(finder).value, isTrue);
     // Pas de compteur +/- pour un oui/non.
     expect(
       find.byKey(const ValueKey('club-rule-notify_live_goals-plus')),
@@ -558,7 +561,7 @@ void main() {
     await tester.tap(finder);
     await tester.pumpAndSettle();
     expect(repository.ruleValues['notify_live_goals'], 0);
-    expect(tester.widget<SwitchListTile>(finder).value, isFalse);
+    expect(tester.widget<PfSwitchTile>(finder).value, isFalse);
 
     // L'alerte d'inscription est rangée avec les membres.
     await openSection(tester, 'members');
@@ -652,12 +655,12 @@ void main() {
     await tester.tap(scorer);
     await tester.pumpAndSettle();
     expect(repository.ruleValues['live_scorers'], 0);
-    expect(tester.widget<SwitchListTile>(assist).onChanged, isNull);
+    expect(tester.widget<PfSwitchTile>(assist).onChanged, isNull);
     expect(repository.ruleValues['live_assists'], 1); // conservé, pas effacé
     await tester.ensureVisible(scorer);
     await tester.tap(scorer);
     await tester.pumpAndSettle();
-    expect(tester.widget<SwitchListTile>(assist).onChanged, isNotNull);
+    expect(tester.widget<PfSwitchTile>(assist).onChanged, isNotNull);
     expect(ClubRules.enabled(ClubFeature.liveAssists), isTrue);
   });
 }

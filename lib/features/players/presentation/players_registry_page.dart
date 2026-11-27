@@ -616,7 +616,9 @@ class RosterPlayerMenu extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final players = roster;
     return PopupMenuButton<String>(
-      tooltip: 'Modifier le joueur',
+      // Nom du joueur dans le libellé lu : « Modifier le joueur » seul ne
+      // disait pas lequel.
+      tooltip: 'Modifier ${player.displayName}',
       child: showTextLabel
           ? const Padding(
               padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),

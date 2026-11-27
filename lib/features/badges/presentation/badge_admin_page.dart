@@ -222,10 +222,15 @@ class _BadgeAdminPageState extends ConsumerState<BadgeAdminPage> {
     );
   }
 
-  Widget _tabLabel(String label) {
-    return FittedBox(
-      fit: BoxFit.scaleDown,
-      child: Text(label, textAlign: TextAlign.center),
+  // Libellé lu par le lecteur d'écran plus explicite que le mot affiché.
+  Widget _tabLabel(String label, String spoken) {
+    return Semantics(
+      label: spoken,
+      excludeSemantics: true,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(label, textAlign: TextAlign.center),
+      ),
     );
   }
 
@@ -256,9 +261,9 @@ class _BadgeAdminPageState extends ConsumerState<BadgeAdminPage> {
                   unselectedLabelColor: AppTheme.textSecondary,
                   dividerColor: Colors.transparent,
                   tabs: [
-                    Tab(child: _tabLabel('Mystères')),
-                    Tab(child: _tabLabel('Communs')),
-                    Tab(child: _tabLabel('Créer')),
+                    Tab(child: _tabLabel('Mystères', 'Badges mystères')),
+                    Tab(child: _tabLabel('Communs', 'Badges communs')),
+                    Tab(child: _tabLabel('Créer', 'Créer un badge')),
                   ],
                 ),
               ),
@@ -310,21 +315,33 @@ class _MysteryModeBar extends StatelessWidget {
   Widget _half(BuildContext context, String label, bool value) {
     final selected = automatic == value;
     return Expanded(
-      child: Material(
-        // Même apparence que les autres onglets sélectionnés de l'appli.
-        color: selected ? AppTheme.selectedSurface : Colors.transparent,
-        child: InkWell(
-          onTap: selected ? null : () => onChanged(value),
-          child: Container(
-            height: 40,
-            alignment: Alignment.center,
-            child: Text(
-              label,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: selected
-                        ? AppTheme.primaryBright
-                        : AppTheme.textSecondary,
-                  ),
+      // Un nœud d'accessibilité par moitié : les deux libellés étaient
+      // fusionnés en un seul (« Manuel Automatique ») sans dire lequel
+      // était choisi.
+      child: Semantics(
+        container: true,
+        button: true,
+        selected: selected,
+        inMutuallyExclusiveGroup: true,
+        label: 'Badges mystères : $label',
+        excludeSemantics: true,
+        onTap: selected ? null : () => onChanged(value),
+        child: Material(
+          // Même apparence que les autres onglets sélectionnés de l'appli.
+          color: selected ? AppTheme.selectedSurface : Colors.transparent,
+          child: InkWell(
+            onTap: selected ? null : () => onChanged(value),
+            child: Container(
+              height: 40,
+              alignment: Alignment.center,
+              child: Text(
+                label,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: selected
+                          ? AppTheme.primaryBright
+                          : AppTheme.textSecondary,
+                    ),
+              ),
             ),
           ),
         ),

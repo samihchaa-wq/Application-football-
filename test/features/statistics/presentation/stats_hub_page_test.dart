@@ -69,6 +69,31 @@ void main() {
     return found;
   }
 
+  testWidgets('lecteur d’écran : le nom du joueur et chaque chiffre sont lus',
+      (tester) async {
+    final semantics = tester.ensureSemantics();
+    repository.players[StatisticsPeriod.current] = [
+      _player('Karim', played: 12, goals: 7, assists: 3),
+    ];
+    await pumpStats(tester);
+
+    // Le nom est sur son propre nœud (et non sur celui de toute la ligne).
+    expect(
+      tester.getSemantics(find.text('Karim')),
+      matchesSemantics(
+        label: '1\nKarim',
+        isButton: true,
+        isFocusable: true,
+        hasTapAction: true,
+        hasFocusAction: true,
+        hint: 'Ouvrir la fiche joueur',
+      ),
+    );
+    expect(find.bySemanticsLabel('Karim, Buts : 7'), findsOneWidget);
+    expect(find.bySemanticsLabel('Karim, Matchs joués : 12'), findsOneWidget);
+    semantics.dispose();
+  });
+
   testWidgets('affiche les joueurs de la saison actuelle avec leurs chiffres',
       (tester) async {
     repository.players[StatisticsPeriod.current] = [

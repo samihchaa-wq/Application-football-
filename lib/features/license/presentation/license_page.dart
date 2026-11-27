@@ -244,16 +244,20 @@ class _LicensePageState extends ConsumerState<LicensePage> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                     child: Text(
-                      player.fullName.isEmpty
-                          ? player.displayName
-                          : player.fullName,
+                      _playerName(player),
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                   ),
+                  // Nom du joueur dans ce qui est lu : sinon le lecteur
+                  // d'écran répétait « Licence, case cochée » sans dire pour
+                  // qui.
                   CheckboxListTile(
                     dense: true,
                     controlAffinity: ListTileControlAffinity.leading,
-                    title: const Text('Licence'),
+                    title: Text(
+                      'Licence',
+                      semanticsLabel: 'Licence de ${_playerName(player)}',
+                    ),
                     value: paid.hasPaidLicense(player.id),
                     onChanged: (value) => _run(
                       () =>
@@ -265,7 +269,10 @@ class _LicensePageState extends ConsumerState<LicensePage> {
                     CheckboxListTile(
                       dense: true,
                       controlAffinity: ListTileControlAffinity.leading,
-                      title: Text(e.label),
+                      title: Text(
+                        e.label,
+                        semanticsLabel: '${e.label} de ${_playerName(player)}',
+                      ),
                       value: paid.hasPaidExpense(e.id, player.id),
                       onChanged: (value) => _run(
                         () => repository.setExpensePaid(
@@ -346,3 +353,6 @@ class _LabelDialogState extends State<_LabelDialog> {
         ],
       );
 }
+
+String _playerName(RosterPlayer player) =>
+    player.fullName.isEmpty ? player.displayName : player.fullName;
