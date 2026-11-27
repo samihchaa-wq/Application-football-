@@ -15,27 +15,21 @@ void main() {
   // Empêche le retour à deux écritures serveur successives pour un même match.
   test('un match entre nous est sauvegardé avec une seule RPC', () {
     final repositorySource = File(
-      'lib/features/matches/data/matches_repository.dart',
+      'lib/features/matches/data/match_edit_schedule_repository.dart',
     ).readAsStringSync();
     final repositoryBlock = _methodBlock(
       repositorySource,
       'Future<void> updateInternalMatch({',
-      '/// Cotes suggérées',
+      'String _formatTime(',
     );
 
+    expect(repositoryBlock, contains("'update_internal_match_v3'"));
     expect(repositoryBlock, contains("'p_address': address"));
 
-    final controllerSource = File(
-      'lib/features/matches/presentation/matches_controller.dart',
+    final formSource = File(
+      'lib/features/matches/presentation/match_form_page.dart',
     ).readAsStringSync();
-    final controllerBlock = _methodBlock(
-      controllerSource,
-      'Future<void> updateInternalMatch({',
-      'bool _validOdds',
-    );
-
-    expect(controllerBlock, contains('_repository.updateInternalMatch('));
-    expect(controllerBlock, contains('address: address'));
-    expect(controllerBlock, isNot(contains('_repository.setMatchAddress(')));
+    expect(formSource, contains('repository.updateInternalMatch('));
+    expect(formSource, isNot(contains('setMatchAddress(')));
   });
 }
