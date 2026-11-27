@@ -132,6 +132,7 @@ class MatchDetailsData {
   final List<MatchPredictionResult> predictions;
 
   bool get isValidated => status == 'termine' || status == 'archive';
+  bool get isCancelled => status == 'annule';
   bool get isFriendly => matchType == 'amical';
 
   String get matchTypeLabel {

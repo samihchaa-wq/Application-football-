@@ -54,4 +54,48 @@ void main() {
       );
     });
   });
+
+  group('suggestedChampionshipRoundAfterLatest', () {
+    test('suit la rencontre la plus récente, pas le plus haut numéro', () {
+      expect(
+        suggestedChampionshipRoundAfterLatest([
+          (kickoffAt: DateTime(2026, 9, 1), round: 22),
+          (kickoffAt: DateTime(2026, 11, 20), round: 7),
+          (kickoffAt: DateTime(2026, 11, 28), round: 8),
+        ]),
+        9,
+      );
+    });
+
+    test('ignore les rencontres sans numéro et démarre à J1', () {
+      expect(suggestedChampionshipRoundAfterLatest(const []), 1);
+      expect(
+        suggestedChampionshipRoundAfterLatest([
+          (kickoffAt: DateTime(2026, 11, 28), round: null),
+          (kickoffAt: DateTime(2026, 11, 20), round: 4),
+        ]),
+        5,
+      );
+    });
+
+    test('à date égale, garde la plus haute journée', () {
+      final day = DateTime(2026, 11, 28, 21);
+      expect(
+        suggestedChampionshipRoundAfterLatest([
+          (kickoffAt: day, round: 3),
+          (kickoffAt: day, round: 5),
+        ]),
+        6,
+      );
+    });
+
+    test('ne dépasse pas la journée maximale', () {
+      expect(
+        suggestedChampionshipRoundAfterLatest([
+          (kickoffAt: DateTime(2026, 11, 28), round: maxChampionshipRound),
+        ]),
+        maxChampionshipRound,
+      );
+    });
+  });
 }

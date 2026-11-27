@@ -60,4 +60,73 @@ void main() {
     expect(find.text('Modifier'), findsOneWidget);
     expect(find.text('Supprimer'), findsOneWidget);
   });
+
+  testWidgets(
+      'supprimer un match joué demande de taper SUPPRIMER avant d’activer '
+      'le bouton', (tester) async {
+    await _pump(
+      tester,
+      _match(
+        kickoffAt: DateTime.now().subtract(const Duration(hours: 5)),
+        status: 'a_venir',
+      ),
+    );
+
+    await tester.tap(find.byIcon(Icons.edit_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('Supprimer définitivement…'), findsOneWidget);
+    await tester.tap(find.text('Supprimer définitivement…'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Supprimer ce match joué\u00A0?'), findsOneWidget);
+    FilledButton deleteButton() => tester.widget<FilledButton>(
+          find.widgetWithText(FilledButton, 'Supprimer'),
+        );
+    expect(deleteButton().onPressed, isNull);
+
+    await tester.enterText(find.byType(TextField), 'suppr');
+    await tester.pump();
+    expect(deleteButton().onPressed, isNull);
+
+    await tester.enterText(find.byType(TextField), 'supprimer');
+    await tester.pump();
+    expect(deleteButton().onPressed, isNotNull);
+
+    // Annuler ferme sans rien supprimer.
+    await tester.tap(find.text('Annuler'));
+    await tester.pumpAndSettle();
+    expect(find.byType(StrongDeleteMatchDialog), findsNothing);
+  });
+
+  testWidgets('supprimer un match à venir garde la confirmation simple', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      _match(
+        kickoffAt: DateTime.now().add(const Duration(days: 5)),
+        status: 'a_venir',
+      ),
+    );
+
+    await tester.tap(find.byIcon(Icons.edit_outlined));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Supprimer'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Supprimer ce match\u00A0?'), findsOneWidget);
+    expect(find.byType(StrongDeleteMatchDialog), findsNothing);
+  });
+
+  test('un match annulé n’est pas un match joué', () {
+    expect(
+      isPlayedMatch(
+        _match(
+          kickoffAt: DateTime.now().subtract(const Duration(days: 1)),
+          status: 'annule',
+        ),
+      ),
+      isFalse,
+    );
+  });
 }

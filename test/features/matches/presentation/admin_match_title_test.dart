@@ -9,6 +9,7 @@ MatchModel _match({
   int? own,
   int? opponent,
   String opponentName = 'AS Pantin',
+  String matchType = 'championnat',
 }) =>
     MatchModel(
       id: 'm1',
@@ -21,9 +22,30 @@ MatchModel _match({
       ownScore: own,
       opponentScore: opponent,
       opponentName: opponentName,
+      matchType: matchType,
     );
 
 void main() {
+  test('un match entre nous s’affiche « Match entre nous », sans adversaire',
+      () {
+    final played = adminMatchTitle(
+      _match(
+        status: 'archive',
+        isHome: true,
+        own: 0,
+        opponent: 0,
+        opponentName: 'Adversaire',
+        matchType: 'entre_nous',
+      ),
+    );
+    final upcoming = adminMatchTitle(
+      _match(status: 'a_venir', isHome: true, matchType: 'entre_nous'),
+    );
+
+    expect(played, 'Match entre nous');
+    expect(upcoming, 'Match entre nous');
+  });
+
   test('un nom d’équipe et son score ne se séparent jamais', () {
     final title = adminMatchTitle(
       _match(status: 'termine', isHome: false, own: 2, opponent: 2),

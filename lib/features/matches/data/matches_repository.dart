@@ -185,31 +185,6 @@ class MatchesRepository {
     return result.toString();
   }
 
-  Future<void> updateInternalMatch({
-    required String id,
-    required String seasonId,
-    required DateTime kickoffAt,
-    required DateTime expectedUpdatedAt,
-    String? address,
-    DateTime? meetingAt,
-  }) async {
-    final result = await _client.rpc(
-      'update_internal_match_v2',
-      params: {
-        'p_match_id': id,
-        'p_season_id': seasonId,
-        'p_match_date': kickoffAt.toIso8601String().split('T').first,
-        'p_match_time': _formatTime(kickoffAt),
-        'p_address': address,
-        'p_expected_updated_at': expectedUpdatedAt.toUtc().toIso8601String(),
-        'p_meeting_at': meetingAt?.toUtc().toIso8601String(),
-      },
-    );
-    if (result != true) {
-      throw StateError('Le match n’a pas pu être enregistré.');
-    }
-  }
-
   /// Cotes suggérées par le même modèle serveur que la cote officielle,
   /// calculées avec la date réelle du match. Retourne null en cas d'échec.
   Future<({double win, double draw, double loss})?> previewMatchOdds({
@@ -236,53 +211,6 @@ class MatchesRepository {
     } catch (error, stackTrace) {
       AppLogger.error('matches.preview_odds', error, stackTrace);
       return null;
-    }
-  }
-
-  /// Enregistre le match, ses cotes, son adresse, son type et son maillot en
-  /// une seule transaction serveur.
-  Future<void> updateMatch({
-    required String id,
-    required String seasonId,
-    required String opponentId,
-    required DateTime kickoffAt,
-    required bool isHome,
-    required String status,
-    required double oddsWin,
-    required double oddsDraw,
-    required double oddsLoss,
-    required DateTime expectedUpdatedAt,
-    int? squadSizeLimit,
-    String? address,
-    bool rememberAddressAsDefault = false,
-    String matchType = 'championnat',
-    String? jerseyNote,
-    DateTime? meetingAt,
-  }) async {
-    final result = await _client.rpc(
-      'admin_update_match_complete_v2',
-      params: {
-        'p_match_id': id,
-        'p_season_id': seasonId,
-        'p_opponent_id': opponentId,
-        'p_match_date': kickoffAt.toIso8601String().split('T').first,
-        'p_match_time': _formatTime(kickoffAt),
-        'p_location': isHome ? 'domicile' : 'exterieur',
-        'p_status': status,
-        'p_win': oddsWin,
-        'p_draw': oddsDraw,
-        'p_loss': oddsLoss,
-        'p_expected_updated_at': expectedUpdatedAt.toUtc().toIso8601String(),
-        'p_squad_size_limit': squadSizeLimit,
-        'p_address': address,
-        'p_remember_address_as_default': rememberAddressAsDefault,
-        'p_match_type': matchType,
-        'p_jersey_note': jerseyNote,
-        'p_meeting_at': meetingAt?.toUtc().toIso8601String(),
-      },
-    );
-    if (result != true) {
-      throw StateError('Le match et ses cotes n’ont pas pu être enregistrés.');
     }
   }
 

@@ -416,6 +416,11 @@ void main() {
       160,
       scrollable: find.byType(Scrollable).first,
     );
+    // L'admin sait que la pause fait perdre les messages, pas les retarder.
+    expect(
+      find.textContaining('rien n’est rangé dans l’historique'),
+      findsOneWidget,
+    );
     await tester.tap(resume);
     await tester.pumpAndSettle();
     expect(lastEnabled, isFalse);

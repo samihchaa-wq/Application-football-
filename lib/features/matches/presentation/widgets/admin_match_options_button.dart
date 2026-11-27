@@ -8,6 +8,7 @@ import 'package:petit_filet/features/matches/presentation/matches_controller.dar
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:petit_filet/core/theme/app_theme.dart';
 import 'package:petit_filet/core/theme/pf_button_styles.dart';
 
 class AdminMatchOptionsButton extends ConsumerWidget {
@@ -119,24 +120,29 @@ class AdminMatchOptionsButton extends ConsumerWidget {
   }
 
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
-    final warning = _deleteWarning(DateTime.now());
+    final now = DateTime.now();
+    final warning = _deleteWarning(now);
+    // Un match déjà joué emporte son score, ses stats et les classements :
+    // un simple appui ne suffit pas, il faut taper le mot de confirmation.
     final confirmed = await showDialog<bool>(
           context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: const Text('Supprimer ce match\u00A0?'),
-            content: Text(warning),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('Annuler'),
-              ),
-              FilledButton(
-                style: PfButtonStyles.danger,
-                onPressed: () => Navigator.pop(dialogContext, true),
-                child: const Text('Supprimer'),
-              ),
-            ],
-          ),
+          builder: (dialogContext) => isPlayedMatch(match, now: now)
+              ? StrongDeleteMatchDialog(warning: warning)
+              : AlertDialog(
+                  title: const Text('Supprimer ce match\u00A0?'),
+                  content: Text(warning),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext, false),
+                      child: const Text('Annuler'),
+                    ),
+                    FilledButton(
+                      style: PfButtonStyles.danger,
+                      onPressed: () => Navigator.pop(dialogContext, true),
+                      child: const Text('Supprimer'),
+                    ),
+                  ],
+                ),
         ) ??
         false;
     if (!confirmed || !context.mounted) return;
@@ -225,15 +231,31 @@ class AdminMatchOptionsButton extends ConsumerWidget {
               contentPadding: EdgeInsets.zero,
             ),
           ),
-        if (options.canDelete)
-          const PopupMenuItem(
+        if (options.canDelete) ...[
+          // Séparée des autres actions, et nommée sans ambiguïté pour un
+          // match déjà joué : c'était le seul choix du menu, à un appui.
+          if (options.canEditIdentity ||
+              options.canEnterStats ||
+              options.canFinishInternal ||
+              options.canCancel)
+            const PopupMenuDivider(),
+          PopupMenuItem(
             value: 'delete',
             child: ListTile(
-              leading: Icon(Icons.delete_outlined),
-              title: Text('Supprimer'),
+              leading: const Icon(
+                Icons.delete_outlined,
+                color: AppTheme.error,
+              ),
+              title: Text(
+                isPlayedMatch(match, now: DateTime.now())
+                    ? 'Supprimer définitivement…'
+                    : 'Supprimer',
+                style: const TextStyle(color: AppTheme.error),
+              ),
               contentPadding: EdgeInsets.zero,
             ),
           ),
+        ],
       ],
     );
   }
@@ -281,4 +303,83 @@ class _MatchAdminOptions {
       canFinishInternal ||
       canCancel ||
       canDelete;
+}
+
+/// Vrai pour un match déjà joué (coup d'envoi passé, ou résultat validé) et
+/// non annulé : sa suppression demande la confirmation forte.
+bool isPlayedMatch(MatchModel match, {DateTime? now}) {
+  if (match.isCancelled) return false;
+  if (match.isFinished || match.isArchived) return true;
+  return !(now ?? DateTime.now()).isBefore(match.kickoffAt);
+}
+
+/// Mot à taper pour supprimer un match déjà joué.
+const kStrongDeleteConfirmationWord = 'SUPPRIMER';
+
+/// Confirmation forte : « Supprimer » ne s'active qu'une fois le mot
+/// [kStrongDeleteConfirmationWord] tapé (majuscules ou minuscules).
+@visibleForTesting
+class StrongDeleteMatchDialog extends StatefulWidget {
+  const StrongDeleteMatchDialog({required this.warning, super.key});
+
+  final String warning;
+
+  @override
+  State<StrongDeleteMatchDialog> createState() =>
+      _StrongDeleteMatchDialogState();
+}
+
+class _StrongDeleteMatchDialogState extends State<StrongDeleteMatchDialog> {
+  final _controller = TextEditingController();
+
+  bool get _matches =>
+      _controller.text.trim().toUpperCase() == kStrongDeleteConfirmationWord;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Supprimer ce match joué\u00A0?'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(widget.warning),
+          const SizedBox(height: 16),
+          const Text(
+            'Pour confirmer, tape $kStrongDeleteConfirmationWord.',
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _controller,
+            autofocus: true,
+            textCapitalization: TextCapitalization.characters,
+            autocorrect: false,
+            enableSuggestions: false,
+            decoration: const InputDecoration(
+              labelText: 'Mot de confirmation',
+              hintText: kStrongDeleteConfirmationWord,
+            ),
+            onChanged: (_) => setState(() {}),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Annuler'),
+        ),
+        FilledButton(
+          style: PfButtonStyles.danger,
+          onPressed: _matches ? () => Navigator.pop(context, true) : null,
+          child: const Text('Supprimer'),
+        ),
+      ],
+    );
+  }
 }

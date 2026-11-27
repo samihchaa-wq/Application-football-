@@ -8,7 +8,8 @@ import 'package:petit_filet/features/license/domain/license_models.dart';
 import 'package:petit_filet/features/players/data/roster_repository.dart';
 
 /// Espace « Licence » de l'admin : qui a payé sa licence, et qui a payé les
-/// autres dépenses du club (ajoutées avec « + », renommables).
+/// autres dépenses de la saison (ajoutées avec « + », renommables). Chaque
+/// saison a ses propres dépenses.
 class LicensePage extends ConsumerStatefulWidget {
   const LicensePage({super.key});
 
@@ -26,14 +27,17 @@ class _LicensePageState extends ConsumerState<LicensePage> {
   }
 
   /// Exécute une écriture puis recharge ; signale l'échec.
-  Future<void> _run(Future<void> Function() action, {String? seasonId}) async {
+  Future<void> _run(
+    Future<void> Function() action, {
+    required String seasonId,
+  }) async {
     try {
       await action();
     } catch (error) {
       _toast('Enregistrement impossible. ${humanizeError(error)}');
     }
-    ref.invalidate(licenseExpensesProvider);
-    if (seasonId != null) ref.invalidate(seasonLicensesProvider(seasonId));
+    ref.invalidate(licenseExpensesProvider(seasonId));
+    ref.invalidate(seasonLicensesProvider(seasonId));
   }
 
   Future<String?> _askLabel({String initial = '', required String title}) {
@@ -47,7 +51,7 @@ class _LicensePageState extends ConsumerState<LicensePage> {
     final label = await _askLabel(title: 'Nouvelle dépense');
     if (label == null) return;
     await _run(
-      () => ref.read(licenseRepositoryProvider).addExpense(label),
+      () => ref.read(licenseRepositoryProvider).addExpense(seasonId, label),
       seasonId: seasonId,
     );
   }
@@ -126,7 +130,7 @@ class _LicensePageState extends ConsumerState<LicensePage> {
   Widget _body(String seasonId) {
     final rosterAsync = ref.watch(rosterProvider(seasonId));
     final licensesAsync = ref.watch(seasonLicensesProvider(seasonId));
-    final expensesAsync = ref.watch(licenseExpensesProvider);
+    final expensesAsync = ref.watch(licenseExpensesProvider(seasonId));
 
     final error =
         rosterAsync.error ?? licensesAsync.error ?? expensesAsync.error;
@@ -136,7 +140,7 @@ class _LicensePageState extends ConsumerState<LicensePage> {
         onRetry: () {
           ref.invalidate(rosterProvider(seasonId));
           ref.invalidate(seasonLicensesProvider(seasonId));
-          ref.invalidate(licenseExpensesProvider);
+          ref.invalidate(licenseExpensesProvider(seasonId));
         },
       );
     }
@@ -160,7 +164,7 @@ class _LicensePageState extends ConsumerState<LicensePage> {
     return RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(rosterProvider(seasonId));
-        ref.invalidate(licenseExpensesProvider);
+        ref.invalidate(licenseExpensesProvider(seasonId));
         ref.invalidate(seasonLicensesProvider(seasonId));
         await ref.read(seasonLicensesProvider(seasonId).future);
       },

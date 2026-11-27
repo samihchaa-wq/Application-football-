@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:petit_filet/core/theme/app_spacing.dart';
 import 'package:petit_filet/core/utils/app_errors.dart';
 import 'package:petit_filet/features/statistics/data/statistics_repository.dart';
+import 'package:petit_filet/features/statistics/presentation/statistics_offline.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petit_filet/core/widgets/pf_loader.dart';
@@ -26,10 +27,16 @@ class TeamStatisticsPanel extends ConsumerWidget {
       await ref.read(teamStatisticsPeriodProvider(period).future);
     }
 
+    refreshStatisticsWhenOnline(ref, teamStatisticsPeriodProvider(period));
+    final offline = watchStatisticsOffline(ref);
+    const offlineText = '$statisticsOfflineTitle. $statisticsOfflineMessage';
+
     return dataAsync.when(
-      loading: () => const Center(child: PfProgressIndicator()),
+      loading: () => offline
+          ? _ScrollableMessage(message: offlineText, onRefresh: refresh)
+          : const Center(child: PfProgressIndicator()),
       error: (error, _) => _ScrollableMessage(
-        message: humanizeError(error),
+        message: offline ? offlineText : humanizeError(error),
         onRefresh: refresh,
       ),
       data: (statistics) => RefreshIndicator(

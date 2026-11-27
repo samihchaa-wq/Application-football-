@@ -21,6 +21,7 @@ Régénérer après ajout de notes : `python3 tool/docs_index.py`.
 - [Pilotage du chantier — Application football](CHANTIER.md) — 1. Ne jamais modifier le dépôt ni les données d'AS Grinta original, ni ceux de Carte soirée.
 - [Préparer la première publication commerciale](COMMERCIAL_LAUNCH_CHECKLIST.md) — État au 12 novembre 2026 — ne pas réactiver le déploiement sans suivre cette liste.
 - [Mission 06 — Stratégie commerciale, tarification et lancement](COMMERCIAL_STRATEGIE_M06.md) — Cible principale : une équipe adulte de football loisir, vétérans ou entreprise, avec environ 15 à 30…
+- [Copie automatique AS Grinta](COPIE_AS_GRINTA.md) — Mise à jour : 27/11/2026.
 - [Relais entre assistants — Petit Filet (application commerciale)](HANDOFF.md) — Actualisé le 25 novembre 2026 (audit complet, voir plus bas ; sections datées du 17 au 25/11 ci-dessous).…
 - [Mission 05 — Audit d'identité visuelle et UX (avant toute création de marque)](IDENTITE_VISUELLE_MISSION05.md) — État : audit de code et inspection visuelle des fichiers image sources documentés ; interface applicative…
 - [Import des matchs historiques — contrat Petit Filet v1](IMPORT_HISTORIQUE_V1.md) — Une équipe importe un fichier .json généré à partir de ses propres données (SportEasy ou autre source).…
@@ -41,6 +42,7 @@ Régénérer après ajout de notes : `python3 tool/docs_index.py`.
 - [Mission 08 — Kit d'exécution des séances pilotes (sans données réelles)](PILOTE_FICHES_EXECUTION.md) — Aucun statut ci-dessus ne permet d'affirmer que le lancement est autorisé. Les PR #24, #25, #26, #29 et…
 - [Plan d'audit complet — 25/11/2026](PLAN_AUDIT_COMPLET_20261125.md) — Statut : plan validé par QCM, audit pas commencé.
 - [Plan d'audit UX/UI complet (4 axes)](PLAN_AUDIT_UX_COMPLET.md) — Statut : plan à valider. Aucun code modifié.
+- [Plan de découpage des modules (27/11/2026)](PLAN_DECOUPAGE_MODULES_20261127.md) — Point 37 de l'audit du 26/11. Mesuré sur lib/ au commit de cette note, en
 - [Petit Filet — Plan directeur 2027–2028 et prompts de missions](PLAN_DIRECTEUR_2027_2028.md) — Document de pilotage proposé par le fil 00 le 15 novembre 2026, actualisé le 16 novembre 2026 (Europe/Paris).
 - [PETIT FILET — PLAN DIRECTEUR DE LANCEMENT 2026–2027](PLAN_DIRECTEUR_LANCEMENT_STORES_2026_2027.md) — Édition : 14 novembre 2026 — document de pilotage proposé, non encore approuvé.
 - [Prompt de relais — suite du chantier UX/UI de Petit Filet](PROMPT_SUITE_UX_UI.md) — À coller tel quel au début d'une nouvelle session d'assistant (Claude Code ou
@@ -51,6 +53,7 @@ Régénérer après ajout de notes : `python3 tool/docs_index.py`.
 - [Réglages manquants — enquête et extension du 14 novembre 2026](REGLAGES_COMPLEMENTAIRES_20261114.md) — Petit Filet : base de travail 3aa5b9054d4032f0520644c80eec2afcc343fd8c de main.
 - [Média du stade neutre — contrôle préalable obligatoire](STADIUM_MEDIA_AUDIT.md) — Problème de l'[issue #71](https://github.com/samihchaa-wq/Application-football-/issues/71) : les mots AS…
 - [Paiement par carte (Stripe)](STRIPE.md) — 1. L'admin du club appuie sur « Payer par carte » (écran Abonnement, ou écran
+- [Tester le paiement par carte de bout en bout (Stripe, mode test)](STRIPE_TEST_BOUT_EN_BOUT.md) — But : vérifier toute la chaîne avant d'encaisser un vrai club. Un admin paie
 - [Correction vidéo — stade Petit Filet, 13 novembre 2026](VIDEO_STADE_NEUTRE_20261113.md) — assets/composition/stade.mp4 : 1080 × 2338, H.264, 30 images/seconde, 451 images, 15,033 secondes.
 - [Matrice de sécurité métier](business-security-matrix.md) — Cette matrice décrit les invariants de sécurité actuels. PostgreSQL, Storage et les Edge Functions font…
 - [Processus de livraison Supabase](database-release-process.md) — La production distante est la source de vérité de l’état réellement en service.
