@@ -249,3 +249,22 @@ String? pastKickoffError(DateTime? kickoffAt, {DateTime? now}) {
   return 'La date et l’heure doivent être à venir : un match daté dans le '
       'passé ne peut plus être modifié ni supprimé.';
 }
+
+/// Refus côté écran d'une création de match trop proche du coup d'envoi.
+///
+/// Un match qui commence avant l'ouverture du Live (T-15 par défaut) naîtrait
+/// déjà verrouillé : Supabase le refuse avec le même message
+/// (private.assert_new_match_kickoff_open). Le dire avant l'envoi évite le
+/// message trompeur « verrouillé depuis l'ouverture du Live ».
+String? newMatchKickoffError(DateTime? kickoffAt, {DateTime? now}) {
+  if (kickoffAt == null) return null;
+  final reference = (now ?? DateTime.now()).toUtc();
+  final kickoff = kickoffAt.toUtc();
+  if (!kickoff.isAfter(reference)) {
+    return 'Impossible de créer un match dont l’heure est déjà passée.';
+  }
+  final lockAt = kickoff.subtract(kMatchLiveOpensBeforeKickoff);
+  if (reference.isBefore(lockAt)) return null;
+  return 'Impossible de créer un match qui commence dans moins de '
+      '${kMatchLiveOpensBeforeKickoff.inMinutes} minutes.';
+}
